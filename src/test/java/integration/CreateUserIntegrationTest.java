@@ -1,0 +1,67 @@
+package integration;
+
+import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.test.web.servlet.MvcResult;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/**
+ * Created by chiragtailor on 8/9/16.
+ */
+
+public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private String content =
+            "{\n" +
+            "  \"user\": {\n" +
+            "    \"email\": \"test@email.com\",\n" +
+            "    \"password\": \"password\",\n" +
+            "    \"password_confirmation\": \"password\"\n" +
+            "  }\n" +
+            "}";
+
+    private MvcResult mvcResult;
+
+    private void doPost() throws Exception {
+        mvcResult = mockMvc.perform(post("/v1/signup")
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andReturn();
+    }
+
+    @Test
+    public void signup_createsUser_withSignupFields() throws Exception {
+        doPost();
+
+        User user = userRepository.findByEmail("test@email.com");
+        assertThat(user).isNotNull();
+    }
+
+    @Test
+    public void signup_respondsWithUserEntity_withSignupFields() throws Exception {
+        doPost();
+
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
+
+        assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
+    }
+}
