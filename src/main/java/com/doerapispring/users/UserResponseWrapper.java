@@ -6,14 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Created by chiragtailor on 8/11/16.
+ * Created by chiragtailor on 8/12/16.
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class UserEntity {
-    private String email;
-    private String password;
-    private String passwordConfirmation;
+public class UserResponseWrapper {
+    private UserEntity user;
 }

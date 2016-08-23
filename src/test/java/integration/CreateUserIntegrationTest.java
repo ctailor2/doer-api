@@ -1,15 +1,13 @@
 package integration;
 
 import com.doerapispring.users.User;
-import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.doerapispring.users.UserResponseWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.jdbc.JdbcTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -37,7 +35,7 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
     private MvcResult mvcResult;
 
     private void doPost() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/signup")
+        mvcResult = mockMvc.perform(post("/v1/users")
                 .content(content)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -60,8 +58,8 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
+        UserResponseWrapper userResponseWrapper = mapper.readValue(contentAsString, UserResponseWrapper.class);
 
-        assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
+        assertThat(userResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
     }
 }
