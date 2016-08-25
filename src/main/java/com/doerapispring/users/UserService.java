@@ -3,6 +3,7 @@ package com.doerapispring.users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -10,7 +11,8 @@ import java.util.Date;
  * Created by chiragtailor on 8/12/16.
  */
 @Service
-public class UserService {
+@Transactional
+class UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
@@ -20,13 +22,13 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void create(UserEntity userEntity) {
+    User create(UserEntity userEntity) {
         User user = User.builder()
                 .email(userEntity.getEmail())
                 .password_digest(passwordEncoder.encode(userEntity.getPassword()))
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        System.out.println(userRepository.save(user));
+        return userRepository.save(user);
     }
 }

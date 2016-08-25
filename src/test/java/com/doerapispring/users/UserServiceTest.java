@@ -6,13 +6,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
-import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
  * Created by chiragtailor on 8/18/16.
@@ -51,7 +49,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void create_setsAuditingData() throws Exception {
+    public void create_callsUserRepository_setsAuditingData() throws Exception {
         userService.create(userEntity);
         verify(userRepository).save(userArgumentCaptor.capture());
         User savedUser = userArgumentCaptor.getValue();

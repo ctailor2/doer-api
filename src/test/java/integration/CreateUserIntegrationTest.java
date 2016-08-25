@@ -1,5 +1,6 @@
 package integration;
 
+import com.doerapispring.apiTokens.SessionTokenRepository;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserRepository;
 import com.doerapispring.users.UserResponseWrapper;
@@ -22,6 +23,9 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SessionTokenRepository sessionTokenRepository;
 
     private String content =
             "{\n" +
@@ -61,5 +65,13 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
         UserResponseWrapper userResponseWrapper = mapper.readValue(contentAsString, UserResponseWrapper.class);
 
         assertThat(userResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
+    }
+
+    @Test
+    public void signup_createsSessionToken_forUser() throws Exception {
+        doPost();
+
+        User user = userRepository.findByEmail("test@email.com");
+        assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
     }
 }
