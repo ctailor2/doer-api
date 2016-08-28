@@ -29,12 +29,12 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     private String content =
             "{\n" +
-            "  \"user\": {\n" +
-            "    \"email\": \"test@email.com\",\n" +
-            "    \"password\": \"password\",\n" +
-            "    \"password_confirmation\": \"password\"\n" +
-            "  }\n" +
-            "}";
+                    "  \"user\": {\n" +
+                    "    \"email\": \"test@email.com\",\n" +
+                    "    \"password\": \"password\",\n" +
+                    "    \"passwordConfirmation\": \"password\"\n" +
+                    "  }\n" +
+                    "}";
 
     private MvcResult mvcResult;
 
@@ -42,7 +42,6 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
         mvcResult = mockMvc.perform(post("/v1/users")
                 .content(content)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
                 .andReturn();
     }
 
@@ -73,5 +72,18 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
         User user = userRepository.findByEmail("test@email.com");
         assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
+    }
+
+    @Test
+    public void signup_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
+        doPost();
+
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        UserResponseWrapper userResponseWrapper = mapper.readValue(contentAsString, UserResponseWrapper.class);
+
+        assertThat(userResponseWrapper.getSessionToken().getToken()).isNotNull();
     }
 }

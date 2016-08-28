@@ -21,7 +21,7 @@ public class SessionTokenService {
         this.tokenGenerator = tokenGenerator;
     }
 
-    public void create(long userId) {
+    public SessionToken create(long userId) {
         SessionToken sessionToken = SessionToken.builder()
                 .userId(userId)
                 .token(tokenGenerator.generate())
@@ -29,6 +29,6 @@ public class SessionTokenService {
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        sessionTokenRepository.save(sessionToken);
+        return sessionTokenRepository.save(sessionToken);
     }
 }

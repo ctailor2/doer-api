@@ -11,7 +11,7 @@ import java.util.Date;
 @Builder
 @Entity
 @Table(name = "session_tokens")
-class SessionToken {
+public class SessionToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
