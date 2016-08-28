@@ -12,7 +12,7 @@ import java.util.Date;
  */
 @Service
 @Transactional
-class UserService {
+public class UserService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
@@ -22,7 +22,7 @@ class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    User create(UserEntity userEntity) {
+    public User create(UserEntity userEntity) {
         User user = User.builder()
                 .email(userEntity.getEmail())
                 .password_digest(passwordEncoder.encode(userEntity.getPassword()))

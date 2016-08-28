@@ -3,7 +3,7 @@ package integration;
 import com.doerapispring.apiTokens.SessionTokenRepository;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserRepository;
-import com.doerapispring.users.UserResponseWrapper;
+import com.doerapispring.userSessions.SignupResponseWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +13,12 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Created by chiragtailor on 8/9/16.
  */
 
-public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-
+public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
     private UserRepository userRepository;
 
@@ -39,14 +37,14 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
     private MvcResult mvcResult;
 
     private void doPost() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/users")
+        mvcResult = mockMvc.perform(post("/v1/signup")
                 .content(content)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
     }
 
     @Test
-    public void signup_createsUser_withSignupFields() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_createsUser_withSignupFields() throws Exception {
         doPost();
 
         User user = userRepository.findByEmail("test@email.com");
@@ -54,20 +52,20 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
     }
 
     @Test
-    public void signup_respondsWithUserEntity_withSignupFields() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_respondsWithUserEntity_withSignupFields() throws Exception {
         doPost();
 
         MockHttpServletResponse response = mvcResult.getResponse();
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        UserResponseWrapper userResponseWrapper = mapper.readValue(contentAsString, UserResponseWrapper.class);
+        SignupResponseWrapper signupResponseWrapper = mapper.readValue(contentAsString, SignupResponseWrapper.class);
 
-        assertThat(userResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
+        assertThat(signupResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
     }
 
     @Test
-    public void signup_createsSessionToken_forUser() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_createsSessionToken_forUser() throws Exception {
         doPost();
 
         User user = userRepository.findByEmail("test@email.com");
@@ -75,15 +73,15 @@ public class CreateUserIntegrationTest extends AbstractWebAppJUnit4SpringContext
     }
 
     @Test
-    public void signup_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
         doPost();
 
         MockHttpServletResponse response = mvcResult.getResponse();
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        UserResponseWrapper userResponseWrapper = mapper.readValue(contentAsString, UserResponseWrapper.class);
+        SignupResponseWrapper signupResponseWrapper = mapper.readValue(contentAsString, SignupResponseWrapper.class);
 
-        assertThat(userResponseWrapper.getSessionToken().getToken()).isNotNull();
+        assertThat(signupResponseWrapper.getSessionToken().getToken()).isNotNull();
     }
 }

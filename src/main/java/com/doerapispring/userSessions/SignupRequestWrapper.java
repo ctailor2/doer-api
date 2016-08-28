@@ -1,6 +1,6 @@
-package com.doerapispring.users;
+package com.doerapispring.userSessions;
 
-import com.doerapispring.apiTokens.SessionTokenEntity;
+import com.doerapispring.users.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class UserResponseWrapper {
+public class SignupRequestWrapper {
     private UserEntity user;
-    private SessionTokenEntity sessionToken;
 }

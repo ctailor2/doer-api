@@ -1,8 +1,9 @@
-package com.doerapispring.users;
+package com.doerapispring.userSessions;
 
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenEntity;
 import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.users.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,24 +14,24 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
-class UsersController {
+class UserSessionsController {
     private UserService userService;
     private SessionTokenService sessionTokenService;
 
     @Autowired
-    UsersController(UserService userService, SessionTokenService sessionTokenService) {
+    UserSessionsController(UserService userService, SessionTokenService sessionTokenService) {
         this.userService = userService;
         this.sessionTokenService = sessionTokenService;
     }
 
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
+    @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    UserResponseWrapper create(@RequestBody UserRequestWrapper userRequestWrapper) {
-        UserEntity userEntity = userRequestWrapper.getUser();
+    SignupResponseWrapper create(@RequestBody SignupRequestWrapper signupRequestWrapper) {
+        UserEntity userEntity = signupRequestWrapper.getUser();
         User savedUser = userService.create(userEntity);
         SessionToken savedSessionToken = sessionTokenService.create(savedUser.id);
-        return UserResponseWrapper.builder()
+        return SignupResponseWrapper.builder()
                 .user(UserEntity.builder().email(savedUser.email).build())
                 .sessionToken(SessionTokenEntity.builder().token(savedSessionToken.token).build())
                 .build();
