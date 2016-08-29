@@ -25,10 +25,14 @@ public class UserService {
     public User create(UserEntity userEntity) {
         User user = User.builder()
                 .email(userEntity.getEmail())
-                .password_digest(passwordEncoder.encode(userEntity.getPassword()))
+                .passwordDigest(passwordEncoder.encode(userEntity.getPassword()))
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
         return userRepository.save(user);
+    }
+
+    public User get(String email) {
+        return userRepository.findByEmail(email);
     }
 }

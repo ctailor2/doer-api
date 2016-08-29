@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
@@ -37,7 +38,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     }
 
     @Test
-    public void login_whenUserWithEmailExists_correctPassword_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
+    public void login_whenUserWithEmailExists_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
         userService.create(UserEntity.builder()
                 .email("test@email.com")
                 .password("password")
@@ -49,5 +50,8 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
         ObjectMapper mapper = new ObjectMapper();
         UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
+
+        assertThat(userSessionResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
+        assertThat(userSessionResponseWrapper.getSessionToken().getToken()).isNotEmpty();
     }
 }

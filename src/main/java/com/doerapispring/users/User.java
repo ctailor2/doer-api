@@ -20,8 +20,8 @@ public class User {
     @Column(name = "email", unique = true)
     public String email;
 
-    @Column(name = "password_digest")
-    public String password_digest;
+    @Column(name = "passwordDigest")
+    public String passwordDigest;
 
     @Column(name = "created_at")
     public Date createdAt;
