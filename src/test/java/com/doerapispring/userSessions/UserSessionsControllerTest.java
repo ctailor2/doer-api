@@ -28,7 +28,7 @@ public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;
 
     private UserEntity userEntity = UserEntity.builder().build();
-    private SignupRequestWrapper signupRequestWrapper = SignupRequestWrapper.builder().user(userEntity).build();
+    private UserSessionRequestWrapper userSessionRequestWrapper = UserSessionRequestWrapper.builder().user(userEntity).build();
     private User savedUser = User.builder().id(1L).email("test@email.com").build();
     private SessionToken savedSessionToken = SessionToken.builder().build();
 
@@ -61,13 +61,13 @@ public class UserSessionsControllerTest {
 
     @Test
     public void create_callsUserService_create_withUserEntity() throws Exception {
-        userSessionsController.create(signupRequestWrapper);
+        userSessionsController.create(userSessionRequestWrapper);
         verify(userService).create(userEntity);
     }
 
     @Test
     public void create_callsSessionTokenService_create_withSavedUserId() throws Exception {
-        userSessionsController.create(signupRequestWrapper);
+        userSessionsController.create(userSessionRequestWrapper);
         verify(sessionTokenService).create(1L);
     }
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class SignupResponseWrapper {
+public class UserSessionResponseWrapper {
     private UserEntity user;
     private SessionTokenEntity sessionToken;
 }

@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class SignupRequestWrapper {
+class UserSessionRequestWrapper {
     private UserEntity user;
 }

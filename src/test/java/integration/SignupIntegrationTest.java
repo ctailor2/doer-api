@@ -3,7 +3,7 @@ package integration;
 import com.doerapispring.apiTokens.SessionTokenRepository;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserRepository;
-import com.doerapispring.userSessions.SignupResponseWrapper;
+import com.doerapispring.userSessions.UserSessionResponseWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +52,14 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     }
 
     @Test
+    public void signup_whenUserWithEmailDoesNotExist_createsSessionToken_forUser() throws Exception {
+        doPost();
+
+        User user = userRepository.findByEmail("test@email.com");
+        assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
+    }
+
+    @Test
     public void signup_whenUserWithEmailDoesNotExist_respondsWithUserEntity_withSignupFields() throws Exception {
         doPost();
 
@@ -59,17 +67,9 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        SignupResponseWrapper signupResponseWrapper = mapper.readValue(contentAsString, SignupResponseWrapper.class);
+        UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
 
-        assertThat(signupResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
-    }
-
-    @Test
-    public void signup_whenUserWithEmailDoesNotExist_createsSessionToken_forUser() throws Exception {
-        doPost();
-
-        User user = userRepository.findByEmail("test@email.com");
-        assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
+        assertThat(userSessionResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
     }
 
     @Test
@@ -80,8 +80,8 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        SignupResponseWrapper signupResponseWrapper = mapper.readValue(contentAsString, SignupResponseWrapper.class);
+        UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
 
-        assertThat(signupResponseWrapper.getSessionToken().getToken()).isNotNull();
+        assertThat(userSessionResponseWrapper.getSessionToken().getToken()).isNotEmpty();
     }
 }

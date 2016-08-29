@@ -27,11 +27,11 @@ class UserSessionsController {
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    SignupResponseWrapper create(@RequestBody SignupRequestWrapper signupRequestWrapper) {
-        UserEntity userEntity = signupRequestWrapper.getUser();
+    UserSessionResponseWrapper create(@RequestBody UserSessionRequestWrapper userSessionRequestWrapper) {
+        UserEntity userEntity = userSessionRequestWrapper.getUser();
         User savedUser = userService.create(userEntity);
         SessionToken savedSessionToken = sessionTokenService.create(savedUser.id);
-        return SignupResponseWrapper.builder()
+        return UserSessionResponseWrapper.builder()
                 .user(UserEntity.builder().email(savedUser.email).build())
                 .sessionToken(SessionTokenEntity.builder().token(savedSessionToken.token).build())
                 .build();
