@@ -1,5 +1,6 @@
 package com.doerapispring.users;
 
+import com.doerapispring.apiTokens.SessionTokenEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,5 @@ public class UserEntity {
     private String email;
     private String password;
     private String passwordConfirmation;
+    private SessionTokenEntity sessionTokenEntity;
 }

@@ -1,6 +1,5 @@
 package integration;
 
-import com.doerapispring.userSessions.UserSessionResponseWrapper;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,10 +20,8 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     private MvcResult mvcResult;
     private final String content =
             "{\n" +
-                    "  \"user\": {\n" +
-                    "    \"email\": \"test@email.com\",\n" +
-                    "    \"password\": \"password\"\n" +
-                    "  }\n" +
+                    "  \"email\": \"test@email.com\",\n" +
+                    "  \"password\": \"password\"\n" +
                     "}";
 
     @Autowired
@@ -49,9 +46,9 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
+        UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
 
-        assertThat(userSessionResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
-        assertThat(userSessionResponseWrapper.getSessionToken().getToken()).isNotEmpty();
+        assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
+        assertThat(userEntity.getSessionTokenEntity().getToken()).isNotEmpty();
     }
 }

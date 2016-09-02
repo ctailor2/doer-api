@@ -2,8 +2,9 @@ package integration;
 
 import com.doerapispring.apiTokens.SessionTokenRepository;
 import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
-import com.doerapispring.userSessions.UserSessionResponseWrapper;
+import com.doerapispring.users.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +26,14 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     @Autowired
     private SessionTokenRepository sessionTokenRepository;
 
+    @Autowired
+    private UserService userService;
+
     private String content =
             "{\n" +
-                    "  \"user\": {\n" +
-                    "    \"email\": \"test@email.com\",\n" +
-                    "    \"password\": \"password\",\n" +
-                    "    \"passwordConfirmation\": \"password\"\n" +
-                    "  }\n" +
+                    "  \"email\": \"test@email.com\",\n" +
+                    "  \"password\": \"password\",\n" +
+                    "  \"passwordConfirmation\": \"password\"\n" +
                     "}";
 
     private MvcResult mvcResult;
@@ -44,44 +46,20 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     }
 
     @Test
-    public void signup_whenUserWithEmailDoesNotExist_createsUser_withSignupFields() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_createsUser_createsSessionToken_respondsWithBoth() throws Exception {
         doPost();
 
         User user = userRepository.findByEmail("test@email.com");
+
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
+
         assertThat(user).isNotNull();
-    }
-
-    @Test
-    public void signup_whenUserWithEmailDoesNotExist_createsSessionToken_forUser() throws Exception {
-        doPost();
-
-        User user = userRepository.findByEmail("test@email.com");
         assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
-    }
-
-    @Test
-    public void signup_whenUserWithEmailDoesNotExist_respondsWithUserEntity_withSignupFields() throws Exception {
-        doPost();
-
-        MockHttpServletResponse response = mvcResult.getResponse();
-        String contentAsString = response.getContentAsString();
-
-        ObjectMapper mapper = new ObjectMapper();
-        UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
-
-        assertThat(userSessionResponseWrapper.getUser().getEmail()).isEqualTo("test@email.com");
-    }
-
-    @Test
-    public void signup_whenUserWithEmailDoesNotExist_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
-        doPost();
-
-        MockHttpServletResponse response = mvcResult.getResponse();
-        String contentAsString = response.getContentAsString();
-
-        ObjectMapper mapper = new ObjectMapper();
-        UserSessionResponseWrapper userSessionResponseWrapper = mapper.readValue(contentAsString, UserSessionResponseWrapper.class);
-
-        assertThat(userSessionResponseWrapper.getSessionToken().getToken()).isNotEmpty();
+        assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
+        assertThat(userEntity.getSessionTokenEntity().getToken()).isNotEmpty();
     }
 }

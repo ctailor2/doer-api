@@ -18,7 +18,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,8 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;
 
-    private UserEntity userEntity = UserEntity.builder().email("test@email.com").password("password").build();
-    private UserSessionRequestWrapper userSessionRequestWrapper = UserSessionRequestWrapper.builder().user(userEntity).build();
+    private UserEntity userEntity = UserEntity.builder().build();
     private User savedUser = User.builder().id(1L).email("test@email.com").build();
     private SessionToken savedSessionToken = SessionToken.builder().build();
 
@@ -43,6 +41,9 @@ public class UserSessionsControllerTest {
     @Mock
     private AuthenticationService authenticationService;
 
+    @Mock
+    private UserSessionsService userSessionsService;
+
     private MockMvc mockMvc;
 
     @Before
@@ -50,7 +51,7 @@ public class UserSessionsControllerTest {
         doReturn(savedUser).when(userService).create(any(UserEntity.class));
         doReturn(savedUser).when(userService).get(anyString());
         doReturn(savedSessionToken).when(sessionTokenService).create(savedUser.id);
-        userSessionsController = new UserSessionsController(userService, sessionTokenService, authenticationService);
+        userSessionsController = new UserSessionsController(userSessionsService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userSessionsController)
                 .build();
@@ -66,15 +67,9 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void signup_callsUserService_create_withUserEntity() throws Exception {
-        userSessionsController.signup(userSessionRequestWrapper);
-        verify(userService).create(userEntity);
-    }
-
-    @Test
-    public void signup_callsSessionTokenService_create_withSavedUserId() throws Exception {
-        userSessionsController.signup(userSessionRequestWrapper);
-        verify(sessionTokenService).create(1L);
+    public void signup_callsUserSessionsService() throws Exception {
+        userSessionsController.signup(userEntity);
+        verify(userSessionsService).signup(userEntity);
     }
 
     @Test
@@ -87,28 +82,8 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void login_callsUserService_get_withEmail() throws Exception {
-        userSessionsController.login(userSessionRequestWrapper);
-        verify(userService).get(userEntity.getEmail());
-    }
-
-    @Test
-    public void login_callsAuthenticationService_authenticate_withPassword_andSavedUserPasswordDigest() throws Exception {
-        userSessionsController.login(userSessionRequestWrapper);
-        verify(authenticationService).authenticate(userEntity.getPassword(), savedUser.passwordDigest);
-    }
-
-    @Test
-    public void login_callsSessionTokenService_create_withSavedUserId_whenAuthenticationSuccessful() throws Exception {
-        doReturn(true).when(authenticationService).authenticate(anyString(), anyString());
-        userSessionsController.login(userSessionRequestWrapper);
-        verify(sessionTokenService).create(1L);
-    }
-
-    @Test
-    public void login_doesNotCallSessionTokenService_whenAuthenticationFails() throws Exception {
-        doReturn(false).when(authenticationService).authenticate(anyString(), anyString());
-        userSessionsController.login(userSessionRequestWrapper);
-        verifyZeroInteractions(sessionTokenService);
+    public void login_callsuserSessionsService() throws Exception {
+        userSessionsController.login(userEntity);
+        verify(userSessionsService).login(userEntity);
     }
 }
