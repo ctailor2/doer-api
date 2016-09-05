@@ -1,7 +1,7 @@
 package integration;
 
+import com.doerapispring.userSessions.UserSessionsService;
 import com.doerapispring.users.UserEntity;
-import com.doerapispring.users.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
                     "}";
 
     @Autowired
-    private UserService userService;
+    private UserSessionsService userSessionsService;
 
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/login")
@@ -35,11 +35,13 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     }
 
     @Test
-    public void login_whenUserWithEmailExists_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
-        userService.create(UserEntity.builder()
+    public void login_whenUserWithEmailRegistered_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
+        UserEntity registeredUserEntity = UserEntity.builder()
                 .email("test@email.com")
                 .password("password")
-                .build());
+                .build();
+        userSessionsService.signup(registeredUserEntity);
+
         doPost();
 
         MockHttpServletResponse response = mvcResult.getResponse();

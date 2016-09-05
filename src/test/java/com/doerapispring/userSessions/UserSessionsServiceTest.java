@@ -71,9 +71,8 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void login_callsUserService_callsAuthenticationService() throws Exception {
+    public void login_callsUserService_whenUserWithEmailExists_callsAuthenticationService() throws Exception {
         doReturn(user).when(userService).get("test@email.com");
-        doReturn(sessionToken).when(sessionTokenService).create(1L);
 
         userSessionsService.login(userEntity);
 
@@ -82,13 +81,41 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void login_callsSessionTokenService_whenAuthenticationSuccessful_returnsUser() throws Exception {
+    public void login_callsUserService_whenUserWithEmailDoesNotExist_doesNotCallAuthenticationService_returnsNull() throws Exception {
+        doReturn(null).when(userService).get("test@email.com");
+
+        UserEntity resultUserEntity = userSessionsService.login(userEntity);
+
+        verify(userService).get("test@email.com");
+        verifyZeroInteractions(authenticationService);
+
+        assertThat(resultUserEntity).isNull();
+    }
+
+    @Test
+    public void login_whenAuthenticationSuccessful_getsTokenFromSessionTokenService_returnsUser() throws Exception {
         doReturn(user).when(userService).get("test@email.com");
         doReturn(true).when(authenticationService).authenticate(anyString(), anyString());
+        doReturn(sessionToken).when(sessionTokenService).get(1L);
+
+        UserEntity resultUserEntity = userSessionsService.login(userEntity);
+
+        verify(sessionTokenService).get(1L);
+
+        assertThat(resultUserEntity.getEmail()).isEqualTo("test@email.com");
+        assertThat(resultUserEntity.getSessionTokenEntity().getToken()).isEqualTo("superSecureToken");
+    }
+
+    @Test
+    public void login_whenAuthenticationSuccessful_whenTokenDoesNotExist_createsTokenWithSessionTokenService_returnsUser() throws Exception {
+        doReturn(user).when(userService).get("test@email.com");
+        doReturn(true).when(authenticationService).authenticate(anyString(), anyString());
+        doReturn(null).when(sessionTokenService).get(1L);
         doReturn(sessionToken).when(sessionTokenService).create(1L);
 
         UserEntity resultUserEntity = userSessionsService.login(userEntity);
 
+        verify(sessionTokenService).get(1L);
         verify(sessionTokenService).create(1L);
 
         assertThat(resultUserEntity.getEmail()).isEqualTo("test@email.com");
@@ -96,7 +123,7 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void login_doesNotCallSessionTokenService_whenAuthenticationFails_returnsNull() throws Exception {
+    public void login_whenAuthenticationFails_doesNotCallSessionTokenService_returnsNull() throws Exception {
         doReturn(user).when(userService).get("test@email.com");
         doReturn(false).when(authenticationService).authenticate(anyString(), anyString());
 

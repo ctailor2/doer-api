@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * Created by chiragtailor on 9/1/16.
  */
 @Service
-class UserSessionsService {
+public class UserSessionsService {
     private final UserService userService;
     private final SessionTokenService sessionTokenService;
     private final AuthenticationService authenticationService;
@@ -25,7 +25,7 @@ class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    UserEntity signup(UserEntity userEntity) {
+    public UserEntity signup(UserEntity userEntity) {
         User savedUser = userService.create(userEntity);
         SessionToken savedSessionToken = sessionTokenService.create(savedUser.id);
 
@@ -38,11 +38,13 @@ class UserSessionsService {
                 .build();
     }
 
-    UserEntity login(UserEntity userEntity) {
+    public UserEntity login(UserEntity userEntity) {
         User savedUser = userService.get(userEntity.getEmail());
+        if (savedUser == null) return null;
         boolean authResult = authenticationService.authenticate(userEntity.getPassword(), savedUser.passwordDigest);
         if (authResult) {
-            SessionToken savedSessionToken = sessionTokenService.create(savedUser.id);
+            SessionToken savedSessionToken = sessionTokenService.get(savedUser.id);
+            if (savedSessionToken == null) savedSessionToken = sessionTokenService.create(savedUser.id);
             SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                     .token(savedSessionToken.token)
                     .build();

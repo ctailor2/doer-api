@@ -7,6 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Date;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -50,7 +52,7 @@ public class SessionTokenServiceTest {
 
         verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
         SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(savedSessionToken.expiresAt).isToday();
+        assertThat(savedSessionToken.expiresAt).isInTheFuture();
     }
 
     @Test
@@ -61,5 +63,12 @@ public class SessionTokenServiceTest {
         SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
         assertThat(savedSessionToken.createdAt).isToday();
         assertThat(savedSessionToken.updatedAt).isToday();
+    }
+
+    @Test
+    public void getActive_callsSessionTokenRepository() throws Exception {
+        sessionTokenService.get(1L);
+
+        verify(sessionTokenRepository).findFirstByUserIdAndExpiresAtAfter(1L, new Date());
     }
 }

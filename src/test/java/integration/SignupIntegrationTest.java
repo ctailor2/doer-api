@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Date;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -47,6 +49,8 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
 
     @Test
     public void signup_whenUserWithEmailDoesNotExist_createsUser_createsSessionToken_respondsWithBoth() throws Exception {
+        Date date = new Date();
+
         doPost();
 
         User user = userRepository.findByEmail("test@email.com");
@@ -58,7 +62,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
 
         assertThat(user).isNotNull();
-        assertThat(sessionTokenRepository.findByUserId(user.id).size()).isEqualTo(1);
+        assertThat(sessionTokenRepository.findFirstByUserIdAndExpiresAtAfter(user.id, date)).isNotNull();
         assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
         assertThat(userEntity.getSessionTokenEntity().getToken()).isNotEmpty();
     }
