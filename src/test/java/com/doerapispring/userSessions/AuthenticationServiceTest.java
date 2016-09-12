@@ -1,5 +1,7 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.apiTokens.SessionToken;
+import com.doerapispring.apiTokens.SessionTokenService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,24 +24,47 @@ public class AuthenticationServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private SessionTokenService sessionTokenService;
+
     @Before
     public void setUp() throws Exception {
-        authenticationService = new AuthenticationService(passwordEncoder);
+        authenticationService = new AuthenticationService(passwordEncoder, sessionTokenService);
     }
 
     @Test
-    public void authenticate_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
+    public void authenticatePassword_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
         doReturn(false).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticate("cool", "beans");
+        boolean result = authenticationService.authenticatePassword("cool", "beans");
         verify(passwordEncoder).matches("cool", "beans");
         assertThat(result).isEqualTo(false);
     }
 
     @Test
-    public void authenticate_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
+    public void authenticatePassword_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
         doReturn(true).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticate("cool", "beans");
+        boolean result = authenticationService.authenticatePassword("cool", "beans");
         verify(passwordEncoder).matches("cool", "beans");
         assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void authenticateSessionToken_callsSessionTokenService_returnsTrue_whenSessionTokenFound() throws Exception {
+        doReturn(SessionToken.builder().build()).when(sessionTokenService).getByToken("token");
+
+        boolean result = authenticationService.authenticateSessionToken("token");
+
+        verify(sessionTokenService).getByToken("token");
+        assertThat(result).isEqualTo(true);
+    }
+
+    @Test
+    public void authenticateSessionToken_callsSessionTokenService_returnsFalse_whenSessionTokenNotFound() throws Exception {
+        doReturn(null).when(sessionTokenService).getByToken("token");
+
+        boolean result = authenticationService.authenticateSessionToken("token");
+
+        verify(sessionTokenService).getByToken("token");
+        assertThat(result).isEqualTo(false);
     }
 }

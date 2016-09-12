@@ -67,8 +67,15 @@ public class SessionTokenServiceTest {
 
     @Test
     public void getActive_callsSessionTokenRepository() throws Exception {
-        sessionTokenService.get(1L);
+        sessionTokenService.getActive(1L);
 
         verify(sessionTokenRepository).findFirstByUserIdAndExpiresAtAfter(1L, new Date());
+    }
+
+    @Test
+    public void getByToken_callsSessionTokenRepository() throws Exception {
+        sessionTokenService.getByToken("token");
+
+        verify(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter("token", new Date());
     }
 }

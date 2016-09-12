@@ -38,7 +38,11 @@ public class SessionTokenService {
         return sessionTokenRepository.save(sessionToken);
     }
 
-    public SessionToken get(long userId) {
+    public SessionToken getActive(long userId) {
         return sessionTokenRepository.findFirstByUserIdAndExpiresAtAfter(userId, new Date());
+    }
+
+    public SessionToken getByToken(String token) {
+        return sessionTokenRepository.findFirstByTokenAndExpiresAtAfter(token, new Date());
     }
 }

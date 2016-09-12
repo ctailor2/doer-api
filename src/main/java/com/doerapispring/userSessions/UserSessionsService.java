@@ -41,9 +41,9 @@ public class UserSessionsService {
     public UserEntity login(UserEntity userEntity) {
         User savedUser = userService.get(userEntity.getEmail());
         if (savedUser == null) return null;
-        boolean authResult = authenticationService.authenticate(userEntity.getPassword(), savedUser.passwordDigest);
+        boolean authResult = authenticationService.authenticatePassword(userEntity.getPassword(), savedUser.passwordDigest);
         if (authResult) {
-            SessionToken savedSessionToken = sessionTokenService.get(savedUser.id);
+            SessionToken savedSessionToken = sessionTokenService.getActive(savedUser.id);
             if (savedSessionToken == null) savedSessionToken = sessionTokenService.create(savedUser.id);
             SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                     .token(savedSessionToken.token)

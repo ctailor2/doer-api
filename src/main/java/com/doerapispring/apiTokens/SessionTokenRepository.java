@@ -9,4 +9,6 @@ import java.util.Date;
  */
 public interface SessionTokenRepository extends JpaRepository<SessionToken, Long> {
     SessionToken findFirstByUserIdAndExpiresAtAfter(Long userId, Date date);
+
+    SessionToken findFirstByTokenAndExpiresAtAfter(String token, Date date);
 }

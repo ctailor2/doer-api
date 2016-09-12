@@ -1,6 +1,8 @@
 package com.doerapispring.apiTokens;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,6 +11,8 @@ import java.util.Date;
  * Created by chiragtailor on 8/22/16.
  */
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "session_tokens")
 public class SessionToken {
