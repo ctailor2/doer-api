@@ -33,6 +33,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
+                .csrf().disable()
                 .addFilterBefore(new WebSecurityCorsFilter(), ChannelProcessingFilter.class);
     }
 }

@@ -67,7 +67,7 @@ public class UserSessionsServiceTest {
         verify(sessionTokenService).create(1L);
 
         assertThat(resultUserEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUserEntity.getSessionTokenEntity().getToken()).isEqualTo("superSecureToken");
+        assertThat(resultUserEntity.getSessionToken().getToken()).isEqualTo("superSecureToken");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class UserSessionsServiceTest {
         verify(sessionTokenService).getActive(1L);
 
         assertThat(resultUserEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUserEntity.getSessionTokenEntity().getToken()).isEqualTo("superSecureToken");
+        assertThat(resultUserEntity.getSessionToken().getToken()).isEqualTo("superSecureToken");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class UserSessionsServiceTest {
         verify(sessionTokenService).create(1L);
 
         assertThat(resultUserEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUserEntity.getSessionTokenEntity().getToken()).isEqualTo("superSecureToken");
+        assertThat(resultUserEntity.getSessionToken().getToken()).isEqualTo("superSecureToken");
     }
 
     @Test

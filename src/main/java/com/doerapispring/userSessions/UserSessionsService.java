@@ -34,7 +34,7 @@ public class UserSessionsService {
                 .build();
         return UserEntity.builder()
                 .email(savedUser.email)
-                .sessionTokenEntity(sessionTokenEntity)
+                .sessionToken(sessionTokenEntity)
                 .build();
     }
 
@@ -50,7 +50,7 @@ public class UserSessionsService {
                     .build();
             return UserEntity.builder()
                     .email(savedUser.email)
-                    .sessionTokenEntity(sessionTokenEntity)
+                    .sessionToken(sessionTokenEntity)
                     .build();
         }
         return null;

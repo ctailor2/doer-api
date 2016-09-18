@@ -64,6 +64,6 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         assertThat(user).isNotNull();
         assertThat(sessionTokenRepository.findFirstByUserIdAndExpiresAtAfter(user.id, date)).isNotNull();
         assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(userEntity.getSessionTokenEntity().getToken()).isNotEmpty();
+        assertThat(userEntity.getSessionToken().getToken()).isNotEmpty();
     }
 }

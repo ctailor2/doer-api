@@ -1,6 +1,8 @@
 package com.doerapispring.users;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,6 +11,8 @@ import java.util.Date;
  * Created by chiragtailor on 8/9/16.
  */
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {

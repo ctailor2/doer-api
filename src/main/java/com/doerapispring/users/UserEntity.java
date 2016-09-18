@@ -17,5 +17,5 @@ public class UserEntity {
     private String email;
     private String password;
     private String passwordConfirmation;
-    private SessionTokenEntity sessionTokenEntity;
+    private SessionTokenEntity sessionToken;
 }

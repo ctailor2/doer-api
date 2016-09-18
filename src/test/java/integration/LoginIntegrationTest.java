@@ -51,6 +51,6 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
 
         assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(userEntity.getSessionTokenEntity().getToken()).isNotEmpty();
+        assertThat(userEntity.getSessionToken().getToken()).isNotEmpty();
     }
 }
