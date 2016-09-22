@@ -55,4 +55,8 @@ public class UserSessionsService {
         }
         return null;
     }
+
+    public void logout(String token) {
+        sessionTokenService.expire(token);
+    }
 }

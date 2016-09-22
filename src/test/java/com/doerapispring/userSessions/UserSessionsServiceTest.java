@@ -133,4 +133,11 @@ public class UserSessionsServiceTest {
 
         assertThat(resultUserEntity).isNull();
     }
+
+    @Test
+    public void logout_callsSessionTokenService_expiresToken() throws Exception {
+        userSessionsService.logout("tokenz");
+
+        verify(sessionTokenService).expire("tokenz");
+    }
 }

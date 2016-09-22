@@ -45,4 +45,10 @@ public class SessionTokenService {
     public SessionToken getByToken(String token) {
         return sessionTokenRepository.findFirstByTokenAndExpiresAtAfter(token, new Date());
     }
+
+    public void expire(String token) {
+        SessionToken sessionToken = getByToken(token);
+        sessionToken.expiresAt = new Date();
+        sessionTokenRepository.save(sessionToken);
+    }
 }

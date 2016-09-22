@@ -82,8 +82,21 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void login_callsuserSessionsService() throws Exception {
+    public void login_callsUserSessionsService() throws Exception {
         userSessionsController.login(userEntity);
         verify(userSessionsService).login(userEntity);
+    }
+
+    @Test
+    public void logout_mapping() throws Exception {
+        mockMvc.perform(post("/v1/logout")
+                .header("Session-Token", "tokenz"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void logout_callsUserSessionsService() throws Exception {
+        userSessionsController.logout("tokenz");
+        verify(userSessionsService).logout("tokenz");
     }
 }

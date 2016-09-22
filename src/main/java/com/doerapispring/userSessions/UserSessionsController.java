@@ -32,4 +32,10 @@ class UserSessionsController {
     UserEntity login(@RequestBody UserEntity userEntity) {
         return userSessionsService.login(userEntity);
     }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @ResponseStatus(code = HttpStatus.OK)
+    void logout(@RequestHeader(value = "Session-Token") String token) {
+        userSessionsService.logout(token);
+    }
 }

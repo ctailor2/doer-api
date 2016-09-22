@@ -10,6 +10,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Date;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -77,5 +79,18 @@ public class SessionTokenServiceTest {
         sessionTokenService.getByToken("token");
 
         verify(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter("token", new Date());
+    }
+
+    @Test
+    public void expire_callsSessionTokenRepository_whenTokenExists_setsExpiredAt() throws Exception {
+        SessionToken sessionToken = SessionToken.builder().build();
+        doReturn(sessionToken).when(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter(anyString(), any(Date.class));
+
+        sessionTokenService.expire("tokenz");
+
+        verify(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter(anyString(), any(Date.class));
+        verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
+        SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
+        assertThat(savedSessionToken.expiresAt).isToday();
     }
 }
