@@ -12,8 +12,7 @@ import java.util.Date;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by chiragtailor on 8/25/16.
@@ -92,5 +91,15 @@ public class SessionTokenServiceTest {
         verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
         SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
         assertThat(savedSessionToken.expiresAt).isToday();
+    }
+
+    @Test
+    public void expire_callsSessionTokenRepository_whenTokenDoesNotExist_doesNothing() throws Exception {
+        doReturn(null).when(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter(anyString(), any(Date.class));
+
+        sessionTokenService.expire("tokenz");
+
+        verify(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter(anyString(), any(Date.class));
+        verifyNoMoreInteractions(sessionTokenRepository);
     }
 }

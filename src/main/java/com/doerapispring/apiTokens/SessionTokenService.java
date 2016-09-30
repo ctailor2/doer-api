@@ -48,7 +48,9 @@ public class SessionTokenService {
 
     public void expire(String token) {
         SessionToken sessionToken = getByToken(token);
-        sessionToken.expiresAt = new Date();
-        sessionTokenRepository.save(sessionToken);
+        if (sessionToken != null) {
+            sessionToken.expiresAt = new Date();
+            sessionTokenRepository.save(sessionToken);
+        }
     }
 }
