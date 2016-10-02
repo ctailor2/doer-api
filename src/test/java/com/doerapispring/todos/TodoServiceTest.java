@@ -2,6 +2,7 @@ package com.doerapispring.todos;
 
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.users.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,7 +43,7 @@ public class TodoServiceTest {
     @Test
     public void get_callsSessionTokenRepository_whenTokenExists_callsTodoRepository_returnsTodos() throws Exception {
         SessionToken sessionToken = SessionToken.builder()
-                .userId(123L)
+                .user(User.builder().id(123L).build())
                 .token("tokenz")
                 .build();
         List<Todo> todos = Arrays.asList(Todo.builder().task("clean the fridge").build());
@@ -70,8 +70,9 @@ public class TodoServiceTest {
 
     @Test
     public void create_callsSessionTokenRepository_whenTokenExists_callsTodoRepository_savesTodoForUser_returnsTodoEntity() throws Exception {
+        User user = User.builder().build();
         SessionToken sessionToken = SessionToken.builder()
-                .userId(123L)
+                .user(user)
                 .token("tokenz")
                 .build();
 
@@ -82,11 +83,11 @@ public class TodoServiceTest {
         verify(sessionTokenService).getByToken("tokenz");
         verify(todoRepository).save(todoArgumentCaptor.capture());
         Todo savedTodo = todoArgumentCaptor.getValue();
-        assertThat(savedTodo.userId).isEqualTo(123L);
+        assertThat(savedTodo.user).isEqualTo(user);
         assertThat(savedTodo.task).isEqualTo("reconfigure things");
         assertThat(savedTodo.createdAt).isToday();
         assertThat(savedTodo.updatedAt).isToday();
-        assertEquals(todoEntity, returnedTodoEntity);
+        assertThat(returnedTodoEntity).isEqualTo(todoEntity);
     }
 
     @Test

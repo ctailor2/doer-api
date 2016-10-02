@@ -1,7 +1,7 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.users.User;
+import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,21 +11,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthenticationService {
-    private SessionTokenService sessionTokenService;
+    private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthenticationService(PasswordEncoder passwordEncoder, SessionTokenService sessionTokenService) {
+    public AuthenticationService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
         this.passwordEncoder = passwordEncoder;
-        this.sessionTokenService = sessionTokenService;
+        this.userRepository = userRepository;
     }
 
-    public boolean authenticatePassword(String password, String passwordDigest) {
-        return passwordEncoder.matches(password, passwordDigest);
-    }
-
-    public boolean authenticateSessionToken(String token) {
-        SessionToken sessionToken = sessionTokenService.getByToken(token);
-        return sessionToken != null;
+    public boolean authenticate(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) return false;
+        return passwordEncoder.matches(password, user.passwordDigest);
     }
 }

@@ -1,7 +1,7 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.users.User;
+import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,50 +21,47 @@ import static org.mockito.Mockito.verify;
 public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    private User user;
 
     @Mock
-    private SessionTokenService sessionTokenService;
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserRepository userRepository;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = new AuthenticationService(passwordEncoder, sessionTokenService);
+        authenticationService = new AuthenticationService(passwordEncoder, userRepository);
+        user = User.builder()
+                .email("wow@email.com")
+                .passwordDigest("beans")
+                .build();
     }
 
     @Test
-    public void authenticatePassword_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
+    public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
+        doReturn(user).when(userRepository).findByEmail("wow@email.com");
         doReturn(false).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticatePassword("cool", "beans");
+        boolean result = authenticationService.authenticate("wow@email.com", "cool");
+        verify(userRepository).findByEmail("wow@email.com");
         verify(passwordEncoder).matches("cool", "beans");
         assertThat(result).isEqualTo(false);
     }
 
     @Test
-    public void authenticatePassword_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
+    public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
+        doReturn(user).when(userRepository).findByEmail("wow@email.com");
         doReturn(true).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticatePassword("cool", "beans");
+        boolean result = authenticationService.authenticate("wow@email.com", "cool");
+        verify(userRepository).findByEmail("wow@email.com");
         verify(passwordEncoder).matches("cool", "beans");
         assertThat(result).isEqualTo(true);
     }
 
     @Test
-    public void authenticateSessionToken_callsSessionTokenService_returnsTrue_whenSessionTokenFound() throws Exception {
-        doReturn(SessionToken.builder().build()).when(sessionTokenService).getByToken("token");
-
-        boolean result = authenticationService.authenticateSessionToken("token");
-
-        verify(sessionTokenService).getByToken("token");
-        assertThat(result).isEqualTo(true);
-    }
-
-    @Test
-    public void authenticateSessionToken_callsSessionTokenService_returnsFalse_whenSessionTokenNotFound() throws Exception {
-        doReturn(null).when(sessionTokenService).getByToken("token");
-
-        boolean result = authenticationService.authenticateSessionToken("token");
-
-        verify(sessionTokenService).getByToken("token");
+    public void authenticate_callsUserRepository_whenUserDoesNotExist_returnsFalse() throws Exception {
+        doReturn(null).when(userRepository).findByEmail("wow@email.com");
+        boolean result = authenticationService.authenticate("wow@email.com", "cool");
+        verify(userRepository).findByEmail("wow@email.com");
         assertThat(result).isEqualTo(false);
     }
 }

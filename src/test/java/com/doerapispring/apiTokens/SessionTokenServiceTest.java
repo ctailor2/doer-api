@@ -1,5 +1,7 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.users.User;
+import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,50 +29,56 @@ public class SessionTokenServiceTest {
     @Mock
     private TokenGenerator tokenGenerator;
 
+    @Mock
+    private UserRepository userRepository;
+
     private ArgumentCaptor<SessionToken> sessionTokenArgumentCaptor = ArgumentCaptor.forClass(SessionToken.class);
 
     @Before
     public void setUp() throws Exception {
-        sessionTokenService = new SessionTokenService(sessionTokenRepository, tokenGenerator);
+        sessionTokenService = new SessionTokenService(sessionTokenRepository, tokenGenerator, userRepository);
     }
 
     @Test
-    public void create_callsTokenGenerator_callsSessionTokenRepository_setsFields() throws Exception {
+    public void create_callsUserRepository_whenUserExists_callsTokenGenerator_callsSessionTokenRepository_setsFields_returnsSessionTokenEntity() throws Exception {
+        User user = User.builder().build();
+        doReturn(user).when(userRepository).findByEmail("email");
         doReturn("sorandomtoken").when(tokenGenerator).generate();
 
-        sessionTokenService.create(1L);
+        SessionTokenEntity sessionTokenEntity = sessionTokenService.create("email");
 
+        verify(userRepository).findByEmail("email");
         verify(tokenGenerator).generate();
         verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
         SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(savedSessionToken.userId).isEqualTo(1L);
+        assertThat(savedSessionToken.user).isEqualTo(user);
         assertThat(savedSessionToken.token).isEqualTo("sorandomtoken");
-    }
-
-    @Test
-    public void create_callsSessionTokenRepository_defaultsFields() throws Exception {
-        sessionTokenService.create(1L);
-
-        verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
         assertThat(savedSessionToken.expiresAt).isInTheFuture();
-    }
-
-    @Test
-    public void create_callsSessionTokenRepository_setsAuditingData() throws Exception {
-        sessionTokenService.create(1L);
-
-        verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
         assertThat(savedSessionToken.createdAt).isToday();
         assertThat(savedSessionToken.updatedAt).isToday();
+        assertThat(sessionTokenEntity.getToken()).isEqualTo("sorandomtoken");
     }
 
     @Test
-    public void getActive_callsSessionTokenRepository() throws Exception {
-        sessionTokenService.getActive(1L);
+    public void create_callsUserRepository_whenUserDoesNotExist_returnsNull() throws Exception {
+        doReturn(null).when(userRepository).findByEmail("email");
 
-        verify(sessionTokenRepository).findFirstByUserIdAndExpiresAtAfter(1L, new Date());
+        SessionTokenEntity sessionTokenEntity = sessionTokenService.create("email");
+
+        assertThat(sessionTokenEntity).isNull();
+    }
+
+    @Test
+    public void getActive_callsSessionTokenRepository_returnsSessionTokenEntity() throws Exception {
+        SessionToken sessionToken = SessionToken.builder()
+                .token("zomgsecrets")
+                .build();
+        doReturn(sessionToken).when(sessionTokenRepository).findActiveByUserEmail("coolguy@email.com");
+
+        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive("coolguy@email.com");
+
+        verify(sessionTokenRepository).findActiveByUserEmail("coolguy@email.com");
+        assertThat(sessionTokenEntity.getToken()).isEqualTo("zomgsecrets");
     }
 
     @Test

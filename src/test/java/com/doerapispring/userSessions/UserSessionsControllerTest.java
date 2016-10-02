@@ -14,9 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,9 +45,6 @@ public class UserSessionsControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        doReturn(savedUser).when(userService).create(any(UserEntity.class));
-        doReturn(savedUser).when(userService).get(anyString());
-        doReturn(savedSessionToken).when(sessionTokenService).create(savedUser.id);
         userSessionsController = new UserSessionsController(userSessionsService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userSessionsController)

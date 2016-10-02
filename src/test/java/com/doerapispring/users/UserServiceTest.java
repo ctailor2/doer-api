@@ -9,6 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.verify;
 public class UserServiceTest {
     private UserService userService;
     private UserEntity userEntity;
+    private User user;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -36,24 +38,22 @@ public class UserServiceTest {
                 .password("password")
                 .passwordConfirmation("password")
                 .build();
+        user = User.builder()
+                .id(123L)
+                .build();
         doReturn("encodedPassword").when(passwordEncoder).encode(userEntity.getPassword());
+        doReturn(user).when(userRepository).save(any(User.class));
     }
 
     @Test
-    public void create_callsPasswordEncoder_callsUserRepository_setsFields() throws Exception {
+    public void create_callsPasswordEncoder_callsUserRepository_setsFields_returnsUserEntity() throws Exception {
         userService.create(userEntity);
+
         verify(passwordEncoder).encode(userEntity.getPassword());
         verify(userRepository).save(userArgumentCaptor.capture());
         User savedUser = userArgumentCaptor.getValue();
         assertThat(savedUser.email).isEqualTo("test@email.com");
         assertThat(savedUser.passwordDigest).isEqualTo("encodedPassword");
-    }
-
-    @Test
-    public void create_callsUserRepository_setsAuditingData() throws Exception {
-        userService.create(userEntity);
-        verify(userRepository).save(userArgumentCaptor.capture());
-        User savedUser = userArgumentCaptor.getValue();
         assertThat(savedUser.createdAt).isToday();
         assertThat(savedUser.updatedAt).isToday();
     }

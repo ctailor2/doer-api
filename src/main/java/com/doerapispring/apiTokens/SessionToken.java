@@ -1,5 +1,6 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.users.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,6 @@ public class SessionToken {
     @Column(name = "id")
     public Long id;
 
-    @Column(name = "user_id")
-    public Long userId;
-
     @Column(name = "token")
     public String token;
 
@@ -35,4 +33,8 @@ public class SessionToken {
 
     @Column(name = "updated_at")
     public Date updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    public User user;
 }

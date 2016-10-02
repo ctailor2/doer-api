@@ -30,7 +30,7 @@ public class TodoService {
         SessionToken sessionToken = sessionTokenService.getByToken(token);
         if (sessionToken != null) {
             Todo todo = Todo.builder()
-                    .userId(sessionToken.userId)
+                    .user(sessionToken.user)
                     .task(todoEntity.getTask())
                     .createdAt(new Date())
                     .updatedAt(new Date())
@@ -45,7 +45,7 @@ public class TodoService {
     public List<TodoEntity> get(String token) {
         SessionToken sessionToken = sessionTokenService.getByToken(token);
         if (sessionToken != null) {
-            List<Todo> todos = todoRepository.findByUserId(sessionToken.userId);
+            List<Todo> todos = todoRepository.findByUserId(sessionToken.user.id);
             List<TodoEntity> todoEntities = todos.stream().map((todo) -> TodoEntity.builder()
                     .task(todo.task)
                     .build()).collect(Collectors.toList());

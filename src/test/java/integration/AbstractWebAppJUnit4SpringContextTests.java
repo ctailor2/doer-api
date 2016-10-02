@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,10 +29,14 @@ abstract class AbstractWebAppJUnit4SpringContextTests extends AbstractTransactio
 
     protected MockMvc mockMvc;
 
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
     @Before
     public void setUp() throws Exception {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
+                .addFilter(springSecurityFilterChain)
                 .defaultRequest(get("/")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))

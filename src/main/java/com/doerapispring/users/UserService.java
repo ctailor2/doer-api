@@ -22,16 +22,19 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User create(UserEntity userEntity) {
+    // TODO: Add test asserting that the returned entity does not expose the password
+    public UserEntity create(UserEntity userEntity) {
         User user = User.builder()
                 .email(userEntity.getEmail())
                 .passwordDigest(passwordEncoder.encode(userEntity.getPassword()))
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        return userRepository.save(user);
+        userRepository.save(user);
+        return userEntity;
     }
 
+    // TODO: This may no longer be necessary - check usages and remove
     public User get(String email) {
         return userRepository.findByEmail(email);
     }
