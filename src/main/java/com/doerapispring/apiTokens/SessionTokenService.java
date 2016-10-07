@@ -44,23 +44,25 @@ public class SessionTokenService {
         sessionTokenRepository.save(sessionToken);
         return SessionTokenEntity.builder()
                 .token(sessionToken.token)
+                .expiresAt(sessionToken.expiresAt)
                 .build();
     }
 
     public SessionTokenEntity getActive(String userEmail) {
         SessionToken sessionToken = sessionTokenRepository.findActiveByUserEmail(userEmail);
+        if(sessionToken == null) return null;
         return SessionTokenEntity.builder()
                 .token(sessionToken.token)
+                .expiresAt(sessionToken.expiresAt)
                 .build();
     }
 
-    // TODO: This was mostly being used before the auth filter was introduced - refactor it away
     public SessionToken getByToken(String token) {
         return sessionTokenRepository.findFirstByTokenAndExpiresAtAfter(token, new Date());
     }
 
-    public void expire(String token) {
-        SessionToken sessionToken = getByToken(token);
+    public void expire(String userEmail) {
+        SessionToken sessionToken = sessionTokenRepository.findActiveByUserEmail(userEmail);
         if (sessionToken != null) {
             sessionToken.expiresAt = new Date();
             sessionTokenRepository.save(sessionToken);

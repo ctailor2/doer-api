@@ -1,0 +1,57 @@
+package com.doerapispring.config;
+
+import com.doerapispring.ErrorEntity;
+import com.doerapispring.apiTokens.AuthenticationToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * Created by chiragtailor on 9/19/16.
+ */
+public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+    @Autowired
+    protected TokenAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
+        super(requiresAuthenticationRequestMatcher);
+    }
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        String token = request.getHeader(SecurityConfiguration.SESSION_TOKEN_HEADER);
+        AuthenticationToken authenticationToken = new AuthenticationToken(token);
+        return getAuthenticationManager().authenticate(authenticationToken);
+    }
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authResult);
+        SecurityContextHolder.setContext(context);
+        chain.doFilter(request, response);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        SecurityContextHolder.clearContext();
+        ObjectMapper mapper = new ObjectMapper();
+        ErrorEntity errorEntity = ErrorEntity.builder()
+                .status("401")
+                .message(failed.getMessage())
+                .build();
+        String serializedError = mapper.writeValueAsString(errorEntity);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write(serializedError);
+    }
+}

@@ -4,29 +4,27 @@ import com.doerapispring.todos.TodoEntity;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
 import com.doerapispring.users.UserEntity;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
- * Created by chiragtailor on 9/27/16.
+ * Created by chiragtailor on 10/5/16.
  */
-public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
 
     private HttpHeaders httpHeaders = new HttpHeaders();
-
-    private UserEntity savedUserEntity;
 
     @Autowired
     UserSessionsService userSessionsService;
@@ -34,8 +32,12 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Autowired
     TodoService todosService;
 
-    private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/todos")
+    private UserEntity savedUserEntity;
+
+    private void doPost() throws Exception {
+        mvcResult = mockMvc.perform(post("/v1/todos")
+                .content("{\"task\":\"read the things\"}")
+                .contentType(MediaType.APPLICATION_JSON)
                 .headers(httpHeaders))
                 .andReturn();
     }
@@ -53,18 +55,16 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     }
 
     @Test
-    public void todos_whenUserHasTodos_returnsTodos() throws Exception {
-        TodoEntity todoEntity = TodoEntity.builder()
-                .task("this and that")
-                .build();
-        todosService.create(savedUserEntity.getEmail(), todoEntity);
+    public void create() throws Exception {
+        doPost();
 
-        doGet();
+        List<TodoEntity> todos = todosService.get(savedUserEntity.getEmail());
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        List<TodoEntity> savedTodoEntity = mapper.readValue(response.getContentAsString(), new TypeReference<List<TodoEntity>>() {});
-
-        assertThat(savedTodoEntity.get(0).getTask()).isEqualTo("this and that");
+        TodoEntity savedTodoEntity = mapper.readValue(response.getContentAsString(), TodoEntity.class);
+        assertThat(savedTodoEntity.getTask()).isEqualTo("read the things");
+        assertThat(todos.size()).isEqualTo(1);
+        assertThat(todos.get(0)).isEqualTo(savedTodoEntity);
     }
 }

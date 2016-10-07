@@ -2,6 +2,7 @@ package com.doerapispring.todos;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,15 +24,15 @@ public class TodosController {
     @RequestMapping(value = "/todos", method = RequestMethod.GET)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    List<TodoEntity> index(@RequestHeader(value = "Session-Token") String token) {
-        return todoService.get(token);
+    List<TodoEntity> index(@AuthenticationPrincipal String userEmail) {
+        return todoService.get(userEmail);
     }
 
     @RequestMapping(value = "/todos", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    TodoEntity create(@RequestHeader(value = "Session-Token") String token,
+    TodoEntity create(@AuthenticationPrincipal String userEmail,
                       @RequestBody TodoEntity todoEntity) {
-        return todoService.create(token, todoEntity);
+        return todoService.create(userEmail, todoEntity);
     }
 }

@@ -31,8 +31,7 @@ public class AuthenticatedEndpointsIntegrationTest extends AbstractWebAppJUnit4S
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        ErrorEntity errorEntity = mapper.readValue(response.getContentAsString(), new TypeReference<ErrorEntity>() {
-        });
+        ErrorEntity errorEntity = mapper.readValue(response.getContentAsString(), new TypeReference<ErrorEntity>() {});
         assertThat(errorEntity.getStatus()).isEqualTo("401");
         assertThat(errorEntity.getMessage()).isEqualTo("Authentication required");
     }

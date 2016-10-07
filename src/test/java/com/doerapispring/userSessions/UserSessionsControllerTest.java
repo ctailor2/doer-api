@@ -1,8 +1,6 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.User;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
@@ -26,8 +24,6 @@ public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;
 
     private UserEntity userEntity = UserEntity.builder().build();
-    private User savedUser = User.builder().id(1L).email("test@email.com").build();
-    private SessionToken savedSessionToken = SessionToken.builder().build();
 
     @Mock
     private UserService userService;
@@ -90,7 +86,7 @@ public class UserSessionsControllerTest {
 
     @Test
     public void logout_callsUserSessionsService() throws Exception {
-        userSessionsController.logout("tokenz");
-        verify(userSessionsService).logout("tokenz");
+        userSessionsController.logout("test@email.com");
+        verify(userSessionsService).logout("test@email.com");
     }
 }

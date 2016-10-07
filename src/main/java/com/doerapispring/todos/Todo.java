@@ -22,10 +22,6 @@ public class Todo {
     @Column(name = "id")
     public Long id;
 
-    //TODO: refactor this away, since the many to one was added
-    @Column(name = "user_id", insertable = false, updatable = false)
-    public Long userId;
-
     @Column(name = "task")
     public String task;
 

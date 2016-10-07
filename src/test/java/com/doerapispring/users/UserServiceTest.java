@@ -47,7 +47,7 @@ public class UserServiceTest {
 
     @Test
     public void create_callsPasswordEncoder_callsUserRepository_setsFields_returnsUserEntity() throws Exception {
-        userService.create(userEntity);
+        UserEntity savedUserEntity = userService.create(userEntity);
 
         verify(passwordEncoder).encode(userEntity.getPassword());
         verify(userRepository).save(userArgumentCaptor.capture());
@@ -56,11 +56,7 @@ public class UserServiceTest {
         assertThat(savedUser.passwordDigest).isEqualTo("encodedPassword");
         assertThat(savedUser.createdAt).isToday();
         assertThat(savedUser.updatedAt).isToday();
-    }
-
-    @Test
-    public void get_callsUserRepository_findsUserByEmail() throws Exception {
-        userService.get(userEntity.getEmail());
-        verify(userRepository).findByEmail(userEntity.getEmail());
+        assertThat(savedUserEntity.getEmail()).isEqualTo("test@email.com");
+        assertThat(savedUserEntity.getPassword()).isNull();
     }
 }

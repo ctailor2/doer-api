@@ -1,5 +1,6 @@
 package com.doerapispring.users;
 
+import com.doerapispring.userSessions.UserSessionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,6 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // TODO: Add test asserting that the returned entity does not expose the password
     public UserEntity create(UserEntity userEntity) {
         User user = User.builder()
                 .email(userEntity.getEmail())
@@ -31,11 +31,9 @@ public class UserService {
                 .updatedAt(new Date())
                 .build();
         userRepository.save(user);
-        return userEntity;
-    }
-
-    // TODO: This may no longer be necessary - check usages and remove
-    public User get(String email) {
-        return userRepository.findByEmail(email);
+        UserEntity savedUserEntity = UserEntity.builder()
+                .email(userEntity.getEmail())
+                .build();
+        return savedUserEntity;
     }
 }

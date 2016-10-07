@@ -3,6 +3,7 @@ package com.doerapispring.userSessions;
 import com.doerapispring.users.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -35,7 +36,7 @@ class UserSessionsController {
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
-    void logout(@RequestHeader(value = "Session-Token") String token) {
-        userSessionsService.logout(token);
+    void logout(@AuthenticationPrincipal String userEmail) {
+        userSessionsService.logout(userEmail);
     }
 }

@@ -43,8 +43,8 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTokenService() throws Exception {
-        todosController.index("tokenz");
-        verify(todoService).get("tokenz");
+        todosController.index("test@email.com");
+        verify(todoService).get("test@email.com");
     }
 
     @Test
@@ -61,7 +61,7 @@ public class TodosControllerTest {
         TodoEntity todoEntity = TodoEntity.builder()
                 .task("browse the web")
                 .build();
-        todosController.create("tokenz", todoEntity);
-        verify(todoService).create("tokenz", todoEntity);
+        todosController.create("test@email.com", todoEntity);
+        verify(todoService).create("test@email.com", todoEntity);
     }
 }

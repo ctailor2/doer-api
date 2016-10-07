@@ -81,6 +81,7 @@ public class UserSessionsServiceTest {
 
         UserEntity resultUserEntity = userSessionsService.login(userEntity);
 
+        verify(authenticationService).authenticate("test@email.com", "password");
         verify(sessionTokenService).getActive("test@email.com");
         verify(sessionTokenService).create("test@email.com");
 
@@ -94,6 +95,7 @@ public class UserSessionsServiceTest {
 
         UserEntity resultUserEntity = userSessionsService.login(userEntity);
 
+        verify(authenticationService).authenticate("test@email.com", "password");
         verifyZeroInteractions(sessionTokenService);
 
         assertThat(resultUserEntity).isNull();
@@ -101,8 +103,8 @@ public class UserSessionsServiceTest {
 
     @Test
     public void logout_callsSessionTokenService_expiresToken() throws Exception {
-        userSessionsService.logout("tokenz");
+        userSessionsService.logout("test@email.com");
 
-        verify(sessionTokenService).expire("tokenz");
+        verify(sessionTokenService).expire("test@email.com");
     }
 }

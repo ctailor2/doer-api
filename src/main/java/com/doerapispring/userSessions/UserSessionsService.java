@@ -39,7 +39,7 @@ public class UserSessionsService {
         return userEntity;
     }
 
-    public void logout(String token) {
-        sessionTokenService.expire(token);
+    public void logout(String userEmail) {
+        sessionTokenService.expire(userEmail);
     }
 }

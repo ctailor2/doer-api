@@ -1,5 +1,7 @@
 package integration;
 
+import com.doerapispring.apiTokens.SessionTokenEntity;
+import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.userSessions.UserSessionsService;
 import com.doerapispring.users.UserEntity;
 import org.junit.Test;
@@ -24,6 +26,9 @@ public class LogoutIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     @Autowired
     UserSessionsService userSessionsService;
 
+    @Autowired
+    SessionTokenService sessionTokenService;
+
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/logout")
                 .headers(httpHeaders))
@@ -43,7 +48,7 @@ public class LogoutIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
 
         MockHttpServletResponse response = mvcResult.getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-        // TODO: re-instate this part of the integration test
-//        assertThat(sessionTokenEntity.expiresAt).isToday();
+        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive(userEntity.getEmail());
+        assertThat(sessionTokenEntity.getExpiresAt()).isToday();
     }
 }

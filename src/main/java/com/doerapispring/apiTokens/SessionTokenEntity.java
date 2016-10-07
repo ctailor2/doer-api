@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * Created by chiragtailor on 8/28/16.
  */
@@ -14,4 +16,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SessionTokenEntity {
     private String token;
+    private Date expiresAt;
 }
