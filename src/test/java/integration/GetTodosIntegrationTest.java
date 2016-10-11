@@ -1,9 +1,9 @@
 package integration;
 
-import com.doerapispring.todos.TodoEntity;
+import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -26,7 +26,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     private HttpHeaders httpHeaders = new HttpHeaders();
 
-    private UserEntity savedUserEntity;
+    private User savedUser;
 
     @Autowired
     UserSessionsService userSessionsService;
@@ -44,27 +44,28 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        UserEntity userEntity = UserEntity.builder()
+        User user = User.builder()
                 .email("test@email.com")
                 .password("password")
                 .build();
-        savedUserEntity = userSessionsService.signup(userEntity);
-        httpHeaders.add("Session-Token", userEntity.getSessionToken().getToken());
+        savedUser = userSessionsService.signup(user);
+        httpHeaders.add("Session-Token", savedUser.getSessionToken().getToken());
     }
 
     @Test
     public void todos_whenUserHasTodos_returnsTodos() throws Exception {
-        TodoEntity todoEntity = TodoEntity.builder()
+        Todo todo = Todo.builder()
                 .task("this and that")
                 .build();
-        todosService.create(savedUserEntity.getEmail(), todoEntity);
+        todosService.create(savedUser.getEmail(), todo);
 
         doGet();
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        List<TodoEntity> savedTodoEntity = mapper.readValue(response.getContentAsString(), new TypeReference<List<TodoEntity>>() {});
+        List<Todo> savedTodo = mapper.readValue(response.getContentAsString(), new TypeReference<List<Todo>>() {
+        });
 
-        assertThat(savedTodoEntity.get(0).getTask()).isEqualTo("this and that");
+        assertThat(savedTodo.get(0).getTask()).isEqualTo("this and that");
     }
 }

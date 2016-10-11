@@ -58,10 +58,10 @@ public class TodosControllerTest {
 
     @Test
     public void create_callsTokenService() throws Exception {
-        TodoEntity todoEntity = TodoEntity.builder()
+        Todo todo = Todo.builder()
                 .task("browse the web")
                 .build();
-        todosController.create("test@email.com", todoEntity);
-        verify(todoService).create("test@email.com", todoEntity);
+        todosController.create("test@email.com", todo);
+        verify(todoService).create("test@email.com", todo);
     }
 }

@@ -1,6 +1,6 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
-    private User user;
+    private UserEntity userEntity;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -31,7 +31,7 @@ public class AuthenticationServiceTest {
     @Before
     public void setUp() throws Exception {
         authenticationService = new AuthenticationService(passwordEncoder, userRepository);
-        user = User.builder()
+        userEntity = UserEntity.builder()
                 .email("wow@email.com")
                 .passwordDigest("beans")
                 .build();
@@ -39,7 +39,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
-        doReturn(user).when(userRepository).findByEmail("wow@email.com");
+        doReturn(userEntity).when(userRepository).findByEmail("wow@email.com");
         doReturn(false).when(passwordEncoder).matches(anyString(), anyString());
         boolean result = authenticationService.authenticate("wow@email.com", "cool");
         verify(userRepository).findByEmail("wow@email.com");
@@ -49,7 +49,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
-        doReturn(user).when(userRepository).findByEmail("wow@email.com");
+        doReturn(userEntity).when(userRepository).findByEmail("wow@email.com");
         doReturn(true).when(passwordEncoder).matches(anyString(), anyString());
         boolean result = authenticationService.authenticate("wow@email.com", "cool");
         verify(userRepository).findByEmail("wow@email.com");

@@ -1,9 +1,9 @@
 package integration;
 
-import com.doerapispring.apiTokens.SessionTokenEntity;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -37,18 +37,18 @@ public class LogoutIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
 
     @Test
     public void logout_whenSessionTokenExists_expiresToken_respondsWithOk() throws Exception {
-        UserEntity userEntity = UserEntity.builder()
+        User user = User.builder()
                 .email("email")
                 .password("password")
                 .build();
-        userEntity = userSessionsService.signup(userEntity);
-        httpHeaders.add("Session-Token", userEntity.getSessionToken().getToken());
+        user = userSessionsService.signup(user);
+        httpHeaders.add("Session-Token", user.getSessionToken().getToken());
 
         doPost();
 
         MockHttpServletResponse response = mvcResult.getResponse();
         assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive(userEntity.getEmail());
-        assertThat(sessionTokenEntity.getExpiresAt()).isToday();
+        SessionToken sessionToken = sessionTokenService.getActive(user.getEmail());
+        assertThat(sessionToken.getExpiresAt()).isToday();
     }
 }

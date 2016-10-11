@@ -1,6 +1,6 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +13,6 @@ import java.util.Date;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -32,7 +31,7 @@ public class SessionTokenServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    private ArgumentCaptor<SessionToken> sessionTokenArgumentCaptor = ArgumentCaptor.forClass(SessionToken.class);
+    private ArgumentCaptor<SessionTokenEntity> sessionTokenArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
 
     @Before
     public void setUp() throws Exception {
@@ -41,54 +40,54 @@ public class SessionTokenServiceTest {
 
     @Test
     public void create_callsUserRepository_whenUserExists_callsTokenGenerator_callsSessionTokenRepository_setsFields_returnsSessionTokenEntity() throws Exception {
-        User user = User.builder().build();
-        doReturn(user).when(userRepository).findByEmail("email");
+        UserEntity userEntity = UserEntity.builder().build();
+        doReturn(userEntity).when(userRepository).findByEmail("email");
         doReturn("sorandomtoken").when(tokenGenerator).generate();
 
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.create("email");
+        SessionToken sessionToken = sessionTokenService.create("email");
 
         verify(userRepository).findByEmail("email");
         verify(tokenGenerator).generate();
         verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(savedSessionToken.user).isEqualTo(user);
-        assertThat(savedSessionToken.token).isEqualTo("sorandomtoken");
-        assertThat(savedSessionToken.expiresAt).isInTheFuture();
-        assertThat(savedSessionToken.createdAt).isToday();
-        assertThat(savedSessionToken.updatedAt).isToday();
-        assertThat(sessionTokenEntity.getToken()).isEqualTo("sorandomtoken");
+        SessionTokenEntity savedSessionTokenEntity = sessionTokenArgumentCaptor.getValue();
+        assertThat(savedSessionTokenEntity.userEntity).isEqualTo(userEntity);
+        assertThat(savedSessionTokenEntity.token).isEqualTo("sorandomtoken");
+        assertThat(savedSessionTokenEntity.expiresAt).isInTheFuture();
+        assertThat(savedSessionTokenEntity.createdAt).isToday();
+        assertThat(savedSessionTokenEntity.updatedAt).isToday();
+        assertThat(sessionToken.getToken()).isEqualTo("sorandomtoken");
     }
 
     @Test
     public void create_callsUserRepository_whenUserDoesNotExist_returnsNull() throws Exception {
         doReturn(null).when(userRepository).findByEmail("email");
 
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.create("email");
+        SessionToken sessionToken = sessionTokenService.create("email");
 
-        assertThat(sessionTokenEntity).isNull();
+        assertThat(sessionToken).isNull();
     }
 
     @Test
     public void getActive_callsSessionTokenRepository_whenSessionTokenExists_returnsSessionTokenEntity() throws Exception {
-        SessionToken sessionToken = SessionToken.builder()
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .token("zomgsecrets")
                 .build();
-        doReturn(sessionToken).when(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
+        doReturn(sessionTokenEntity).when(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
 
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive("cool@email.com");
+        SessionToken sessionToken = sessionTokenService.getActive("cool@email.com");
 
         verify(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-        assertThat(sessionTokenEntity.getToken()).isEqualTo("zomgsecrets");
+        assertThat(sessionToken.getToken()).isEqualTo("zomgsecrets");
     }
 
     @Test
     public void getActive_callsSessionTokenRepository_whenSessionTokenDoesNotExist_returnsNull() throws Exception {
         doReturn(null).when(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
 
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive("cool@email.com");
+        SessionToken sessionToken = sessionTokenService.getActive("cool@email.com");
 
         verify(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-        assertThat(sessionTokenEntity).isNull();
+        assertThat(sessionToken).isNull();
     }
 
     @Test
@@ -100,15 +99,15 @@ public class SessionTokenServiceTest {
 
     @Test
     public void expire_callsUserRepository_whenUserExists_setsExpiredAt() throws Exception {
-        SessionToken sessionToken = SessionToken.builder().build();
-        doReturn(sessionToken).when(sessionTokenRepository).findActiveByUserEmail("test@email.com");
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder().build();
+        doReturn(sessionTokenEntity).when(sessionTokenRepository).findActiveByUserEmail("test@email.com");
 
         sessionTokenService.expire("test@email.com");
 
         verify(sessionTokenRepository).findActiveByUserEmail("test@email.com");
         verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionToken savedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(savedSessionToken.expiresAt).isToday();
+        SessionTokenEntity savedSessionTokenEntity = sessionTokenArgumentCaptor.getValue();
+        assertThat(savedSessionTokenEntity.expiresAt).isToday();
     }
 
     @Test

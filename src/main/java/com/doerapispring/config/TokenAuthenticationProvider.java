@@ -1,9 +1,8 @@
 package com.doerapispring.config;
 
 import com.doerapispring.apiTokens.AuthenticationToken;
-import com.doerapispring.apiTokens.SessionToken;
+import com.doerapispring.apiTokens.SessionTokenEntity;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,10 +26,10 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         AuthenticationToken authenticationToken = (AuthenticationToken) authentication;
-        SessionToken sessionToken = sessionTokenService.getByToken(authenticationToken.getCredentials());
-        if(sessionToken != null) {
+        SessionTokenEntity sessionTokenEntity = sessionTokenService.getByToken(authenticationToken.getCredentials());
+        if (sessionTokenEntity != null) {
             authenticationToken.setAuthenticated(true);
-            authenticationToken.setPrincipal(sessionToken.user.email);
+            authenticationToken.setPrincipal(sessionTokenEntity.userEntity.email);
             return authenticationToken;
         } else {
             throw new AuthenticationCredentialsNotFoundException("Authentication required");

@@ -1,8 +1,8 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.apiTokens.SessionTokenEntity;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,20 +23,20 @@ public class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    public UserEntity signup(UserEntity userEntity) {
-        UserEntity savedUserEntity = userService.create(userEntity);
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.create(savedUserEntity.getEmail());
-        savedUserEntity.setSessionToken(sessionTokenEntity);
-        return savedUserEntity;
+    public User signup(User user) {
+        User savedUser = userService.create(user);
+        SessionToken sessionToken = sessionTokenService.create(savedUser.getEmail());
+        savedUser.setSessionToken(sessionToken);
+        return savedUser;
     }
 
-    public UserEntity login(UserEntity userEntity) {
-        boolean authResult = authenticationService.authenticate(userEntity.getEmail(), userEntity.getPassword());
+    public User login(User user) {
+        boolean authResult = authenticationService.authenticate(user.getEmail(), user.getPassword());
         if (!authResult) return null;
-        SessionTokenEntity sessionTokenEntity = sessionTokenService.getActive(userEntity.getEmail());
-        if (sessionTokenEntity == null) sessionTokenEntity = sessionTokenService.create(userEntity.getEmail());
-        userEntity.setSessionToken(sessionTokenEntity);
-        return userEntity;
+        SessionToken sessionToken = sessionTokenService.getActive(user.getEmail());
+        if (sessionToken == null) sessionToken = sessionTokenService.create(user.getEmail());
+        user.setSessionToken(sessionToken);
+        return user;
     }
 
     public void logout(String userEmail) {

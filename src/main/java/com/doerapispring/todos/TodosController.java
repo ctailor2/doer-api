@@ -24,15 +24,15 @@ public class TodosController {
     @RequestMapping(value = "/todos", method = RequestMethod.GET)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    List<TodoEntity> index(@AuthenticationPrincipal String userEmail) {
+    List<Todo> index(@AuthenticationPrincipal String userEmail) {
         return todoService.get(userEmail);
     }
 
     @RequestMapping(value = "/todos", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    TodoEntity create(@AuthenticationPrincipal String userEmail,
-                      @RequestBody TodoEntity todoEntity) {
-        return todoService.create(userEmail, todoEntity);
+    Todo create(@AuthenticationPrincipal String userEmail,
+                @RequestBody Todo todo) {
+        return todoService.create(userEmail, todo);
     }
 }

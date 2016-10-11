@@ -1,6 +1,6 @@
 package com.doerapispring.config;
 
-import com.doerapispring.ErrorEntity;
+import com.doerapispring.Error;
 import com.doerapispring.apiTokens.AuthenticationToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +45,11 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         SecurityContextHolder.clearContext();
         ObjectMapper mapper = new ObjectMapper();
-        ErrorEntity errorEntity = ErrorEntity.builder()
+        Error error = Error.builder()
                 .status("401")
                 .message(failed.getMessage())
                 .build();
-        String serializedError = mapper.writeValueAsString(errorEntity);
+        String serializedError = mapper.writeValueAsString(error);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.getWriter().write(serializedError);

@@ -1,6 +1,6 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +21,8 @@ public class AuthenticationService {
     }
 
     public boolean authenticate(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) return false;
-        return passwordEncoder.matches(password, user.passwordDigest);
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) return false;
+        return passwordEncoder.matches(password, userEntity.passwordDigest);
     }
 }

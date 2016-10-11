@@ -1,9 +1,9 @@
 package integration;
 
-import com.doerapispring.todos.TodoEntity;
+import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Autowired
     TodoService todosService;
 
-    private UserEntity savedUserEntity;
+    private User savedUser;
 
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/todos")
@@ -46,25 +46,25 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        UserEntity userEntity = UserEntity.builder()
+        User user = User.builder()
                 .email("test@email.com")
                 .password("password")
                 .build();
-        savedUserEntity = userSessionsService.signup(userEntity);
-        httpHeaders.add("Session-Token", userEntity.getSessionToken().getToken());
+        savedUser = userSessionsService.signup(user);
+        httpHeaders.add("Session-Token", savedUser.getSessionToken().getToken());
     }
 
     @Test
     public void create() throws Exception {
         doPost();
 
-        List<TodoEntity> todos = todosService.get(savedUserEntity.getEmail());
+        List<Todo> todos = todosService.get(savedUser.getEmail());
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        TodoEntity savedTodoEntity = mapper.readValue(response.getContentAsString(), TodoEntity.class);
-        assertThat(savedTodoEntity.getTask()).isEqualTo("read the things");
+        Todo savedTodo = mapper.readValue(response.getContentAsString(), Todo.class);
+        assertThat(savedTodo.getTask()).isEqualTo("read the things");
         assertThat(todos.size()).isEqualTo(1);
-        assertThat(todos.get(0)).isEqualTo(savedTodoEntity);
+        assertThat(todos.get(0)).isEqualTo(savedTodo);
     }
 }

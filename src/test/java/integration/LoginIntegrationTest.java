@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +36,11 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
     @Test
     public void login_whenUserWithEmailRegistered_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
-        UserEntity registeredUserEntity = UserEntity.builder()
+        User registeredUser = User.builder()
                 .email("test@email.com")
                 .password("password")
                 .build();
-        userSessionsService.signup(registeredUserEntity);
+        userSessionsService.signup(registeredUser);
 
         doPost();
 
@@ -48,10 +48,10 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        UserEntity userEntity = mapper.readValue(contentAsString, UserEntity.class);
+        User user = mapper.readValue(contentAsString, User.class);
 
-        assertThat(userEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(userEntity.getSessionToken().getToken()).isNotEmpty();
-        assertThat(userEntity.getSessionToken().getExpiresAt()).isNotNull();
+        assertThat(user.getEmail()).isEqualTo("test@email.com");
+        assertThat(user.getSessionToken().getToken()).isNotEmpty();
+        assertThat(user.getSessionToken().getExpiresAt()).isInTheFuture();
     }
 }

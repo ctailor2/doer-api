@@ -1,6 +1,5 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.users.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 

@@ -19,8 +19,8 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
     private UserService userService;
-    private UserEntity userEntity;
     private User user;
+    private UserEntity userEntity;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -28,35 +28,35 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    private ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
+    private ArgumentCaptor<UserEntity> userArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     @Before
     public void setUp() throws Exception {
         userService = new UserService(userRepository, passwordEncoder);
-        userEntity = UserEntity.builder()
+        user = User.builder()
                 .email("test@email.com")
                 .password("password")
                 .passwordConfirmation("password")
                 .build();
-        user = User.builder()
+        userEntity = UserEntity.builder()
                 .id(123L)
                 .build();
-        doReturn("encodedPassword").when(passwordEncoder).encode(userEntity.getPassword());
-        doReturn(user).when(userRepository).save(any(User.class));
+        doReturn("encodedPassword").when(passwordEncoder).encode(user.getPassword());
+        doReturn(userEntity).when(userRepository).save(any(UserEntity.class));
     }
 
     @Test
     public void create_callsPasswordEncoder_callsUserRepository_setsFields_returnsUserEntity() throws Exception {
-        UserEntity savedUserEntity = userService.create(userEntity);
+        User savedUser = userService.create(user);
 
-        verify(passwordEncoder).encode(userEntity.getPassword());
+        verify(passwordEncoder).encode(user.getPassword());
         verify(userRepository).save(userArgumentCaptor.capture());
-        User savedUser = userArgumentCaptor.getValue();
-        assertThat(savedUser.email).isEqualTo("test@email.com");
-        assertThat(savedUser.passwordDigest).isEqualTo("encodedPassword");
-        assertThat(savedUser.createdAt).isToday();
-        assertThat(savedUser.updatedAt).isToday();
-        assertThat(savedUserEntity.getEmail()).isEqualTo("test@email.com");
-        assertThat(savedUserEntity.getPassword()).isNull();
+        UserEntity savedUserEntity = userArgumentCaptor.getValue();
+        assertThat(savedUserEntity.email).isEqualTo("test@email.com");
+        assertThat(savedUserEntity.passwordDigest).isEqualTo("encodedPassword");
+        assertThat(savedUserEntity.createdAt).isToday();
+        assertThat(savedUserEntity.updatedAt).isToday();
+        assertThat(savedUser.getEmail()).isEqualTo("test@email.com");
+        assertThat(savedUser.getPassword()).isNull();
     }
 }

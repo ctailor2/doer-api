@@ -1,6 +1,6 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,44 +28,46 @@ public class SessionTokenService {
         this.userRepository = userRepository;
     }
 
-    public SessionTokenEntity create(String userEmail) {
-        User user = userRepository.findByEmail(userEmail);
-        if (user == null) return null;
+    public SessionToken create(String userEmail) {
+        UserEntity userEntity = userRepository.findByEmail(userEmail);
+        if (userEntity == null) return null;
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(DATE, 7);
-        SessionToken sessionToken = SessionToken.builder()
-                .user(user)
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
+                .userEntity(userEntity)
                 .token(tokenGenerator.generate())
                 .expiresAt(calendar.getTime())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        sessionTokenRepository.save(sessionToken);
-        return SessionTokenEntity.builder()
-                .token(sessionToken.token)
-                .expiresAt(sessionToken.expiresAt)
+        sessionTokenRepository.save(sessionTokenEntity);
+        return SessionToken.builder()
+                .token(sessionTokenEntity.token)
+                .expiresAt(sessionTokenEntity.expiresAt)
                 .build();
     }
 
-    public SessionTokenEntity getActive(String userEmail) {
-        SessionToken sessionToken = sessionTokenRepository.findActiveByUserEmail(userEmail);
-        if(sessionToken == null) return null;
-        return SessionTokenEntity.builder()
-                .token(sessionToken.token)
-                .expiresAt(sessionToken.expiresAt)
+    public SessionToken getActive(String userEmail) {
+        SessionTokenEntity sessionTokenEntity = sessionTokenRepository.findActiveByUserEmail(userEmail);
+        if (sessionTokenEntity == null) return null;
+        return SessionToken.builder()
+                .token(sessionTokenEntity.token)
+                .expiresAt(sessionTokenEntity.expiresAt)
                 .build();
     }
 
-    public SessionToken getByToken(String token) {
+    // TODO: See how often this is used. Maybe those places should have a direct
+    // dependency on session token repo? This breaks the service pattern
+    public SessionTokenEntity getByToken(String token) {
         return sessionTokenRepository.findFirstByTokenAndExpiresAtAfter(token, new Date());
     }
 
     public void expire(String userEmail) {
-        SessionToken sessionToken = sessionTokenRepository.findActiveByUserEmail(userEmail);
-        if (sessionToken != null) {
-            sessionToken.expiresAt = new Date();
-            sessionTokenRepository.save(sessionToken);
+        SessionTokenEntity sessionTokenEntity = sessionTokenRepository.findActiveByUserEmail(userEmail);
+        if (sessionTokenEntity != null) {
+            sessionTokenEntity.expiresAt = new Date();
+            sessionTokenRepository.save(sessionTokenEntity);
         }
     }
 }

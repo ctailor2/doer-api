@@ -1,6 +1,5 @@
 package com.doerapispring.users;
 
-import com.doerapispring.userSessions.UserSessionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,17 +22,17 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserEntity create(UserEntity userEntity) {
-        User user = User.builder()
-                .email(userEntity.getEmail())
-                .passwordDigest(passwordEncoder.encode(userEntity.getPassword()))
+    public User create(User user) {
+        UserEntity userEntity = UserEntity.builder()
+                .email(user.getEmail())
+                .passwordDigest(passwordEncoder.encode(user.getPassword()))
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        userRepository.save(user);
-        UserEntity savedUserEntity = UserEntity.builder()
-                .email(userEntity.getEmail())
+        userRepository.save(userEntity);
+        User savedUser = User.builder()
+                .email(user.getEmail())
                 .build();
-        return savedUserEntity;
+        return savedUser;
     }
 }

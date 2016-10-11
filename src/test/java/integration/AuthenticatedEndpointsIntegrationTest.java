@@ -1,6 +1,6 @@
 package integration;
 
-import com.doerapispring.ErrorEntity;
+import com.doerapispring.Error;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -31,8 +31,9 @@ public class AuthenticatedEndpointsIntegrationTest extends AbstractWebAppJUnit4S
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        ErrorEntity errorEntity = mapper.readValue(response.getContentAsString(), new TypeReference<ErrorEntity>() {});
-        assertThat(errorEntity.getStatus()).isEqualTo("401");
-        assertThat(errorEntity.getMessage()).isEqualTo("Authentication required");
+        Error error = mapper.readValue(response.getContentAsString(), new TypeReference<Error>() {
+        });
+        assertThat(error.getStatus()).isEqualTo("401");
+        assertThat(error.getMessage()).isEqualTo("Authentication required");
     }
 }

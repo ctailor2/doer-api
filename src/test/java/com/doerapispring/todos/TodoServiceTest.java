@@ -1,6 +1,6 @@
 package com.doerapispring.todos;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,9 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by chiragtailor on 9/28/16.
@@ -30,57 +28,57 @@ public class TodoServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    private ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
-    private TodoEntity todoEntity;
+    private ArgumentCaptor<TodoEntity> todoArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
+    private Todo todo;
 
     @Before
     public void setUp() throws Exception {
         todoService = new TodoService(todoRepository, userRepository);
-        todoEntity = TodoEntity.builder()
+        todo = Todo.builder()
                 .task("reconfigure things")
                 .build();
     }
 
     @Test
     public void get_callsTodoRepository_returnsTodos() throws Exception {
-        List<Todo> todos = Arrays.asList(Todo.builder().task("clean the fridge").build());
+        List<TodoEntity> todos = Arrays.asList(TodoEntity.builder().task("clean the fridge").build());
         doReturn(todos).when(todoRepository).findByUserEmail("one@two.com");
 
-        List<TodoEntity> todoEntities = todoService.get("one@two.com");
+        List<Todo> todoEntities = todoService.get("one@two.com");
 
-        TodoEntity todoEntity = todoEntities.get(0);
-        assertThat(todoEntity).isNotNull();
-        assertThat(todoEntity.getTask()).isEqualTo("clean the fridge");
+        Todo todo = todoEntities.get(0);
+        assertThat(todo).isNotNull();
+        assertThat(todo.getTask()).isEqualTo("clean the fridge");
     }
 
     @Test
     public void create_callsUserRepository_whenUserExists_callsTodoRepository_savesTodoForUser_returnsTodoEntity() throws Exception {
-        User user = User.builder()
+        UserEntity userEntity = UserEntity.builder()
                 .id(123L)
                 .email("one@two.com")
                 .build();
-        doReturn(user).when(userRepository).findByEmail(user.email);
+        doReturn(userEntity).when(userRepository).findByEmail(userEntity.email);
 
-        TodoEntity returnedTodoEntity = todoService.create(user.email, todoEntity);
+        Todo returnedTodo = todoService.create(userEntity.email, todo);
 
-        verify(userRepository).findByEmail(user.email);
+        verify(userRepository).findByEmail(userEntity.email);
         verify(todoRepository).save(todoArgumentCaptor.capture());
-        Todo savedTodo = todoArgumentCaptor.getValue();
-        assertThat(savedTodo.user).isEqualTo(user);
-        assertThat(savedTodo.task).isEqualTo("reconfigure things");
-        assertThat(savedTodo.createdAt).isToday();
-        assertThat(savedTodo.updatedAt).isToday();
-        assertThat(returnedTodoEntity).isEqualTo(todoEntity);
+        TodoEntity savedTodoEntity = todoArgumentCaptor.getValue();
+        assertThat(savedTodoEntity.userEntity).isEqualTo(userEntity);
+        assertThat(savedTodoEntity.task).isEqualTo("reconfigure things");
+        assertThat(savedTodoEntity.createdAt).isToday();
+        assertThat(savedTodoEntity.updatedAt).isToday();
+        assertThat(returnedTodo).isEqualTo(todo);
     }
 
     @Test
     public void create_callsUserRepository_whenUserDoesNotExist_returnsNull() throws Exception {
         doReturn(null).when(userRepository).findByEmail("one@two.com");
 
-        TodoEntity returnedTodoEntity = todoService.create("one@two.com", todoEntity);
+        Todo returnedTodo = todoService.create("one@two.com", todo);
 
         verify(userRepository).findByEmail("one@two.com");
         verifyZeroInteractions(todoRepository);
-        assertThat(returnedTodoEntity).isNull();
+        assertThat(returnedTodo).isNull();
     }
 }

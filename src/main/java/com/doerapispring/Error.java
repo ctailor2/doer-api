@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class ErrorEntity {
+public class Error {
     private String status;
     private String message;
 }

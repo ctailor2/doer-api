@@ -1,7 +1,7 @@
 package com.doerapispring.userSessions;
 
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.UserEntity;
+import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;
 
-    private UserEntity userEntity = UserEntity.builder().build();
+    private User user = User.builder().build();
 
     @Mock
     private UserService userService;
@@ -58,8 +58,8 @@ public class UserSessionsControllerTest {
 
     @Test
     public void signup_callsUserSessionsService() throws Exception {
-        userSessionsController.signup(userEntity);
-        verify(userSessionsService).signup(userEntity);
+        userSessionsController.signup(user);
+        verify(userSessionsService).signup(user);
     }
 
     @Test
@@ -73,8 +73,8 @@ public class UserSessionsControllerTest {
 
     @Test
     public void login_callsUserSessionsService() throws Exception {
-        userSessionsController.login(userEntity);
-        verify(userSessionsService).login(userEntity);
+        userSessionsController.login(user);
+        verify(userSessionsService).login(user);
     }
 
     @Test

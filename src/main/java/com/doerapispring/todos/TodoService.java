@@ -1,6 +1,6 @@
 package com.doerapispring.todos;
 
-import com.doerapispring.users.User;
+import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,22 +25,22 @@ public class TodoService {
         this.userRepository = userRepository;
     }
 
-    public TodoEntity create(String userEmail, TodoEntity todoEntity) {
-        User user = userRepository.findByEmail(userEmail);
-        if(user == null) return null;
-        Todo todo = Todo.builder()
-                .user(user)
-                .task(todoEntity.getTask())
+    public Todo create(String userEmail, Todo todo) {
+        UserEntity userEntity = userRepository.findByEmail(userEmail);
+        if (userEntity == null) return null;
+        TodoEntity todoEntity = TodoEntity.builder()
+                .userEntity(userEntity)
+                .task(todo.getTask())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
-        todoRepository.save(todo);
-        return todoEntity;
+        todoRepository.save(todoEntity);
+        return todo;
     }
 
-    public List<TodoEntity> get(String userEmail) {
-        List<Todo> todos = todoRepository.findByUserEmail(userEmail);
-        List<TodoEntity> todoEntities = todos.stream().map((todo) -> TodoEntity.builder()
+    public List<Todo> get(String userEmail) {
+        List<TodoEntity> todos = todoRepository.findByUserEmail(userEmail);
+        List<Todo> todoEntities = todos.stream().map((todo) -> Todo.builder()
                 .task(todo.task)
                 .build()).collect(Collectors.toList());
         return todoEntities;
