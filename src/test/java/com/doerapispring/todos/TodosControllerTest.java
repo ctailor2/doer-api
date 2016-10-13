@@ -42,9 +42,23 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_callsTokenService() throws Exception {
-        todosController.index("test@email.com");
-        verify(todoService).get("test@email.com");
+    public void index_withNoTypeSpecified_callsTodoService_withNullType() throws Exception {
+        todosController.index("test@email.com", null);
+        verify(todoService).get("test@email.com", null);
+    }
+
+    @Test
+    public void index_withValidTypeSpecified_callsTodoService_withSpecifiedType() throws Exception {
+        todosController.index("test@email.com", TodoTypeParamEnum.active);
+        verify(todoService).get("test@email.com", TodoTypeParamEnum.active);
+    }
+
+    @Test
+    public void index_withInvalidTypeSpecified_returns400() throws Exception {
+        mockMvc.perform(get("/v1/todos")
+                .param("type", "notARealType")
+                .header("Session-Token", "tokenz"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

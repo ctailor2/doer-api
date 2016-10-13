@@ -24,8 +24,9 @@ public class TodosController {
     @RequestMapping(value = "/todos", method = RequestMethod.GET)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    List<Todo> index(@AuthenticationPrincipal String userEmail) {
-        return todoService.get(userEmail);
+    List<Todo> index(@AuthenticationPrincipal String userEmail,
+                     @RequestParam(name = "type", required = false) TodoTypeParamEnum todoTypeParamEnum) {
+        return todoService.get(userEmail, todoTypeParamEnum);
     }
 
     @RequestMapping(value = "/todos", method = RequestMethod.POST)

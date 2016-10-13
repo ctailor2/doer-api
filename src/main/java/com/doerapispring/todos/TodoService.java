@@ -39,8 +39,23 @@ public class TodoService {
         return todo;
     }
 
-    public List<Todo> get(String userEmail) {
-        List<TodoEntity> todoEntities = todoRepository.findByUserEmail(userEmail);
+    // TODO: This null check stinks - try to eliminate it. Maybe overload this method?
+    // TODO: The 2 enums are so similar, but they are kept separate to avoid mixing concerns. Still something doesn't seem right.
+
+    // NOTE: Made type an enum instead of a bool bc in the case that no param is sent
+    // and the consumer expects all todos to be returned, there is no good default case
+    // to use
+
+    // NOTE: Maybe this filters (and any future ones) should be under a ?filters query param
+    // this may help to handle the behaviors differently and isolate filtering logic
+    public List<Todo> get(String userEmail, TodoTypeParamEnum type) {
+        List<TodoEntity> todoEntities;
+        if (type == null) {
+            todoEntities = todoRepository.findByUserEmail(userEmail);
+        } else {
+            TodoTypeQueryEnum todoTypeQueryEnum = Enum.valueOf(TodoTypeQueryEnum.class, type.toString());
+            todoEntities = todoRepository.findByUserEmailAndType(userEmail, todoTypeQueryEnum.getValue());
+        }
         List<Todo> todos = todoEntities.stream().map(todoEntity -> Todo.builder()
                 .task(todoEntity.task)
                 .active(todoEntity.active)

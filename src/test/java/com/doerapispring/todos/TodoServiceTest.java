@@ -41,19 +41,63 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void get_callsTodoRepository_returnsTodos() throws Exception {
+    public void get_withNoType_callsTodoRepository_returnsTodos() throws Exception {
         List<TodoEntity> todos = Arrays.asList(TodoEntity.builder()
                 .task("clean the fridge")
                 .active(true)
                 .build());
         doReturn(todos).when(todoRepository).findByUserEmail("one@two.com");
 
-        List<Todo> todoEntities = todoService.get("one@two.com");
+        List<Todo> todoEntities = todoService.get("one@two.com", null);
 
+        verify(todoRepository).findByUserEmail("one@two.com");
         Todo todo = todoEntities.get(0);
         assertThat(todo).isNotNull();
         assertThat(todo.getTask()).isEqualTo("clean the fridge");
         assertThat(todo.isActive()).isEqualTo(true);
+    }
+
+    @Test
+    public void get_withTypeActive_callsTodoRepository_forActiveTodos_returnsTodos() throws Exception {
+        List<TodoEntity> todos = Arrays.asList(TodoEntity.builder()
+                .task("clean the fridge")
+                .active(true)
+                .build());
+
+        doReturn(todos).when(todoRepository).findByUserEmailAndType("one@two.com", true);
+
+        List<Todo> todoEntities = todoService.get("one@two.com", TodoTypeParamEnum.active);
+
+        verify(todoRepository).findByUserEmailAndType("one@two.com", true);
+        verifyNoMoreInteractions(todoRepository);
+        Todo todo = todoEntities.get(0);
+        assertThat(todo).isNotNull();
+        assertThat(todo.getTask()).isEqualTo("clean the fridge");
+        assertThat(todo.isActive()).isEqualTo(true);
+    }
+
+    @Test
+    public void get_withTypeInactive_callsTodoRepository_forInactiveTodos_returnsTodos() throws Exception {
+        List<TodoEntity> todos = Arrays.asList(TodoEntity.builder()
+                .task("clean the fridge")
+                .active(true)
+                .build());
+
+        doReturn(todos).when(todoRepository).findByUserEmailAndType("one@two.com", false);
+
+        List<Todo> todoEntities = todoService.get("one@two.com", TodoTypeParamEnum.inactive);
+
+        verify(todoRepository).findByUserEmailAndType("one@two.com", false);
+        verifyNoMoreInteractions(todoRepository);
+        Todo todo = todoEntities.get(0);
+        assertThat(todo).isNotNull();
+        assertThat(todo.getTask()).isEqualTo("clean the fridge");
+        assertThat(todo.isActive()).isEqualTo(true);
+    }
+
+    @Test
+    public void get_withNullType_freaksOutMaybe() throws Exception {
+        todoService.get("one@two.com", null);
     }
 
     @Test

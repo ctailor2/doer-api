@@ -61,7 +61,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void create() throws Exception {
         doPost();
 
-        List<Todo> todos = todosService.get(savedUser.getEmail());
+        List<Todo> todos = todosService.get(savedUser.getEmail(), null);
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
