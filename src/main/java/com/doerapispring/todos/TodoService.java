@@ -31,6 +31,7 @@ public class TodoService {
         TodoEntity todoEntity = TodoEntity.builder()
                 .userEntity(userEntity)
                 .task(todo.getTask())
+                .active(todo.isActive())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
@@ -39,10 +40,11 @@ public class TodoService {
     }
 
     public List<Todo> get(String userEmail) {
-        List<TodoEntity> todos = todoRepository.findByUserEmail(userEmail);
-        List<Todo> todoEntities = todos.stream().map((todo) -> Todo.builder()
-                .task(todo.task)
+        List<TodoEntity> todoEntities = todoRepository.findByUserEmail(userEmail);
+        List<Todo> todos = todoEntities.stream().map(todoEntity -> Todo.builder()
+                .task(todoEntity.task)
+                .active(todoEntity.active)
                 .build()).collect(Collectors.toList());
-        return todoEntities;
+        return todos;
     }
 }

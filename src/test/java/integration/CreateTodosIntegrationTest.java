@@ -36,7 +36,10 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/todos")
-                .content("{\"task\":\"read the things\"}")
+                .content("{\n" +
+                        "  \"task\":\"read the things\",\n" +
+                        "  \"active\":true\n" +
+                        "}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(httpHeaders))
                 .andReturn();
@@ -64,6 +67,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         ObjectMapper mapper = new ObjectMapper();
         Todo savedTodo = mapper.readValue(response.getContentAsString(), Todo.class);
         assertThat(savedTodo.getTask()).isEqualTo("read the things");
+        assertThat(savedTodo.isActive()).isEqualTo(true);
         assertThat(todos.size()).isEqualTo(1);
         assertThat(todos.get(0)).isEqualTo(savedTodo);
     }

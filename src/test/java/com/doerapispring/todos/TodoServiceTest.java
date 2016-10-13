@@ -36,12 +36,16 @@ public class TodoServiceTest {
         todoService = new TodoService(todoRepository, userRepository);
         todo = Todo.builder()
                 .task("reconfigure things")
+                .active(true)
                 .build();
     }
 
     @Test
     public void get_callsTodoRepository_returnsTodos() throws Exception {
-        List<TodoEntity> todos = Arrays.asList(TodoEntity.builder().task("clean the fridge").build());
+        List<TodoEntity> todos = Arrays.asList(TodoEntity.builder()
+                .task("clean the fridge")
+                .active(true)
+                .build());
         doReturn(todos).when(todoRepository).findByUserEmail("one@two.com");
 
         List<Todo> todoEntities = todoService.get("one@two.com");
@@ -49,6 +53,7 @@ public class TodoServiceTest {
         Todo todo = todoEntities.get(0);
         assertThat(todo).isNotNull();
         assertThat(todo.getTask()).isEqualTo("clean the fridge");
+        assertThat(todo.isActive()).isEqualTo(true);
     }
 
     @Test
@@ -66,6 +71,7 @@ public class TodoServiceTest {
         TodoEntity savedTodoEntity = todoArgumentCaptor.getValue();
         assertThat(savedTodoEntity.userEntity).isEqualTo(userEntity);
         assertThat(savedTodoEntity.task).isEqualTo("reconfigure things");
+        assertThat(savedTodoEntity.active).isEqualTo(true);
         assertThat(savedTodoEntity.createdAt).isToday();
         assertThat(savedTodoEntity.updatedAt).isToday();
         assertThat(returnedTodo).isEqualTo(todo);

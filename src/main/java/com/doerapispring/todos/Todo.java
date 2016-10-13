@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Todo {
     private String task;
+    private boolean active;
 }

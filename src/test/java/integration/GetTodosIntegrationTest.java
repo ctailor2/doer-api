@@ -63,9 +63,11 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();
-        List<Todo> savedTodo = mapper.readValue(response.getContentAsString(), new TypeReference<List<Todo>>() {
+        List<Todo> savedTodos = mapper.readValue(response.getContentAsString(), new TypeReference<List<Todo>>() {
         });
 
-        assertThat(savedTodo.get(0).getTask()).isEqualTo("this and that");
+        Todo savedTodo = savedTodos.get(0);
+        assertThat(savedTodo.getTask()).isEqualTo("this and that");
+        assertThat(savedTodo.isActive()).isEqualTo(false);
     }
 }

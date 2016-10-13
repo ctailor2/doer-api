@@ -25,6 +25,9 @@ public class TodoEntity {
     @Column(name = "task")
     public String task;
 
+    @Column(name = "active")
+    public boolean active;
+
     @Column(name = "created_at")
     public Date createdAt;
 
