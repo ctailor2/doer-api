@@ -2,6 +2,8 @@ package com.doerapispring.userSessions;
 
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.apiTokens.UserSession;
+import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +43,17 @@ public class UserSessionsService {
 
     public void logout(String userEmail) {
         sessionTokenService.expire(userEmail);
+    }
+
+    public User newSignup(String email, String password) {
+        RegisteredUser registeredUser = userService.createRegisteredUser(email, password);
+        UserSession userSession = sessionTokenService.start(registeredUser);
+        return User.builder()
+                .email(userSession.getEmail())
+                .sessionToken(SessionToken.builder()
+                    .token(userSession.getToken())
+                    .expiresAt(userSession.getExpiresAt())
+                    .build())
+                .build();
     }
 }

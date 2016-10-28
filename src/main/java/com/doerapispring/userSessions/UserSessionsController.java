@@ -24,9 +24,10 @@ class UserSessionsController {
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
     User signup(@RequestBody User user) {
-        return userSessionsService.signup(user);
+        return userSessionsService.newSignup(user.getEmail(), user.getPassword());
     }
 
+    // Resource - session (CRUD)
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody

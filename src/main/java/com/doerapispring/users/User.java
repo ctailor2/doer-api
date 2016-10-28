@@ -17,5 +17,6 @@ public class User {
     private String email;
     private String password;
     private String passwordConfirmation;
+    // Maybe that chunk ^ is a different domain object
     private SessionToken sessionToken;
 }

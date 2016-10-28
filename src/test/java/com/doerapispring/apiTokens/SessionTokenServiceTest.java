@@ -1,11 +1,13 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -31,11 +33,20 @@ public class SessionTokenServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private NewSessionTokenRepository newSessionTokenRepository;
+
     private ArgumentCaptor<SessionTokenEntity> sessionTokenArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
+
+    @Captor
+    private ArgumentCaptor<UserSession> userSessionArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
-        sessionTokenService = new SessionTokenService(sessionTokenRepository, tokenGenerator, userRepository);
+        sessionTokenService = new SessionTokenService(sessionTokenRepository,
+                tokenGenerator,
+                userRepository,
+                newSessionTokenRepository);
     }
 
     @Test
@@ -118,5 +129,21 @@ public class SessionTokenServiceTest {
 
         verify(sessionTokenRepository).findActiveByUserEmail("test@email.com");
         verifyNoMoreInteractions(sessionTokenRepository);
+    }
+
+    @Test
+    public void start_callsTokenGenerator_createsUserSessionWithToken_addsToRepository() throws Exception {
+        when(tokenGenerator.generate()).thenReturn("suchARandomTokenWow");
+        RegisteredUser registeredUser = new RegisteredUser("test@email.com", "encodedPassword");
+
+        sessionTokenService.start(registeredUser);
+
+        verify(tokenGenerator).generate();
+        verify(newSessionTokenRepository).add(userSessionArgumentCaptor.capture());
+        UserSession userSession = userSessionArgumentCaptor.getValue();
+        assertThat(userSession).isNotNull();
+        assertThat(userSession.getEmail()).isEqualTo("test@email.com");
+        assertThat(userSession.getToken()).isEqualTo("suchARandomTokenWow");
+        assertThat(userSession.getExpiresAt()).isInTheFuture();
     }
 }

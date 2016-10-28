@@ -59,7 +59,7 @@ public class UserSessionsControllerTest {
     @Test
     public void signup_callsUserSessionsService() throws Exception {
         userSessionsController.signup(user);
-        verify(userSessionsService).signup(user);
+        verify(userSessionsService).newSignup(user.getEmail(), user.getPassword());
     }
 
     @Test

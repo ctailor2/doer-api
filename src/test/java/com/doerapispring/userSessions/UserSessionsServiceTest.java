@@ -2,6 +2,8 @@ package com.doerapispring.userSessions;
 
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.apiTokens.UserSession;
+import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
@@ -10,7 +12,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Date;
+
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -58,6 +63,22 @@ public class UserSessionsServiceTest {
 
         assertThat(resultUser.getEmail()).isEqualTo("test@email.com");
         assertThat(resultUser.getSessionToken().getToken()).isEqualTo("superSecureToken");
+    }
+
+    @Test
+    public void newSignup_callsUserService_callsSessionTokenService_returnsUser() throws Exception {
+        RegisteredUser registeredUser = new RegisteredUser("test@email.com", "encodedPassword");
+        when(userService.createRegisteredUser(any(), any())).thenReturn(registeredUser);
+        UserSession userSession = new UserSession("test@email.com", "token", new Date());
+        when(sessionTokenService.start(any())).thenReturn(userSession);
+
+        User user = userSessionsService.newSignup("test@email.com", "password");
+
+        verify(userService).createRegisteredUser("test@email.com", "password");
+        verify(sessionTokenService).start(registeredUser);
+        assertThat(user.getEmail()).isEqualTo("test@email.com");
+        assertThat(user.getSessionToken().getToken()).isEqualTo("token");
+        assertThat(user.getSessionToken().getExpiresAt()).isToday();
     }
 
     @Test

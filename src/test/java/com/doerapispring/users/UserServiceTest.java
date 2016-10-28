@@ -1,5 +1,6 @@
 package com.doerapispring.users;
 
+import com.doerapispring.utilities.PasswordEncodingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,8 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by chiragtailor on 8/18/16.
@@ -28,11 +28,19 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    private ArgumentCaptor<UserEntity> userArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
+    @Mock
+    private NewUserRepository newUserRepository;
+
+    @Mock
+    private PasswordEncodingService passwordEncodingService;
+
+    private ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
+
+    private ArgumentCaptor<RegisteredUser> registeredUserArgumentCaptor = ArgumentCaptor.forClass(RegisteredUser.class);
 
     @Before
     public void setUp() throws Exception {
-        userService = new UserService(userRepository, passwordEncoder);
+        userService = new UserService(userRepository, newUserRepository, passwordEncodingService, passwordEncoder);
         user = User.builder()
                 .email("test@email.com")
                 .password("password")
@@ -50,13 +58,27 @@ public class UserServiceTest {
         User savedUser = userService.create(user);
 
         verify(passwordEncoder).encode(user.getPassword());
-        verify(userRepository).save(userArgumentCaptor.capture());
-        UserEntity savedUserEntity = userArgumentCaptor.getValue();
+        verify(userRepository).save(userEntityArgumentCaptor.capture());
+        UserEntity savedUserEntity = userEntityArgumentCaptor.getValue();
         assertThat(savedUserEntity.email).isEqualTo("test@email.com");
         assertThat(savedUserEntity.passwordDigest).isEqualTo("encodedPassword");
         assertThat(savedUserEntity.createdAt).isToday();
         assertThat(savedUserEntity.updatedAt).isToday();
         assertThat(savedUser.getEmail()).isEqualTo("test@email.com");
         assertThat(savedUser.getPassword()).isNull();
+    }
+
+    @Test
+    public void createRegisteredUser_callsPasswordEncodingService_createsRegisteredUser_addsToUserRepository() throws Exception {
+        when(passwordEncodingService.encode(any())).thenReturn("encodedPassword");
+
+        userService.createRegisteredUser("test@email.com", "password");
+
+        verify(passwordEncodingService).encode("password");
+        verify(newUserRepository).add(registeredUserArgumentCaptor.capture());
+        RegisteredUser user = registeredUserArgumentCaptor.getValue();
+        assertThat(user).isNotNull();
+        assertThat(user.getEmail()).isEqualTo("test@email.com");
+        assertThat(user.getEncodedPassword()).isEqualTo("encodedPassword");
     }
 }
