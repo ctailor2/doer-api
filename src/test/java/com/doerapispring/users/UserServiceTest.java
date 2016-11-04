@@ -1,13 +1,17 @@
 package com.doerapispring.users;
 
+import com.doerapispring.Identifier;
 import com.doerapispring.utilities.PasswordEncodingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -37,6 +41,9 @@ public class UserServiceTest {
     private ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     private ArgumentCaptor<RegisteredUser> registeredUserArgumentCaptor = ArgumentCaptor.forClass(RegisteredUser.class);
+
+    @Captor
+    private ArgumentCaptor<NewUser> newUserArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -80,5 +87,33 @@ public class UserServiceTest {
         assertThat(user).isNotNull();
         assertThat(user.getEmail()).isEqualTo("test@email.com");
         assertThat(user.getEncodedPassword()).isEqualTo("encodedPassword");
+    }
+
+    @Test
+    public void newCreate_whenIdentifierNotTaken_addsUserToRepository_returnsUser() throws Exception {
+        Identifier identifier = new Identifier("soUnique");
+
+        when(newUserRepository.find(any())).thenReturn(Optional.empty());
+
+        NewUser createdUser = userService.newCreate(identifier);
+
+        verify(newUserRepository).find(identifier);
+        verify(newUserRepository).add(newUserArgumentCaptor.capture());
+        NewUser addedUser = newUserArgumentCaptor.getValue();
+        assertThat(addedUser.getIdentifier()).isEqualTo(identifier);
+        assertThat(createdUser).isNotNull();
+    }
+
+    @Test
+    public void newCreate_whenIdentifierTaken_doesNotAddUserToRepository_returnsNull() throws Exception {
+        Identifier identifier = new Identifier("soUnique");
+
+        when(newUserRepository.find(any())).thenReturn(Optional.of(new NewUser(identifier)));
+
+        NewUser createdUser = userService.newCreate(identifier);
+
+        verify(newUserRepository).find(identifier);
+        verifyNoMoreInteractions(newUserRepository);
+        assertThat(createdUser).isNull();
     }
 }

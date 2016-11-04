@@ -32,4 +32,16 @@ public class NewSessionTokenRepository {
                 .build();
         sessionTokenDAO.save(sessionTokenEntity);
     }
+
+    public void add(SessionToken sessionToken) {
+        UserEntity userEntity = userDAO.findByEmail(sessionToken.getIdentifier().get());
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
+                .userEntity(userEntity)
+                .token(sessionToken.getToken())
+                .expiresAt(sessionToken.getExpiresAt())
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .build();
+        sessionTokenDAO.save(sessionTokenEntity);
+    }
 }

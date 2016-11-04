@@ -1,8 +1,11 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.Identifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.apiTokens.UserSession;
+import com.doerapispring.users.NewUser;
 import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
@@ -79,6 +82,37 @@ public class UserSessionsServiceTest {
         assertThat(user.getEmail()).isEqualTo("test@email.com");
         assertThat(user.getSessionToken().getToken()).isEqualTo("token");
         assertThat(user.getSessionToken().getExpiresAt()).isToday();
+    }
+
+    @Test
+    public void newerSignup_createsUser_whenSuccessful_registersCredentialsForUser_grantsAccessToken_andReturnsIt() throws Exception {
+        Identifier identifier = new Identifier("soUnique");
+        Credentials credentials = new Credentials("soSecure");
+
+        when(userService.newCreate(any())).thenReturn(new NewUser(identifier));
+        when(sessionTokenService.grant(any()))
+                .thenReturn(SessionToken.builder().build());
+
+        SessionToken sessionToken = userSessionsService.newerSignup(identifier, credentials);
+
+        verify(userService).newCreate(identifier);
+        verify(authenticationService).registerCredentials(identifier, credentials);
+        verify(sessionTokenService).grant(identifier);
+        assertThat(sessionToken).isNotNull();
+    }
+
+    @Test
+    public void newerSignup_createsUser_whenFailed_doesNotRegisterCredentialsForUser_returnsNull() throws Exception {
+        Identifier identifier = new Identifier("soUnique");
+        Credentials credentials = new Credentials("soSecure");
+
+        when(userService.newCreate(any())).thenReturn(null);
+
+        SessionToken sessionToken = userSessionsService.newerSignup(identifier, credentials);
+
+        verify(userService).newCreate(identifier);
+        verifyZeroInteractions(authenticationService);
+        assertThat(sessionToken).isNull();
     }
 
     @Test

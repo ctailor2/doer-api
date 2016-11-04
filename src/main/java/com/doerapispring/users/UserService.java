@@ -1,5 +1,6 @@
 package com.doerapispring.users;
 
+import com.doerapispring.Identifier;
 import com.doerapispring.utilities.PasswordEncodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Created by chiragtailor on 8/12/16.
@@ -49,5 +51,13 @@ public class UserService implements UserServiceInterface {
         RegisteredUser registeredUser = new RegisteredUser(email, encodedPassword);
         newUserRepository.add(registeredUser);
         return registeredUser;
+    }
+
+    public NewUser newCreate(Identifier identifier) {
+        Optional<NewUser> userOptional = newUserRepository.find(identifier);
+        if (userOptional.isPresent()) return null;
+        NewUser newUser = new NewUser(identifier);
+        newUserRepository.add(newUser);
+        return newUser;
     }
 }

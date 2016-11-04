@@ -1,5 +1,7 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.Identifier;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,5 +26,9 @@ public class AuthenticationService {
         UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) return false;
         return passwordEncoder.matches(password, userEntity.passwordDigest);
+    }
+
+    public void registerCredentials(Identifier identifier, Credentials credentials) {
+
     }
 }

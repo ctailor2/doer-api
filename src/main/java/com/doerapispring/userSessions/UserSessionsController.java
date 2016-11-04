@@ -1,5 +1,7 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.SignupForm;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,8 +25,8 @@ class UserSessionsController {
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    User signup(@RequestBody User user) {
-        return userSessionsService.newSignup(user.getEmail(), user.getPassword());
+    SessionToken signup(@RequestBody SignupForm signupForm) {
+        return userSessionsService.newerSignup(signupForm.getIdentifier(), signupForm.getCredentials());
     }
 
     // Resource - session (CRUD)

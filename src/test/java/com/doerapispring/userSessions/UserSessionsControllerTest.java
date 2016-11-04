@@ -1,5 +1,8 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.Identifier;
+import com.doerapispring.SignupForm;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
@@ -58,8 +61,11 @@ public class UserSessionsControllerTest {
 
     @Test
     public void signup_callsUserSessionsService() throws Exception {
-        userSessionsController.signup(user);
-        verify(userSessionsService).newSignup(user.getEmail(), user.getPassword());
+        Identifier identifier = new Identifier("soUnique");
+        Credentials credentials = new Credentials("soSecure");
+        SignupForm signupForm = new SignupForm(identifier, credentials);
+        userSessionsController.signup(signupForm);
+        verify(userSessionsService).newerSignup(identifier, credentials);
     }
 
     @Test

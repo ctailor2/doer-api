@@ -1,5 +1,7 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.Identifier;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +19,7 @@ import java.util.Date;
 public class SessionToken {
     private String token;
     private Date expiresAt;
+
+    @JsonIgnore
+    private Identifier identifier;
 }

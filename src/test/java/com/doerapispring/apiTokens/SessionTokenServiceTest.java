@@ -1,5 +1,6 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.Identifier;
 import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
@@ -36,10 +37,13 @@ public class SessionTokenServiceTest {
     @Mock
     private NewSessionTokenRepository newSessionTokenRepository;
 
-    private ArgumentCaptor<SessionTokenEntity> sessionTokenArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
+    private ArgumentCaptor<SessionTokenEntity> sessionTokenEntityArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
 
     @Captor
     private ArgumentCaptor<UserSession> userSessionArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<SessionToken> sessionTokenArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -59,8 +63,8 @@ public class SessionTokenServiceTest {
 
         verify(userRepository).findByEmail("email");
         verify(tokenGenerator).generate();
-        verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionTokenEntity savedSessionTokenEntity = sessionTokenArgumentCaptor.getValue();
+        verify(sessionTokenRepository).save(sessionTokenEntityArgumentCaptor.capture());
+        SessionTokenEntity savedSessionTokenEntity = sessionTokenEntityArgumentCaptor.getValue();
         assertThat(savedSessionTokenEntity.userEntity).isEqualTo(userEntity);
         assertThat(savedSessionTokenEntity.token).isEqualTo("sorandomtoken");
         assertThat(savedSessionTokenEntity.expiresAt).isInTheFuture();
@@ -116,8 +120,8 @@ public class SessionTokenServiceTest {
         sessionTokenService.expire("test@email.com");
 
         verify(sessionTokenRepository).findActiveByUserEmail("test@email.com");
-        verify(sessionTokenRepository).save(sessionTokenArgumentCaptor.capture());
-        SessionTokenEntity savedSessionTokenEntity = sessionTokenArgumentCaptor.getValue();
+        verify(sessionTokenRepository).save(sessionTokenEntityArgumentCaptor.capture());
+        SessionTokenEntity savedSessionTokenEntity = sessionTokenEntityArgumentCaptor.getValue();
         assertThat(savedSessionTokenEntity.expiresAt).isToday();
     }
 
@@ -145,5 +149,21 @@ public class SessionTokenServiceTest {
         assertThat(userSession.getEmail()).isEqualTo("test@email.com");
         assertThat(userSession.getToken()).isEqualTo("suchARandomTokenWow");
         assertThat(userSession.getExpiresAt()).isInTheFuture();
+    }
+
+    @Test
+    public void grant_generatesAccessIdentifier_addsSessionTokenToRepository_returnsSessionToken() throws Exception {
+        when(tokenGenerator.generate()).thenReturn("thisIsYourToken");
+
+        Identifier identifier = new Identifier("soUnique");
+        SessionToken grantedSessionToken = sessionTokenService.grant(identifier);
+
+        verify(tokenGenerator).generate();
+        verify(newSessionTokenRepository).add(sessionTokenArgumentCaptor.capture());
+        SessionToken addedSessionToken = sessionTokenArgumentCaptor.getValue();
+        assertThat(addedSessionToken.getIdentifier()).isEqualTo(identifier);
+        assertThat(addedSessionToken.getToken()).isEqualTo("thisIsYourToken");
+        assertThat(addedSessionToken.getExpiresAt()).isInTheFuture();
+        assertThat(grantedSessionToken).isNotNull();
     }
 }

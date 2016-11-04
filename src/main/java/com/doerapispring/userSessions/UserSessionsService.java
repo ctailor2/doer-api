@@ -1,8 +1,11 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.Identifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.apiTokens.UserSession;
+import com.doerapispring.users.NewUser;
 import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
@@ -55,5 +58,12 @@ public class UserSessionsService {
                     .expiresAt(userSession.getExpiresAt())
                     .build())
                 .build();
+    }
+
+    public SessionToken newerSignup(Identifier identifier, Credentials credentials) {
+        NewUser user = userService.newCreate(identifier);
+        if (user == null) return null;
+        authenticationService.registerCredentials(identifier, credentials);
+        return sessionTokenService.grant(identifier);
     }
 }

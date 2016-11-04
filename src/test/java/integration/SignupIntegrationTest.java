@@ -1,7 +1,7 @@
 package integration;
 
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenRepository;
-import com.doerapispring.users.User;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import com.doerapispring.users.UserService;
@@ -31,9 +31,8 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
 
     private String content =
             "{\n" +
-                    "  \"email\": \"test@email.com\",\n" +
-                    "  \"password\": \"password\",\n" +
-                    "  \"passwordConfirmation\": \"password\"\n" +
+                    "  \"identifier\": \"test@email.com\",\n" +
+                    "  \"credentials\": \"password\"\n" +
                     "}";
 
     private MvcResult mvcResult;
@@ -55,12 +54,11 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        User user = mapper.readValue(contentAsString, User.class);
+        SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
 
         assertThat(userEntity).isNotNull();
         assertThat(sessionTokenRepository.findActiveByUserEmail(userEntity.email)).isNotNull();
-        assertThat(user.getEmail()).isEqualTo("test@email.com");
-        assertThat(user.getSessionToken().getToken()).isNotEmpty();
-        assertThat(user.getSessionToken().getExpiresAt()).isInTheFuture();
+        assertThat(sessionToken.getToken()).isNotEmpty();
+        assertThat(sessionToken.getExpiresAt()).isInTheFuture();
     }
 }
