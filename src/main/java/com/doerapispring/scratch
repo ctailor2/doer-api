@@ -1,0 +1,30 @@
+Auth flow
+
+Authenticated request
+1) API request
+2) Server checks the request signature for a server issued secret referencing the authenticated user by some unique identifier
+3) Unique identifier is used to find the acting user
+
+Signup
+1) Request to register a user includes:
+	- unique identifier (email)
+	- credentials (password)
+2) Check repository to see if unique identifier is already used
+3) Create user and add to repository
+4) Add secured (hashed/salted) credentials to repository with a reference to the user via its unique identifier
+5) Grant some form of unique identifier for the client making the request, referencing the authenticated user by some unique identifier:
+	- unique identifier (token)
+	- expiration date/time
+6) Add identifier to repository
+
+Login
+1) Request to login a user includes:
+	- unique identifier
+	- credentials (password)
+2) Find user from repository using the unique identifier
+3) Check credentials
+4) Grant some form of unique identifier for the client making the request, referencing the authenticated user by some unique identifier:
+	- unique identifier
+	- expiration date/time
+5) Add identifier to repository
+
