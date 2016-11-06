@@ -65,7 +65,7 @@ public class UserSessionsControllerTest {
         Credentials credentials = new Credentials("soSecure");
         SignupForm signupForm = new SignupForm(userIdentifier, credentials);
         userSessionsController.signup(signupForm);
-        verify(userSessionsService).newerSignup(userIdentifier, credentials);
+        verify(userSessionsService).signup(userIdentifier, credentials);
     }
 
     @Test

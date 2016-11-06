@@ -26,7 +26,7 @@ class UserSessionsController {
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
     SessionToken signup(@RequestBody SignupForm signupForm) {
-        return userSessionsService.newerSignup(signupForm.getIdentifier(), signupForm.getCredentials());
+        return userSessionsService.signup(signupForm.getIdentifier(), signupForm.getCredentials());
     }
 
     // Resource - session (CRUD)

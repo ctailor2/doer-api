@@ -3,6 +3,7 @@ package com.doerapispring.users;
 import com.doerapispring.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.Optional;
  * Created by chiragtailor on 10/24/16.
  */
 @Repository
+@Transactional
 public class NewUserRepository {
     private final UserDAO userDAO;
 

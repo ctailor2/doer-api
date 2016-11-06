@@ -1,5 +1,8 @@
 package integration;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.UserIdentifier;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
@@ -27,8 +30,6 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     private HttpHeaders httpHeaders = new HttpHeaders();
 
-    private User savedUser;
-
     @Autowired
     UserSessionsService userSessionsService;
 
@@ -52,8 +53,10 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
                 .email("test@email.com")
                 .password("password")
                 .build();
-        savedUser = userSessionsService.signup(user);
-        httpHeaders.add("Session-Token", savedUser.getSessionToken().getToken());
+        SessionToken signupSessionToken = userSessionsService.signup(
+                new UserIdentifier("test@email.com"),
+                new Credentials("password"));
+        httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders.get("/v1/todos").headers(httpHeaders);
     }
 
@@ -63,7 +66,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         Todo todo = Todo.builder()
                 .task("this and that")
                 .build();
-        todosService.create(savedUser.getEmail(), todo);
+        todosService.create("test@email.com", todo);
 
         doGet();
 
@@ -89,8 +92,8 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
                 .task("inactive task")
                 .active(false)
                 .build();
-        todosService.create(savedUser.getEmail(), todo1);
-        todosService.create(savedUser.getEmail(), todo2);
+        todosService.create("test@email.com", todo1);
+        todosService.create("test@email.com", todo2);
 
         doGet();
 

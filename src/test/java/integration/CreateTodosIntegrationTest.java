@@ -1,9 +1,11 @@
 package integration;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.UserIdentifier;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,8 +34,6 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Autowired
     TodoService todosService;
 
-    private User savedUser;
-
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/todos")
                 .content("{\n" +
@@ -49,19 +49,15 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        User user = User.builder()
-                .email("test@email.com")
-                .password("password")
-                .build();
-        savedUser = userSessionsService.signup(user);
-        httpHeaders.add("Session-Token", savedUser.getSessionToken().getToken());
+        SessionToken signupSessionToken = userSessionsService.signup(new UserIdentifier("test@email.com"), new Credentials("password"));
+        httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void create() throws Exception {
         doPost();
 
-        List<Todo> todos = todosService.get(savedUser.getEmail(), null);
+        List<Todo> todos = todosService.get("test@email.com", null);
 
         MockHttpServletResponse response = mvcResult.getResponse();
         ObjectMapper mapper = new ObjectMapper();

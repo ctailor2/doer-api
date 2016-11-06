@@ -1,5 +1,7 @@
 package integration;
 
+import com.doerapispring.Credentials;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.userSessions.UserSessionsService;
 import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,11 +38,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
     @Test
     public void login_whenUserWithEmailRegistered_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
-        User registeredUser = User.builder()
-                .email("test@email.com")
-                .password("password")
-                .build();
-        userSessionsService.signup(registeredUser);
+        userSessionsService.signup(new UserIdentifier("test@email.com"), new Credentials("password"));
 
         doPost();
 

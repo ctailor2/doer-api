@@ -4,9 +4,7 @@ import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.apiTokens.UserSession;
 import com.doerapispring.users.NewUser;
-import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +26,11 @@ public class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    public User signup(User user) {
-        User savedUser = userService.create(user);
-        SessionToken sessionToken = sessionTokenService.create(savedUser.getEmail());
-        savedUser.setSessionToken(sessionToken);
-        return savedUser;
+    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) {
+        NewUser user = userService.create(userIdentifier);
+        authenticationService.registerCredentials(userIdentifier, credentials);
+        if (user == null) return null;
+        return sessionTokenService.grant(userIdentifier);
     }
 
     public User login(User user) {
@@ -46,24 +44,5 @@ public class UserSessionsService {
 
     public void logout(String userEmail) {
         sessionTokenService.expire(userEmail);
-    }
-
-    public User newSignup(String email, String password) {
-        RegisteredUser registeredUser = userService.createRegisteredUser(email, password);
-        UserSession userSession = sessionTokenService.start(registeredUser);
-        return User.builder()
-                .email(userSession.getEmail())
-                .sessionToken(SessionToken.builder()
-                    .token(userSession.getToken())
-                    .expiresAt(userSession.getExpiresAt())
-                    .build())
-                .build();
-    }
-
-    public SessionToken newerSignup(UserIdentifier userIdentifier, Credentials credentials) {
-        NewUser user = userService.newCreate(userIdentifier);
-        if (user == null) return null;
-        authenticationService.registerCredentials(userIdentifier, credentials);
-        return sessionTokenService.grant(userIdentifier);
     }
 }

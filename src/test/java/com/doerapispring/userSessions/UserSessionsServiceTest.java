@@ -4,9 +4,7 @@ import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.apiTokens.UserSession;
 import com.doerapispring.users.NewUser;
-import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
@@ -14,8 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Date;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -55,62 +51,32 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void signup_callsUserService_callsSessionTokenService_returnsUser() throws Exception {
-        doReturn(user).when(userService).create(user);
-        doReturn(sessionToken).when(sessionTokenService).create("test@email.com");
-
-        User resultUser = userSessionsService.signup(user);
-
-        verify(userService).create(user);
-        verify(sessionTokenService).create("test@email.com");
-
-        assertThat(resultUser.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUser.getSessionToken().getToken()).isEqualTo("superSecureToken");
-    }
-
-    @Test
-    public void newSignup_callsUserService_callsSessionTokenService_returnsUser() throws Exception {
-        RegisteredUser registeredUser = new RegisteredUser("test@email.com", "encodedPassword");
-        when(userService.createRegisteredUser(any(), any())).thenReturn(registeredUser);
-        UserSession userSession = new UserSession("test@email.com", "token", new Date());
-        when(sessionTokenService.start(any())).thenReturn(userSession);
-
-        User user = userSessionsService.newSignup("test@email.com", "password");
-
-        verify(userService).createRegisteredUser("test@email.com", "password");
-        verify(sessionTokenService).start(registeredUser);
-        assertThat(user.getEmail()).isEqualTo("test@email.com");
-        assertThat(user.getSessionToken().getToken()).isEqualTo("token");
-        assertThat(user.getSessionToken().getExpiresAt()).isToday();
-    }
-
-    @Test
-    public void newerSignup_createsUser_whenSuccessful_registersCredentialsForUser_grantsAccessToken_andReturnsIt() throws Exception {
+    public void signup_createsUser_whenSuccessful_registersCredentialsForUser_grantsAccessToken_andReturnsIt() throws Exception {
         UserIdentifier userIdentifier = new UserIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
 
-        when(userService.newCreate(any())).thenReturn(new NewUser(userIdentifier));
+        when(userService.create(any())).thenReturn(new NewUser(userIdentifier));
         when(sessionTokenService.grant(any()))
                 .thenReturn(SessionToken.builder().build());
 
-        SessionToken sessionToken = userSessionsService.newerSignup(userIdentifier, credentials);
+        SessionToken sessionToken = userSessionsService.signup(userIdentifier, credentials);
 
-        verify(userService).newCreate(userIdentifier);
+        verify(userService).create(userIdentifier);
         verify(authenticationService).registerCredentials(userIdentifier, credentials);
         verify(sessionTokenService).grant(userIdentifier);
         assertThat(sessionToken).isNotNull();
     }
 
     @Test
-    public void newerSignup_createsUser_whenFailed_doesNotRegisterCredentialsForUser_returnsNull() throws Exception {
+    public void signup_createsUser_whenFailed_doesNotRegisterCredentialsForUser_returnsNull() throws Exception {
         UserIdentifier userIdentifier = new UserIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
 
-        when(userService.newCreate(any())).thenReturn(null);
+        when(userService.create(any())).thenReturn(null);
 
-        SessionToken sessionToken = userSessionsService.newerSignup(userIdentifier, credentials);
+        SessionToken sessionToken = userSessionsService.signup(userIdentifier, credentials);
 
-        verify(userService).newCreate(userIdentifier);
+        verify(userService).create(userIdentifier);
         verifyZeroInteractions(authenticationService);
         assertThat(sessionToken).isNull();
     }

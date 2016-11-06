@@ -4,11 +4,13 @@ import com.doerapispring.users.UserDAO;
 import com.doerapispring.users.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by chiragtailor on 11/5/16.
  */
 @Repository
+@Transactional
 public class UserCredentialsRepository {
     private final UserDAO userDAO;
 
