@@ -1,18 +1,23 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.*;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by chiragtailor on 8/29/16.
@@ -27,10 +32,17 @@ public class AuthenticationServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private UserCredentialsRepository userCredentialsRepository;
+
+    @Captor
+    private ArgumentCaptor<UserCredentials> userCredentialsArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = new AuthenticationService(passwordEncoder, userRepository);
+        authenticationService = new AuthenticationService(passwordEncoder,
+                userRepository,
+                userCredentialsRepository);
         userEntity = UserEntity.builder()
                 .email("wow@email.com")
                 .passwordDigest("beans")
@@ -63,5 +75,20 @@ public class AuthenticationServiceTest {
         boolean result = authenticationService.authenticate("wow@email.com", "cool");
         verify(userRepository).findByEmail("wow@email.com");
         assertThat(result).isEqualTo(false);
+    }
+
+    @Test
+    public void registerCredentials_callsPasswordEncoder_callsUserCredentialsRepository() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        Credentials credentials = new Credentials("soSecret");
+        when(passwordEncoder.encode(any())).thenReturn("encodedSecretPassword");
+        authenticationService.registerCredentials(userIdentifier, credentials);
+
+        verify(passwordEncoder).encode("soSecret");
+        verify(userCredentialsRepository).add(userCredentialsArgumentCaptor.capture());
+        UserCredentials userCredentials = userCredentialsArgumentCaptor.getValue();
+        assertThat(userCredentials.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentials.getEncodedCredentials())
+                .isEqualTo(new EncodedCredentials("encodedSecretPassword"));
     }
 }

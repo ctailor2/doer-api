@@ -45,7 +45,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     }
 
     @Test
-    public void signup_whenUserWithEmailDoesNotExist_createsUser_createsSessionToken_respondsWithBoth() throws Exception {
+    public void signup_whenUserWithEmailDoesNotExist_createsUser_storesCredentials_createsSessionToken_respondsWithSessionToken() throws Exception {
         doPost();
 
         UserEntity userEntity = userRepository.findByEmail("test@email.com");
@@ -57,6 +57,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
 
         assertThat(userEntity).isNotNull();
+        assertThat(userEntity.passwordDigest).isNotEmpty();
         assertThat(sessionTokenRepository.findActiveByUserEmail(userEntity.email)).isNotNull();
         assertThat(sessionToken.getToken()).isNotEmpty();
         assertThat(sessionToken.getExpiresAt()).isInTheFuture();

@@ -1,6 +1,6 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
@@ -155,13 +155,13 @@ public class SessionTokenServiceTest {
     public void grant_generatesAccessIdentifier_addsSessionTokenToRepository_returnsSessionToken() throws Exception {
         when(tokenGenerator.generate()).thenReturn("thisIsYourToken");
 
-        Identifier identifier = new Identifier("soUnique");
-        SessionToken grantedSessionToken = sessionTokenService.grant(identifier);
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        SessionToken grantedSessionToken = sessionTokenService.grant(userIdentifier);
 
         verify(tokenGenerator).generate();
         verify(newSessionTokenRepository).add(sessionTokenArgumentCaptor.capture());
         SessionToken addedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(addedSessionToken.getIdentifier()).isEqualTo(identifier);
+        assertThat(addedSessionToken.getUserIdentifier()).isEqualTo(userIdentifier);
         assertThat(addedSessionToken.getToken()).isEqualTo("thisIsYourToken");
         assertThat(addedSessionToken.getExpiresAt()).isInTheFuture();
         assertThat(grantedSessionToken).isNotNull();

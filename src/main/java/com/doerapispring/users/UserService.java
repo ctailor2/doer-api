@@ -1,6 +1,6 @@
 package com.doerapispring.users;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.utilities.PasswordEncodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,10 +53,10 @@ public class UserService implements UserServiceInterface {
         return registeredUser;
     }
 
-    public NewUser newCreate(Identifier identifier) {
-        Optional<NewUser> userOptional = newUserRepository.find(identifier);
+    public NewUser newCreate(UserIdentifier userIdentifier) {
+        Optional<NewUser> userOptional = newUserRepository.find(userIdentifier);
         if (userOptional.isPresent()) return null;
-        NewUser newUser = new NewUser(identifier);
+        NewUser newUser = new NewUser(userIdentifier);
         newUserRepository.add(newUser);
         return newUser;
     }

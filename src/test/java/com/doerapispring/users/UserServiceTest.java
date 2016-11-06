@@ -1,6 +1,6 @@
 package com.doerapispring.users;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.utilities.PasswordEncodingService;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,28 +91,28 @@ public class UserServiceTest {
 
     @Test
     public void newCreate_whenIdentifierNotTaken_addsUserToRepository_returnsUser() throws Exception {
-        Identifier identifier = new Identifier("soUnique");
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
 
         when(newUserRepository.find(any())).thenReturn(Optional.empty());
 
-        NewUser createdUser = userService.newCreate(identifier);
+        NewUser createdUser = userService.newCreate(userIdentifier);
 
-        verify(newUserRepository).find(identifier);
+        verify(newUserRepository).find(userIdentifier);
         verify(newUserRepository).add(newUserArgumentCaptor.capture());
         NewUser addedUser = newUserArgumentCaptor.getValue();
-        assertThat(addedUser.getIdentifier()).isEqualTo(identifier);
+        assertThat(addedUser.getIdentifier()).isEqualTo(userIdentifier);
         assertThat(createdUser).isNotNull();
     }
 
     @Test
     public void newCreate_whenIdentifierTaken_doesNotAddUserToRepository_returnsNull() throws Exception {
-        Identifier identifier = new Identifier("soUnique");
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
 
-        when(newUserRepository.find(any())).thenReturn(Optional.of(new NewUser(identifier)));
+        when(newUserRepository.find(any())).thenReturn(Optional.of(new NewUser(userIdentifier)));
 
-        NewUser createdUser = userService.newCreate(identifier);
+        NewUser createdUser = userService.newCreate(userIdentifier);
 
-        verify(newUserRepository).find(identifier);
+        verify(newUserRepository).find(userIdentifier);
         verifyNoMoreInteractions(newUserRepository);
         assertThat(createdUser).isNull();
     }

@@ -1,6 +1,6 @@
 package com.doerapispring.users;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +50,7 @@ public class NewUserRepositoryTest {
 
     @Test
     public void add_newUser_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
-        NewUser newUser = new NewUser(new Identifier("soUnique"));
+        NewUser newUser = new NewUser(new UserIdentifier("soUnique"));
 
         newUserRepository.add(newUser);
 
@@ -67,7 +67,7 @@ public class NewUserRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        Optional<NewUser> userOptional = newUserRepository.find(new Identifier("soUnique"));
+        Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isEqualTo(true);
@@ -77,7 +77,7 @@ public class NewUserRepositoryTest {
     public void find_callsUserDao_whenUserNotFound_returnsEmptyOptional() throws Exception {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
-        Optional<NewUser> userOptional = newUserRepository.find(new Identifier("soUnique"));
+        Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isEqualTo(false);

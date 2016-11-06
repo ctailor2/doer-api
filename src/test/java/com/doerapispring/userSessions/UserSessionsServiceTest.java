@@ -1,7 +1,7 @@
 package com.doerapispring.userSessions;
 
 import com.doerapispring.Credentials;
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.apiTokens.UserSession;
@@ -86,31 +86,31 @@ public class UserSessionsServiceTest {
 
     @Test
     public void newerSignup_createsUser_whenSuccessful_registersCredentialsForUser_grantsAccessToken_andReturnsIt() throws Exception {
-        Identifier identifier = new Identifier("soUnique");
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
 
-        when(userService.newCreate(any())).thenReturn(new NewUser(identifier));
+        when(userService.newCreate(any())).thenReturn(new NewUser(userIdentifier));
         when(sessionTokenService.grant(any()))
                 .thenReturn(SessionToken.builder().build());
 
-        SessionToken sessionToken = userSessionsService.newerSignup(identifier, credentials);
+        SessionToken sessionToken = userSessionsService.newerSignup(userIdentifier, credentials);
 
-        verify(userService).newCreate(identifier);
-        verify(authenticationService).registerCredentials(identifier, credentials);
-        verify(sessionTokenService).grant(identifier);
+        verify(userService).newCreate(userIdentifier);
+        verify(authenticationService).registerCredentials(userIdentifier, credentials);
+        verify(sessionTokenService).grant(userIdentifier);
         assertThat(sessionToken).isNotNull();
     }
 
     @Test
     public void newerSignup_createsUser_whenFailed_doesNotRegisterCredentialsForUser_returnsNull() throws Exception {
-        Identifier identifier = new Identifier("soUnique");
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
 
         when(userService.newCreate(any())).thenReturn(null);
 
-        SessionToken sessionToken = userSessionsService.newerSignup(identifier, credentials);
+        SessionToken sessionToken = userSessionsService.newerSignup(userIdentifier, credentials);
 
-        verify(userService).newCreate(identifier);
+        verify(userService).newCreate(userIdentifier);
         verifyZeroInteractions(authenticationService);
         assertThat(sessionToken).isNull();
     }
@@ -154,6 +154,12 @@ public class UserSessionsServiceTest {
         verifyZeroInteractions(sessionTokenService);
 
         assertThat(resultUser).isNull();
+    }
+
+    @Test
+    public void newLogin_callsUserService_whenUserExists() throws Exception {
+        // TODO: Fill me out
+
     }
 
     @Test

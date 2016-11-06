@@ -1,6 +1,6 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.users.NewUserRepository;
 import com.doerapispring.users.UserDAO;
 import com.doerapispring.users.UserEntity;
@@ -72,7 +72,7 @@ public class NewSessionTokenRepositoryTest {
 
         Date expiresAt = new Date();
         SessionToken sessionToken = SessionToken.builder()
-                .identifier(new Identifier("soUnique"))
+                .userIdentifier(new UserIdentifier("soUnique"))
                 .token("soRandomToken")
                 .expiresAt(expiresAt)
                 .build();

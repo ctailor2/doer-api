@@ -1,7 +1,7 @@
 package com.doerapispring.userSessions;
 
 import com.doerapispring.Credentials;
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.apiTokens.UserSession;
@@ -60,10 +60,10 @@ public class UserSessionsService {
                 .build();
     }
 
-    public SessionToken newerSignup(Identifier identifier, Credentials credentials) {
-        NewUser user = userService.newCreate(identifier);
+    public SessionToken newerSignup(UserIdentifier userIdentifier, Credentials credentials) {
+        NewUser user = userService.newCreate(userIdentifier);
         if (user == null) return null;
-        authenticationService.registerCredentials(identifier, credentials);
-        return sessionTokenService.grant(identifier);
+        authenticationService.registerCredentials(userIdentifier, credentials);
+        return sessionTokenService.grant(userIdentifier);
     }
 }

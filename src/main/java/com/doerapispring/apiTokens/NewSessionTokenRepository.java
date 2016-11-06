@@ -34,7 +34,7 @@ public class NewSessionTokenRepository {
     }
 
     public void add(SessionToken sessionToken) {
-        UserEntity userEntity = userDAO.findByEmail(sessionToken.getIdentifier().get());
+        UserEntity userEntity = userDAO.findByEmail(sessionToken.getUserIdentifier().get());
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .userEntity(userEntity)
                 .token(sessionToken.getToken())

@@ -1,19 +1,19 @@
 package com.doerapispring.users;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 
 /**
  * Created by chiragtailor on 11/3/16.
  */
 public class NewUser {
-    private final Identifier identifier;
+    private final UserIdentifier userIdentifier;
 
-    public NewUser(Identifier identifier) {
-        this.identifier = identifier;
+    public NewUser(UserIdentifier userIdentifier) {
+        this.userIdentifier = userIdentifier;
     }
 
-    public Identifier getIdentifier() {
-        return identifier;
+    public UserIdentifier getIdentifier() {
+        return userIdentifier;
     }
 
     @Override
@@ -23,12 +23,12 @@ public class NewUser {
 
         NewUser newUser = (NewUser) o;
 
-        return identifier != null ? identifier.equals(newUser.identifier) : newUser.identifier == null;
+        return userIdentifier != null ? userIdentifier.equals(newUser.userIdentifier) : newUser.userIdentifier == null;
 
     }
 
     @Override
     public int hashCode() {
-        return identifier != null ? identifier.hashCode() : 0;
+        return userIdentifier != null ? userIdentifier.hashCode() : 0;
     }
 }

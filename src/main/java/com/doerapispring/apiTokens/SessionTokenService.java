@@ -1,6 +1,6 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.Identifier;
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
@@ -89,12 +89,12 @@ public class SessionTokenService {
         return userSession;
     }
 
-    public SessionToken grant(Identifier identifier) {
+    public SessionToken grant(UserIdentifier userIdentifier) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(DATE, 7);
         SessionToken sessionToken = SessionToken.builder()
-                .identifier(identifier)
+                .userIdentifier(userIdentifier)
                 .token(tokenGenerator.generate())
                 .expiresAt(calendar.getTime())
                 .build();

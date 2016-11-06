@@ -1,7 +1,6 @@
 package com.doerapispring.userSessions;
 
-import com.doerapispring.Credentials;
-import com.doerapispring.Identifier;
+import com.doerapispring.*;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +14,15 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private final UserCredentialsRepository userCredentialsRepository;
 
     @Autowired
-    public AuthenticationService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    public AuthenticationService(PasswordEncoder passwordEncoder,
+                                 UserRepository userRepository,
+                                 UserCredentialsRepository userCredentialsRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.userCredentialsRepository = userCredentialsRepository;
     }
 
     public boolean authenticate(String email, String password) {
@@ -28,7 +31,9 @@ public class AuthenticationService {
         return passwordEncoder.matches(password, userEntity.passwordDigest);
     }
 
-    public void registerCredentials(Identifier identifier, Credentials credentials) {
-
+    public void registerCredentials(UserIdentifier userIdentifier, Credentials credentials) {
+        EncodedCredentials encodedCredentials = new EncodedCredentials(passwordEncoder.encode(credentials.get()));
+        UserCredentials userCredentials = new UserCredentials(userIdentifier, encodedCredentials);
+        userCredentialsRepository.add(userCredentials);
     }
 }
