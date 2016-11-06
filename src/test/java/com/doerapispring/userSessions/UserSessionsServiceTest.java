@@ -82,50 +82,16 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void login_callsAuthenticationService_whenAuthenticationSuccessful_getsTokenFromSessionTokenService_returnsUser() throws Exception {
-        doReturn(true).when(authenticationService).authenticate("test@email.com", "password");
-        doReturn(sessionToken).when(sessionTokenService).getActive("test@email.com");
+    public void newLogin_callsAuthenticationService_whenAuthenticationSuccessful_callsSessionTokenService() throws Exception {
+        when(authenticationService.authenticate(any(UserIdentifier.class),
+                any(Credentials.class))).thenReturn(true);
 
-        User resultUser = userSessionsService.login(user);
+        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
+        Credentials credentials = new Credentials("password");
+        userSessionsService.login(userIdentifier, credentials);
 
-        verify(sessionTokenService).getActive("test@email.com");
-
-        assertThat(resultUser.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUser.getSessionToken().getToken()).isEqualTo("superSecureToken");
-    }
-
-    @Test
-    public void login_callsAuthenticationService_whenAuthenticationSuccessful_whenTokenDoesNotExist_createsTokenWithSessionTokenService_returnsUser() throws Exception {
-        doReturn(true).when(authenticationService).authenticate("test@email.com", "password");
-        doReturn(null).when(sessionTokenService).getActive("test@email.com");
-        doReturn(sessionToken).when(sessionTokenService).create("test@email.com");
-
-        User resultUser = userSessionsService.login(user);
-
-        verify(authenticationService).authenticate("test@email.com", "password");
-        verify(sessionTokenService).getActive("test@email.com");
-        verify(sessionTokenService).create("test@email.com");
-
-        assertThat(resultUser.getEmail()).isEqualTo("test@email.com");
-        assertThat(resultUser.getSessionToken().getToken()).isEqualTo("superSecureToken");
-    }
-
-    @Test
-    public void login_callsAuthenticationService_whenAuthenticationFails_doesNotCallSessionTokenService_returnsNull() throws Exception {
-        doReturn(false).when(authenticationService).authenticate("test@email.com", "password");
-
-        User resultUser = userSessionsService.login(user);
-
-        verify(authenticationService).authenticate("test@email.com", "password");
-        verifyZeroInteractions(sessionTokenService);
-
-        assertThat(resultUser).isNull();
-    }
-
-    @Test
-    public void newLogin_callsUserService_whenUserExists() throws Exception {
-        // TODO: Fill me out
-
+        verify(authenticationService).authenticate(userIdentifier, credentials);
+        verify(sessionTokenService).grant(userIdentifier);
     }
 
     @Test

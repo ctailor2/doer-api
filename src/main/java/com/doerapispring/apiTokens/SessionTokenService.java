@@ -1,7 +1,6 @@
 package com.doerapispring.apiTokens;
 
 import com.doerapispring.UserIdentifier;
-import com.doerapispring.users.RegisteredUser;
 import com.doerapispring.users.UserEntity;
 import com.doerapispring.users.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,17 +75,6 @@ public class SessionTokenService {
             sessionTokenEntity.expiresAt = new Date();
             sessionTokenRepository.save(sessionTokenEntity);
         }
-    }
-
-    public UserSession start(RegisteredUser registeredUser) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(DATE, 7);
-        UserSession userSession = new UserSession(registeredUser.getEmail(),
-                tokenGenerator.generate(),
-                calendar.getTime());
-        newSessionTokenRepository.add(userSession);
-        return userSession;
     }
 
     public SessionToken grant(UserIdentifier userIdentifier) {

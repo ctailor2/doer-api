@@ -1,10 +1,10 @@
 package com.doerapispring.userSessions;
 
 import com.doerapispring.Credentials;
+import com.doerapispring.LoginForm;
 import com.doerapispring.SignupForm;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(MockitoJUnitRunner.class)
 public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;
-
-    private User user = User.builder().build();
 
     @Mock
     private UserService userService;
@@ -79,8 +77,11 @@ public class UserSessionsControllerTest {
 
     @Test
     public void login_callsUserSessionsService() throws Exception {
-        userSessionsController.login(user);
-        verify(userSessionsService).login(user);
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        Credentials credentials = new Credentials("soSecure");
+        LoginForm loginForm = new LoginForm(userIdentifier, credentials);
+        userSessionsController.login(loginForm);
+        verify(userSessionsService).login(userIdentifier, credentials);
     }
 
     @Test

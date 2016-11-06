@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 /**
  * Created by chiragtailor on 11/5/16.
  */
@@ -23,5 +25,12 @@ public class UserCredentialsRepository {
         UserEntity userEntity = userDAO.findByEmail(userCredentials.getUserIdentifier().get());
         userEntity.passwordDigest = userCredentials.getEncodedCredentials().get();
         userDAO.save(userEntity);
+    }
+
+    public Optional<UserCredentials> find(UserIdentifier userIdentifier) {
+        UserEntity userEntity = userDAO.findByEmail(userIdentifier.get());
+        if (userEntity == null) return Optional.empty();
+        return Optional.of(new UserCredentials(userIdentifier,
+                new EncodedCredentials(userEntity.passwordDigest)));
     }
 }

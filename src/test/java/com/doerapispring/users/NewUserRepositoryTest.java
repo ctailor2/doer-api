@@ -35,20 +35,6 @@ public class NewUserRepositoryTest {
     }
 
     @Test
-    public void add_registeredUser_callsUserDao_savesFields_setsAuditingData() throws Exception {
-        RegisteredUser registeredUser = new RegisteredUser("test@email.com", "soEncodedPassword");
-
-        newUserRepository.add(registeredUser);
-
-        verify(userDAO).save(userEntityArgumentCaptor.capture());
-        UserEntity userEntity = userEntityArgumentCaptor.getValue();
-        assertThat(userEntity.email).isEqualTo("test@email.com");
-        assertThat(userEntity.passwordDigest).isEqualTo("soEncodedPassword");
-        assertThat(userEntity.createdAt).isToday();
-        assertThat(userEntity.updatedAt).isToday();
-    }
-
-    @Test
     public void add_newUser_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
         NewUser newUser = new NewUser(new UserIdentifier("soUnique"));
 
@@ -70,7 +56,7 @@ public class NewUserRepositoryTest {
         Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
-        assertThat(userOptional.isPresent()).isEqualTo(true);
+        assertThat(userOptional.isPresent()).isTrue();
     }
 
     @Test
@@ -80,7 +66,7 @@ public class NewUserRepositoryTest {
         Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
-        assertThat(userOptional.isPresent()).isEqualTo(false);
+        assertThat(userOptional.isPresent()).isFalse();
 
     }
 }

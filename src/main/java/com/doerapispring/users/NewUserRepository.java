@@ -21,16 +21,6 @@ public class NewUserRepository {
         this.userDAO = userDAO;
     }
 
-    public void add(RegisteredUser registeredUser) {
-        UserEntity userEntity = UserEntity.builder()
-                .email(registeredUser.getEmail())
-                .passwordDigest(registeredUser.getEncodedPassword())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-        userDAO.save(userEntity);
-    }
-
     public Optional<NewUser> find(UserIdentifier userIdentifier) {
         UserEntity userEntity = userDAO.findByEmail(userIdentifier.get());
         if(userEntity == null) return Optional.empty();

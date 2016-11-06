@@ -1,8 +1,8 @@
 package com.doerapispring.userSessions;
 
+import com.doerapispring.LoginForm;
 import com.doerapispring.SignupForm;
 import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,8 +33,8 @@ class UserSessionsController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    User login(@RequestBody User user) {
-        return userSessionsService.login(user);
+    SessionToken login(@RequestBody LoginForm loginForm) {
+        return userSessionsService.login(loginForm.getUserIdentifier(), loginForm.getCredentials());
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)

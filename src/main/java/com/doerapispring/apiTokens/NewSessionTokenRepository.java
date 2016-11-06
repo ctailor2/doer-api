@@ -21,18 +21,6 @@ public class NewSessionTokenRepository {
         this.sessionTokenDAO = sessionTokenDAO;
     }
 
-    public void add(UserSession userSession) {
-        UserEntity userEntity = userDAO.findByEmail(userSession.getEmail());
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .userEntity(userEntity)
-                .token(userSession.getToken())
-                .expiresAt(userSession.getExpiresAt())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-        sessionTokenDAO.save(sessionTokenEntity);
-    }
-
     public void add(SessionToken sessionToken) {
         UserEntity userEntity = userDAO.findByEmail(sessionToken.getUserIdentifier().get());
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()

@@ -5,7 +5,6 @@ import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
 import com.doerapispring.users.NewUser;
-import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,21 +27,18 @@ public class UserSessionsService {
 
     public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) {
         NewUser user = userService.create(userIdentifier);
-        authenticationService.registerCredentials(userIdentifier, credentials);
         if (user == null) return null;
+        authenticationService.registerCredentials(userIdentifier, credentials);
         return sessionTokenService.grant(userIdentifier);
-    }
-
-    public User login(User user) {
-        boolean authResult = authenticationService.authenticate(user.getEmail(), user.getPassword());
-        if (!authResult) return null;
-        SessionToken sessionToken = sessionTokenService.getActive(user.getEmail());
-        if (sessionToken == null) sessionToken = sessionTokenService.create(user.getEmail());
-        user.setSessionToken(sessionToken);
-        return user;
     }
 
     public void logout(String userEmail) {
         sessionTokenService.expire(userEmail);
+    }
+
+    public SessionToken login(UserIdentifier userIdentifier, Credentials credentials) {
+        boolean authenticationResult = authenticationService.authenticate(userIdentifier, credentials);
+        if (!authenticationResult) return null;
+        return sessionTokenService.grant(userIdentifier);
     }
 }

@@ -2,8 +2,8 @@ package integration;
 
 import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
+import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +22,12 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     private MvcResult mvcResult;
     private final String content =
             "{\n" +
-                    "  \"email\": \"test@email.com\",\n" +
-                    "  \"password\": \"password\"\n" +
+                    "  \"identifier\": \"test@email.com\",\n" +
+                    "  \"credentials\": \"password\"\n" +
                     "}";
 
     @Autowired
+    @SuppressWarnings("unused")
     private UserSessionsService userSessionsService;
 
     private void doPost() throws Exception {
@@ -37,7 +38,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     }
 
     @Test
-    public void login_whenUserWithEmailRegistered_correctPassword_respondsWithUserEntity_withLoginFields_respondsWithSessionTokenEntity_withSessionTokenFields() throws Exception {
+    public void login_whenUserWithEmailRegistered_correctPassword__respondsWithSessionToken() throws Exception {
         userSessionsService.signup(new UserIdentifier("test@email.com"), new Credentials("password"));
 
         doPost();
@@ -46,10 +47,9 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        User user = mapper.readValue(contentAsString, User.class);
+        SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
 
-        assertThat(user.getEmail()).isEqualTo("test@email.com");
-        assertThat(user.getSessionToken().getToken()).isNotEmpty();
-        assertThat(user.getSessionToken().getExpiresAt()).isInTheFuture();
+        assertThat(sessionToken.getToken()).isNotEmpty();
+        assertThat(sessionToken.getExpiresAt()).isInTheFuture();
     }
 }

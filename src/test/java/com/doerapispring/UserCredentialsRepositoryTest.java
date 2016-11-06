@@ -10,6 +10,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Optional;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -46,5 +48,37 @@ public class UserCredentialsRepositoryTest {
         verify(userDAO).save(userEntityArgumentCaptor.capture());
         UserEntity userEntity = userEntityArgumentCaptor.getValue();
         assertThat(userEntity.passwordDigest).isEqualTo("soSecret");
+    }
+
+    @Test
+    public void find_callsUserDAO() throws Exception {
+        userCredentialsRepository.find(new UserIdentifier("test"));
+
+        verify(userDAO).findByEmail("test");
+    }
+
+    @Test
+    public void find_whenUserFound_returnsOptionalWithUserCredentials() throws Exception {
+        UserEntity userEntity = UserEntity.builder()
+                .passwordDigest("securePassword")
+                .build();
+        when(userDAO.findByEmail(any())).thenReturn(userEntity);
+
+        UserIdentifier userIdentifier = new UserIdentifier("test");
+        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+
+        assertThat(userCredentialsOptional.isPresent()).isTrue();
+        assertThat(userCredentialsOptional.get().getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentialsOptional.get().getEncodedCredentials()).isEqualTo(new EncodedCredentials("securePassword"));
+    }
+
+    @Test
+    public void find_whenUserNotFound_returnsNull() throws Exception {
+        when(userDAO.findByEmail(any())).thenReturn(null);
+
+        UserIdentifier userIdentifier = new UserIdentifier("test");
+        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+
+        assertThat(userCredentialsOptional.isPresent()).isFalse();
     }
 }

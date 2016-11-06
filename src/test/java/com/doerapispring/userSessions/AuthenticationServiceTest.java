@@ -1,8 +1,6 @@
 package com.doerapispring.userSessions;
 
 import com.doerapispring.*;
-import com.doerapispring.users.UserEntity;
-import com.doerapispring.users.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,12 +10,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by chiragtailor on 8/29/16.
@@ -26,12 +23,8 @@ import static org.mockito.Mockito.when;
 public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
-    private UserEntity userEntity;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private UserCredentialsRepository userCredentialsRepository;
 
@@ -41,40 +34,7 @@ public class AuthenticationServiceTest {
     @Before
     public void setUp() throws Exception {
         authenticationService = new AuthenticationService(passwordEncoder,
-                userRepository,
                 userCredentialsRepository);
-        userEntity = UserEntity.builder()
-                .email("wow@email.com")
-                .passwordDigest("beans")
-                .build();
-    }
-
-    @Test
-    public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsFalse_whenPasswordsDoNotMatch() throws Exception {
-        doReturn(userEntity).when(userRepository).findByEmail("wow@email.com");
-        doReturn(false).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticate("wow@email.com", "cool");
-        verify(userRepository).findByEmail("wow@email.com");
-        verify(passwordEncoder).matches("cool", "beans");
-        assertThat(result).isEqualTo(false);
-    }
-
-    @Test
-    public void authenticate_callsUserRepository_whenUserExists_callsPasswordEncoder_returnsTrue_whenPasswordsMatch() throws Exception {
-        doReturn(userEntity).when(userRepository).findByEmail("wow@email.com");
-        doReturn(true).when(passwordEncoder).matches(anyString(), anyString());
-        boolean result = authenticationService.authenticate("wow@email.com", "cool");
-        verify(userRepository).findByEmail("wow@email.com");
-        verify(passwordEncoder).matches("cool", "beans");
-        assertThat(result).isEqualTo(true);
-    }
-
-    @Test
-    public void authenticate_callsUserRepository_whenUserDoesNotExist_returnsFalse() throws Exception {
-        doReturn(null).when(userRepository).findByEmail("wow@email.com");
-        boolean result = authenticationService.authenticate("wow@email.com", "cool");
-        verify(userRepository).findByEmail("wow@email.com");
-        assertThat(result).isEqualTo(false);
     }
 
     @Test
@@ -90,5 +50,33 @@ public class AuthenticationServiceTest {
         assertThat(userCredentials.getUserIdentifier()).isEqualTo(userIdentifier);
         assertThat(userCredentials.getEncodedCredentials())
                 .isEqualTo(new EncodedCredentials("encodedSecretPassword"));
+    }
+
+    @Test
+    public void authenticate_whenUserCredentialsExist_callsPasswordEncoder() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        UserCredentials userCredentials = new UserCredentials(
+                userIdentifier,
+                new EncodedCredentials("encodedSecretPassword"));
+        when(userCredentialsRepository.find(any())).thenReturn(Optional.of(userCredentials));
+
+        authenticationService.authenticate(userIdentifier, new Credentials("soSecret"));
+
+        verify(userCredentialsRepository).find(userIdentifier);
+        verify(passwordEncoder).matches("soSecret", "encodedSecretPassword");
+    }
+
+    @Test
+    public void authenticate_whenUserCredentialsDoNotExist_returnsFalse() throws Exception {
+        when(userCredentialsRepository.find(any())).thenReturn(Optional.empty());
+
+        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        boolean authenticationResult = authenticationService.authenticate(
+                userIdentifier,
+                new Credentials("soSecret"));
+
+        verify(userCredentialsRepository).find(userIdentifier);
+        verifyZeroInteractions(passwordEncoder);
+        assertThat(authenticationResult).isFalse();
     }
 }
