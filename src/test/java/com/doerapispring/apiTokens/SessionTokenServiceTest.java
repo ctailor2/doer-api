@@ -11,8 +11,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Calendar;
 import java.util.Date;
 
+import static java.util.Calendar.DATE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -148,5 +150,12 @@ public class SessionTokenServiceTest {
         assertThat(addedSessionToken.getToken()).isEqualTo("thisIsYourToken");
         assertThat(addedSessionToken.getExpiresAt()).isInTheFuture();
         assertThat(grantedSessionToken).isNotNull();
+    }
+
+    private Date getFutureDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(DATE, 7);
+        return calendar.getTime();
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Created by chiragtailor on 10/26/16.
@@ -31,5 +32,13 @@ public class NewSessionTokenRepository {
                 .updatedAt(new Date())
                 .build();
         sessionTokenDAO.save(sessionTokenEntity);
+    }
+
+    public Optional<SessionToken> find(SessionTokenIdentifier sessionTokenIdentifier) {
+        return null;
+    }
+
+    public void update(SessionToken sessionToken) {
+
     }
 }

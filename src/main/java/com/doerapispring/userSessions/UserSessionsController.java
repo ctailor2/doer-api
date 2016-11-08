@@ -40,6 +40,9 @@ class UserSessionsController {
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     void logout(@AuthenticationPrincipal String userEmail) {
+        // This request should probably short circuit somewhere earlier in the request handling
+        // because we don't really care about the user or need to enter our domain in this scenario
+        // This is only the case right now bc the session handling is stateful and stored in the database
         userSessionsService.logout(userEmail);
     }
 }
