@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -60,5 +61,34 @@ public class NewSessionTokenRepositoryTest {
         assertThat(sessionTokenEntity.expiresAt).isEqualTo(expiresAt);
         assertThat(sessionTokenEntity.createdAt).isToday();
         assertThat(sessionTokenEntity.updatedAt).isToday();
+    }
+
+    @Test
+    public void find_callsSessionTokenDao_whenSessionTokenFound_returnsOptionalWithSessionToken() throws Exception {
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
+                .token("bananas")
+                .expiresAt(new Date())
+                .userEntity(UserEntity.builder().email("chimi@chonga.com").build())
+                .build();
+        when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
+
+        Optional<SessionToken> sessionTokenOptional = newSessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+
+        verify(sessionTokenDAO).findByToken("suchSecretToken");
+        assertThat(sessionTokenOptional.isPresent()).isTrue();
+        SessionToken sessionToken = sessionTokenOptional.get();
+        assertThat(sessionToken.getToken()).isEqualTo("bananas");
+        assertThat(sessionToken.getExpiresAt()).isToday();
+        assertThat(sessionToken.getUserIdentifier()).isEqualTo(new UserIdentifier("chimi@chonga.com"));
+    }
+
+    @Test
+    public void find_callsSessionTokenDao_whenSessionTokenNotFound_returnsEmptyOptional() throws Exception {
+        when(sessionTokenDAO.findByToken(any())).thenReturn(null);
+
+        Optional<SessionToken> sessionTokenOptional = newSessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+
+        verify(sessionTokenDAO).findByToken("suchSecretToken");
+        assertThat(sessionTokenOptional.isPresent()).isFalse();
     }
 }

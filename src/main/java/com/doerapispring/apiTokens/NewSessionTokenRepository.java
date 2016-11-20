@@ -1,5 +1,6 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.UserIdentifier;
 import com.doerapispring.users.UserDAO;
 import com.doerapispring.users.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,14 @@ public class NewSessionTokenRepository {
     }
 
     public Optional<SessionToken> find(SessionTokenIdentifier sessionTokenIdentifier) {
-        return null;
+        SessionTokenEntity sessionTokenEntity = sessionTokenDAO.findByToken(sessionTokenIdentifier.get());
+        if (sessionTokenEntity == null) return Optional.empty();
+        return Optional.of(
+                SessionToken.builder()
+                        .token(sessionTokenEntity.token)
+                        .expiresAt(sessionTokenEntity.expiresAt)
+                        .userIdentifier(new UserIdentifier(sessionTokenEntity.userEntity.email))
+                        .build());
     }
 
     public void update(SessionToken sessionToken) {

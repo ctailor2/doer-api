@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 import static java.util.Calendar.DATE;
 
@@ -54,27 +55,10 @@ public class SessionTokenService {
                 .build();
     }
 
-    public SessionToken getActive(String userEmail) {
-        SessionTokenEntity sessionTokenEntity = sessionTokenRepository.findActiveByUserEmail(userEmail);
-        if (sessionTokenEntity == null) return null;
-        return SessionToken.builder()
-                .token(sessionTokenEntity.token)
-                .expiresAt(sessionTokenEntity.expiresAt)
-                .build();
-    }
-
     // TODO: See how often this is used. Maybe those places should have a direct
     // dependency on session token repo? This breaks the service pattern
-    public SessionTokenEntity getByToken(String token) {
-        return sessionTokenRepository.findFirstByTokenAndExpiresAtAfter(token, new Date());
-    }
-
-    public void expire(String userEmail) {
-        SessionTokenEntity sessionTokenEntity = sessionTokenRepository.findActiveByUserEmail(userEmail);
-        if (sessionTokenEntity != null) {
-            sessionTokenEntity.expiresAt = new Date();
-            sessionTokenRepository.save(sessionTokenEntity);
-        }
+    public Optional<SessionToken> getByToken(SessionTokenIdentifier sessionTokenIdentifier) {
+        return newSessionTokenRepository.find(sessionTokenIdentifier);
     }
 
     public SessionToken grant(UserIdentifier userIdentifier) {

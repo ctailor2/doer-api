@@ -84,16 +84,4 @@ public class UserSessionsControllerTest {
         verify(userSessionsService).login(userIdentifier, credentials);
     }
 
-    @Test
-    public void logout_mapping() throws Exception {
-        mockMvc.perform(post("/v1/logout")
-                .header("Session-Token", "tokenz"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void logout_callsUserSessionsService() throws Exception {
-        userSessionsController.logout("test@email.com");
-        verify(userSessionsService).logout("test@email.com");
-    }
 }

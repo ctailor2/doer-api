@@ -5,7 +5,6 @@ import com.doerapispring.SignupForm;
 import com.doerapispring.apiTokens.SessionToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -37,12 +36,10 @@ class UserSessionsController {
         return userSessionsService.login(loginForm.getUserIdentifier(), loginForm.getCredentials());
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.OK)
-    void logout(@AuthenticationPrincipal String userEmail) {
-        // This request should probably short circuit somewhere earlier in the request handling
-        // because we don't really care about the user or need to enter our domain in this scenario
-        // This is only the case right now bc the session handling is stateful and stored in the database
-        userSessionsService.logout(userEmail);
-    }
+    // Logout doesn't really need to be an action taken against the server at all
+    // If the client wants to terminate their current session, just have them drop their key
+    // Clients shouldn't have to tell the server to stop allowing a key that it issued
+    // If there are security concerns around key sharing, maybe the keys can be made ip specific or something
+    // If the server wants credentials to be short lived, it can include an expiration
+    // These are all things it can check when it receives a request with credentials in the header
 }

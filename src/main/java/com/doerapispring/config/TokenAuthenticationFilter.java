@@ -4,6 +4,7 @@ import com.doerapispring.Error;
 import com.doerapispring.apiTokens.AuthenticationToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
@@ -29,6 +30,7 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         String token = request.getHeader(SecurityConfiguration.SESSION_TOKEN_HEADER);
+        if (token == null) throw new AuthenticationCredentialsNotFoundException("Authentication required");
         AuthenticationToken authenticationToken = new AuthenticationToken(token);
         return getAuthenticationManager().authenticate(authenticationToken);
     }

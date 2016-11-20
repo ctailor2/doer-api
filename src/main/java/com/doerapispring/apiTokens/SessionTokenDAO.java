@@ -8,4 +8,5 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public interface SessionTokenDAO extends JpaRepository<SessionTokenEntity, Long> {
+    SessionTokenEntity findByToken(String token);
 }

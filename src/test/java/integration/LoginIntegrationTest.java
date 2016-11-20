@@ -38,8 +38,9 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     }
 
     @Test
-    public void login_whenUserWithEmailRegistered_correctPassword__respondsWithSessionToken() throws Exception {
-        userSessionsService.signup(new UserIdentifier("test@email.com"), new Credentials("password"));
+    public void login_whenUserWithEmailRegistered_correctPassword_respondsWithSessionToken() throws Exception {
+        userSessionsService.signup(new UserIdentifier("test@email.com"),
+                new Credentials("password"));
 
         doPost();
 

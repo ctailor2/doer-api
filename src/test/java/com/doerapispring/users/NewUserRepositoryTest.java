@@ -53,10 +53,12 @@ public class NewUserRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        Optional<NewUser> userOptional = newUserRepository.find(userIdentifier);
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isTrue();
+        assertThat(userOptional.get().getIdentifier()).isEqualTo(userIdentifier);
     }
 
     @Test

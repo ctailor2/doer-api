@@ -16,7 +16,6 @@ import java.util.Date;
 
 import static java.util.Calendar.DATE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -84,56 +83,11 @@ public class SessionTokenServiceTest {
     }
 
     @Test
-    public void getActive_callsSessionTokenRepository_whenSessionTokenExists_returnsSessionTokenEntity() throws Exception {
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .token("zomgsecrets")
-                .build();
-        doReturn(sessionTokenEntity).when(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-
-        SessionToken sessionToken = sessionTokenService.getActive("cool@email.com");
-
-        verify(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-        assertThat(sessionToken.getToken()).isEqualTo("zomgsecrets");
-    }
-
-    @Test
-    public void getActive_callsSessionTokenRepository_whenSessionTokenDoesNotExist_returnsNull() throws Exception {
-        doReturn(null).when(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-
-        SessionToken sessionToken = sessionTokenService.getActive("cool@email.com");
-
-        verify(sessionTokenRepository).findActiveByUserEmail("cool@email.com");
-        assertThat(sessionToken).isNull();
-    }
-
-    @Test
     public void getByToken_callsSessionTokenRepository() throws Exception {
-        sessionTokenService.getByToken("token");
+        SessionTokenIdentifier sessionTokenIdentifier = new SessionTokenIdentifier("token");
+        sessionTokenService.getByToken(sessionTokenIdentifier);
 
-        verify(sessionTokenRepository).findFirstByTokenAndExpiresAtAfter(eq("token"), any(Date.class));
-    }
-
-    @Test
-    public void expire_callsUserRepository_whenUserExists_setsExpiredAt() throws Exception {
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder().build();
-        doReturn(sessionTokenEntity).when(sessionTokenRepository).findActiveByUserEmail("test@email.com");
-
-        sessionTokenService.expire("test@email.com");
-
-        verify(sessionTokenRepository).findActiveByUserEmail("test@email.com");
-        verify(sessionTokenRepository).save(sessionTokenEntityArgumentCaptor.capture());
-        SessionTokenEntity savedSessionTokenEntity = sessionTokenEntityArgumentCaptor.getValue();
-        assertThat(savedSessionTokenEntity.expiresAt).isToday();
-    }
-
-    @Test
-    public void expire_callsUserRepository_whenUserDoesNotExist_doesNothing() throws Exception {
-        doReturn(null).when(sessionTokenRepository).findActiveByUserEmail("test@email.com");
-
-        sessionTokenService.expire("test@email.com");
-
-        verify(sessionTokenRepository).findActiveByUserEmail("test@email.com");
-        verifyNoMoreInteractions(sessionTokenRepository);
+        verify(newSessionTokenRepository).find(sessionTokenIdentifier);
     }
 
     @Test

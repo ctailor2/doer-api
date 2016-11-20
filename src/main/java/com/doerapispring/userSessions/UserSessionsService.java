@@ -32,10 +32,6 @@ public class UserSessionsService {
         return sessionTokenService.grant(userIdentifier);
     }
 
-    public void logout(String userEmail) {
-        sessionTokenService.expire(userEmail);
-    }
-
     public SessionToken login(UserIdentifier userIdentifier, Credentials credentials) {
         boolean authenticationResult = authenticationService.authenticate(userIdentifier, credentials);
         if (!authenticationResult) return null;

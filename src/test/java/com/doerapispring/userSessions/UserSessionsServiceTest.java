@@ -93,11 +93,4 @@ public class UserSessionsServiceTest {
         verify(authenticationService).authenticate(userIdentifier, credentials);
         verify(sessionTokenService).grant(userIdentifier);
     }
-
-    @Test
-    public void logout_callsSessionTokenService_expiresToken() throws Exception {
-        userSessionsService.logout("test@email.com");
-
-        verify(sessionTokenService).expire("test@email.com");
-    }
 }
