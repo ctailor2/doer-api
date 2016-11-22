@@ -57,7 +57,9 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
                 new UserIdentifier("test@email.com"),
                 new Credentials("password"));
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        baseMockRequestBuilder = MockMvcRequestBuilders.get("/v1/todos").headers(httpHeaders);
+        baseMockRequestBuilder = MockMvcRequestBuilders
+                .get("/v1/todos")
+                .headers(httpHeaders);
     }
 
     @Test

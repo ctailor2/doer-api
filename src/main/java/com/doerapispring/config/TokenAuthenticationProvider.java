@@ -1,9 +1,7 @@
 package com.doerapispring.config;
 
-import com.doerapispring.apiTokens.AuthenticationToken;
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.apiTokens.SessionTokenIdentifier;
-import com.doerapispring.apiTokens.SessionTokenService;
+import com.doerapispring.PreAuthenticatedAuthenticationToken;
+import com.doerapispring.apiTokens.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,13 +26,12 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        AuthenticationToken authenticationToken = (AuthenticationToken) authentication;
-        SessionTokenIdentifier sessionTokenIdentifier = new SessionTokenIdentifier(authenticationToken.getCredentials());
+        PreAuthenticatedAuthenticationToken preAuthenticatedAuthenticationToken = (PreAuthenticatedAuthenticationToken) authentication;
+        SessionTokenIdentifier sessionTokenIdentifier = new SessionTokenIdentifier(preAuthenticatedAuthenticationToken.getCredentials());
         Optional<SessionToken> sessionToken = sessionTokenService.getByToken(sessionTokenIdentifier);
         if (sessionToken.isPresent()) {
-            authenticationToken.setAuthenticated(true);
-            authenticationToken.setPrincipal(sessionToken.get().getUserIdentifier());
-            return authenticationToken;
+            AuthenticatedUser authenticatedUser = AuthenticatedUser.identifiedWith(sessionToken.get().getUserIdentifier());
+            return new AuthenticatedAuthenticationToken(authenticatedUser);
         } else {
             throw new AuthenticationCredentialsNotFoundException("Authentication required");
         }
@@ -42,6 +39,6 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return (AuthenticationToken.class.isAssignableFrom(authentication));
+        return (PreAuthenticatedAuthenticationToken.class.isAssignableFrom(authentication));
     }
 }

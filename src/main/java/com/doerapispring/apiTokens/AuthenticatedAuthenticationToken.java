@@ -1,6 +1,5 @@
 package com.doerapispring.apiTokens;
 
-import com.doerapispring.UserIdentifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -9,17 +8,11 @@ import java.util.Collection;
 /**
  * Created by chiragtailor on 9/19/16.
  */
-public class AuthenticationToken implements Authentication {
-    private final String credentials;
-    private boolean isAuthenticated = false;
-    private UserIdentifier principal;
+public class AuthenticatedAuthenticationToken implements Authentication {
+    private final AuthenticatedUser authenticatedUser;
 
-    public AuthenticationToken(String token) {
-        credentials = token;
-    }
-
-    public void setPrincipal(UserIdentifier userIdentifier) {
-        principal = userIdentifier;
+    public AuthenticatedAuthenticationToken(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
     }
 
     @Override
@@ -29,7 +22,7 @@ public class AuthenticationToken implements Authentication {
 
     @Override
     public String getCredentials() {
-        return this.credentials;
+        return null;
     }
 
     @Override
@@ -38,13 +31,13 @@ public class AuthenticationToken implements Authentication {
     }
 
     @Override
-    public Object getPrincipal() {
-        return principal;
+    public AuthenticatedUser getPrincipal() {
+        return authenticatedUser;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return this.isAuthenticated;
+        return true;
     }
 
     @Override
