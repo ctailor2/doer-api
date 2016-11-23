@@ -4,11 +4,12 @@ import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.NewUser;
 import com.doerapispring.users.User;
 import com.doerapispring.users.UserService;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -33,21 +34,12 @@ public class UserSessionsServiceTest {
     @Mock
     private AuthenticationService authenticationService;
 
-    private User user;
-    private SessionToken sessionToken;
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
         userSessionsService = new UserSessionsService(userService, sessionTokenService, authenticationService);
-
-        user = User.builder()
-                .email("test@email.com")
-                .password("password")
-                .build();
-
-        sessionToken = SessionToken.builder()
-                .token("superSecureToken")
-                .build();
     }
 
     @Test
@@ -55,7 +47,7 @@ public class UserSessionsServiceTest {
         UserIdentifier userIdentifier = new UserIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
 
-        when(userService.create(any())).thenReturn(new NewUser(userIdentifier));
+        when(userService.create(any())).thenReturn(new User(userIdentifier));
         when(sessionTokenService.grant(any()))
                 .thenReturn(SessionToken.builder().build());
 
@@ -68,21 +60,67 @@ public class UserSessionsServiceTest {
     }
 
     @Test
-    public void signup_createsUser_whenFailed_doesNotRegisterCredentialsForUser_returnsNull() throws Exception {
+    public void signup_callsUserService() throws Exception {
         UserIdentifier userIdentifier = new UserIdentifier("soUnique");
-        Credentials credentials = new Credentials("soSecure");
-
-        when(userService.create(any())).thenReturn(null);
-
-        SessionToken sessionToken = userSessionsService.signup(userIdentifier, credentials);
+        userSessionsService.signup(userIdentifier, new Credentials("soSecure"));
 
         verify(userService).create(userIdentifier);
-        verifyZeroInteractions(authenticationService);
-        assertThat(sessionToken).isNull();
     }
 
     @Test
-    public void newLogin_callsAuthenticationService_whenAuthenticationSuccessful_callsSessionTokenService() throws Exception {
+    public void signup_whenUserCreated_registersUserCredentials() throws Exception {
+        when(userService.create(any())).thenReturn(new User(new UserIdentifier("something")));
+
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        Credentials credentials = new Credentials("soSecure");
+        userSessionsService.signup(userIdentifier, credentials);
+
+        verify(authenticationService).registerCredentials(userIdentifier, credentials);
+    }
+
+    @Test
+    public void signup_whenUserCreationRefused_refusesSignup() throws Exception {
+        when(userService.create(any())).thenThrow(OperationRefusedException.class);
+
+        exception.expect(OperationRefusedException.class);
+        userSessionsService.signup(new UserIdentifier("soUnique"), new Credentials("soSecure"));
+
+        verifyZeroInteractions(authenticationService);
+        verifyZeroInteractions(sessionTokenService);
+    }
+
+    @Test
+    public void signup_whenCredentialsRegistered_grantsSession() throws Exception {
+        when(userService.create(any())).thenReturn(new User(new UserIdentifier("something")));
+
+        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        userSessionsService.signup(userIdentifier, new Credentials("soSecure"));
+
+        verify(sessionTokenService).grant(userIdentifier);
+    }
+
+    @Test
+    public void signup_whenCredentialRegistrationRefused_refusesSignup() throws Exception {
+        when(userService.create(any())).thenReturn(new User(new UserIdentifier("something")));
+        doThrow(OperationRefusedException.class).when(authenticationService).registerCredentials(any(), any());
+
+        exception.expect(OperationRefusedException.class);
+        userSessionsService.signup(new UserIdentifier("soUnique"), new Credentials("soSecure"));
+
+        verifyZeroInteractions(sessionTokenService);
+    }
+
+    @Test
+    public void signup_whenSessionGrantRefused_refusesSignup() throws Exception {
+        when(userService.create(any())).thenReturn(new User(new UserIdentifier("something")));
+        when(sessionTokenService.grant(any())).thenThrow(OperationRefusedException.class);
+
+        exception.expect(OperationRefusedException.class);
+        userSessionsService.signup(new UserIdentifier("soUnique"), new Credentials("soSecure"));
+    }
+
+    @Test
+    public void login_callsAuthenticationService_whenAuthenticationSuccessful_callsSessionTokenService() throws Exception {
         when(authenticationService.authenticate(any(UserIdentifier.class),
                 any(Credentials.class))).thenReturn(true);
 
@@ -91,6 +129,37 @@ public class UserSessionsServiceTest {
         userSessionsService.login(userIdentifier, credentials);
 
         verify(authenticationService).authenticate(userIdentifier, credentials);
+    }
+
+    @Test
+    public void login_whenAuthenticationFails_deniesAccess() throws Exception {
+        when(authenticationService.authenticate(any(UserIdentifier.class),
+                any(Credentials.class))).thenReturn(false);
+
+        exception.expect(AccessDeniedException.class);
+        userSessionsService.login(new UserIdentifier("test@email.com"), new Credentials("password"));
+
+        verifyZeroInteractions(sessionTokenService);
+    }
+
+    @Test
+    public void login_whenAuthenticationSuccessful_grantsSession() throws Exception {
+        when(authenticationService.authenticate(any(UserIdentifier.class),
+                any(Credentials.class))).thenReturn(true);
+
+        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
+        userSessionsService.login(userIdentifier, new Credentials("password"));
+
         verify(sessionTokenService).grant(userIdentifier);
+    }
+
+    @Test
+    public void login_whenSessionTokenGrantRefused_deniesAccess() throws Exception {
+        when(authenticationService.authenticate(any(UserIdentifier.class),
+                any(Credentials.class))).thenReturn(true);
+        when(sessionTokenService.grant(any())).thenThrow(OperationRefusedException.class);
+
+        exception.expect(AccessDeniedException.class);
+        userSessionsService.login(new UserIdentifier("test@email.com"), new Credentials("password"));
     }
 }

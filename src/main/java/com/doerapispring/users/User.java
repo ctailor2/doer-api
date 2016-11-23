@@ -1,22 +1,34 @@
 package com.doerapispring.users;
 
-import com.doerapispring.apiTokens.SessionToken;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.doerapispring.UserIdentifier;
 
 /**
- * Created by chiragtailor on 8/11/16.
+ * Created by chiragtailor on 11/3/16.
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
-@Builder
 public class User {
-    private String email;
-    private String password;
-    private String passwordConfirmation;
-    // Maybe that chunk ^ is a different domain object
-    private SessionToken sessionToken;
+    private final UserIdentifier userIdentifier;
+
+    public User(UserIdentifier userIdentifier) {
+        this.userIdentifier = userIdentifier;
+    }
+
+    public UserIdentifier getIdentifier() {
+        return userIdentifier;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return userIdentifier != null ? userIdentifier.equals(user.userIdentifier) : user.userIdentifier == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return userIdentifier != null ? userIdentifier.hashCode() : 0;
+    }
 }

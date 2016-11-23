@@ -4,8 +4,8 @@ import com.doerapispring.UserCredentials;
 import com.doerapispring.UserCredentialsRepository;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.users.NewUser;
 import com.doerapispring.users.NewUserRepository;
+import com.doerapispring.users.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         doPost();
 
         UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
-        Optional<NewUser> storedUserOptional = newUserRepository.find(userIdentifier);
+        Optional<User> storedUserOptional = newUserRepository.find(userIdentifier);
         Optional<UserCredentials> storedUserCredentialsOptional = userCredentialsRepository.find(userIdentifier);
 
         MockHttpServletResponse response = mvcResult.getResponse();
@@ -59,7 +59,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
 
         assertThat(storedUserOptional.isPresent()).isTrue();
-        NewUser user = storedUserOptional.get();
+        User user = storedUserOptional.get();
         assertThat(storedUserCredentialsOptional.isPresent()).isTrue();
         UserCredentials userCredentials = storedUserCredentialsOptional.get();
         assertThat(userCredentials.getUserIdentifier()).isEqualTo(user.getIdentifier());

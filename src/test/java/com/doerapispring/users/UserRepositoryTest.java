@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
  * Created by chiragtailor on 10/26/16.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NewUserRepositoryTest {
+public class UserRepositoryTest {
     private NewUserRepository newUserRepository;
 
     @Mock
@@ -36,9 +36,9 @@ public class NewUserRepositoryTest {
 
     @Test
     public void add_newUser_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
-        NewUser newUser = new NewUser(new UserIdentifier("soUnique"));
+        User user = new User(new UserIdentifier("soUnique"));
 
-        newUserRepository.add(newUser);
+        newUserRepository.add(user);
 
         verify(userDAO).save(userEntityArgumentCaptor.capture());
         UserEntity userEntity = userEntityArgumentCaptor.getValue();
@@ -54,7 +54,7 @@ public class NewUserRepositoryTest {
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
         UserIdentifier userIdentifier = new UserIdentifier("soUnique");
-        Optional<NewUser> userOptional = newUserRepository.find(userIdentifier);
+        Optional<User> userOptional = newUserRepository.find(userIdentifier);
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isTrue();
@@ -65,7 +65,7 @@ public class NewUserRepositoryTest {
     public void find_callsUserDao_whenUserNotFound_returnsEmptyOptional() throws Exception {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
-        Optional<NewUser> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
+        Optional<User> userOptional = newUserRepository.find(new UserIdentifier("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isFalse();

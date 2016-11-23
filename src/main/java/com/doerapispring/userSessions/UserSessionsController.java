@@ -5,6 +5,7 @@ import com.doerapispring.SignupForm;
 import com.doerapispring.apiTokens.SessionToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,16 +25,26 @@ class UserSessionsController {
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    SessionToken signup(@RequestBody SignupForm signupForm) {
-        return userSessionsService.signup(signupForm.getIdentifier(), signupForm.getCredentials());
+    ResponseEntity<SessionToken> signup(@RequestBody SignupForm signupForm) {
+        try {
+            SessionToken sessionToken = userSessionsService.signup(signupForm.getIdentifier(), signupForm.getCredentials());
+            return ResponseEntity.status(HttpStatus.CREATED).body(sessionToken);
+        } catch (OperationRefusedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     // Resource - session (CRUD)
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    SessionToken login(@RequestBody LoginForm loginForm) {
-        return userSessionsService.login(loginForm.getUserIdentifier(), loginForm.getCredentials());
+    ResponseEntity<SessionToken> login(@RequestBody LoginForm loginForm) {
+        try {
+            SessionToken sessionToken = userSessionsService.login(loginForm.getUserIdentifier(), loginForm.getCredentials());
+            return ResponseEntity.ok().body(sessionToken);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 
     // Logout doesn't really need to be an action taken against the server at all

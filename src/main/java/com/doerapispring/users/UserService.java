@@ -1,6 +1,7 @@
 package com.doerapispring.users;
 
 import com.doerapispring.UserIdentifier;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +19,11 @@ public class UserService implements UserServiceInterface {
         this.newUserRepository = newUserRepository;
     }
 
-    public NewUser create(UserIdentifier userIdentifier) {
-        Optional<NewUser> userOptional = newUserRepository.find(userIdentifier);
-        if (userOptional.isPresent()) return null;
-        NewUser newUser = new NewUser(userIdentifier);
-        newUserRepository.add(newUser);
-        return newUser;
+    public User create(UserIdentifier userIdentifier) throws OperationRefusedException {
+        Optional<User> userOptional = newUserRepository.find(userIdentifier);
+        if (userOptional.isPresent()) throw new OperationRefusedException();
+        User user = new User(userIdentifier);
+        newUserRepository.add(user);
+        return user;
     }
 }

@@ -4,7 +4,6 @@ import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.apiTokens.SessionTokenService;
-import com.doerapispring.users.NewUser;
 import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,16 +24,19 @@ public class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) {
-        NewUser user = userService.create(userIdentifier);
-        if (user == null) return null;
+    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) throws OperationRefusedException {
+        userService.create(userIdentifier);
         authenticationService.registerCredentials(userIdentifier, credentials);
         return sessionTokenService.grant(userIdentifier);
     }
 
-    public SessionToken login(UserIdentifier userIdentifier, Credentials credentials) {
+    public SessionToken login(UserIdentifier userIdentifier, Credentials credentials) throws AccessDeniedException {
         boolean authenticationResult = authenticationService.authenticate(userIdentifier, credentials);
-        if (!authenticationResult) return null;
-        return sessionTokenService.grant(userIdentifier);
+        if (!authenticationResult) throw new AccessDeniedException();
+        try {
+            return sessionTokenService.grant(userIdentifier);
+        } catch (OperationRefusedException e) {
+            throw new AccessDeniedException();
+        }
     }
 }

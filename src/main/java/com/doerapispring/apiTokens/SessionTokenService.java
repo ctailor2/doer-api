@@ -1,8 +1,8 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.AbnormalModelException;
 import com.doerapispring.UserIdentifier;
-import com.doerapispring.users.UserEntity;
-import com.doerapispring.users.UserRepository;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,49 +19,23 @@ import static java.util.Calendar.DATE;
 @Service
 @Transactional
 public class SessionTokenService {
-    private SessionTokenRepository sessionTokenRepository;
     private TokenGenerator tokenGenerator;
-    private UserRepository userRepository;
-    private NewSessionTokenRepository newSessionTokenRepository;
+    private SessionTokenRepository sessionTokenRepository;
 
     @Autowired
-    public SessionTokenService(SessionTokenRepository sessionTokenRepository,
-                               TokenGenerator tokenGenerator,
-                               UserRepository userRepository,
-                               NewSessionTokenRepository newSessionTokenRepository) {
-        this.sessionTokenRepository = sessionTokenRepository;
+    public SessionTokenService(TokenGenerator tokenGenerator,
+                               SessionTokenRepository sessionTokenRepository) {
         this.tokenGenerator = tokenGenerator;
-        this.userRepository = userRepository;
-        this.newSessionTokenRepository = newSessionTokenRepository;
-    }
-
-    public SessionToken create(String userEmail) {
-        UserEntity userEntity = userRepository.findByEmail(userEmail);
-        if (userEntity == null) return null;
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(DATE, 7);
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .userEntity(userEntity)
-                .token(tokenGenerator.generate())
-                .expiresAt(calendar.getTime())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-        sessionTokenRepository.save(sessionTokenEntity);
-        return SessionToken.builder()
-                .token(sessionTokenEntity.token)
-                .expiresAt(sessionTokenEntity.expiresAt)
-                .build();
+        this.sessionTokenRepository = sessionTokenRepository;
     }
 
     // TODO: See how often this is used. Maybe those places should have a direct
     // dependency on session token repo? This breaks the service pattern
     public Optional<SessionToken> getByToken(SessionTokenIdentifier sessionTokenIdentifier) {
-        return newSessionTokenRepository.find(sessionTokenIdentifier);
+        return sessionTokenRepository.find(sessionTokenIdentifier);
     }
 
-    public SessionToken grant(UserIdentifier userIdentifier) {
+    public SessionToken grant(UserIdentifier userIdentifier) throws OperationRefusedException {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(DATE, 7);
@@ -70,7 +44,11 @@ public class SessionTokenService {
                 .token(tokenGenerator.generate())
                 .expiresAt(calendar.getTime())
                 .build();
-        newSessionTokenRepository.add(sessionToken);
+        try {
+            sessionTokenRepository.add(sessionToken);
+        } catch (AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
         return sessionToken;
     }
 }

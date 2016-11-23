@@ -15,7 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,6 +69,17 @@ public class UserSessionsControllerTest {
     }
 
     @Test
+    public void signup_whenOperationRefused_returns400BadRequest() throws Exception {
+        when(userSessionsService.signup(any(), any())).thenThrow(OperationRefusedException.class);
+        mockMvc.perform(post("/v1/signup")
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{}")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     public void login_mapping() throws Exception {
         mockMvc.perform(post("/v1/login")
                 .accept(MediaType.APPLICATION_JSON)
@@ -84,4 +97,13 @@ public class UserSessionsControllerTest {
         verify(userSessionsService).login(userIdentifier, credentials);
     }
 
+    @Test
+    public void login_whenAccessDenied_returns401Unauthorized() throws Exception {
+        when(userSessionsService.login(any(), any())).thenThrow(AccessDeniedException.class);
+        mockMvc.perform(post("/v1/login")
+                .accept(MediaType.APPLICATION_JSON)
+                .content("{\"user\":{\"email\":\"test@email.com\"}}")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
 }

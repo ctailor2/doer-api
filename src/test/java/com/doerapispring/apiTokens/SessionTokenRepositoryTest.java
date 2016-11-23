@@ -1,10 +1,13 @@
 package com.doerapispring.apiTokens;
 
+import com.doerapispring.AbnormalModelException;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.users.UserDAO;
 import com.doerapispring.users.UserEntity;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -23,8 +26,8 @@ import static org.mockito.Mockito.when;
  * Created by chiragtailor on 10/26/16.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NewSessionTokenRepositoryTest {
-    private NewSessionTokenRepository newSessionTokenRepository;
+public class SessionTokenRepositoryTest {
+    private SessionTokenRepository sessionTokenRepository;
 
     @Mock
     private UserDAO userDAO;
@@ -35,13 +38,16 @@ public class NewSessionTokenRepositoryTest {
     @Captor
     ArgumentCaptor<SessionTokenEntity> sessionTokenEntityArgumentCaptor;
 
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
     @Before
     public void setUp() throws Exception {
-        newSessionTokenRepository = new NewSessionTokenRepository(userDAO, sessionTokenDAO);
+        sessionTokenRepository = new SessionTokenRepository(userDAO, sessionTokenDAO);
     }
 
     @Test
-    public void add_sessionToken_findsUser_savesRelationship_savesFields_setsAuditingData() throws Exception {
+    public void add_sessionToken_findsUser_whenFound_savesRelationship_savesFields_setsAuditingData() throws Exception {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
@@ -52,7 +58,7 @@ public class NewSessionTokenRepositoryTest {
                 .expiresAt(expiresAt)
                 .build();
 
-        newSessionTokenRepository.add(sessionToken);
+        sessionTokenRepository.add(sessionToken);
 
         verify(sessionTokenDAO).save(sessionTokenEntityArgumentCaptor.capture());
         SessionTokenEntity sessionTokenEntity = sessionTokenEntityArgumentCaptor.getValue();
@@ -64,7 +70,22 @@ public class NewSessionTokenRepositoryTest {
     }
 
     @Test
-    public void find_callsSessionTokenDao_whenSessionTokenFound_returnsOptionalWithSessionToken() throws Exception {
+    public void add_sessionToken_findsUser_whenNotFound_throwsAbnormalModelException() throws Exception {
+        when(userDAO.findByEmail(any())).thenReturn(null);
+
+        Date expiresAt = new Date();
+        SessionToken sessionToken = SessionToken.builder()
+                .userIdentifier(new UserIdentifier("soUnique"))
+                .token("soRandomToken")
+                .expiresAt(expiresAt)
+                .build();
+
+        exception.expect(AbnormalModelException.class);
+        sessionTokenRepository.add(sessionToken);
+    }
+
+    @Test
+    public void find_callsSessionTokenDao_whenSessionTokenFound_withUser_returnsOptionalWithSessionToken() throws Exception {
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .token("bananas")
                 .expiresAt(new Date())
@@ -72,7 +93,7 @@ public class NewSessionTokenRepositoryTest {
                 .build();
         when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
 
-        Optional<SessionToken> sessionTokenOptional = newSessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
 
         verify(sessionTokenDAO).findByToken("suchSecretToken");
         assertThat(sessionTokenOptional.isPresent()).isTrue();
@@ -83,10 +104,25 @@ public class NewSessionTokenRepositoryTest {
     }
 
     @Test
+    public void find_callsSessionTokenDao_whenSessionTokenFound_withoutUser_returnsEmptyOptional() throws Exception {
+        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
+                .token("bananas")
+                .expiresAt(new Date())
+                .userEntity(null)
+                .build();
+        when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
+
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+
+        verify(sessionTokenDAO).findByToken("suchSecretToken");
+        assertThat(sessionTokenOptional.isPresent()).isFalse();
+    }
+
+    @Test
     public void find_callsSessionTokenDao_whenSessionTokenNotFound_returnsEmptyOptional() throws Exception {
         when(sessionTokenDAO.findByToken(any())).thenReturn(null);
 
-        Optional<SessionToken> sessionTokenOptional = newSessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
 
         verify(sessionTokenDAO).findByToken("suchSecretToken");
         assertThat(sessionTokenOptional.isPresent()).isFalse();

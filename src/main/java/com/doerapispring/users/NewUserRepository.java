@@ -21,15 +21,15 @@ public class NewUserRepository {
         this.userDAO = userDAO;
     }
 
-    public Optional<NewUser> find(UserIdentifier userIdentifier) {
+    public Optional<User> find(UserIdentifier userIdentifier) {
         UserEntity userEntity = userDAO.findByEmail(userIdentifier.get());
         if(userEntity == null) return Optional.empty();
-        return Optional.of(new NewUser(userIdentifier));
+        return Optional.of(new User(userIdentifier));
     }
 
-    public void add(NewUser newUser) {
+    public void add(User user) {
         UserEntity userEntity = UserEntity.builder()
-                .email(newUser.getIdentifier().get())
+                .email(user.getIdentifier().get())
                 .passwordDigest("")
                 .createdAt(new Date())
                 .updatedAt(new Date())

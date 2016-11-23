@@ -6,7 +6,6 @@ import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.doerapispring.users.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -49,10 +48,6 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        User user = User.builder()
-                .email("test@email.com")
-                .password("password")
-                .build();
         SessionToken signupSessionToken = userSessionsService.signup(
                 new UserIdentifier("test@email.com"),
                 new Credentials("password"));
