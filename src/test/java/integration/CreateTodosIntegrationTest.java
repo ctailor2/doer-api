@@ -6,18 +6,19 @@ import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
@@ -38,7 +39,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         mvcResult = mockMvc.perform(post("/v1/todos")
                 .content("{\n" +
                         "  \"task\":\"read the things\",\n" +
-                        "  \"active\":true\n" +
+                        "  \"scheduling\":\"now\"\n" +
                         "}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(httpHeaders))
@@ -59,12 +60,11 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
         List<Todo> todos = todosService.get("test@email.com", null);
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        ObjectMapper mapper = new ObjectMapper();
-        Todo savedTodo = mapper.readValue(response.getContentAsString(), Todo.class);
-        assertThat(savedTodo.getTask()).isEqualTo("read the things");
-        assertThat(savedTodo.isActive()).isEqualTo(true);
-        assertThat(todos.size()).isEqualTo(1);
-        assertThat(todos.get(0)).isEqualTo(savedTodo);
+        assertThat(todos.size(), equalTo(1));
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.task", equalTo("read the things")));
+        assertThat(responseContent, hasJsonPath("$.scheduling", equalTo("now")));
     }
 }

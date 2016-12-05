@@ -35,6 +35,8 @@ dependencies {
 	compileOnly('org.projectlombok:lombok:1.16.10')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.easytesting:fest-assert-core:2.0M8')
+	testCompile('com.jayway.jsonpath:json-path:2.2.0')
+	testCompile('com.jayway.jsonpath:json-path-assert:2.2.0')
 }
 
 

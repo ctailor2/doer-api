@@ -1,11 +1,15 @@
 package com.doerapispring.todos;
 
-import com.doerapispring.users.UserEntity;
-import com.doerapispring.users.UserRepository;
+import com.doerapispring.AbnormalModelException;
+import com.doerapispring.UserIdentifier;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -23,21 +27,23 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private TodoRepository todoRepository;
+    private NewTodoRepository newTodoRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private TodoDao todoDao;
 
-    private ArgumentCaptor<TodoEntity> todoArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
-    private Todo todo;
+    @Captor
+    private ArgumentCaptor<TodoEntity> todoArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<NewTodo> newTodoArgumentCaptor;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        todoService = new TodoService(todoRepository, userRepository);
-        todo = Todo.builder()
-                .task("reconfigure things")
-                .active(true)
-                .build();
+        todoService = new TodoService(newTodoRepository, todoDao);
     }
 
     @Test
@@ -46,11 +52,11 @@ public class TodoServiceTest {
                 .task("clean the fridge")
                 .active(true)
                 .build());
-        doReturn(todos).when(todoRepository).findByUserEmail("one@two.com");
+        doReturn(todos).when(todoDao).findByUserEmail("one@two.com");
 
         List<Todo> todoEntities = todoService.get("one@two.com", null);
 
-        verify(todoRepository).findByUserEmail("one@two.com");
+        verify(todoDao).findByUserEmail("one@two.com");
         Todo todo = todoEntities.get(0);
         assertThat(todo).isNotNull();
         assertThat(todo.getTask()).isEqualTo("clean the fridge");
@@ -64,12 +70,12 @@ public class TodoServiceTest {
                 .active(true)
                 .build());
 
-        doReturn(todos).when(todoRepository).findByUserEmailAndType("one@two.com", true);
+        doReturn(todos).when(todoDao).findByUserEmailAndType("one@two.com", true);
 
         List<Todo> todoEntities = todoService.get("one@two.com", TodoTypeParamEnum.active);
 
-        verify(todoRepository).findByUserEmailAndType("one@two.com", true);
-        verifyNoMoreInteractions(todoRepository);
+        verify(todoDao).findByUserEmailAndType("one@two.com", true);
+        verifyNoMoreInteractions(todoDao);
         Todo todo = todoEntities.get(0);
         assertThat(todo).isNotNull();
         assertThat(todo.getTask()).isEqualTo("clean the fridge");
@@ -83,12 +89,12 @@ public class TodoServiceTest {
                 .active(true)
                 .build());
 
-        doReturn(todos).when(todoRepository).findByUserEmailAndType("one@two.com", false);
+        doReturn(todos).when(todoDao).findByUserEmailAndType("one@two.com", false);
 
         List<Todo> todoEntities = todoService.get("one@two.com", TodoTypeParamEnum.inactive);
 
-        verify(todoRepository).findByUserEmailAndType("one@two.com", false);
-        verifyNoMoreInteractions(todoRepository);
+        verify(todoDao).findByUserEmailAndType("one@two.com", false);
+        verifyNoMoreInteractions(todoDao);
         Todo todo = todoEntities.get(0);
         assertThat(todo).isNotNull();
         assertThat(todo.getTask()).isEqualTo("clean the fridge");
@@ -101,34 +107,25 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void create_callsUserRepository_whenUserExists_callsTodoRepository_savesTodoForUser_returnsTodoEntity() throws Exception {
-        UserEntity userEntity = UserEntity.builder()
-                .id(123L)
-                .email("one@two.com")
-                .build();
-        doReturn(userEntity).when(userRepository).findByEmail(userEntity.email);
+    public void newCreate_addsTodoToRepository() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("testItUp");
+        String task = "some things";
+        ScheduledFor scheduling = ScheduledFor.now;
+        todoService.newCreate(userIdentifier, task, scheduling);
 
-        Todo returnedTodo = todoService.create(userEntity.email, todo);
-
-        verify(userRepository).findByEmail(userEntity.email);
-        verify(todoRepository).save(todoArgumentCaptor.capture());
-        TodoEntity savedTodoEntity = todoArgumentCaptor.getValue();
-        assertThat(savedTodoEntity.userEntity).isEqualTo(userEntity);
-        assertThat(savedTodoEntity.task).isEqualTo("reconfigure things");
-        assertThat(savedTodoEntity.active).isEqualTo(true);
-        assertThat(savedTodoEntity.createdAt).isToday();
-        assertThat(savedTodoEntity.updatedAt).isToday();
-        assertThat(returnedTodo).isEqualTo(todo);
+        verify(newTodoRepository).add(newTodoArgumentCaptor.capture());
+        NewTodo todo = newTodoArgumentCaptor.getValue();
+        assertThat(todo).isNotNull();
+        assertThat(todo.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(todo.getTask()).isEqualTo(task);
+        assertThat(todo.getScheduling()).isEqualTo(scheduling);
     }
 
     @Test
-    public void create_callsUserRepository_whenUserDoesNotExist_returnsNull() throws Exception {
-        doReturn(null).when(userRepository).findByEmail("one@two.com");
+    public void newCreate_whenRepositoryRejectsModel_refusesCreate() throws Exception {
+        doThrow(new AbnormalModelException()).when(newTodoRepository).add(any());
 
-        Todo returnedTodo = todoService.create("one@two.com", todo);
-
-        verify(userRepository).findByEmail("one@two.com");
-        verifyZeroInteractions(todoRepository);
-        assertThat(returnedTodo).isNull();
+        exception.expect(OperationRefusedException.class);
+        todoService.newCreate(new UserIdentifier("testItUp"), "some things", ScheduledFor.now);
     }
 }

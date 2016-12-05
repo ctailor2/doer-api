@@ -3,18 +3,24 @@ package com.doerapispring.todos;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.AuthenticatedAuthenticationToken;
 import com.doerapispring.apiTokens.AuthenticatedUser;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,10 +82,22 @@ public class TodosControllerTest {
 
     @Test
     public void create_callsTokenService() throws Exception {
-        Todo todo = Todo.builder()
-                .task("browse the web")
-                .build();
-        todosController.create(AuthenticatedUser.identifiedWith(new UserIdentifier("test@email.com")), todo);
-        verify(todoService).create("test@email.com", todo);
+        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
+        String task = "browse the web";
+        ScheduledFor scheduling = ScheduledFor.later;
+        TodoForm todoForm = new TodoForm(task, scheduling);
+        todosController.create(AuthenticatedUser.identifiedWith(userIdentifier), todoForm);
+        verify(todoService).newCreate(userIdentifier, task, scheduling);
+    }
+
+    @Test
+    public void create_whenOperationRefused_returns400BadRequest() throws Exception {
+        when(todoService.newCreate(any(), any(), any())).thenThrow(new OperationRefusedException());
+
+        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
+        ResponseEntity<NewTodo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith(userIdentifier), new TodoForm("something", ScheduledFor.now));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

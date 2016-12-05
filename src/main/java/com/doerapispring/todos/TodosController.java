@@ -1,8 +1,10 @@
 package com.doerapispring.todos;
 
 import com.doerapispring.apiTokens.AuthenticatedUser;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +35,13 @@ public class TodosController {
     @RequestMapping(value = "/todos", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    Todo create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                @RequestBody Todo todo) {
-        return todoService.create(authenticatedUser.getUserIdentifier().get(), todo);
+    ResponseEntity<NewTodo> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                   @RequestBody TodoForm todoForm) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(todoService.newCreate(authenticatedUser.getUserIdentifier(), todoForm.getTask(), todoForm.getScheduling()));
+        } catch (OperationRefusedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }

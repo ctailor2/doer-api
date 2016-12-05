@@ -3,6 +3,7 @@ package integration;
 import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
+import com.doerapispring.todos.ScheduledFor;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
@@ -38,6 +39,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
     private MockHttpServletRequestBuilder mockRequestBuilder;
+    private UserIdentifier userIdentifier;
 
     private void doGet() throws Exception {
         mvcResult = mockMvc.perform(mockRequestBuilder)
@@ -48,8 +50,9 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        userIdentifier = new UserIdentifier("test@email.com");
         SessionToken signupSessionToken = userSessionsService.signup(
-                new UserIdentifier("test@email.com"),
+                userIdentifier,
                 new Credentials("password"));
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
@@ -60,10 +63,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Test
     public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        Todo todo = Todo.builder()
-                .task("this and that")
-                .build();
-        todosService.create("test@email.com", todo);
+        todosService.newCreate(new UserIdentifier("test@email.com"), "this and that", ScheduledFor.later);
 
         doGet();
 
@@ -81,16 +81,8 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Test
     public void todos_whenUserHasTodos_withQueryForActive_returnsActiveTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder.param("type", "active");
-        Todo todo1 = Todo.builder()
-                .task("active task")
-                .active(true)
-                .build();
-        Todo todo2 = Todo.builder()
-                .task("inactive task")
-                .active(false)
-                .build();
-        todosService.create("test@email.com", todo1);
-        todosService.create("test@email.com", todo2);
+        todosService.newCreate(userIdentifier, "active task", ScheduledFor.now);
+        todosService.newCreate(userIdentifier, "inactive task", ScheduledFor.later);
 
         doGet();
 

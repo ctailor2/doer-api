@@ -1,12 +1,12 @@
 package com.doerapispring.todos;
 
-import com.doerapispring.users.UserEntity;
-import com.doerapispring.users.UserRepository;
+import com.doerapispring.AbnormalModelException;
+import com.doerapispring.UserIdentifier;
+import com.doerapispring.userSessions.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,26 +16,23 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TodoService {
-    private final TodoRepository todoRepository;
-    private final UserRepository userRepository;
+    private final NewTodoRepository newTodoRepository;
+    private final TodoDao todoDao;
 
     @Autowired
-    public TodoService(TodoRepository todoRepository, UserRepository userRepository) {
-        this.todoRepository = todoRepository;
-        this.userRepository = userRepository;
+    public TodoService(NewTodoRepository newTodoRepository,
+                       TodoDao todoDao) {
+        this.newTodoRepository = newTodoRepository;
+        this.todoDao = todoDao;
     }
 
-    public Todo create(String userEmail, Todo todo) {
-        UserEntity userEntity = userRepository.findByEmail(userEmail);
-        if (userEntity == null) return null;
-        TodoEntity todoEntity = TodoEntity.builder()
-                .userEntity(userEntity)
-                .task(todo.getTask())
-                .active(todo.isActive())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-        todoRepository.save(todoEntity);
+    public NewTodo newCreate(UserIdentifier userIdentifier, String task, ScheduledFor scheduling) throws OperationRefusedException {
+        NewTodo todo = new NewTodo(userIdentifier, task, scheduling);
+        try {
+            newTodoRepository.add(todo);
+        } catch (AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
         return todo;
     }
 
@@ -51,10 +48,10 @@ public class TodoService {
     public List<Todo> get(String userEmail, TodoTypeParamEnum type) {
         List<TodoEntity> todoEntities;
         if (type == null) {
-            todoEntities = todoRepository.findByUserEmail(userEmail);
+            todoEntities = todoDao.findByUserEmail(userEmail);
         } else {
             TodoTypeQueryEnum todoTypeQueryEnum = Enum.valueOf(TodoTypeQueryEnum.class, type.toString());
-            todoEntities = todoRepository.findByUserEmailAndType(userEmail, todoTypeQueryEnum.getValue());
+            todoEntities = todoDao.findByUserEmailAndType(userEmail, todoTypeQueryEnum.getValue());
         }
         List<Todo> todos = todoEntities.stream().map(todoEntity -> Todo.builder()
                 .task(todoEntity.task)

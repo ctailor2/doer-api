@@ -1,0 +1,35 @@
+package com.doerapispring.todos;
+
+import com.doerapispring.UserIdentifier;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+/**
+ * Created by chiragtailor on 11/24/16.
+ */
+public class NewTodo {
+    private final String task;
+    private final ScheduledFor scheduling;
+
+    @JsonIgnore
+    private final UserIdentifier userIdentifier;
+
+    public NewTodo(UserIdentifier userIdentifier,
+                   String task,
+                   ScheduledFor scheduling) {
+        this.task = task;
+        this.userIdentifier = userIdentifier;
+        this.scheduling = scheduling;
+    }
+
+    public String getTask() {
+        return task;
+    }
+
+    public UserIdentifier getUserIdentifier() {
+        return userIdentifier;
+    }
+
+    public ScheduledFor getScheduling() {
+        return scheduling;
+    }
+}
