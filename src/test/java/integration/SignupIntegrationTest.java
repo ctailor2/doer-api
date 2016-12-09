@@ -1,11 +1,11 @@
 package integration;
 
-import com.doerapispring.UserCredentials;
-import com.doerapispring.UserCredentialsRepository;
-import com.doerapispring.UserIdentifier;
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.users.User;
-import com.doerapispring.users.UserRepository;
+import com.doerapispring.authentication.SessionToken;
+import com.doerapispring.authentication.UserCredentials;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.storage.UserCredentialsRepository;
+import com.doerapispring.storage.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

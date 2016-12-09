@@ -1,12 +1,12 @@
 package integration;
 
-import com.doerapispring.Credentials;
-import com.doerapispring.UserIdentifier;
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.todos.ScheduledFor;
-import com.doerapispring.todos.Todo;
-import com.doerapispring.todos.TodoService;
-import com.doerapispring.userSessions.UserSessionsService;
+import com.doerapispring.authentication.Credentials;
+import com.doerapispring.authentication.SessionToken;
+import com.doerapispring.authentication.UserSessionsService;
+import com.doerapispring.domain.ScheduledFor;
+import com.doerapispring.domain.Todo;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

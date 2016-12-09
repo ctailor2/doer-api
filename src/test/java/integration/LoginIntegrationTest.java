@@ -1,9 +1,9 @@
 package integration;
 
-import com.doerapispring.Credentials;
-import com.doerapispring.UserIdentifier;
-import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.userSessions.UserSessionsService;
+import com.doerapispring.authentication.Credentials;
+import com.doerapispring.authentication.SessionToken;
+import com.doerapispring.authentication.UserSessionsService;
+import com.doerapispring.domain.UserIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

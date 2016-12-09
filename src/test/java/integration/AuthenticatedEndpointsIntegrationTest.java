@@ -1,6 +1,6 @@
 package integration;
 
-import com.doerapispring.Error;
+import com.doerapispring.web.Error;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;

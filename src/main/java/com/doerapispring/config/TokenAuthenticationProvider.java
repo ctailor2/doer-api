@@ -1,7 +1,6 @@
 package com.doerapispring.config;
 
-import com.doerapispring.PreAuthenticatedAuthenticationToken;
-import com.doerapispring.apiTokens.*;
+import com.doerapispring.authentication.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;

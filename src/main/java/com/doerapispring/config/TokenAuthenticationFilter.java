@@ -1,7 +1,7 @@
 package com.doerapispring.config;
 
-import com.doerapispring.Error;
-import com.doerapispring.PreAuthenticatedAuthenticationToken;
+import com.doerapispring.authentication.PreAuthenticatedAuthenticationToken;
+import com.doerapispring.web.Error;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
