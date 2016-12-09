@@ -4,23 +4,21 @@ import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
 import com.doerapispring.todos.ScheduledFor;
-import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.List;
-
-import static org.fest.assertions.api.Assertions.assertThat;
+import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 /**
  * Created by chiragtailor on 9/27/16.
@@ -63,37 +61,31 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Test
     public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.newCreate(new UserIdentifier("test@email.com"), "this and that", ScheduledFor.later);
+        todosService.create(new UserIdentifier("test@email.com"), "this and that", ScheduledFor.later);
 
         doGet();
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        ObjectMapper mapper = new ObjectMapper();
-        List<Todo> savedTodos = mapper.readValue(response.getContentAsString(), new TypeReference<List<Todo>>() {
-        });
+        String responseContent = mvcResult.getResponse().getContentAsString();
 
-        assertThat(savedTodos.size()).isEqualTo(1);
-        Todo savedTodo = savedTodos.get(0);
-        assertThat(savedTodo.getTask()).isEqualTo("this and that");
-        assertThat(savedTodo.isActive()).isEqualTo(false);
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
+        assertThat(responseContent, hasJsonPath("$[0].task", equalTo("this and that")));
+        assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("later")));
     }
 
     @Test
     public void todos_whenUserHasTodos_withQueryForActive_returnsActiveTodos() throws Exception {
-        mockRequestBuilder = baseMockRequestBuilder.param("type", "active");
-        todosService.newCreate(userIdentifier, "active task", ScheduledFor.now);
-        todosService.newCreate(userIdentifier, "inactive task", ScheduledFor.later);
+        mockRequestBuilder = baseMockRequestBuilder.param("scheduling", "now");
+        todosService.create(userIdentifier, "now task", ScheduledFor.now);
+        todosService.create(userIdentifier, "later task", ScheduledFor.later);
 
         doGet();
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        ObjectMapper mapper = new ObjectMapper();
-        List<Todo> savedTodos = mapper.readValue(response.getContentAsString(), new TypeReference<List<Todo>>() {
-        });
+        String responseContent = mvcResult.getResponse().getContentAsString();
 
-        assertThat(savedTodos.size()).isEqualTo(1);
-        Todo savedTodo = savedTodos.get(0);
-        assertThat(savedTodo.getTask()).isEqualTo("active task");
-        assertThat(savedTodo.isActive()).isEqualTo(true);
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
+        assertThat(responseContent, hasJsonPath("$[0].task", equalTo("now task")));
+        assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("now")));
     }
 }

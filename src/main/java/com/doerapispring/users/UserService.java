@@ -11,19 +11,19 @@ import java.util.Optional;
  * Created by chiragtailor on 8/12/16.
  */
 @Service
-public class UserService implements UserServiceInterface {
-    private NewUserRepository newUserRepository;
+public class UserService {
+    private UserRepository userRepository;
 
     @Autowired
-    public UserService(NewUserRepository newUserRepository) {
-        this.newUserRepository = newUserRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public User create(UserIdentifier userIdentifier) throws OperationRefusedException {
-        Optional<User> userOptional = newUserRepository.find(userIdentifier);
+        Optional<User> userOptional = userRepository.find(userIdentifier);
         if (userOptional.isPresent()) throw new OperationRefusedException();
         User user = new User(userIdentifier);
-        newUserRepository.add(user);
+        userRepository.add(user);
         return user;
     }
 }

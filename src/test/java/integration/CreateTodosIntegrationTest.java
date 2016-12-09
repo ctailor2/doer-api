@@ -3,6 +3,7 @@ package integration;
 import com.doerapispring.Credentials;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
+import com.doerapispring.todos.ScheduledFor;
 import com.doerapispring.todos.Todo;
 import com.doerapispring.todos.TodoService;
 import com.doerapispring.userSessions.UserSessionsService;
@@ -58,7 +59,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void create() throws Exception {
         doPost();
 
-        List<Todo> todos = todosService.get("test@email.com", null);
+        List<Todo> todos = todosService.getByScheduling(new UserIdentifier("test@email.com"), ScheduledFor.anytime);
 
         assertThat(todos.size(), equalTo(1));
 

@@ -1,18 +1,35 @@
 package com.doerapispring.todos;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.doerapispring.UserIdentifier;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Created by chiragtailor on 9/27/16.
+ * Created by chiragtailor on 11/24/16.
  */
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
-@Builder
 public class Todo {
-    private String task;
-    private boolean active;
+    private final String task;
+    private final ScheduledFor scheduling;
+
+    @JsonIgnore
+    private final UserIdentifier userIdentifier;
+
+    public Todo(UserIdentifier userIdentifier,
+                String task,
+                ScheduledFor scheduling) {
+        this.task = task;
+        this.userIdentifier = userIdentifier;
+        this.scheduling = scheduling;
+    }
+
+    public String getTask() {
+        return task;
+    }
+
+    public UserIdentifier getUserIdentifier() {
+        return userIdentifier;
+    }
+
+    public ScheduledFor getScheduling() {
+        return scheduling;
+    }
 }

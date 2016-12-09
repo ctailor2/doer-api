@@ -36,10 +36,12 @@ public class TodosControllerTest {
     private TodoService todoService;
 
     private MockMvc mockMvc;
+    private UserIdentifier userIdentifier;
 
     @Before
     public void setUp() throws Exception {
-        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(new AuthenticatedUser(new UserIdentifier("test"))));
+        userIdentifier = new UserIdentifier("test");
+        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(new AuthenticatedUser(userIdentifier)));
         todosController = new TodosController(todoService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
@@ -54,21 +56,22 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_withNoTypeSpecified_callsTodoService_withNullType() throws Exception {
-        todosController.index(AuthenticatedUser.identifiedWith(new UserIdentifier("test@email.com")), null);
-        verify(todoService).get("test@email.com", null);
+    public void index_withNoSchedulingSpecified_callsTodoService_withAnytime() throws Exception {
+        mockMvc.perform(get("/v1/todos"));
+        verify(todoService).getByScheduling(userIdentifier, ScheduledFor.anytime);
     }
 
     @Test
-    public void index_withValidTypeSpecified_callsTodoService_withSpecifiedType() throws Exception {
-        todosController.index(AuthenticatedUser.identifiedWith(new UserIdentifier("test@email.com")), TodoTypeParamEnum.active);
-        verify(todoService).get("test@email.com", TodoTypeParamEnum.active);
+    public void index_withValidSchedulingSpecified_callsTodoService_withSpecifiedType() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
+        todosController.index(AuthenticatedUser.identifiedWith(userIdentifier), ScheduledFor.now.toString());
+        verify(todoService).getByScheduling(userIdentifier, ScheduledFor.now);
     }
 
     @Test
-    public void index_withInvalidTypeSpecified_returns400() throws Exception {
+    public void index_withInvalidSchedulingSpecified_returns400() throws Exception {
         mockMvc.perform(get("/v1/todos")
-                .param("type", "notARealType"))
+                .param("scheduling", "notARealScheduling"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -87,15 +90,15 @@ public class TodosControllerTest {
         ScheduledFor scheduling = ScheduledFor.later;
         TodoForm todoForm = new TodoForm(task, scheduling);
         todosController.create(AuthenticatedUser.identifiedWith(userIdentifier), todoForm);
-        verify(todoService).newCreate(userIdentifier, task, scheduling);
+        verify(todoService).create(userIdentifier, task, scheduling);
     }
 
     @Test
     public void create_whenOperationRefused_returns400BadRequest() throws Exception {
-        when(todoService.newCreate(any(), any(), any())).thenThrow(new OperationRefusedException());
+        when(todoService.create(any(), any(), any())).thenThrow(new OperationRefusedException());
 
         UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
-        ResponseEntity<NewTodo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith(userIdentifier), new TodoForm("something", ScheduledFor.now));
+        ResponseEntity<Todo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith(userIdentifier), new TodoForm("something", ScheduledFor.now));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

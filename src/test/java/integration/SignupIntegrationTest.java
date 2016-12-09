@@ -4,8 +4,8 @@ import com.doerapispring.UserCredentials;
 import com.doerapispring.UserCredentialsRepository;
 import com.doerapispring.UserIdentifier;
 import com.doerapispring.apiTokens.SessionToken;
-import com.doerapispring.users.NewUserRepository;
 import com.doerapispring.users.User;
+import com.doerapispring.users.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
-    private NewUserRepository newUserRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private UserCredentialsRepository userCredentialsRepository;
@@ -49,7 +49,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         doPost();
 
         UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
-        Optional<User> storedUserOptional = newUserRepository.find(userIdentifier);
+        Optional<User> storedUserOptional = userRepository.find(userIdentifier);
         Optional<UserCredentials> storedUserCredentialsOptional = userCredentialsRepository.find(userIdentifier);
 
         MockHttpServletResponse response = mvcResult.getResponse();

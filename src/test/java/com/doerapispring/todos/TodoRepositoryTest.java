@@ -14,6 +14,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -23,8 +26,8 @@ import static org.mockito.Mockito.when;
  * Created by chiragtailor on 11/24/16.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NewTodoRepositoryTest {
-    private NewTodoRepository newTodoRepository;
+public class TodoRepositoryTest {
+    private TodoRepository todoRepository;
 
     @Mock
     private TodoDao todoDao;
@@ -40,7 +43,7 @@ public class NewTodoRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        newTodoRepository = new NewTodoRepository(userDao, todoDao);
+        todoRepository = new TodoRepository(userDao, todoDao);
     }
 
     @Test
@@ -48,7 +51,7 @@ public class NewTodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDao.findByEmail(any())).thenReturn(userEntity);
 
-        newTodoRepository.add(new NewTodo(
+        todoRepository.add(new Todo(
                 new UserIdentifier("somethingIdentifying"),
                 "do it",
                 ScheduledFor.now));
@@ -68,7 +71,7 @@ public class NewTodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDao.findByEmail(any())).thenReturn(userEntity);
 
-        newTodoRepository.add(new NewTodo(
+        todoRepository.add(new Todo(
                 new UserIdentifier("somethingIdentifying"),
                 "do it",
                 ScheduledFor.now));
@@ -83,7 +86,7 @@ public class NewTodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDao.findByEmail(any())).thenReturn(userEntity);
 
-        newTodoRepository.add(new NewTodo(
+        todoRepository.add(new Todo(
                 new UserIdentifier("somethingIdentifying"),
                 "do it",
                 ScheduledFor.later));
@@ -97,11 +100,47 @@ public class NewTodoRepositoryTest {
         when(userDao.findByEmail(any())).thenReturn(null);
 
         exception.expect(AbnormalModelException.class);
-        newTodoRepository.add(new NewTodo(
+        todoRepository.add(new Todo(
                 new UserIdentifier("somethingIdentifying"),
                 "do it",
                 null));
 
         verify(userDao).findByEmail("somethingIdentifying");
+    }
+
+    @Test
+    public void findByScheduling_whenScheduledForAnytime_findsAllUserTodos() throws Exception {
+        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.anytime);
+
+        verify(todoDao).findByUserEmail("something");
+    }
+
+    @Test
+    public void findByScheduling_returnsTodo() throws Exception {
+        when(todoDao.findByUserEmail(any())).thenReturn(Collections.singletonList(
+                TodoEntity.builder().task("task 1").active(true).build()));
+
+        UserIdentifier userIdentifier = new UserIdentifier("something");
+        List<Todo> todos = todoRepository.findByScheduling(userIdentifier, ScheduledFor.anytime);
+
+        assertThat(todos.size()).isEqualTo(1);
+        Todo firstTodo = todos.get(0);
+        assertThat(firstTodo.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(firstTodo.getTask()).isEqualTo("task 1");
+        assertThat(firstTodo.getScheduling()).isEqualTo(ScheduledFor.now);
+    }
+
+    @Test
+    public void findByScheduling_whenScheduledForLater_findsUserTodos_scheduledForLater() throws Exception {
+        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.later);
+
+        verify(todoDao).findByUserEmailAndActiveStatus("something", false);
+    }
+
+    @Test
+    public void findByScheduling_whenScheduledForNow_findsUserTodos_scheduledForLater() throws Exception {
+        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.now);
+
+        verify(todoDao).findByUserEmailAndActiveStatus("something", true);
     }
 }
