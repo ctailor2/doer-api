@@ -19,9 +19,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by chiragtailor on 8/18/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
     private UserService userService;

@@ -2,9 +2,6 @@ package com.doerapispring.apiTokens;
 
 import com.doerapispring.UserIdentifier;
 
-/**
- * Created by chiragtailor on 11/20/16.
- */
 public class AuthenticatedUser {
     private final UserIdentifier userIdentifier;
 

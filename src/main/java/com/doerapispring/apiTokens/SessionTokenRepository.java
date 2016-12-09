@@ -10,9 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.Optional;
 
-/**
- * Created by chiragtailor on 10/26/16.
- */
 @Repository
 public class SessionTokenRepository {
     private final UserDAO userDAO;

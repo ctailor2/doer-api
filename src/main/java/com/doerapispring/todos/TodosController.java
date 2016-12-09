@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by chiragtailor on 9/27/16.
- */
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")

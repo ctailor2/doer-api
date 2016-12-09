@@ -21,9 +21,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Created by chiragtailor on 8/12/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class UserSessionsControllerTest {
     private UserSessionsController userSessionsController;

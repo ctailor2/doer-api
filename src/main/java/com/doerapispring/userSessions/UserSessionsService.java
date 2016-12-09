@@ -8,9 +8,6 @@ import com.doerapispring.users.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by chiragtailor on 9/1/16.
- */
 @Service
 public class UserSessionsService {
     private final UserService userService;

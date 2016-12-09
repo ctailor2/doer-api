@@ -2,9 +2,6 @@ package com.doerapispring.users;
 
 import com.doerapispring.UserIdentifier;
 
-/**
- * Created by chiragtailor on 11/3/16.
- */
 public class User {
     private final UserIdentifier userIdentifier;
 

@@ -18,10 +18,6 @@ import java.util.Optional;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-/**
- * Created by chiragtailor on 8/9/16.
- */
-
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
     private UserRepository userRepository;

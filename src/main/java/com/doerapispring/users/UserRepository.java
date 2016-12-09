@@ -8,9 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.Optional;
 
-/**
- * Created by chiragtailor on 10/24/16.
- */
 @Repository
 @Transactional
 public class UserRepository {

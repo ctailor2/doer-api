@@ -5,9 +5,6 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-/**
- * Created by chiragtailor on 11/7/16.
- */
 public class PreAuthenticatedAuthenticationToken implements Authentication {
     private final String credentials;
 

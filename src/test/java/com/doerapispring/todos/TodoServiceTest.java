@@ -16,9 +16,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * Created by chiragtailor on 9/28/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class TodoServiceTest {
     private TodoService todoService;

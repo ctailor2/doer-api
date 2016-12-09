@@ -3,9 +3,6 @@ package com.doerapispring.todos;
 import com.doerapispring.UserIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- * Created by chiragtailor on 11/24/16.
- */
 public class Todo {
     private final String task;
     private final ScheduledFor scheduling;

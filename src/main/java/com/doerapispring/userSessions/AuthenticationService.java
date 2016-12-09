@@ -7,9 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Created by chiragtailor on 8/29/16.
- */
 @Service
 public class AuthenticationService {
     private PasswordEncoder passwordEncoder;

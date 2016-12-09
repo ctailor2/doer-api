@@ -18,9 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * Created by chiragtailor on 9/19/16.
- */
 public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     @Autowired
     protected TokenAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {

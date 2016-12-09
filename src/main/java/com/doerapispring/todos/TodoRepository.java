@@ -11,9 +11,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by chiragtailor on 11/24/16.
- */
 @Repository
 public class TodoRepository {
     private final UserDAO userDao;

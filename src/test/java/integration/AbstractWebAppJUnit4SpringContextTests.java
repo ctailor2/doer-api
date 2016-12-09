@@ -15,9 +15,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-/**
- * Created by chiragtailor on 8/11/16.
- */
 @SpringApplicationConfiguration(DoerApiSpringApplication.class)
 @WebAppConfiguration
 abstract class AbstractWebAppJUnit4SpringContextTests extends AbstractTransactionalJUnit4SpringContextTests {

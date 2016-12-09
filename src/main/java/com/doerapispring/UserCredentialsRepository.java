@@ -8,9 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-/**
- * Created by chiragtailor on 11/5/16.
- */
 @Repository
 @Transactional
 public class UserCredentialsRepository {

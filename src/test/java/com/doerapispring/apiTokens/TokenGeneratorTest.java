@@ -7,9 +7,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Created by chiragtailor on 8/28/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class TokenGeneratorTest {
     private TokenGenerator tokenGenerator;

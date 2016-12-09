@@ -9,9 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Created by chiragtailor on 9/27/16.
- */
 @Service
 @Transactional
 public class TodoService {

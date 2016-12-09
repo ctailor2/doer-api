@@ -8,9 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Created by chiragtailor on 8/11/16.
- */
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")

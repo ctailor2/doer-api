@@ -16,9 +16,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Created by chiragtailor on 8/29/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;

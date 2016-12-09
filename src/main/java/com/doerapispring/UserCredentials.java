@@ -1,8 +1,5 @@
 package com.doerapispring;
 
-/**
- * Created by chiragtailor on 11/5/16.
- */
 public class UserCredentials {
     private final UserIdentifier userIdentifier;
     private final EncodedCredentials encodedCredentials;

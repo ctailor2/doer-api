@@ -5,9 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Created by chiragtailor on 9/30/16.
- */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

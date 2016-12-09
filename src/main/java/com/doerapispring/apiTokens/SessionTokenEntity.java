@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.Date;
 
-/**
- * Created by chiragtailor on 8/22/16.
- */
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

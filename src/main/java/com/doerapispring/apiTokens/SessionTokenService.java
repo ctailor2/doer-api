@@ -13,9 +13,6 @@ import java.util.Optional;
 
 import static java.util.Calendar.DATE;
 
-/**
- * Created by chiragtailor on 8/25/16.
- */
 @Service
 @Transactional
 public class SessionTokenService {

@@ -17,9 +17,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by chiragtailor on 11/5/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class UserCredentialsRepositoryTest {
     private UserCredentialsRepository userCredentialsRepository;

@@ -25,9 +25,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Created by chiragtailor on 9/27/16.
- */
 @RunWith(MockitoJUnitRunner.class)
 public class TodosControllerTest {
     private TodosController todosController;

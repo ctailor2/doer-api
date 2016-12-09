@@ -5,9 +5,6 @@ import org.springframework.stereotype.Component;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * Created by chiragtailor on 8/25/16.
- */
 @Component
 class TokenGenerator {
     private SecureRandom random = new SecureRandom();

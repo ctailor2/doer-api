@@ -11,9 +11,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-/**
- * Created by chiragtailor on 9/30/16.
- */
 public class AuthenticatedEndpointsIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
 

@@ -10,9 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by chiragtailor on 9/19/16.
- */
 public class SkipAuthenticationPathRequestMatcher implements RequestMatcher {
     private final OrRequestMatcher matchers;
     private final AntPathRequestMatcher processingMatcher;

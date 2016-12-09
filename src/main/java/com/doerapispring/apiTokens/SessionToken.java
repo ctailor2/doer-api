@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * Created by chiragtailor on 8/28/16.
- */
 @NoArgsConstructor
 @AllArgsConstructor
 @Data

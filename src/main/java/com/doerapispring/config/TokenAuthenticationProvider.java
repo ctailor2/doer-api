@@ -11,9 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-/**
- * Created by chiragtailor on 9/19/16.
- */
 @Component
 public class TokenAuthenticationProvider implements AuthenticationProvider {
 
