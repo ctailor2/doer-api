@@ -2,10 +2,9 @@ package integration;
 
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserCredentials;
+import com.doerapispring.domain.DomainRepository;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserIdentifier;
-import com.doerapispring.storage.UserCredentialsRepository;
-import com.doerapispring.storage.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
-    private UserRepository userRepository;
+    private DomainRepository<User, String> userRepository;
 
     @Autowired
-    private UserCredentialsRepository userCredentialsRepository;
+    private DomainRepository<UserCredentials, String> userCredentialsRepository;
 
     private String content =
             "{\n" +
@@ -58,7 +57,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         User user = storedUserOptional.get();
         assertThat(storedUserCredentialsOptional.isPresent()).isTrue();
         UserCredentials userCredentials = storedUserCredentialsOptional.get();
-        assertThat(userCredentials.getUserIdentifier()).isEqualTo(user.getIdentifier());
+        assertThat(userCredentials.getIdentifier()).isEqualTo(user.getIdentifier());
         assertThat(sessionToken.getToken()).isNotEmpty();
         assertThat(sessionToken.getExpiresAt()).isInTheFuture();
     }

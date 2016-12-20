@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
-public class UserEntity {
+class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

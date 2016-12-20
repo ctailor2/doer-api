@@ -3,6 +3,7 @@ package com.doerapispring.storage;
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.SessionTokenIdentifier;
 import com.doerapispring.domain.AbnormalModelException;
+import com.doerapispring.domain.DomainRepository;
 import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SessionTokenRepositoryTest {
-    private SessionTokenRepository sessionTokenRepository;
+    private DomainRepository<SessionToken, String> sessionTokenRepository;
 
     @Mock
     private UserDAO userDAO;

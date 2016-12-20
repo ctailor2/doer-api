@@ -1,9 +1,9 @@
-package com.doerapispring.authentication;
+package com.doerapispring.storage;
 
+import com.doerapispring.authentication.EncodedCredentials;
+import com.doerapispring.authentication.UserCredentials;
+import com.doerapispring.domain.DomainRepository;
 import com.doerapispring.domain.UserIdentifier;
-import com.doerapispring.storage.UserCredentialsRepository;
-import com.doerapispring.storage.UserDAO;
-import com.doerapispring.storage.UserEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserCredentialsRepositoryTest {
-    private UserCredentialsRepository userCredentialsRepository;
+    private DomainRepository<UserCredentials, String> userCredentialsRepository;
 
     @Mock
     private UserDAO userDAO;
@@ -67,7 +67,7 @@ public class UserCredentialsRepositoryTest {
         Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
 
         assertThat(userCredentialsOptional.isPresent()).isTrue();
-        assertThat(userCredentialsOptional.get().getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentialsOptional.get().getIdentifier()).isEqualTo(userIdentifier);
         assertThat(userCredentialsOptional.get().getEncodedCredentials()).isEqualTo(new EncodedCredentials("securePassword"));
     }
 

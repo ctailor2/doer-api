@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.storage.TodoRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +10,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -19,26 +23,61 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private TodoRepository todoRepository;
+    private DomainRepository<Todo, String> todoRepository;
+
+    @Mock
+    private DomainRepository<MasterList, String> masterListRepository;
 
     @Captor
     private ArgumentCaptor<Todo> todoArgumentCaptor;
-
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        todoService = new TodoService(todoRepository);
+        todoService = new TodoService(todoRepository, masterListRepository);
     }
 
     @Test
-    public void getByScheduling_usesRepository() throws Exception {
+    public void getByScheduling_whenScheduledForNow_returnsImmediateTodos() throws Exception {
         UserIdentifier userIdentifier = new UserIdentifier("one@two.com");
-        ScheduledFor scheduling = ScheduledFor.now;
-        todoService.getByScheduling(userIdentifier, scheduling);
+        List<Todo> immediateTodos = Collections.singletonList(new Todo(new UserIdentifier("one"), "one", ScheduledFor.anytime));
+        MasterList masterList = new MasterList(new ImmediateList(immediateTodos), new PostponedList(Collections.emptyList()));
+        when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
 
-        verify(todoRepository).findByScheduling(userIdentifier, scheduling);
+        List<Todo> todos = todoService.getByScheduling(userIdentifier, ScheduledFor.now);
+
+        verify(masterListRepository).find(userIdentifier);
+        assertThat(todos).isEqualTo(immediateTodos);
+    }
+
+    @Test
+    public void getByScheduling_whenScheduledForLater_returnsPostponedTodos() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("one@two.com");
+        List<Todo> postponedTodos = Collections.singletonList(new Todo(new UserIdentifier("two"), "two", ScheduledFor.anytime));
+        MasterList masterList = new MasterList(new ImmediateList(Collections.emptyList()), new PostponedList(postponedTodos));
+        when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
+
+        List<Todo> todos = todoService.getByScheduling(userIdentifier, ScheduledFor.later);
+
+        verify(masterListRepository).find(userIdentifier);
+        assertThat(todos).isEqualTo(postponedTodos);
+    }
+
+    @Test
+    public void getByScheduling_whenScheduledAnytime_returnsAllTodos() throws Exception {
+        UserIdentifier userIdentifier = new UserIdentifier("one@two.com");
+        List<Todo> immediateTodos = Collections.singletonList(new Todo(new UserIdentifier("one"), "one", ScheduledFor.anytime));
+        List<Todo> postponedTodos = Collections.singletonList(new Todo(new UserIdentifier("two"), "two", ScheduledFor.anytime));
+        MasterList masterList = new MasterList(new ImmediateList(immediateTodos), new PostponedList(postponedTodos));
+        when(masterListRepository.find(userIdentifier)).thenReturn(Optional.of(masterList));
+
+        List<Todo> todos = todoService.getByScheduling(userIdentifier, ScheduledFor.anytime);
+
+        verify(masterListRepository).find(userIdentifier);
+        List<Todo> allTodos = new ArrayList<>(immediateTodos);
+        allTodos.addAll(postponedTodos);
+        assertThat(todos).isEqualTo(allTodos);
     }
 
     @Test

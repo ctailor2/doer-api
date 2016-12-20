@@ -1,5 +1,6 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserIdentifier;
 import com.doerapispring.domain.UserService;
@@ -19,7 +20,7 @@ public class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) throws OperationRefusedException {
+    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) throws OperationRefusedException, AbnormalModelException {
         userService.create(userIdentifier);
         authenticationService.registerCredentials(userIdentifier, credentials);
         return sessionTokenService.grant(userIdentifier);

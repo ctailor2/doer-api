@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.storage.UserRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Mock
-    private UserRepository userRepository;
+    private DomainRepository<User, String> userRepository;
 
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;

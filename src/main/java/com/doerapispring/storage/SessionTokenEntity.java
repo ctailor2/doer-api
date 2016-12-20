@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "session_tokens")
-public class SessionTokenEntity {
+class SessionTokenEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

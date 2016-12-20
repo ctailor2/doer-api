@@ -1,5 +1,7 @@
 package com.doerapispring.storage;
 
+import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,20 +13,15 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-public class UserRepository {
+class UserRepository implements DomainRepository<User, String> {
     private final UserDAO userDAO;
 
     @Autowired
-    public UserRepository(UserDAO userDAO) {
+    UserRepository(UserDAO userDAO) {
         this.userDAO = userDAO;
     }
 
-    public Optional<User> find(UserIdentifier userIdentifier) {
-        UserEntity userEntity = userDAO.findByEmail(userIdentifier.get());
-        if(userEntity == null) return Optional.empty();
-        return Optional.of(new User(userIdentifier));
-    }
-
+    @Override
     public void add(User user) {
         UserEntity userEntity = UserEntity.builder()
                 .email(user.getIdentifier().get())
@@ -33,5 +30,13 @@ public class UserRepository {
                 .updatedAt(new Date())
                 .build();
         userDAO.save(userEntity);
+    }
+
+    @Override
+    public Optional<User> find(UniqueIdentifier<String> uniqueIdentifier) {
+        String email = uniqueIdentifier.get();
+        UserEntity userEntity = userDAO.findByEmail(email);
+        if (userEntity == null) return Optional.empty();
+        return Optional.of(new User(new UserIdentifier(email)));
     }
 }

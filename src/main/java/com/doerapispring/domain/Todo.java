@@ -28,4 +28,25 @@ public class Todo {
     public ScheduledFor getScheduling() {
         return scheduling;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Todo todo = (Todo) o;
+
+        if (task != null ? !task.equals(todo.task) : todo.task != null) return false;
+        if (scheduling != todo.scheduling) return false;
+        return userIdentifier != null ? userIdentifier.equals(todo.userIdentifier) : todo.userIdentifier == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = task != null ? task.hashCode() : 0;
+        result = 31 * result + (scheduling != null ? scheduling.hashCode() : 0);
+        result = 31 * result + (userIdentifier != null ? userIdentifier.hashCode() : 0);
+        return result;
+    }
 }

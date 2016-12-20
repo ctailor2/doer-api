@@ -1,7 +1,7 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.domain.DomainRepository;
 import com.doerapispring.domain.UserIdentifier;
-import com.doerapispring.storage.UserCredentialsRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +24,7 @@ public class AuthenticationServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private UserCredentialsRepository userCredentialsRepository;
+    private DomainRepository<UserCredentials, String> userCredentialsRepository;
 
     @Captor
     private ArgumentCaptor<UserCredentials> userCredentialsArgumentCaptor;
@@ -45,7 +45,7 @@ public class AuthenticationServiceTest {
         verify(passwordEncoder).encode("soSecret");
         verify(userCredentialsRepository).add(userCredentialsArgumentCaptor.capture());
         UserCredentials userCredentials = userCredentialsArgumentCaptor.getValue();
-        assertThat(userCredentials.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentials.getIdentifier()).isEqualTo(userIdentifier);
         assertThat(userCredentials.getEncodedCredentials())
                 .isEqualTo(new EncodedCredentials("encodedSecretPassword"));
     }

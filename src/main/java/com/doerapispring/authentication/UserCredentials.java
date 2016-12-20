@@ -1,8 +1,9 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.domain.UniquelyIdentifiable;
 import com.doerapispring.domain.UserIdentifier;
 
-public class UserCredentials {
+public class UserCredentials implements UniquelyIdentifiable {
     private final UserIdentifier userIdentifier;
     private final EncodedCredentials encodedCredentials;
 
@@ -12,7 +13,7 @@ public class UserCredentials {
         this.encodedCredentials = encodedCredentials;
     }
 
-    public UserIdentifier getUserIdentifier() {
+    public UserIdentifier getIdentifier() {
         return userIdentifier;
     }
 

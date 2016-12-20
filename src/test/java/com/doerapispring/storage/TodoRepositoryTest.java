@@ -1,9 +1,6 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.ScheduledFor;
-import com.doerapispring.domain.Todo;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,9 +11,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collections;
-import java.util.List;
-
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -24,7 +18,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TodoRepositoryTest {
-    private TodoRepository todoRepository;
+    private DomainRepository<Todo, String> todoRepository;
 
     @Mock
     private TodoDao todoDao;
@@ -103,41 +97,5 @@ public class TodoRepositoryTest {
                 null));
 
         verify(userDao).findByEmail("somethingIdentifying");
-    }
-
-    @Test
-    public void findByScheduling_whenScheduledForAnytime_findsAllUserTodos() throws Exception {
-        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.anytime);
-
-        verify(todoDao).findByUserEmail("something");
-    }
-
-    @Test
-    public void findByScheduling_returnsTodo() throws Exception {
-        when(todoDao.findByUserEmail(any())).thenReturn(Collections.singletonList(
-                TodoEntity.builder().task("task 1").active(true).build()));
-
-        UserIdentifier userIdentifier = new UserIdentifier("something");
-        List<Todo> todos = todoRepository.findByScheduling(userIdentifier, ScheduledFor.anytime);
-
-        assertThat(todos.size()).isEqualTo(1);
-        Todo firstTodo = todos.get(0);
-        assertThat(firstTodo.getUserIdentifier()).isEqualTo(userIdentifier);
-        assertThat(firstTodo.getTask()).isEqualTo("task 1");
-        assertThat(firstTodo.getScheduling()).isEqualTo(ScheduledFor.now);
-    }
-
-    @Test
-    public void findByScheduling_whenScheduledForLater_findsUserTodos_scheduledForLater() throws Exception {
-        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.later);
-
-        verify(todoDao).findByUserEmailAndActiveStatus("something", false);
-    }
-
-    @Test
-    public void findByScheduling_whenScheduledForNow_findsUserTodos_scheduledForLater() throws Exception {
-        todoRepository.findByScheduling(new UserIdentifier("something"), ScheduledFor.now);
-
-        verify(todoDao).findByUserEmailAndActiveStatus("something", true);
     }
 }

@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "todos")
-public class TodoEntity {
+class TodoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

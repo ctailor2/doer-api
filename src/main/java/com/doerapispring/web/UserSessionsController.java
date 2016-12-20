@@ -3,6 +3,7 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AccessDeniedException;
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserSessionsService;
+import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ class UserSessionsController {
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<SessionToken> signup(@RequestBody SignupForm signupForm) {
+    ResponseEntity<SessionToken> signup(@RequestBody SignupForm signupForm) throws AbnormalModelException {
         try {
             SessionToken sessionToken = userSessionsService.signup(signupForm.getIdentifier(), signupForm.getCredentials());
             return ResponseEntity.status(HttpStatus.CREATED).body(sessionToken);

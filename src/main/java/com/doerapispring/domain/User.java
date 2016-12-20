@@ -1,12 +1,13 @@
 package com.doerapispring.domain;
 
-public class User {
+public class User implements UniquelyIdentifiable {
     private final UserIdentifier userIdentifier;
 
     public User(UserIdentifier userIdentifier) {
         this.userIdentifier = userIdentifier;
     }
 
+    @Override
     public UserIdentifier getIdentifier() {
         return userIdentifier;
     }
