@@ -2,7 +2,7 @@ package integration;
 
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserCredentials;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,10 +19,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
-    private DomainRepository<User, String> userRepository;
+    private ObjectRepository<User, String> userRepository;
 
     @Autowired
-    private DomainRepository<UserCredentials, String> userCredentialsRepository;
+    private ObjectRepository<UserCredentials, String> userCredentialsRepository;
 
     private String content =
             "{\n" +

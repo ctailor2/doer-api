@@ -1,6 +1,5 @@
-package com.doerapispring.config;
+package com.doerapispring.authentication;
 
-import com.doerapispring.authentication.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class TokenAuthenticationProvider implements AuthenticationProvider {
+class TokenAuthenticationProvider implements AuthenticationProvider {
 
     private final SessionTokenService sessionTokenService;
 

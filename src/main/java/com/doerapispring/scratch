@@ -28,3 +28,11 @@ Login
 	- expiration date/time
 5) Add identifier to repository
 
+Domain relationships
+--------------------
+
+SessionToken --> User (reference should never go the other way around)
+
+Actually, sessionToken shouldn't be a domain object at all.
+Web layer exposes endpoints for clients to "authenticate" users - demonstrating that these users
+are authentic (who they say they are) and can be linked to some user in the domain

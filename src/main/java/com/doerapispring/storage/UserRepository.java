@@ -1,6 +1,6 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserIdentifier;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-class UserRepository implements DomainRepository<User, String> {
+class UserRepository implements ObjectRepository<User, String> {
     private final UserDAO userDAO;
 
     @Autowired

@@ -1,7 +1,7 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class SessionTokenServiceTest {
     private TokenGenerator tokenGenerator;
 
     @Mock
-    private DomainRepository<SessionToken, String> sessionTokenRepository;
+    private ObjectRepository<SessionToken, String> sessionTokenRepository;
 
     @Captor
     private ArgumentCaptor<SessionToken> sessionTokenArgumentCaptor;

@@ -1,7 +1,7 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +16,13 @@ import static java.util.Calendar.DATE;
 
 @Service
 @Transactional
-public class SessionTokenService {
+class SessionTokenService {
     private TokenGenerator tokenGenerator;
-    private DomainRepository<SessionToken, String> sessionTokenRepository;
+    private ObjectRepository<SessionToken, String> sessionTokenRepository;
 
     @Autowired
     public SessionTokenService(TokenGenerator tokenGenerator,
-                               DomainRepository<SessionToken, String> sessionTokenRepository) {
+                               ObjectRepository<SessionToken, String> sessionTokenRepository) {
         this.tokenGenerator = tokenGenerator;
         this.sessionTokenRepository = sessionTokenRepository;
     }

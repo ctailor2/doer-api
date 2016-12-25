@@ -22,7 +22,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Mock
-    private DomainRepository<User, String> userRepository;
+    private ObjectRepository<User, String> userRepository;
 
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;

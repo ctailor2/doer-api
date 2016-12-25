@@ -7,10 +7,10 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    private DomainRepository<User, String> userRepository;
+    private ObjectRepository<User, String> userRepository;
 
     @Autowired
-    public UserService(DomainRepository<User, String> userRepository) {
+    public UserService(ObjectRepository<User, String> userRepository) {
         this.userRepository = userRepository;
     }
 

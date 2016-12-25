@@ -2,7 +2,7 @@ package com.doerapispring.storage;
 
 import com.doerapispring.authentication.EncodedCredentials;
 import com.doerapispring.authentication.UserCredentials;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-class UserCredentialsRepository implements DomainRepository<UserCredentials, String> {
+class UserCredentialsRepository implements ObjectRepository<UserCredentials, String> {
     private final UserDAO userDAO;
 
     @Autowired

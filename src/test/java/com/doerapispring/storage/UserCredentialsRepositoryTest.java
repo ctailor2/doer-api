@@ -2,7 +2,7 @@ package com.doerapispring.storage;
 
 import com.doerapispring.authentication.EncodedCredentials;
 import com.doerapispring.authentication.UserCredentials;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserCredentialsRepositoryTest {
-    private DomainRepository<UserCredentials, String> userCredentialsRepository;
+    private ObjectRepository<UserCredentials, String> userCredentialsRepository;
 
     @Mock
     private UserDAO userDAO;

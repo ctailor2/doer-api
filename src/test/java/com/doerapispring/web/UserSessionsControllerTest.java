@@ -1,6 +1,8 @@
 package com.doerapispring.web;
 
-import com.doerapispring.authentication.*;
+import com.doerapispring.authentication.AccessDeniedException;
+import com.doerapispring.authentication.Credentials;
+import com.doerapispring.authentication.UserSessionsService;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserIdentifier;
 import com.doerapispring.domain.UserService;
@@ -25,12 +27,6 @@ public class UserSessionsControllerTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-    private SessionTokenService sessionTokenService;
-
-    @Mock
-    private AuthenticationService authenticationService;
 
     @Mock
     private UserSessionsService userSessionsService;

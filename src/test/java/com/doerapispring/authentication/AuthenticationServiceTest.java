@@ -1,6 +1,6 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class AuthenticationServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private DomainRepository<UserCredentials, String> userCredentialsRepository;
+    private ObjectRepository<UserCredentials, String> userCredentialsRepository;
 
     @Captor
     private ArgumentCaptor<UserCredentials> userCredentialsArgumentCaptor;

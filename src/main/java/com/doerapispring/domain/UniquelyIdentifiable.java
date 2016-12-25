@@ -1,5 +1,5 @@
 package com.doerapispring.domain;
 
-public interface UniquelyIdentifiable {
-    UniqueIdentifier getIdentifier();
+public interface UniquelyIdentifiable<T> {
+    UniqueIdentifier<T> getIdentifier();
 }

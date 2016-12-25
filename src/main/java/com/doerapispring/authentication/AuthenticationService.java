@@ -1,7 +1,7 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class AuthenticationService {
+class AuthenticationService {
     private PasswordEncoder passwordEncoder;
-    private final DomainRepository<UserCredentials, String> userCredentialsRepository;
+    private final ObjectRepository<UserCredentials, String> userCredentialsRepository;
 
     @Autowired
     public AuthenticationService(PasswordEncoder passwordEncoder,
-                                 DomainRepository<UserCredentials, String> userCredentialsRepository) {
+                                 ObjectRepository<UserCredentials, String> userCredentialsRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userCredentialsRepository = userCredentialsRepository;
     }

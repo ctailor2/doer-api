@@ -3,12 +3,15 @@ package com.doerapispring.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MasterList {
+public class MasterList implements UniquelyIdentifiable {
+    private final UniqueIdentifier<String> uniqueIdentifier;
     private final ImmediateList immediateList;
     private final PostponedList postponedList;
 
-    public MasterList(ImmediateList immediateList,
+    public MasterList(UniqueIdentifier<String> uniqueIdentifier,
+                      ImmediateList immediateList,
                       PostponedList postponedList) {
+        this.uniqueIdentifier = uniqueIdentifier;
         this.immediateList = immediateList;
         this.postponedList = postponedList;
     }
@@ -21,6 +24,17 @@ public class MasterList {
         return postponedList;
     }
 
+    public List<Todo> getAllTodos() {
+        ArrayList<Todo> allTodos = new ArrayList<>(getImmediateList().getTodos());
+        allTodos.addAll(getPostponedList().getTodos());
+        return allTodos;
+    }
+
+    @Override
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -28,6 +42,8 @@ public class MasterList {
 
         MasterList that = (MasterList) o;
 
+        if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
+            return false;
         if (immediateList != null ? !immediateList.equals(that.immediateList) : that.immediateList != null)
             return false;
         return postponedList != null ? postponedList.equals(that.postponedList) : that.postponedList == null;
@@ -36,7 +52,8 @@ public class MasterList {
 
     @Override
     public int hashCode() {
-        int result = immediateList != null ? immediateList.hashCode() : 0;
+        int result = uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
+        result = 31 * result + (immediateList != null ? immediateList.hashCode() : 0);
         result = 31 * result + (postponedList != null ? postponedList.hashCode() : 0);
         return result;
     }
@@ -44,14 +61,9 @@ public class MasterList {
     @Override
     public String toString() {
         return "MasterList{" +
-                "immediateList=" + immediateList +
+                "uniqueIdentifier=" + uniqueIdentifier +
+                ", immediateList=" + immediateList +
                 ", postponedList=" + postponedList +
                 '}';
-    }
-
-    public List<Todo> getAllTodos() {
-        ArrayList<Todo> allTodos = new ArrayList<>(getImmediateList().getTodos());
-        allTodos.addAll(getPostponedList().getTodos());
-        return allTodos;
     }
 }

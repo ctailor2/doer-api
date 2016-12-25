@@ -1,6 +1,6 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.DomainRepository;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserIdentifier;
 import org.junit.Before;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserRepositoryTest {
-    private DomainRepository<User, String> userRepository;
+    private ObjectRepository<User, String> userRepository;
 
     @Mock
     private UserDAO userDAO;
