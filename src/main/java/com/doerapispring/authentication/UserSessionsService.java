@@ -2,7 +2,7 @@ package com.doerapispring.authentication;
 
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,17 +20,17 @@ public class UserSessionsService {
         this.authenticationService = authenticationService;
     }
 
-    public SessionToken signup(UserIdentifier userIdentifier, Credentials credentials) throws OperationRefusedException, AbnormalModelException {
-        userService.create(userIdentifier);
-        authenticationService.registerCredentials(userIdentifier, credentials);
-        return sessionTokenService.grant(userIdentifier);
+    public SessionToken signup(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws OperationRefusedException, AbnormalModelException {
+        userService.create(uniqueIdentifier);
+        authenticationService.registerCredentials(uniqueIdentifier, credentials);
+        return sessionTokenService.grant(uniqueIdentifier);
     }
 
-    public SessionToken login(UserIdentifier userIdentifier, Credentials credentials) throws AccessDeniedException {
-        boolean authenticationResult = authenticationService.authenticate(userIdentifier, credentials);
+    public SessionToken login(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws AccessDeniedException {
+        boolean authenticationResult = authenticationService.authenticate(uniqueIdentifier, credentials);
         if (!authenticationResult) throw new AccessDeniedException();
         try {
-            return sessionTokenService.grant(userIdentifier);
+            return sessionTokenService.grant(uniqueIdentifier);
         } catch (OperationRefusedException e) {
             throw new AccessDeniedException();
         }

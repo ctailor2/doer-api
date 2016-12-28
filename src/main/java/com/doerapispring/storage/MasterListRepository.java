@@ -30,7 +30,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                         todoEntity.task,
                         todoEntity.active ? ScheduledFor.now : ScheduledFor.later))
                 .collect(Collectors.partitioningBy(todo -> todo.getScheduling() == ScheduledFor.now));
-        return Optional.of(new MasterList(new UserIdentifier(email),
+        return Optional.of(new MasterList(new UniqueIdentifier(email),
                 new ImmediateList(partitionedTodos.get(true)), new PostponedList(partitionedTodos.get(false))));
     }
 

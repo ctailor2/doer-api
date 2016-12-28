@@ -18,9 +18,9 @@ public class TodoService {
         this.masterListRepository = masterListRepository;
     }
 
-    public Todo create(UserIdentifier userIdentifier, String task, ScheduledFor scheduling) throws OperationRefusedException {
+    public Todo create(User user, String task, ScheduledFor scheduling) throws OperationRefusedException {
         Todo todo = new Todo(task, scheduling);
-        Optional<MasterList> masterList = masterListRepository.find(userIdentifier);
+        Optional<MasterList> masterList = masterListRepository.find(user.getIdentifier());
         if (!masterList.isPresent()) throw new OperationRefusedException();
         try {
             masterListRepository.add(masterList.get(), todo);
@@ -30,12 +30,8 @@ public class TodoService {
         return todo;
     }
 
-    public List<Todo> getByScheduling(UserIdentifier userIdentifier, ScheduledFor scheduling) {
-        // Also unique identifiers probably don't need to be their own classes.
-        // They just need to have distinct identifier types (String, int, etc.)
-        // Maybe the object repository should take a 2nd type in its definition for the UniqueIdentifier type??
-        // TODO: ^^ implement this
-        Optional<MasterList> masterList = masterListRepository.find(userIdentifier);
+    public List<Todo> getByScheduling(User user, ScheduledFor scheduling) {
+        Optional<MasterList> masterList = masterListRepository.find(user.getIdentifier());
         if (!masterList.isPresent()) return Collections.emptyList();
         switch (scheduling) {
             case now:

@@ -3,7 +3,7 @@ package com.doerapispring.authentication;
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,15 +41,15 @@ public class SessionTokenServiceTest {
 
     @Test
     public void getByToken_callsSessionTokenRepository() throws Exception {
-        SessionTokenIdentifier sessionTokenIdentifier = new SessionTokenIdentifier("token");
-        sessionTokenService.getByToken(sessionTokenIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("token");
+        sessionTokenService.getByToken(uniqueIdentifier);
 
-        verify(sessionTokenRepository).find(sessionTokenIdentifier);
+        verify(sessionTokenRepository).find(uniqueIdentifier);
     }
 
     @Test
     public void grant_generatesAccessIdentifier() throws Exception {
-        sessionTokenService.grant(new UserIdentifier("soUnique"));
+        sessionTokenService.grant(new UniqueIdentifier("soUnique"));
 
         verify(tokenGenerator).generate();
     }
@@ -58,12 +58,12 @@ public class SessionTokenServiceTest {
     public void grant_addsSessionTokenToRepository_returnsSessionToken() throws Exception {
         when(tokenGenerator.generate()).thenReturn("thisIsYourToken");
 
-        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
-        SessionToken grantedSessionToken = sessionTokenService.grant(userIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
+        SessionToken grantedSessionToken = sessionTokenService.grant(uniqueIdentifier);
 
         verify(sessionTokenRepository).add(sessionTokenArgumentCaptor.capture());
         SessionToken addedSessionToken = sessionTokenArgumentCaptor.getValue();
-        assertThat(addedSessionToken.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(addedSessionToken.getUserIdentifier()).isEqualTo(uniqueIdentifier);
         assertThat(addedSessionToken.getToken()).isEqualTo("thisIsYourToken");
         assertThat(addedSessionToken.getExpiresAt()).isInTheFuture();
         assertThat(grantedSessionToken).isNotNull();
@@ -74,6 +74,6 @@ public class SessionTokenServiceTest {
         doThrow(AbnormalModelException.class).when(sessionTokenRepository).add(any());
 
         exception.expect(OperationRefusedException.class);
-        sessionTokenService.grant(new UserIdentifier("soUnique"));
+        sessionTokenService.grant(new UniqueIdentifier("soUnique"));
     }
 }

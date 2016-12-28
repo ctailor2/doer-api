@@ -4,7 +4,6 @@ import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -45,7 +44,7 @@ class SessionTokenRepository implements ObjectRepository<SessionToken, String> {
                 SessionToken.builder()
                         .token(sessionTokenEntity.token)
                         .expiresAt(sessionTokenEntity.expiresAt)
-                        .userIdentifier(new UserIdentifier(sessionTokenEntity.userEntity.email))
+                        .userIdentifier(new UniqueIdentifier(sessionTokenEntity.userEntity.email))
                         .build());
     }
 }

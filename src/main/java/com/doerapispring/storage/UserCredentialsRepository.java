@@ -4,7 +4,6 @@ import com.doerapispring.authentication.EncodedCredentials;
 import com.doerapispring.authentication.UserCredentials;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.UserIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,7 @@ class UserCredentialsRepository implements ObjectRepository<UserCredentials, Str
         String email = uniqueIdentifier.get();
         UserEntity userEntity = userDAO.findByEmail(email);
         if (userEntity == null) return Optional.empty();
-        return Optional.of(new UserCredentials(new UserIdentifier(email),
+        return Optional.of(new UserCredentials(new UniqueIdentifier(email),
                 new EncodedCredentials(userEntity.passwordDigest)));
     }
 }

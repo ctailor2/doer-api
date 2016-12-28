@@ -1,7 +1,7 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.UniquelyIdentifiable;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,18 +14,19 @@ import java.util.Date;
 @AllArgsConstructor
 @Data
 @Builder
-public class SessionToken implements UniquelyIdentifiable {
-    private SessionTokenIdentifier sessionTokenIdentifier;
+public class SessionToken implements UniquelyIdentifiable<String> {
+    private UniqueIdentifier<String> uniqueIdentifier;
 
     private String token;
     private Date expiresAt;
 
     @JsonIgnore
-    private UserIdentifier userIdentifier;
+    private UniqueIdentifier<String> userIdentifier;
 
     @Override
     @JsonIgnore
-    public SessionTokenIdentifier getIdentifier() {
-        return sessionTokenIdentifier;
+    // TODO: Fix this - should not have two fields with type UniqueIdentifier
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
     }
 }

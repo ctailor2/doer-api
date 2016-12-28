@@ -4,7 +4,7 @@ import com.doerapispring.authentication.AccessDeniedException;
 import com.doerapispring.authentication.Credentials;
 import com.doerapispring.authentication.UserSessionsService;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,11 +52,11 @@ public class UserSessionsControllerTest {
 
     @Test
     public void signup_callsUserSessionsService() throws Exception {
-        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
-        SignupForm signupForm = new SignupForm(userIdentifier, credentials);
+        SignupForm signupForm = new SignupForm(uniqueIdentifier, credentials);
         userSessionsController.signup(signupForm);
-        verify(userSessionsService).signup(userIdentifier, credentials);
+        verify(userSessionsService).signup(uniqueIdentifier, credentials);
     }
 
     @Test
@@ -81,11 +81,11 @@ public class UserSessionsControllerTest {
 
     @Test
     public void login_callsUserSessionsService() throws Exception {
-        UserIdentifier userIdentifier = new UserIdentifier("soUnique");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
         Credentials credentials = new Credentials("soSecure");
-        LoginForm loginForm = new LoginForm(userIdentifier, credentials);
+        LoginForm loginForm = new LoginForm(uniqueIdentifier, credentials);
         userSessionsController.login(loginForm);
-        verify(userSessionsService).login(userIdentifier, credentials);
+        verify(userSessionsService).login(uniqueIdentifier, credentials);
     }
 
     @Test

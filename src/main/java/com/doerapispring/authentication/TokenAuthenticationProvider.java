@@ -1,5 +1,6 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -22,8 +23,8 @@ class TokenAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         PreAuthenticatedAuthenticationToken preAuthenticatedAuthenticationToken = (PreAuthenticatedAuthenticationToken) authentication;
-        SessionTokenIdentifier sessionTokenIdentifier = new SessionTokenIdentifier(preAuthenticatedAuthenticationToken.getCredentials());
-        Optional<SessionToken> sessionToken = sessionTokenService.getByToken(sessionTokenIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(preAuthenticatedAuthenticationToken.getCredentials());
+        Optional<SessionToken> sessionToken = sessionTokenService.getByToken(uniqueIdentifier);
         if (sessionToken.isPresent()) {
             AuthenticatedUser authenticatedUser = AuthenticatedUser.identifiedWith(sessionToken.get().getUserIdentifier());
             return new AuthenticatedAuthenticationToken(authenticatedUser);

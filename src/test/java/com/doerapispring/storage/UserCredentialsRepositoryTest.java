@@ -3,7 +3,7 @@ package com.doerapispring.storage;
 import com.doerapispring.authentication.EncodedCredentials;
 import com.doerapispring.authentication.UserCredentials;
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +39,7 @@ public class UserCredentialsRepositoryTest {
         when(userDAO.findByEmail(any())).thenReturn(UserEntity.builder().build());
 
         UserCredentials userCredentials = new UserCredentials(
-                new UserIdentifier("test@id.com"),
+                new UniqueIdentifier("test@id.com"),
                 new EncodedCredentials("soSecret"));
         userCredentialsRepository.add(userCredentials);
 
@@ -51,7 +51,7 @@ public class UserCredentialsRepositoryTest {
 
     @Test
     public void find_callsUserDAO() throws Exception {
-        userCredentialsRepository.find(new UserIdentifier("test"));
+        userCredentialsRepository.find(new UniqueIdentifier("test"));
 
         verify(userDAO).findByEmail("test");
     }
@@ -63,11 +63,11 @@ public class UserCredentialsRepositoryTest {
                 .build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        UserIdentifier userIdentifier = new UserIdentifier("test");
-        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test");
+        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
 
         assertThat(userCredentialsOptional.isPresent()).isTrue();
-        assertThat(userCredentialsOptional.get().getIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentialsOptional.get().getIdentifier()).isEqualTo(uniqueIdentifier);
         assertThat(userCredentialsOptional.get().getEncodedCredentials()).isEqualTo(new EncodedCredentials("securePassword"));
     }
 
@@ -75,8 +75,8 @@ public class UserCredentialsRepositoryTest {
     public void find_whenUserNotFound_returnsNull() throws Exception {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
-        UserIdentifier userIdentifier = new UserIdentifier("test");
-        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test");
+        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
 
         assertThat(userCredentialsOptional.isPresent()).isFalse();
     }

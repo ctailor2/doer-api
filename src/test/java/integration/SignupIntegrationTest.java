@@ -3,8 +3,9 @@ package integration;
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserCredentials;
 import com.doerapispring.domain.ObjectRepository;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +44,9 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     public void signup_whenUserWithEmailDoesNotExist_createsUser_storesCredentials_createsSessionToken_respondsWithSessionToken() throws Exception {
         doPost();
 
-        UserIdentifier userIdentifier = new UserIdentifier("test@email.com");
-        Optional<User> storedUserOptional = userRepository.find(userIdentifier);
-        Optional<UserCredentials> storedUserCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
+        Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
+        Optional<UserCredentials> storedUserCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
 
         MockHttpServletResponse response = mvcResult.getResponse();
         String contentAsString = response.getContentAsString();

@@ -3,12 +3,12 @@ package com.doerapispring.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MasterList implements UniquelyIdentifiable {
+public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final ImmediateList immediateList;
     private final PostponedList postponedList;
 
-    public MasterList(UniqueIdentifier<String> uniqueIdentifier,
+    public MasterList(UniqueIdentifier uniqueIdentifier,
                       ImmediateList immediateList,
                       PostponedList postponedList) {
         this.uniqueIdentifier = uniqueIdentifier;
@@ -61,7 +61,7 @@ public class MasterList implements UniquelyIdentifiable {
     @Override
     public String toString() {
         return "MasterList{" +
-                "uniqueIdentifier=" + uniqueIdentifier +
+                "userIdentifier=" + uniqueIdentifier +
                 ", immediateList=" + immediateList +
                 ", postponedList=" + postponedList +
                 '}';

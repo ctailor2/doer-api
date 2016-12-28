@@ -1,7 +1,8 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,30 +38,30 @@ public class AuthenticationServiceTest {
 
     @Test
     public void registerCredentials_callsPasswordEncoder_callsUserCredentialsRepository() throws Exception {
-        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
         Credentials credentials = new Credentials("soSecret");
         when(passwordEncoder.encode(any())).thenReturn("encodedSecretPassword");
-        authenticationService.registerCredentials(userIdentifier, credentials);
+        authenticationService.registerCredentials(uniqueIdentifier, credentials);
 
         verify(passwordEncoder).encode("soSecret");
         verify(userCredentialsRepository).add(userCredentialsArgumentCaptor.capture());
         UserCredentials userCredentials = userCredentialsArgumentCaptor.getValue();
-        assertThat(userCredentials.getIdentifier()).isEqualTo(userIdentifier);
+        assertThat(userCredentials.getIdentifier()).isEqualTo(uniqueIdentifier);
         assertThat(userCredentials.getEncodedCredentials())
                 .isEqualTo(new EncodedCredentials("encodedSecretPassword"));
     }
 
     @Test
     public void authenticate_whenUserCredentialsExist_callsPasswordEncoder() throws Exception {
-        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
         UserCredentials userCredentials = new UserCredentials(
-                userIdentifier,
+                uniqueIdentifier,
                 new EncodedCredentials("encodedSecretPassword"));
         when(userCredentialsRepository.find(any())).thenReturn(Optional.of(userCredentials));
 
-        authenticationService.authenticate(userIdentifier, new Credentials("soSecret"));
+        authenticationService.authenticate(uniqueIdentifier, new Credentials("soSecret"));
 
-        verify(userCredentialsRepository).find(userIdentifier);
+        verify(userCredentialsRepository).find(uniqueIdentifier);
         verify(passwordEncoder).matches("soSecret", "encodedSecretPassword");
     }
 
@@ -68,12 +69,12 @@ public class AuthenticationServiceTest {
     public void authenticate_whenUserCredentialsDoNotExist_returnsFalse() throws Exception {
         when(userCredentialsRepository.find(any())).thenReturn(Optional.empty());
 
-        UserIdentifier userIdentifier = new UserIdentifier("someId");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
         boolean authenticationResult = authenticationService.authenticate(
-                userIdentifier,
+                uniqueIdentifier,
                 new Credentials("soSecret"));
 
-        verify(userCredentialsRepository).find(userIdentifier);
+        verify(userCredentialsRepository).find(uniqueIdentifier);
         verifyZeroInteractions(passwordEncoder);
         assertThat(authenticationResult).isFalse();
     }

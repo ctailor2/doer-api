@@ -3,10 +3,8 @@ package integration;
 import com.doerapispring.authentication.Credentials;
 import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserSessionsService;
-import com.doerapispring.domain.ScheduledFor;
-import com.doerapispring.domain.Todo;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.*;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +46,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        SessionToken signupSessionToken = userSessionsService.signup(new UserIdentifier("test@email.com"), new Credentials("password"));
+        SessionToken signupSessionToken = userSessionsService.signup(new UniqueIdentifier("test@email.com"), new Credentials("password"));
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -56,7 +54,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void create() throws Exception {
         doPost();
 
-        List<Todo> todos = todosService.getByScheduling(new UserIdentifier("test@email.com"), ScheduledFor.anytime);
+        List<Todo> todos = todosService.getByScheduling(new User(new UniqueIdentifier("test@email.com")), ScheduledFor.anytime);
 
         assertThat(todos.size(), equalTo(1));
 

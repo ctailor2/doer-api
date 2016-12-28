@@ -14,10 +14,10 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User create(UserIdentifier userIdentifier) throws OperationRefusedException, AbnormalModelException {
-        Optional<User> userOptional = userRepository.find(userIdentifier);
+    public User create(UniqueIdentifier uniqueIdentifier) throws OperationRefusedException, AbnormalModelException {
+        Optional<User> userOptional = userRepository.find(uniqueIdentifier);
         if (userOptional.isPresent()) throw new OperationRefusedException();
-        User user = new User(userIdentifier);
+        User user = new User(uniqueIdentifier);
         userRepository.add(user);
         return user;
     }

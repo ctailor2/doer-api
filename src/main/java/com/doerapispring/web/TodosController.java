@@ -1,10 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.ScheduledFor;
-import com.doerapispring.domain.Todo;
-import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +33,7 @@ public class TodosController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
         return ResponseEntity.status(HttpStatus.OK)
-                .body(todoService.getByScheduling(authenticatedUser.getUserIdentifier(), scheduledFor));
+                .body(todoService.getByScheduling(new User(authenticatedUser.getUserIdentifier()), scheduledFor));
     }
 
     @RequestMapping(value = "/todos", method = RequestMethod.POST)
@@ -46,7 +43,7 @@ public class TodosController {
                                 @RequestBody TodoForm todoForm) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(todoService.create(authenticatedUser.getUserIdentifier(), todoForm.getTask(), todoForm.getScheduling()));
+                    .body(todoService.create(new User(authenticatedUser.getUserIdentifier()), todoForm.getTask(), todoForm.getScheduling()));
         } catch (OperationRefusedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

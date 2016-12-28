@@ -1,10 +1,9 @@
 package com.doerapispring.storage;
 
 import com.doerapispring.authentication.SessionToken;
-import com.doerapispring.authentication.SessionTokenIdentifier;
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,7 +50,7 @@ public class SessionTokenRepositoryTest {
 
         Date expiresAt = new Date();
         SessionToken sessionToken = SessionToken.builder()
-                .userIdentifier(new UserIdentifier("soUnique"))
+                .userIdentifier(new UniqueIdentifier("soUnique"))
                 .token("soRandomToken")
                 .expiresAt(expiresAt)
                 .build();
@@ -73,7 +72,7 @@ public class SessionTokenRepositoryTest {
 
         Date expiresAt = new Date();
         SessionToken sessionToken = SessionToken.builder()
-                .userIdentifier(new UserIdentifier("soUnique"))
+                .userIdentifier(new UniqueIdentifier("soUnique"))
                 .token("soRandomToken")
                 .expiresAt(expiresAt)
                 .build();
@@ -91,14 +90,14 @@ public class SessionTokenRepositoryTest {
                 .build();
         when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
 
-        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new UniqueIdentifier("suchSecretToken"));
 
         verify(sessionTokenDAO).findByToken("suchSecretToken");
         assertThat(sessionTokenOptional.isPresent()).isTrue();
         SessionToken sessionToken = sessionTokenOptional.get();
         assertThat(sessionToken.getToken()).isEqualTo("bananas");
         assertThat(sessionToken.getExpiresAt()).isToday();
-        assertThat(sessionToken.getUserIdentifier()).isEqualTo(new UserIdentifier("chimi@chonga.com"));
+        assertThat(sessionToken.getUserIdentifier()).isEqualTo(new UniqueIdentifier("chimi@chonga.com"));
     }
 
     @Test
@@ -110,7 +109,7 @@ public class SessionTokenRepositoryTest {
                 .build();
         when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
 
-        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new UniqueIdentifier("suchSecretToken"));
 
         verify(sessionTokenDAO).findByToken("suchSecretToken");
         assertThat(sessionTokenOptional.isPresent()).isFalse();
@@ -120,7 +119,7 @@ public class SessionTokenRepositoryTest {
     public void find_callsSessionTokenDao_whenSessionTokenNotFound_returnsEmptyOptional() throws Exception {
         when(sessionTokenDAO.findByToken(any())).thenReturn(null);
 
-        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new SessionTokenIdentifier("suchSecretToken"));
+        Optional<SessionToken> sessionTokenOptional = sessionTokenRepository.find(new UniqueIdentifier("suchSecretToken"));
 
         verify(sessionTokenDAO).findByToken("suchSecretToken");
         assertThat(sessionTokenOptional.isPresent()).isFalse();

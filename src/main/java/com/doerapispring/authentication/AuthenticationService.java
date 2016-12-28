@@ -2,7 +2,7 @@ package com.doerapispring.authentication;
 
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,14 @@ class AuthenticationService {
         this.userCredentialsRepository = userCredentialsRepository;
     }
 
-    public void registerCredentials(UserIdentifier userIdentifier, Credentials credentials) throws AbnormalModelException {
+    public void registerCredentials(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws AbnormalModelException {
         EncodedCredentials encodedCredentials = new EncodedCredentials(passwordEncoder.encode(credentials.get()));
-        UserCredentials userCredentials = new UserCredentials(userIdentifier, encodedCredentials);
+        UserCredentials userCredentials = new UserCredentials(uniqueIdentifier, encodedCredentials);
         userCredentialsRepository.add(userCredentials);
     }
 
-    public boolean authenticate(UserIdentifier userIdentifier, Credentials credentials) {
-        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(userIdentifier);
+    public boolean authenticate(UniqueIdentifier uniqueIdentifier, Credentials credentials) {
+        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
         if (!userCredentialsOptional.isPresent()) return false;
         return passwordEncoder.matches(credentials.get(),
                 userCredentialsOptional.get().getEncodedCredentials().get());

@@ -1,19 +1,20 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 
 public class AuthenticatedUser {
-    private final UserIdentifier userIdentifier;
+    private final UniqueIdentifier uniqueIdentifier;
 
-    public static AuthenticatedUser identifiedWith(UserIdentifier userIdentifier) {
-        return new AuthenticatedUser(userIdentifier);
+    public static AuthenticatedUser identifiedWith(UniqueIdentifier uniqueIdentifier) {
+        return new AuthenticatedUser(uniqueIdentifier);
     }
 
-    public AuthenticatedUser(UserIdentifier userIdentifier) {
-        this.userIdentifier = userIdentifier;
+    public AuthenticatedUser(UniqueIdentifier uniqueIdentifier) {
+        this.uniqueIdentifier = uniqueIdentifier;
     }
 
-    public UserIdentifier getUserIdentifier() {
-        return userIdentifier;
+    public UniqueIdentifier getUserIdentifier() {
+        return uniqueIdentifier;
     }
 }

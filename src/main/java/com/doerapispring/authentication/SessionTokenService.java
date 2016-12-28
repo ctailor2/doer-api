@@ -3,7 +3,7 @@ package com.doerapispring.authentication;
 import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +29,16 @@ class SessionTokenService {
 
     // TODO: See how often this is used. Maybe those places should have a direct
     // dependency on session token repo? This breaks the service pattern
-    public Optional<SessionToken> getByToken(SessionTokenIdentifier sessionTokenIdentifier) {
-        return sessionTokenRepository.find(sessionTokenIdentifier);
+    public Optional<SessionToken> getByToken(UniqueIdentifier uniqueIdentifier) {
+        return sessionTokenRepository.find(uniqueIdentifier);
     }
 
-    public SessionToken grant(UserIdentifier userIdentifier) throws OperationRefusedException {
+    public SessionToken grant(UniqueIdentifier uniqueIdentifier) throws OperationRefusedException {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(DATE, 7);
         SessionToken sessionToken = SessionToken.builder()
-                .userIdentifier(userIdentifier)
+                .userIdentifier(uniqueIdentifier)
                 .token(tokenGenerator.generate())
                 .expiresAt(calendar.getTime())
                 .build();

@@ -5,7 +5,9 @@ import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserSessionsService;
 import com.doerapispring.domain.ScheduledFor;
 import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UserIdentifier;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
     private MockHttpServletRequestBuilder mockRequestBuilder;
-    private UserIdentifier userIdentifier;
+    private User user;
 
     private void doGet() throws Exception {
         mvcResult = mockMvc.perform(mockRequestBuilder)
@@ -45,9 +47,10 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        userIdentifier = new UserIdentifier("test@email.com");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
+        user = new User(uniqueIdentifier);
         SessionToken signupSessionToken = userSessionsService.signup(
-                userIdentifier,
+                uniqueIdentifier,
                 new Credentials("password"));
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
@@ -58,7 +61,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Test
     public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(new UserIdentifier("test@email.com"), "this and that", ScheduledFor.later);
+        todosService.create(user, "this and that", ScheduledFor.later);
 
         doGet();
 
@@ -73,8 +76,8 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Test
     public void todos_whenUserHasTodos_withQueryForActive_returnsActiveTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder.param("scheduling", "now");
-        todosService.create(userIdentifier, "now task", ScheduledFor.now);
-        todosService.create(userIdentifier, "later task", ScheduledFor.later);
+        todosService.create(user, "now task", ScheduledFor.now);
+        todosService.create(user, "later task", ScheduledFor.later);
 
         doGet();
 

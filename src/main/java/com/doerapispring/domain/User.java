@@ -1,15 +1,15 @@
 package com.doerapispring.domain;
 
-public class User implements UniquelyIdentifiable {
-    private final UserIdentifier userIdentifier;
+public class User implements UniquelyIdentifiable<String> {
+    private final UniqueIdentifier<String> uniqueIdentifier;
 
-    public User(UserIdentifier userIdentifier) {
-        this.userIdentifier = userIdentifier;
+    public User(UniqueIdentifier uniqueIdentifier) {
+        this.uniqueIdentifier = uniqueIdentifier;
     }
 
     @Override
-    public UserIdentifier getIdentifier() {
-        return userIdentifier;
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
     }
 
     @Override
@@ -19,12 +19,19 @@ public class User implements UniquelyIdentifiable {
 
         User user = (User) o;
 
-        return userIdentifier != null ? userIdentifier.equals(user.userIdentifier) : user.userIdentifier == null;
+        return uniqueIdentifier != null ? uniqueIdentifier.equals(user.uniqueIdentifier) : user.uniqueIdentifier == null;
 
     }
 
     @Override
     public int hashCode() {
-        return userIdentifier != null ? userIdentifier.hashCode() : 0;
+        return uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "uniqueIdentifier=" + uniqueIdentifier +
+                '}';
     }
 }
