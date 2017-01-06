@@ -1,26 +1,24 @@
 package com.doerapispring.web;
 
-import com.doerapispring.authentication.Credentials;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SignupForm {
-    private final UniqueIdentifier uniqueIdentifier;
-    private final Credentials credentials;
+    private final String identifier;
+    private final String credentials;
 
     @JsonCreator
-    public SignupForm(@JsonProperty("identifier") UniqueIdentifier uniqueIdentifier,
-                      @JsonProperty("credentials") Credentials credentials) {
-        this.uniqueIdentifier = uniqueIdentifier;
+    public SignupForm(@JsonProperty("identifier") String identifier,
+                      @JsonProperty("credentials") String credentials) {
+        this.identifier = identifier;
         this.credentials = credentials;
     }
 
-    public UniqueIdentifier getIdentifier() {
-        return uniqueIdentifier;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public Credentials getCredentials() {
+    public String getCredentials() {
         return credentials;
     }
 }

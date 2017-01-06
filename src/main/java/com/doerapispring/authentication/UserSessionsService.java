@@ -1,38 +1,52 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.AbnormalModelException;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.UserService;
+import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.UserSessionsApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserSessionsService {
+public class UserSessionsService implements UserSessionsApiService {
     private final UserService userService;
-    private final SessionTokenService sessionTokenService;
-    private final AuthenticationService authenticationService;
+    private final AuthenticationTokenService authenticationTokenService;
+    private final BasicAuthenticationService authenticationService;
 
     @Autowired
-    public UserSessionsService(UserService userService, SessionTokenService sessionTokenService, AuthenticationService authenticationService) {
+    public UserSessionsService(UserService userService,
+                               AuthenticationTokenService authenticationTokenService,
+                               BasicAuthenticationService authenticationService) {
         this.userService = userService;
-        this.sessionTokenService = sessionTokenService;
+        this.authenticationTokenService = authenticationTokenService;
         this.authenticationService = authenticationService;
     }
 
-    public SessionToken signup(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws OperationRefusedException, AbnormalModelException {
-        userService.create(uniqueIdentifier);
-        authenticationService.registerCredentials(uniqueIdentifier, credentials);
-        return sessionTokenService.grant(uniqueIdentifier);
-    }
-
-    public SessionToken login(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws AccessDeniedException {
-        boolean authenticationResult = authenticationService.authenticate(uniqueIdentifier, credentials);
-        if (!authenticationResult) throw new AccessDeniedException();
+    @Override
+    public SessionTokenDTO signup(String identifier, String credentials) throws AccessDeniedException {
+        TransientAccessToken transientAccessToken;
         try {
-            return sessionTokenService.grant(uniqueIdentifier);
-        } catch (OperationRefusedException e) {
+            userService.create(identifier);
+            authenticationService.registerCredentials(identifier, credentials);
+            transientAccessToken = authenticationTokenService.grant(identifier);
+        } catch (OperationRefusedException | CredentialsInvalidException | TokenRefusedException e) {
             throw new AccessDeniedException();
         }
+        return new SessionTokenDTO(transientAccessToken.getAccessToken(),
+                transientAccessToken.getExpiresAt());
+    }
+
+    @Override
+    public SessionTokenDTO login(String identifier, String credentials) throws AccessDeniedException {
+        boolean authenticationResult = authenticationService.authenticate(identifier, credentials);
+        if (!authenticationResult) throw new AccessDeniedException();
+        TransientAccessToken transientAccessToken;
+        try {
+            transientAccessToken = authenticationTokenService.grant(identifier);
+        } catch (TokenRefusedException e) {
+            throw new AccessDeniedException();
+        }
+        return new SessionTokenDTO(transientAccessToken.getAccessToken(),
+                transientAccessToken.getExpiresAt());
     }
 }

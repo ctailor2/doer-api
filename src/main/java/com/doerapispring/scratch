@@ -36,3 +36,20 @@ SessionToken --> User (reference should never go the other way around)
 Actually, sessionToken shouldn't be a domain object at all.
 Web layer exposes endpoints for clients to "authenticate" users - demonstrating that these users
 are authentic (who they say they are) and can be linked to some user in the domain
+
+
+domain __depends on__ application services
+application services __depend on__ domain
+
+application services __depend on__ application services
+
+
+// Notes 12/28
+- The api layer calls into the domain layer
+- Certain domain services require a User (specified in an interface). For these, the api layer uses the authentication
+service to obtain a User
+
+api
+- calls into the domain layer to create a user
+- user passes into auth layer to register secret for the user
+- auth layer can depend on storage layer, but should not depend on domain layer

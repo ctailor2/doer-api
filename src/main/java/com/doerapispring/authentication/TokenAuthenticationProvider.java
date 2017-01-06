@@ -1,6 +1,5 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -13,20 +12,20 @@ import java.util.Optional;
 @Component
 class TokenAuthenticationProvider implements AuthenticationProvider {
 
-    private final SessionTokenService sessionTokenService;
+    private final AuthenticationTokenService authenticationTokenService;
 
     @Autowired
-    public TokenAuthenticationProvider(SessionTokenService sessionTokenService) {
-        this.sessionTokenService = sessionTokenService;
+    public TokenAuthenticationProvider(AuthenticationTokenService authenticationTokenService) {
+        this.authenticationTokenService = authenticationTokenService;
     }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         PreAuthenticatedAuthenticationToken preAuthenticatedAuthenticationToken = (PreAuthenticatedAuthenticationToken) authentication;
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(preAuthenticatedAuthenticationToken.getCredentials());
-        Optional<SessionToken> sessionToken = sessionTokenService.getByToken(uniqueIdentifier);
-        if (sessionToken.isPresent()) {
-            AuthenticatedUser authenticatedUser = AuthenticatedUser.identifiedWith(sessionToken.get().getUserIdentifier());
+        String accessToken = preAuthenticatedAuthenticationToken.getCredentials();
+        Optional<TransientAccessToken> tokenOptional = authenticationTokenService.retrieve(accessToken);
+        if (tokenOptional.isPresent()) {
+            AuthenticatedUser authenticatedUser = AuthenticatedUser.identifiedWith(tokenOptional.get().getAuthenticatedEntityIdentifier());
             return new AuthenticatedAuthenticationToken(authenticatedUser);
         } else {
             throw new AuthenticationCredentialsNotFoundException("Authentication required");

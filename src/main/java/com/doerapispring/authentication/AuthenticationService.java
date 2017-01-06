@@ -1,36 +1,34 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
-class AuthenticationService {
+class AuthenticationService implements BasicAuthenticationService {
     private PasswordEncoder passwordEncoder;
-    private final ObjectRepository<UserCredentials, String> userCredentialsRepository;
+    private final CredentialsStore credentialsStore;
 
     @Autowired
     public AuthenticationService(PasswordEncoder passwordEncoder,
-                                 ObjectRepository<UserCredentials, String> userCredentialsRepository) {
+                                 CredentialsStore credentialsStore) {
         this.passwordEncoder = passwordEncoder;
-        this.userCredentialsRepository = userCredentialsRepository;
+        this.credentialsStore = credentialsStore;
     }
 
-    public void registerCredentials(UniqueIdentifier uniqueIdentifier, Credentials credentials) throws AbnormalModelException {
-        EncodedCredentials encodedCredentials = new EncodedCredentials(passwordEncoder.encode(credentials.get()));
-        UserCredentials userCredentials = new UserCredentials(uniqueIdentifier, encodedCredentials);
-        userCredentialsRepository.add(userCredentials);
+    public void registerCredentials(String userIdentifier, String credentials) {
+        credentialsStore.add(new Credentials(userIdentifier,
+                passwordEncoder.encode(credentials),
+                new Date()));
     }
 
-    public boolean authenticate(UniqueIdentifier uniqueIdentifier, Credentials credentials) {
-        Optional<UserCredentials> userCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
-        if (!userCredentialsOptional.isPresent()) return false;
-        return passwordEncoder.matches(credentials.get(),
-                userCredentialsOptional.get().getEncodedCredentials().get());
+    public boolean authenticate(String userIdentifier, String secret) {
+        Optional<Credentials> credentialsOptional = credentialsStore.findLatest(userIdentifier);
+        if (!credentialsOptional.isPresent()) return false;
+        Credentials credentials = credentialsOptional.get();
+        return passwordEncoder.matches(secret, credentials.getSecret());
     }
 }

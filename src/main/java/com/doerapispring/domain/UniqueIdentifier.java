@@ -32,8 +32,8 @@ public class UniqueIdentifier<T> {
 
     @Override
     public String toString() {
-        return "UserIdentifier{" +
-                "identifier='" + identifier + '\'' +
+        return "UniqueIdentifier{" +
+                "identifier=" + identifier +
                 '}';
     }
 }

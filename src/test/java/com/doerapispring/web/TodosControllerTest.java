@@ -36,9 +36,10 @@ public class TodosControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
+        String identifier = "test@email.com";
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
         user = new User(uniqueIdentifier);
-        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(new AuthenticatedUser(uniqueIdentifier)));
+        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(new AuthenticatedUser(identifier)));
         todosController = new TodosController(todoService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
@@ -60,8 +61,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_withValidSchedulingSpecified_callsTodoService_withSpecifiedType() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
-        todosController.index(AuthenticatedUser.identifiedWith(uniqueIdentifier), ScheduledFor.now.toString());
+        todosController.index(AuthenticatedUser.identifiedWith("test@email.com"), ScheduledFor.now.toString());
         verify(todoService).getByScheduling(user, ScheduledFor.now);
     }
 
@@ -82,11 +82,10 @@ public class TodosControllerTest {
 
     @Test
     public void create_callsTokenService() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
         String task = "browse the web";
         ScheduledFor scheduling = ScheduledFor.later;
         TodoForm todoForm = new TodoForm(task, scheduling);
-        todosController.create(AuthenticatedUser.identifiedWith(uniqueIdentifier), todoForm);
+        todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), todoForm);
         verify(todoService).create(user, task, scheduling);
     }
 
@@ -94,8 +93,7 @@ public class TodosControllerTest {
     public void create_whenOperationRefused_returns400BadRequest() throws Exception {
         when(todoService.create(any(), any(), any())).thenThrow(new OperationRefusedException());
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
-        ResponseEntity<Todo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith(uniqueIdentifier), new TodoForm("something", ScheduledFor.now));
+        ResponseEntity<Todo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), new TodoForm("something", ScheduledFor.now));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

@@ -1,10 +1,6 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AccessDeniedException;
-import com.doerapispring.authentication.Credentials;
-import com.doerapispring.authentication.UserSessionsService;
-import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,13 +25,13 @@ public class UserSessionsControllerTest {
     private UserService userService;
 
     @Mock
-    private UserSessionsService userSessionsService;
+    private UserSessionsApiService mockUserSessionsApiService;
 
     private MockMvc mockMvc;
 
     @Before
     public void setUp() throws Exception {
-        userSessionsController = new UserSessionsController(userSessionsService);
+        userSessionsController = new UserSessionsController(mockUserSessionsApiService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userSessionsController)
                 .build();
@@ -51,17 +47,17 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void signup_callsUserSessionsService() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        Credentials credentials = new Credentials("soSecure");
-        SignupForm signupForm = new SignupForm(uniqueIdentifier, credentials);
+    public void signup_callsUserSessionsApiService() throws Exception {
+        String identifier = "soUnique";
+        String credentials = "soSecure";
+        SignupForm signupForm = new SignupForm(identifier, credentials);
         userSessionsController.signup(signupForm);
-        verify(userSessionsService).signup(uniqueIdentifier, credentials);
+        verify(mockUserSessionsApiService).signup(identifier, credentials);
     }
 
     @Test
-    public void signup_whenOperationRefused_returns400BadRequest() throws Exception {
-        when(userSessionsService.signup(any(), any())).thenThrow(OperationRefusedException.class);
+    public void signup_whenAccessDenied_returns400BadRequest() throws Exception {
+        when(mockUserSessionsApiService.signup(any(), any())).thenThrow(AccessDeniedException.class);
         mockMvc.perform(post("/v1/signup")
                 .accept(MediaType.APPLICATION_JSON)
                 .content("{}")
@@ -81,16 +77,16 @@ public class UserSessionsControllerTest {
 
     @Test
     public void login_callsUserSessionsService() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        Credentials credentials = new Credentials("soSecure");
-        LoginForm loginForm = new LoginForm(uniqueIdentifier, credentials);
+        String credentials = "soSecure";
+        String identifier = "soUnique";
+        LoginForm loginForm = new LoginForm(identifier, credentials);
         userSessionsController.login(loginForm);
-        verify(userSessionsService).login(uniqueIdentifier, credentials);
+        verify(mockUserSessionsApiService).login(identifier, credentials);
     }
 
     @Test
     public void login_whenAccessDenied_returns401Unauthorized() throws Exception {
-        when(userSessionsService.login(any(), any())).thenThrow(AccessDeniedException.class);
+        when(mockUserSessionsApiService.login(any(), any())).thenThrow(AccessDeniedException.class);
         mockMvc.perform(post("/v1/login")
                 .accept(MediaType.APPLICATION_JSON)
                 .content("{\"user\":{\"email\":\"test@email.com\"}}")

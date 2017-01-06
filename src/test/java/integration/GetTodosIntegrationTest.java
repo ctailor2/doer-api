@@ -1,13 +1,11 @@
 package integration;
 
-import com.doerapispring.authentication.Credentials;
-import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserSessionsService;
 import com.doerapispring.domain.ScheduledFor;
 import com.doerapispring.domain.TodoService;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.web.SessionTokenDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,11 +45,10 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
+        String identifier = "test@email.com";
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
         user = new User(uniqueIdentifier);
-        SessionToken signupSessionToken = userSessionsService.signup(
-                uniqueIdentifier,
-                new Credentials("password"));
+        SessionTokenDTO signupSessionToken = userSessionsService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/todos")

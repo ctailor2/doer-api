@@ -1,4 +1,4 @@
-package com.doerapispring.authentication;
+package com.doerapispring.session;
 
 import org.springframework.stereotype.Component;
 

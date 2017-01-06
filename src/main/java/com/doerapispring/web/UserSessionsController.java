@@ -1,10 +1,6 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AccessDeniedException;
-import com.doerapispring.authentication.SessionToken;
-import com.doerapispring.authentication.UserSessionsService;
-import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.OperationRefusedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,21 +10,22 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequestMapping(value = "/v1")
 class UserSessionsController {
-    private UserSessionsService userSessionsService;
+    private final UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    UserSessionsController(UserSessionsService userSessionsService) {
-        this.userSessionsService = userSessionsService;
+    UserSessionsController(UserSessionsApiService userSessionsApiService) {
+        this.userSessionsApiService = userSessionsApiService;
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<SessionToken> signup(@RequestBody SignupForm signupForm) throws AbnormalModelException {
+    ResponseEntity<SessionTokenDTO> signup(@RequestBody SignupForm signupForm) {
         try {
-            SessionToken sessionToken = userSessionsService.signup(signupForm.getIdentifier(), signupForm.getCredentials());
-            return ResponseEntity.status(HttpStatus.CREATED).body(sessionToken);
-        } catch (OperationRefusedException e) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(userSessionsApiService.signup(signupForm.getIdentifier(),
+                            signupForm.getCredentials()));
+        } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
@@ -37,10 +34,11 @@ class UserSessionsController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    ResponseEntity<SessionToken> login(@RequestBody LoginForm loginForm) {
+    ResponseEntity<SessionTokenDTO> login(@RequestBody LoginForm loginForm) {
         try {
-            SessionToken sessionToken = userSessionsService.login(loginForm.getUserIdentifier(), loginForm.getCredentials());
-            return ResponseEntity.ok().body(sessionToken);
+            return ResponseEntity.ok()
+                    .body(userSessionsApiService.login(loginForm.getIdentifier(),
+                            loginForm.getCredentials()));
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }

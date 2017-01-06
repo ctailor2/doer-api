@@ -1,9 +1,8 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserService;
+import com.doerapispring.web.SessionTokenDTO;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +10,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Date;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -21,140 +22,106 @@ public class UserSessionsServiceTest {
     private UserSessionsService userSessionsService;
 
     @Mock
-    private UserService userService;
+    private UserService mockUserService;
 
     @Mock
-    private SessionTokenService sessionTokenService;
+    private AuthenticationTokenService mockAuthenticationTokenService;
 
     @Mock
-    private AuthenticationService authenticationService;
+    private BasicAuthenticationService mockBasicAuthenticationService;
+
+    @Mock
+    private TransientAccessToken mockTransientAccessToken;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        userSessionsService = new UserSessionsService(userService, sessionTokenService, authenticationService);
+        String accessToken = "hereIsYourFunAccessToken";
+        when(mockTransientAccessToken.getAccessToken()).thenReturn(accessToken);
+        Date expiresAt = new Date();
+        when(mockTransientAccessToken.getExpiresAt()).thenReturn(expiresAt);
+        userSessionsService = new UserSessionsService(mockUserService, mockAuthenticationTokenService, mockBasicAuthenticationService);
     }
 
     @Test
-    public void signup_createsUser_whenSuccessful_registersCredentialsForUser_grantsAccessToken_andReturnsIt() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        Credentials credentials = new Credentials("soSecure");
+    public void signup_createsUser_registersCredentials_grantsTransientAccessToken_returnsTheToken() throws Exception {
+        when(mockAuthenticationTokenService.grant(any())).thenReturn(mockTransientAccessToken);
 
-        when(userService.create(any())).thenReturn(new User(uniqueIdentifier));
-        when(sessionTokenService.grant(any()))
-                .thenReturn(SessionToken.builder().build());
+        String identifier = "soUnique";
+        String credentials = "soSecure";
+        SessionTokenDTO sessionTokenDTO = userSessionsService.signup(identifier, credentials);
 
-        SessionToken sessionToken = userSessionsService.signup(uniqueIdentifier, credentials);
-
-        verify(userService).create(uniqueIdentifier);
-        verify(authenticationService).registerCredentials(uniqueIdentifier, credentials);
-        verify(sessionTokenService).grant(uniqueIdentifier);
-        assertThat(sessionToken).isNotNull();
+        verify(mockUserService).create(identifier);
+        verify(mockBasicAuthenticationService).registerCredentials(identifier, credentials);
+        verify(mockAuthenticationTokenService).grant(identifier);
+        assertThat(sessionTokenDTO.getToken()).isEqualTo("hereIsYourFunAccessToken");
+        assertThat(sessionTokenDTO.getExpiresAt()).isToday();
     }
 
     @Test
-    public void signup_callsUserService() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        userSessionsService.signup(uniqueIdentifier, new Credentials("soSecure"));
+    public void signup_whenUserCreationRefused_deniesAccess() throws Exception {
+        when(mockUserService.create(any())).thenThrow(OperationRefusedException.class);
 
-        verify(userService).create(uniqueIdentifier);
+        exception.expect(AccessDeniedException.class);
+        userSessionsService.signup("soUnique", "soSecure");
+
+        verifyZeroInteractions(mockBasicAuthenticationService);
+        verifyZeroInteractions(mockAuthenticationTokenService);
     }
 
     @Test
-    public void signup_whenUserCreated_registersUserCredentials() throws Exception {
-        when(userService.create(any())).thenReturn(new User(new UniqueIdentifier("something")));
+    public void signup_whenCredentialRegistrationFails_deniesAccess() throws Exception {
+        doThrow(CredentialsInvalidException.class).when(mockBasicAuthenticationService).registerCredentials(any(), any());
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        Credentials credentials = new Credentials("soSecure");
-        userSessionsService.signup(uniqueIdentifier, credentials);
+        exception.expect(AccessDeniedException.class);
+        userSessionsService.signup("soUnique", "soSecure");
 
-        verify(authenticationService).registerCredentials(uniqueIdentifier, credentials);
+        verifyZeroInteractions(mockAuthenticationTokenService);
     }
 
     @Test
-    public void signup_whenUserCreationRefused_refusesSignup() throws Exception {
-        when(userService.create(any())).thenThrow(OperationRefusedException.class);
+    public void signup_whenTokenRefused_deniesAccess() throws Exception {
+        when(mockAuthenticationTokenService.grant(any())).thenThrow(new TokenRefusedException());
 
-        exception.expect(OperationRefusedException.class);
-        userSessionsService.signup(new UniqueIdentifier("soUnique"), new Credentials("soSecure"));
-
-        verifyZeroInteractions(authenticationService);
-        verifyZeroInteractions(sessionTokenService);
-    }
-
-    @Test
-    public void signup_whenCredentialsRegistered_grantsSession() throws Exception {
-        when(userService.create(any())).thenReturn(new User(new UniqueIdentifier("something")));
-
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
-        userSessionsService.signup(uniqueIdentifier, new Credentials("soSecure"));
-
-        verify(sessionTokenService).grant(uniqueIdentifier);
-    }
-
-    @Test
-    public void signup_whenCredentialRegistrationRefused_refusesSignup() throws Exception {
-        when(userService.create(any())).thenReturn(new User(new UniqueIdentifier("something")));
-        doThrow(OperationRefusedException.class).when(authenticationService).registerCredentials(any(), any());
-
-        exception.expect(OperationRefusedException.class);
-        userSessionsService.signup(new UniqueIdentifier("soUnique"), new Credentials("soSecure"));
-
-        verifyZeroInteractions(sessionTokenService);
-    }
-
-    @Test
-    public void signup_whenSessionGrantRefused_refusesSignup() throws Exception {
-        when(userService.create(any())).thenReturn(new User(new UniqueIdentifier("something")));
-        when(sessionTokenService.grant(any())).thenThrow(OperationRefusedException.class);
-
-        exception.expect(OperationRefusedException.class);
-        userSessionsService.signup(new UniqueIdentifier("soUnique"), new Credentials("soSecure"));
-    }
-
-    @Test
-    public void login_callsAuthenticationService_whenAuthenticationSuccessful_callsSessionTokenService() throws Exception {
-        when(authenticationService.authenticate(any(UniqueIdentifier.class),
-                any(Credentials.class))).thenReturn(true);
-
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
-        Credentials credentials = new Credentials("password");
-        userSessionsService.login(uniqueIdentifier, credentials);
-
-        verify(authenticationService).authenticate(uniqueIdentifier, credentials);
+        exception.expect(AccessDeniedException.class);
+        userSessionsService.signup("soUnique", "soSecure");
     }
 
     @Test
     public void login_whenAuthenticationFails_deniesAccess() throws Exception {
-        when(authenticationService.authenticate(any(UniqueIdentifier.class),
-                any(Credentials.class))).thenReturn(false);
+        when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(false);
 
         exception.expect(AccessDeniedException.class);
-        userSessionsService.login(new UniqueIdentifier("test@email.com"), new Credentials("password"));
+        userSessionsService.login("test@email.com", "password");
 
-        verifyZeroInteractions(sessionTokenService);
+        verifyZeroInteractions(mockAuthenticationTokenService);
     }
 
     @Test
-    public void login_whenAuthenticationSuccessful_grantsSession() throws Exception {
-        when(authenticationService.authenticate(any(UniqueIdentifier.class),
-                any(Credentials.class))).thenReturn(true);
+    public void login_authenticates_grantsTransientAccessToken_returnsTheToken() throws Exception {
+        when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(true);
+        when(mockAuthenticationTokenService.grant(any())).thenReturn(mockTransientAccessToken);
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
-        userSessionsService.login(uniqueIdentifier, new Credentials("password"));
+        String identifier = "test@email.com";
+        String credentials = "password";
+        SessionTokenDTO sessionTokenDTO = userSessionsService.login(identifier, credentials);
 
-        verify(sessionTokenService).grant(uniqueIdentifier);
+        verify(mockBasicAuthenticationService).authenticate(identifier, credentials);
+        verify(mockAuthenticationTokenService).grant(identifier);
+        assertThat(sessionTokenDTO.getToken()).isEqualTo("hereIsYourFunAccessToken");
+        assertThat(sessionTokenDTO.getExpiresAt()).isToday();
     }
 
     @Test
-    public void login_whenSessionTokenGrantRefused_deniesAccess() throws Exception {
-        when(authenticationService.authenticate(any(UniqueIdentifier.class),
-                any(Credentials.class))).thenReturn(true);
-        when(sessionTokenService.grant(any())).thenThrow(OperationRefusedException.class);
+    public void login_whenTokenRefused_deniesAccess() throws Exception {
+        when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(true);
+        when(mockAuthenticationTokenService.grant(any())).thenThrow(new TokenRefusedException());
 
+        String identifier = "test@email.com";
+        String credentials = "password";
         exception.expect(AccessDeniedException.class);
-        userSessionsService.login(new UniqueIdentifier("test@email.com"), new Credentials("password"));
+        userSessionsService.login(identifier, credentials);
     }
 }

@@ -37,12 +37,13 @@ public class UserServiceTest {
 
     @Test
     public void create_whenIdentifierNotTaken_addsUserToRepository_returnsUser() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
+        String identifier = "soUnique";
 
         when(userRepository.find(any())).thenReturn(Optional.empty());
 
-        User createdUser = userService.create(uniqueIdentifier);
+        User createdUser = userService.create(identifier);
 
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
         verify(userRepository).find(uniqueIdentifier);
         verify(userRepository).add(userArgumentCaptor.capture());
         User addedUser = userArgumentCaptor.getValue();
@@ -52,11 +53,12 @@ public class UserServiceTest {
 
     @Test
     public void create_whenIdentifierTaken_refusesCreation() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
+        String identifier = "soUnique";
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
 
         when(userRepository.find(any())).thenReturn(Optional.of(new User(uniqueIdentifier)));
 
         exception.expect(OperationRefusedException.class);
-        userService.create(uniqueIdentifier);
+        userService.create(identifier);
     }
 }

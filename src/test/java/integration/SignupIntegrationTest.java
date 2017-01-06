@@ -1,11 +1,11 @@
 package integration;
 
-import com.doerapispring.authentication.SessionToken;
-import com.doerapispring.authentication.UserCredentials;
+import com.doerapispring.authentication.Credentials;
+import com.doerapispring.authentication.CredentialsStore;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.web.SessionTokenDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     private ObjectRepository<User, String> userRepository;
 
     @Autowired
-    private ObjectRepository<UserCredentials, String> userCredentialsRepository;
+    private CredentialsStore userCredentialsRepository;
 
     private String content =
             "{\n" +
@@ -44,21 +44,21 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     public void signup_whenUserWithEmailDoesNotExist_createsUser_storesCredentials_createsSessionToken_respondsWithSessionToken() throws Exception {
         doPost();
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("test@email.com");
+        String userIdentifier = "test@email.com";
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(userIdentifier);
         Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
-        Optional<UserCredentials> storedUserCredentialsOptional = userCredentialsRepository.find(uniqueIdentifier);
+        Optional<Credentials> storedCredentialsOptional = userCredentialsRepository.findLatest(userIdentifier);
 
         MockHttpServletResponse response = mvcResult.getResponse();
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
+        SessionTokenDTO sessionToken = mapper.readValue(contentAsString, SessionTokenDTO.class);
 
         assertThat(storedUserOptional.isPresent()).isTrue();
-        User user = storedUserOptional.get();
-        assertThat(storedUserCredentialsOptional.isPresent()).isTrue();
-        UserCredentials userCredentials = storedUserCredentialsOptional.get();
-        assertThat(userCredentials.getIdentifier()).isEqualTo(user.getIdentifier());
+        assertThat(storedCredentialsOptional.isPresent()).isTrue();
+        Credentials credentials = storedCredentialsOptional.get();
+        assertThat(credentials.getUserIdentifier()).isEqualTo(userIdentifier);
         assertThat(sessionToken.getToken()).isNotEmpty();
         assertThat(sessionToken.getExpiresAt()).isInTheFuture();
     }

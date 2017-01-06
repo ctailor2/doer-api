@@ -1,9 +1,9 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.authentication.SessionToken;
-import com.doerapispring.domain.AbnormalModelException;
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.authentication.TransientAccessToken;
+import com.doerapispring.session.InvalidTokenException;
+import com.doerapispring.session.SessionToken;
+import com.doerapispring.session.TokenStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @Repository
-class SessionTokenRepository implements ObjectRepository<SessionToken, String> {
+class SessionTokenRepository implements TokenStore {
     private final UserDAO userDAO;
     private final SessionTokenDAO sessionTokenDAO;
 
@@ -22,13 +22,13 @@ class SessionTokenRepository implements ObjectRepository<SessionToken, String> {
     }
 
     @Override
-    public void add(SessionToken sessionToken) throws AbnormalModelException {
-        UserEntity userEntity = userDAO.findByEmail(sessionToken.getUserIdentifier().get());
-        if (userEntity == null) throw new AbnormalModelException();
+    public void add(TransientAccessToken token) throws InvalidTokenException {
+        UserEntity userEntity = userDAO.findByEmail(token.getAuthenticatedEntityIdentifier());
+        if (userEntity == null) throw new InvalidTokenException();
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .userEntity(userEntity)
-                .token(sessionToken.getToken())
-                .expiresAt(sessionToken.getExpiresAt())
+                .token(token.getAccessToken())
+                .expiresAt(token.getExpiresAt())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build();
@@ -36,15 +36,12 @@ class SessionTokenRepository implements ObjectRepository<SessionToken, String> {
     }
 
     @Override
-    public Optional<SessionToken> find(UniqueIdentifier<String> uniqueIdentifier) {
-        String token = uniqueIdentifier.get();
-        SessionTokenEntity sessionTokenEntity = sessionTokenDAO.findByToken(token);
+    public Optional<TransientAccessToken> find(String accessToken) {
+        SessionTokenEntity sessionTokenEntity = sessionTokenDAO.findByToken(accessToken);
         if (sessionTokenEntity == null || sessionTokenEntity.userEntity == null) return Optional.empty();
         return Optional.of(
-                SessionToken.builder()
-                        .token(sessionTokenEntity.token)
-                        .expiresAt(sessionTokenEntity.expiresAt)
-                        .userIdentifier(new UniqueIdentifier(sessionTokenEntity.userEntity.email))
-                        .build());
+                new SessionToken(sessionTokenEntity.userEntity.email,
+                        sessionTokenEntity.token,
+                        sessionTokenEntity.expiresAt));
     }
 }

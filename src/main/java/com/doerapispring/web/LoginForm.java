@@ -1,25 +1,22 @@
 package com.doerapispring.web;
 
-import com.doerapispring.authentication.Credentials;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LoginForm {
-    private final UniqueIdentifier uniqueIdentifier;
-    private final Credentials credentials;
+    private final String identifier;
+    private final String credentials;
 
-    public LoginForm(@JsonProperty("identifier") UniqueIdentifier uniqueIdentifier,
-                     @JsonProperty("credentials") Credentials credentials) {
-        this.uniqueIdentifier = uniqueIdentifier;
+    public LoginForm(@JsonProperty("identifier") String identifier,
+                     @JsonProperty("credentials") String credentials) {
+        this.identifier = identifier;
         this.credentials = credentials;
     }
 
-    public UniqueIdentifier getUserIdentifier() {
-        return uniqueIdentifier;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public Credentials getCredentials() {
+    public String getCredentials() {
         return credentials;
     }
 }

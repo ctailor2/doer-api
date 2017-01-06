@@ -1,8 +1,5 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -24,57 +22,54 @@ public class AuthenticationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
     @Mock
-    private ObjectRepository<UserCredentials, String> userCredentialsRepository;
+    private CredentialsStore credentialsStore;
 
     @Captor
-    private ArgumentCaptor<UserCredentials> userCredentialsArgumentCaptor;
+    private ArgumentCaptor<Credentials> credentialsArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
         authenticationService = new AuthenticationService(passwordEncoder,
-                userCredentialsRepository);
+                credentialsStore);
     }
 
     @Test
     public void registerCredentials_callsPasswordEncoder_callsUserCredentialsRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
-        Credentials credentials = new Credentials("soSecret");
-        when(passwordEncoder.encode(any())).thenReturn("encodedSecretPassword");
-        authenticationService.registerCredentials(uniqueIdentifier, credentials);
+        String userIdentifier = "someId";
+        String credentials = "soSecret";
+        String encodedCredentials = "encodedSecretPassword";
+        when(passwordEncoder.encode(any())).thenReturn(encodedCredentials);
+        authenticationService.registerCredentials(userIdentifier, credentials);
 
-        verify(passwordEncoder).encode("soSecret");
-        verify(userCredentialsRepository).add(userCredentialsArgumentCaptor.capture());
-        UserCredentials userCredentials = userCredentialsArgumentCaptor.getValue();
-        assertThat(userCredentials.getIdentifier()).isEqualTo(uniqueIdentifier);
-        assertThat(userCredentials.getEncodedCredentials())
-                .isEqualTo(new EncodedCredentials("encodedSecretPassword"));
+        verify(passwordEncoder).encode(credentials);
+        verify(credentialsStore).add(credentialsArgumentCaptor.capture());
+        Credentials addedCredentials = credentialsArgumentCaptor.getValue();
+        assertThat(addedCredentials.getUserIdentifier()).isEqualTo(userIdentifier);
+        assertThat(addedCredentials.getSecret()).isEqualTo(encodedCredentials);
     }
 
     @Test
     public void authenticate_whenUserCredentialsExist_callsPasswordEncoder() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
-        UserCredentials userCredentials = new UserCredentials(
-                uniqueIdentifier,
-                new EncodedCredentials("encodedSecretPassword"));
-        when(userCredentialsRepository.find(any())).thenReturn(Optional.of(userCredentials));
+        String userIdentifier = "someId";
+        Credentials credentials = new Credentials(userIdentifier, "encodedSecretPassword", new Date());
+        when(credentialsStore.findLatest(any())).thenReturn(Optional.of(credentials));
 
-        authenticationService.authenticate(uniqueIdentifier, new Credentials("soSecret"));
+        authenticationService.authenticate(userIdentifier, "soSecret");
 
-        verify(userCredentialsRepository).find(uniqueIdentifier);
+        verify(credentialsStore).findLatest(userIdentifier);
         verify(passwordEncoder).matches("soSecret", "encodedSecretPassword");
     }
 
     @Test
     public void authenticate_whenUserCredentialsDoNotExist_returnsFalse() throws Exception {
-        when(userCredentialsRepository.find(any())).thenReturn(Optional.empty());
+        when(credentialsStore.findLatest(any())).thenReturn(Optional.empty());
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("someId");
-        boolean authenticationResult = authenticationService.authenticate(
-                uniqueIdentifier,
-                new Credentials("soSecret"));
+        String userIdentifier = "someId";
+        boolean authenticationResult = authenticationService.authenticate(userIdentifier, "soSecret");
 
-        verify(userCredentialsRepository).find(uniqueIdentifier);
+        verify(credentialsStore).findLatest(userIdentifier);
         verifyZeroInteractions(passwordEncoder);
         assertThat(authenticationResult).isFalse();
     }

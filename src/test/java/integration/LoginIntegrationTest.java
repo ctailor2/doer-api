@@ -1,9 +1,7 @@
 package integration;
 
-import com.doerapispring.authentication.Credentials;
-import com.doerapispring.authentication.SessionToken;
 import com.doerapispring.authentication.UserSessionsService;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.web.SessionTokenDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +34,8 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
     @Test
     public void login_whenUserWithEmailRegistered_correctPassword_respondsWithSessionToken() throws Exception {
-        userSessionsService.signup(new UniqueIdentifier("test@email.com"),
-                new Credentials("password"));
+        // TODO: Refactor this to use json path matchers
+        userSessionsService.signup("test@email.com", "password");
 
         doPost();
 
@@ -45,7 +43,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         String contentAsString = response.getContentAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        SessionToken sessionToken = mapper.readValue(contentAsString, SessionToken.class);
+        SessionTokenDTO sessionToken = mapper.readValue(contentAsString, SessionTokenDTO.class);
 
         assertThat(sessionToken.getToken()).isNotEmpty();
         assertThat(sessionToken.getExpiresAt()).isInTheFuture();

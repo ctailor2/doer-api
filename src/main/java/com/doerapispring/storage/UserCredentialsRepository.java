@@ -1,18 +1,17 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.authentication.EncodedCredentials;
-import com.doerapispring.authentication.UserCredentials;
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.authentication.Credentials;
+import com.doerapispring.authentication.CredentialsStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Repository
 @Transactional
-class UserCredentialsRepository implements ObjectRepository<UserCredentials, String> {
+class UserCredentialsRepository implements CredentialsStore {
     private final UserDAO userDAO;
 
     @Autowired
@@ -21,18 +20,18 @@ class UserCredentialsRepository implements ObjectRepository<UserCredentials, Str
     }
 
     @Override
-    public void add(UserCredentials userCredentials) {
-        UserEntity userEntity = userDAO.findByEmail(userCredentials.getIdentifier().get());
-        userEntity.passwordDigest = userCredentials.getEncodedCredentials().get();
+    public void add(Credentials credentials) {
+        UserEntity userEntity = userDAO.findByEmail(credentials.getUserIdentifier());
+        userEntity.passwordDigest = credentials.getSecret();
         userDAO.save(userEntity);
     }
 
     @Override
-    public Optional<UserCredentials> find(UniqueIdentifier<String> uniqueIdentifier) {
-        String email = uniqueIdentifier.get();
-        UserEntity userEntity = userDAO.findByEmail(email);
+    public Optional<Credentials> findLatest(String userIdentifier) {
+        UserEntity userEntity = userDAO.findByEmail(userIdentifier);
         if (userEntity == null) return Optional.empty();
-        return Optional.of(new UserCredentials(new UniqueIdentifier(email),
-                new EncodedCredentials(userEntity.passwordDigest)));
+        return Optional.of(new Credentials(userIdentifier,
+                userEntity.passwordDigest,
+                new Date()));
     }
 }
