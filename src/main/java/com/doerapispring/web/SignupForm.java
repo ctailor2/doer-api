@@ -8,8 +8,8 @@ public class SignupForm {
     private final String credentials;
 
     @JsonCreator
-    public SignupForm(@JsonProperty("identifier") String identifier,
-                      @JsonProperty("credentials") String credentials) {
+    public SignupForm(@JsonProperty("email") String identifier,
+                      @JsonProperty("password") String credentials) {
         this.identifier = identifier;
         this.credentials = credentials;
     }

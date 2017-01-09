@@ -17,8 +17,8 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
     private MvcResult mvcResult;
     private final String content =
             "{\n" +
-                    "  \"identifier\": \"test@email.com\",\n" +
-                    "  \"credentials\": \"password\"\n" +
+                    "  \"email\": \"test@email.com\",\n" +
+                    "  \"password\": \"password\"\n" +
                     "}";
 
     @Autowired

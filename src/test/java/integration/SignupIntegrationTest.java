@@ -27,8 +27,8 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
 
     private String content =
             "{\n" +
-                    "  \"identifier\": \"test@email.com\",\n" +
-                    "  \"credentials\": \"password\"\n" +
+                    "  \"email\": \"test@email.com\",\n" +
+                    "  \"password\": \"password\"\n" +
                     "}";
 
     private MvcResult mvcResult;
