@@ -21,4 +21,27 @@ public class AuthenticatedUser {
     public User getUser() {
         return new User(new UniqueIdentifier(identifier));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AuthenticatedUser that = (AuthenticatedUser) o;
+
+        return identifier != null ? identifier.equals(that.identifier) : that.identifier == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return identifier != null ? identifier.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthenticatedUser{" +
+                "identifier='" + identifier + '\'' +
+                '}';
+    }
 }

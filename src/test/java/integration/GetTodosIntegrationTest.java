@@ -36,11 +36,6 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     private MockHttpServletRequestBuilder mockRequestBuilder;
     private User user;
 
-    private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(mockRequestBuilder)
-                .andReturn();
-    }
-
     @Override
     @Before
     public void setUp() throws Exception {
@@ -84,5 +79,10 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
         assertThat(responseContent, hasJsonPath("$[0].task", equalTo("now task")));
         assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("now")));
+    }
+
+    private void doGet() throws Exception {
+        mvcResult = mockMvc.perform(mockRequestBuilder)
+                .andReturn();
     }
 }

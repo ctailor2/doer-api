@@ -5,17 +5,17 @@ import com.doerapispring.authentication.CredentialsStore;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
-import com.doerapispring.web.SessionTokenDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Optional;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -49,17 +49,14 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
         Optional<Credentials> storedCredentialsOptional = userCredentialsRepository.findLatest(userIdentifier);
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        String contentAsString = response.getContentAsString();
+        String responseContent = mvcResult.getResponse().getContentAsString();
 
-        ObjectMapper mapper = new ObjectMapper();
-        SessionTokenDTO sessionToken = mapper.readValue(contentAsString, SessionTokenDTO.class);
-
-        assertThat(storedUserOptional.isPresent()).isTrue();
-        assertThat(storedCredentialsOptional.isPresent()).isTrue();
+        assertThat(storedUserOptional.isPresent(), is(true));
+        assertThat(storedCredentialsOptional.isPresent(), is(true));
         Credentials credentials = storedCredentialsOptional.get();
-        assertThat(credentials.getUserIdentifier()).isEqualTo(userIdentifier);
-        assertThat(sessionToken.getToken()).isNotEmpty();
-        assertThat(sessionToken.getExpiresAt()).isInTheFuture();
+        assertThat(credentials.getUserIdentifier(), equalTo(userIdentifier));
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.token", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.expiresAt", not(isEmptyString())));
     }
 }

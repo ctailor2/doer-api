@@ -1,14 +1,13 @@
 package com.doerapispring.web;
 
-import com.doerapispring.domain.ScheduledFor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TodoForm {
     private final String task;
-    private final ScheduledFor scheduling;
+    private final String scheduling;
 
     public TodoForm(@JsonProperty("task") String task,
-                    @JsonProperty("scheduling") ScheduledFor scheduling) {
+                    @JsonProperty("scheduling") String scheduling) {
         this.task = task;
         this.scheduling = scheduling;
     }
@@ -17,7 +16,7 @@ public class TodoForm {
         return task;
     }
 
-    public ScheduledFor getScheduling() {
+    public String getScheduling() {
         return scheduling;
     }
 }

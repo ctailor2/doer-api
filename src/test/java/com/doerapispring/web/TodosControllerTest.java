@@ -2,7 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ScheduledFor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,18 +29,17 @@ public class TodosControllerTest {
     private TodosController todosController;
 
     @Mock
-    private TodoService todoService;
+    private TodoApiService todoApiService;
 
     private MockMvc mockMvc;
-    private User user;
+    private AuthenticatedUser authenticatedUser;
 
     @Before
     public void setUp() throws Exception {
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
-        user = new User(uniqueIdentifier);
-        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(new AuthenticatedUser(identifier)));
-        todosController = new TodosController(todoService);
+        authenticatedUser = new AuthenticatedUser(identifier);
+        SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
+        todosController = new TodosController(todoApiService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -56,17 +55,19 @@ public class TodosControllerTest {
     @Test
     public void index_withNoSchedulingSpecified_callsTodoService_withAnytime() throws Exception {
         mockMvc.perform(get("/v1/todos"));
-        verify(todoService).getByScheduling(user, ScheduledFor.anytime);
+        verify(todoApiService).getByScheduling(authenticatedUser, "anytime");
     }
 
     @Test
     public void index_withValidSchedulingSpecified_callsTodoService_withSpecifiedType() throws Exception {
         todosController.index(AuthenticatedUser.identifiedWith("test@email.com"), ScheduledFor.now.toString());
-        verify(todoService).getByScheduling(user, ScheduledFor.now);
+        verify(todoApiService).getByScheduling(authenticatedUser, "now");
     }
 
     @Test
-    public void index_withInvalidSchedulingSpecified_returns400() throws Exception {
+    public void index_whenRequestInvalid_returns400() throws Exception {
+        when(todoApiService.getByScheduling(any(), any())).thenThrow(new InvalidRequestException());
+
         mockMvc.perform(get("/v1/todos")
                 .param("scheduling", "notARealScheduling"))
                 .andExpect(status().isBadRequest());
@@ -83,17 +84,17 @@ public class TodosControllerTest {
     @Test
     public void create_callsTokenService() throws Exception {
         String task = "browse the web";
-        ScheduledFor scheduling = ScheduledFor.later;
+        String scheduling = "later";
         TodoForm todoForm = new TodoForm(task, scheduling);
         todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), todoForm);
-        verify(todoService).create(user, task, scheduling);
+        verify(todoApiService).create(authenticatedUser, task, scheduling);
     }
 
     @Test
-    public void create_whenOperationRefused_returns400BadRequest() throws Exception {
-        when(todoService.create(any(), any(), any())).thenThrow(new OperationRefusedException());
+    public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
+        when(todoApiService.create(any(), any(), any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<Todo> responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), new TodoForm("something", ScheduledFor.now));
+        ResponseEntity<TodoDTO> responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), new TodoForm("something", "now"));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
