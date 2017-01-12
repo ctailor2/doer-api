@@ -18,8 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -82,17 +81,19 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void create_callsTokenService() throws Exception {
+    public void create_callsTokenService_returns201() throws Exception {
         String task = "browse the web";
         String scheduling = "later";
         TodoForm todoForm = new TodoForm(task, scheduling);
-        todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), todoForm);
+        ResponseEntity responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), todoForm);
         verify(todoApiService).create(authenticatedUser, task, scheduling);
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
     @Test
     public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
-        when(todoApiService.create(any(), any(), any())).thenThrow(new InvalidRequestException());
+        doThrow(new InvalidRequestException()).when(todoApiService).create(any(), any(), any());
 
         ResponseEntity<TodoDTO> responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), new TodoForm("something", "now"));
 

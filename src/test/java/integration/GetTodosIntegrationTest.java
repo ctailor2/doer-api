@@ -63,6 +63,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
         assertThat(responseContent, hasJsonPath("$[0].task", equalTo("this and that")));
         assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("later")));
+        assertThat(responseContent, hasJsonPath("$[0].id", equalTo("1")));
     }
 
     @Test
@@ -79,6 +80,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
         assertThat(responseContent, hasJsonPath("$[0].task", equalTo("now task")));
         assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("now")));
+        assertThat(responseContent, hasJsonPath("$[0].id", equalTo("1i")));
     }
 
     private void doGet() throws Exception {

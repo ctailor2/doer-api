@@ -1,11 +1,12 @@
 package com.doerapispring.domain;
 
 public class Todo {
+    private final String localIdentifier;
     private final String task;
     private final ScheduledFor scheduling;
 
-    public Todo(String task,
-                ScheduledFor scheduling) {
+    public Todo(String localIdentifier, String task, ScheduledFor scheduling) {
+        this.localIdentifier = localIdentifier;
         this.task = task;
         this.scheduling = scheduling;
     }
@@ -18,6 +19,10 @@ public class Todo {
         return scheduling;
     }
 
+    public String getLocalIdentifier() {
+        return localIdentifier;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -25,6 +30,8 @@ public class Todo {
 
         Todo todo = (Todo) o;
 
+        if (localIdentifier != null ? !localIdentifier.equals(todo.localIdentifier) : todo.localIdentifier != null)
+            return false;
         if (task != null ? !task.equals(todo.task) : todo.task != null) return false;
         return scheduling == todo.scheduling;
 
@@ -32,7 +39,8 @@ public class Todo {
 
     @Override
     public int hashCode() {
-        int result = task != null ? task.hashCode() : 0;
+        int result = localIdentifier != null ? localIdentifier.hashCode() : 0;
+        result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (scheduling != null ? scheduling.hashCode() : 0);
         return result;
     }
@@ -40,7 +48,8 @@ public class Todo {
     @Override
     public String toString() {
         return "Todo{" +
-                "task='" + task + '\'' +
+                "localIdentifier='" + localIdentifier + '\'' +
+                ", task='" + task + '\'' +
                 ", scheduling=" + scheduling +
                 '}';
     }

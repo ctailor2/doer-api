@@ -6,9 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 class MasterListRepository implements AggregateRootRepository<MasterList, Todo, String> {
@@ -24,14 +22,13 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
     @Override
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
-        List<TodoEntity> todoEntities = todoDao.findByUserEmail(email);
-        Map<Boolean, List<Todo>> partitionedTodos = todoEntities.stream()
-                .map(todoEntity -> new Todo(
-                        todoEntity.task,
-                        todoEntity.active ? ScheduledFor.now : ScheduledFor.later))
-                .collect(Collectors.partitioningBy(todo -> todo.getScheduling() == ScheduledFor.now));
-        return Optional.of(new MasterList(new UniqueIdentifier(email),
-                new ImmediateList(partitionedTodos.get(true)), new PostponedList(partitionedTodos.get(false))));
+        List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
+        MasterList masterList = MasterList.newEmpty(uniqueIdentifier);
+        todoEntities.stream().forEach(todoEntity ->
+                masterList.add(todoEntity.task,
+                        todoEntity.active ? ScheduledFor.now : ScheduledFor.later)
+        );
+        return Optional.of(masterList);
     }
 
     @Override

@@ -47,7 +47,7 @@ public class TodoServiceTest {
     public void getByScheduling_whenScheduledForNow_returnsImmediateTodos() throws Exception {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
         User user = new User(uniqueIdentifier);
-        List<Todo> immediateTodos = Collections.singletonList(new Todo("one", ScheduledFor.anytime));
+        List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
         MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(immediateTodos), new PostponedList(Collections.emptyList()));
         when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
 
@@ -61,7 +61,7 @@ public class TodoServiceTest {
     public void getByScheduling_whenScheduledForLater_returnsPostponedTodos() throws Exception {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
         User user = new User(uniqueIdentifier);
-        List<Todo> postponedTodos = Collections.singletonList(new Todo("two", ScheduledFor.anytime));
+        List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
         MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(Collections.emptyList()), new PostponedList(postponedTodos));
         when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
 
@@ -75,8 +75,8 @@ public class TodoServiceTest {
     public void getByScheduling_whenScheduledAnytime_returnsAllTodos() throws Exception {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
         User user = new User(uniqueIdentifier);
-        List<Todo> immediateTodos = Collections.singletonList(new Todo("one", ScheduledFor.anytime));
-        List<Todo> postponedTodos = Collections.singletonList(new Todo("two", ScheduledFor.anytime));
+        List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
+        List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
         MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(immediateTodos), new PostponedList(postponedTodos));
         when(masterListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(masterList));
 
@@ -102,19 +102,20 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_addsTodoToRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("something");
-        MasterList masterList = new MasterList(uniqueIdentifier, null, null);
-        when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
+        MasterList mockMasterList = mock(MasterList.class);
+        when(masterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        Todo todo = new Todo("someId", "some things", ScheduledFor.now);
+        when(mockMasterList.add(any(), any())).thenReturn(todo);
 
         todoService.create(new User(new UniqueIdentifier("testItUp")), "some things", ScheduledFor.now);
 
-        verify(masterListRepository).add(masterList, new Todo("some things", ScheduledFor.now));
+        verify(mockMasterList).add("some things", ScheduledFor.now);
+        verify(masterListRepository).add(mockMasterList, todo);
     }
 
     @Test
     public void create_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("something");
-        MasterList masterList = new MasterList(uniqueIdentifier, null, null);
+        MasterList masterList = mock(MasterList.class);
         when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
         doThrow(new AbnormalModelException()).when(masterListRepository).add(any(), any());
 

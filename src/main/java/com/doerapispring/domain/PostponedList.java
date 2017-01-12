@@ -13,6 +13,13 @@ public class PostponedList {
         return todos;
     }
 
+    public Todo add(String task) {
+        String localIdentifier = String.valueOf(getTodos().size() + 1);
+        Todo todo = new Todo(localIdentifier, task, ScheduledFor.later);
+        todos.add(todo);
+        return todo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

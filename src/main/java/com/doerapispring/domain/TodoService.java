@@ -18,19 +18,18 @@ public class TodoService {
         this.masterListRepository = masterListRepository;
     }
 
-    public Todo create(User user, String task, ScheduledFor scheduling) throws OperationRefusedException {
+    public void create(User user, String task, ScheduledFor scheduling) throws OperationRefusedException {
         // TODO: Maybe the todo creation method should live on the list like object?
         // For example, throw in the task and how you want it scheduled - out comes a domain object
         // This domain object has some local identifier, unique only within the aggregate
-        Todo todo = new Todo(task, scheduling);
         Optional<MasterList> masterList = masterListRepository.find(user.getIdentifier());
         if (!masterList.isPresent()) throw new OperationRefusedException();
+        Todo todo = masterList.get().add(task, scheduling);
         try {
             masterListRepository.add(masterList.get(), todo);
         } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         }
-        return todo;
     }
 
     public List<Todo> getByScheduling(User user, ScheduledFor scheduling) {

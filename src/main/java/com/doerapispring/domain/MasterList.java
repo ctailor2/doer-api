@@ -8,12 +8,18 @@ public class MasterList implements UniquelyIdentifiable<String> {
     private final ImmediateList immediateList;
     private final PostponedList postponedList;
 
-    public MasterList(UniqueIdentifier uniqueIdentifier,
-                      ImmediateList immediateList,
-                      PostponedList postponedList) {
+    MasterList(UniqueIdentifier uniqueIdentifier,
+               ImmediateList immediateList,
+               PostponedList postponedList) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.immediateList = immediateList;
         this.postponedList = postponedList;
+    }
+
+    static public MasterList newEmpty(UniqueIdentifier uniqueIdentifier) {
+        return new MasterList(uniqueIdentifier,
+                new ImmediateList(new ArrayList<>()),
+                new PostponedList(new ArrayList<>()));
     }
 
     public ImmediateList getImmediateList() {
@@ -33,6 +39,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
     @Override
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
+    }
+
+    public Todo add(String task, ScheduledFor scheduling) {
+        if (scheduling.equals(ScheduledFor.now)) {
+            return getImmediateList().add(task);
+        } else {
+            return getPostponedList().add(task);
+        }
     }
 
     @Override

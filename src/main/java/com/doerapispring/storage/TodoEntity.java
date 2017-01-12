@@ -30,6 +30,9 @@ class TodoEntity {
     @Column(name = "updated_at")
     public Date updatedAt;
 
+    @Column(name = "completed")
+    public boolean completed;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     public UserEntity userEntity;

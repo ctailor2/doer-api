@@ -44,12 +44,12 @@ public class MasterListRepositoryTest {
     public void find_callsTodoDao() throws Exception {
         masterListRepository.find(new UniqueIdentifier("somethingSecret"));
 
-        verify(todoDao).findByUserEmail("somethingSecret");
+        verify(todoDao).findUnfinishedByUserEmail("somethingSecret");
     }
 
     @Test
     public void find_whenThereAreNoTodos_returnsMasterListWithNoTodos() throws Exception {
-        when(todoDao.findByUserEmail(any())).thenReturn(Collections.emptyList());
+        when(todoDao.findUnfinishedByUserEmail(any())).thenReturn(Collections.emptyList());
 
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("userIdentifier");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
@@ -71,15 +71,17 @@ public class MasterListRepositoryTest {
                 .task("do it now")
                 .active(true)
                 .build();
-        when(todoDao.findByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
+        when(todoDao.findUnfinishedByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
 
         Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier("somethingSecret"));
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getImmediateList().getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getImmediateList().getTodos().get(0))
-                .isEqualTo(new Todo("do it now", ScheduledFor.now));
+        Todo todo = masterList.getImmediateList().getTodos().get(0);
+        assertThat(todo.getLocalIdentifier()).isEqualTo("1i");
+        assertThat(todo.getTask()).isEqualTo("do it now");
+        assertThat(todo.getScheduling()).isEqualTo(ScheduledFor.now);
     }
 
     @Test
@@ -90,15 +92,17 @@ public class MasterListRepositoryTest {
                 .task("do it later")
                 .active(false)
                 .build();
-        when(todoDao.findByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
+        when(todoDao.findUnfinishedByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
 
         Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier("somethingSecret"));
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getPostponedList().getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getPostponedList().getTodos().get(0))
-                .isEqualTo(new Todo("do it later", ScheduledFor.later));
+        Todo todo = masterList.getPostponedList().getTodos().get(0);
+        assertThat(todo.getLocalIdentifier()).isEqualTo("1");
+        assertThat(todo.getTask()).isEqualTo("do it later");
+        assertThat(todo.getScheduling()).isEqualTo(ScheduledFor.later);
     }
 
     @Test
@@ -106,8 +110,8 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), null, null);
-        Todo todo = new Todo("bingo", ScheduledFor.later);
+        MasterList masterList = MasterList.newEmpty(new UniqueIdentifier("listUserIdentifier"));
+        Todo todo = new Todo("someId", "bingo", ScheduledFor.later);
         masterListRepository.add(masterList, todo);
 
         verify(userDAO).findByEmail("listUserIdentifier");
@@ -125,8 +129,8 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), null, null);
-        Todo todo = new Todo("bingo", ScheduledFor.now);
+        MasterList masterList = MasterList.newEmpty(new UniqueIdentifier("listUserIdentifier"));
+        Todo todo = new Todo("someId", "bingo", ScheduledFor.now);
         masterListRepository.add(masterList, todo);
 
         verify(userDAO).findByEmail("listUserIdentifier");
@@ -141,8 +145,8 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), null, null);
-        Todo todo = new Todo("bingo", ScheduledFor.later);
+        MasterList masterList = MasterList.newEmpty(new UniqueIdentifier("listUserIdentifier"));
+        Todo todo = new Todo("someId", "bingo", ScheduledFor.later);
         masterListRepository.add(masterList, todo);
 
         verify(userDAO).findByEmail("listUserIdentifier");
@@ -157,8 +161,8 @@ public class MasterListRepositoryTest {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
         exception.expect(AbnormalModelException.class);
-        Todo todo = new Todo("bingo", ScheduledFor.later);
-        MasterList masterList = new MasterList(new UniqueIdentifier("nonExistentUser"), null, null);
+        Todo todo = new Todo("someId", "bingo", ScheduledFor.later);
+        MasterList masterList = MasterList.newEmpty(new UniqueIdentifier("nonExistentUser"));
         masterListRepository.add(masterList, todo);
 
         verify(userDAO).findByEmail("nonExistentUser");

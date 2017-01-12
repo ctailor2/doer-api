@@ -35,15 +35,10 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void create_whenSchedulingCanBeParsed_callsTodoService_returnsTodoDTO() throws Exception {
-        String task = "something";
-        when(mockTodoService.create(any(), any(), any())).thenReturn(new Todo(task, ScheduledFor.later));
-
-        TodoDTO todoDTO = todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "now");
+    public void create_whenSchedulingCanBeParsed_callsTodoService() throws Exception {
+        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "now");
 
         verify(mockTodoService).create(new User(new UniqueIdentifier("someIdentifier")), "someTask", ScheduledFor.now);
-        assertThat(todoDTO.getTask()).isEqualTo(task);
-        assertThat(todoDTO.getScheduling()).isEqualTo("later");
     }
 
     @Test
@@ -56,7 +51,7 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void create_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        when(mockTodoService.create(any(), any(), any())).thenThrow(new OperationRefusedException());
+        doThrow(new OperationRefusedException()).when(mockTodoService).create(any(), any(), any());
 
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "bananas");
@@ -67,13 +62,13 @@ public class TodoApiServiceImplTest {
     @Test
     public void getByScheduling_whenSchedulingCanBeParsed_callsTodoService_returnsTodoDTOs() throws Exception {
         when(mockTodoService.getByScheduling(any(), any())).thenReturn(asList(
-                new Todo("first", ScheduledFor.now),
-                new Todo("second", ScheduledFor.later)));
+                new Todo("someId", "first", ScheduledFor.now),
+                new Todo("someOtherId", "second", ScheduledFor.later)));
 
         List<TodoDTO> todoDTOs = todoApiServiceImpl.getByScheduling(new AuthenticatedUser("someIdentifier"), "now");
 
         verify(mockTodoService).getByScheduling(new User(new UniqueIdentifier("someIdentifier")), ScheduledFor.now);
-        assertThat(todoDTOs).contains(new TodoDTO("first", "now"), new TodoDTO("second", "later"));
+        assertThat(todoDTOs).contains(new TodoDTO("someId", "first", "now"), new TodoDTO("someOtherId", "second", "later"));
     }
 
     @Test

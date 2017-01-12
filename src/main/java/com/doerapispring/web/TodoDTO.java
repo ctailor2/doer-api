@@ -1,12 +1,18 @@
 package com.doerapispring.web;
 
 public class TodoDTO {
+    private final String id;
     private final String task;
     private final String scheduling;
 
-    public TodoDTO(String task, String scheduling) {
+    public TodoDTO(String id, String task, String scheduling) {
+        this.id = id;
         this.task = task;
         this.scheduling = scheduling;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTask() {
@@ -24,6 +30,7 @@ public class TodoDTO {
 
         TodoDTO todoDTO = (TodoDTO) o;
 
+        if (id != null ? !id.equals(todoDTO.id) : todoDTO.id != null) return false;
         if (task != null ? !task.equals(todoDTO.task) : todoDTO.task != null) return false;
         return scheduling != null ? scheduling.equals(todoDTO.scheduling) : todoDTO.scheduling == null;
 
@@ -31,7 +38,8 @@ public class TodoDTO {
 
     @Override
     public int hashCode() {
-        int result = task != null ? task.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (scheduling != null ? scheduling.hashCode() : 0);
         return result;
     }
@@ -39,7 +47,8 @@ public class TodoDTO {
     @Override
     public String toString() {
         return "TodoDTO{" +
-                "task='" + task + '\'' +
+                "id='" + id + '\'' +
+                ", task='" + task + '\'' +
                 ", scheduling='" + scheduling + '\'' +
                 '}';
     }

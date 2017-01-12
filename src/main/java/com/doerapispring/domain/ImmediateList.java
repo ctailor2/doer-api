@@ -13,6 +13,13 @@ public class ImmediateList {
         return todos;
     }
 
+    public Todo add(String task) {
+        String localIdentifier = String.valueOf(getTodos().size() + 1) + "i";
+        Todo todo = new Todo(localIdentifier, task, ScheduledFor.now);
+        todos.add(todo);
+        return todo;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

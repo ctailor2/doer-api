@@ -36,11 +36,11 @@ public class TodosController {
     @RequestMapping(value = "/todos", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<TodoDTO> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                   @RequestBody TodoForm todoForm) {
+    ResponseEntity create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                          @RequestBody TodoForm todoForm) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(todoApiService.create(authenticatedUser, todoForm.getTask(), todoForm.getScheduling()));
+            todoApiService.create(authenticatedUser, todoForm.getTask(), todoForm.getScheduling());
+            return ResponseEntity.status(HttpStatus.CREATED).body(null);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

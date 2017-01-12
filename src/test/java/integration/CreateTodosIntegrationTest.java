@@ -7,13 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -56,9 +56,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
         assertThat(todos.size(), equalTo(1));
 
-        String responseContent = mvcResult.getResponse().getContentAsString();
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.task", equalTo("read the things")));
-        assertThat(responseContent, hasJsonPath("$.scheduling", equalTo("now")));
+        MockHttpServletResponse response = mvcResult.getResponse();
+        assertThat(response.getStatus(), equalTo(HttpStatus.CREATED.value()));
     }
 }
