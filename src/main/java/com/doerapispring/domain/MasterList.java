@@ -2,6 +2,8 @@ package com.doerapispring.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
@@ -43,9 +45,9 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     public Todo add(String task, ScheduledFor scheduling) {
         if (scheduling.equals(ScheduledFor.now)) {
-            return getImmediateList().add(task);
+            return immediateList.add(task);
         } else {
-            return getPostponedList().add(task);
+            return postponedList.add(task);
         }
     }
 
@@ -79,5 +81,12 @@ public class MasterList implements UniquelyIdentifiable<String> {
                 ", immediateList=" + immediateList +
                 ", postponedList=" + postponedList +
                 '}';
+    }
+
+    public void displace(String localIdentifier, String task) {
+        Todo todo = immediateList.getTodos().stream()
+                .filter(immediateTodo ->
+                        Objects.equals(immediateTodo.getLocalIdentifier(), localIdentifier))
+                .collect(Collectors.toList()).get(0);
     }
 }

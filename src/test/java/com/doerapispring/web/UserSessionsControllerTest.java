@@ -7,10 +7,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,7 +35,7 @@ public class UserSessionsControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        userSessionsController = new UserSessionsController(mockUserSessionsApiService);
+        userSessionsController = new UserSessionsController(new MockHateoasLinkGenerator(), mockUserSessionsApiService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userSessionsController)
                 .build();
@@ -47,12 +51,15 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void signup_callsUserSessionsApiService() throws Exception {
+    public void signup_callsUserSessionsApiService_includesLinks() throws Exception {
         String identifier = "soUnique";
         String credentials = "soSecure";
         SignupForm signupForm = new SignupForm(identifier, credentials);
-        userSessionsController.signup(signupForm);
+        ResponseEntity<SessionResponse> responseEntity = userSessionsController.signup(signupForm);
         verify(mockUserSessionsApiService).signup(identifier, credentials);
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/signup").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/home").withRel("home"));
     }
 
     @Test
@@ -76,12 +83,15 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void login_callsUserSessionsService() throws Exception {
+    public void login_callsUserSessionsService_includesLinks() throws Exception {
         String credentials = "soSecure";
         String identifier = "soUnique";
         LoginForm loginForm = new LoginForm(identifier, credentials);
-        userSessionsController.login(loginForm);
+        ResponseEntity<SessionResponse> responseEntity = userSessionsController.login(loginForm);
         verify(mockUserSessionsApiService).login(identifier, credentials);
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/login").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/home").withRel("home"));
     }
 
     @Test

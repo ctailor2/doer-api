@@ -38,7 +38,7 @@ public class TodoApiServiceImplTest {
     public void create_whenSchedulingCanBeParsed_callsTodoService() throws Exception {
         todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "now");
 
-        verify(mockTodoService).create(new User(new UniqueIdentifier("someIdentifier")), "someTask", ScheduledFor.now);
+        verify(mockTodoService).create(new User(new UniqueIdentifier<>("someIdentifier")), "someTask", ScheduledFor.now);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class TodoApiServiceImplTest {
 
         List<TodoDTO> todoDTOs = todoApiServiceImpl.getByScheduling(new AuthenticatedUser("someIdentifier"), "now");
 
-        verify(mockTodoService).getByScheduling(new User(new UniqueIdentifier("someIdentifier")), ScheduledFor.now);
+        verify(mockTodoService).getByScheduling(new User(new UniqueIdentifier<>("someIdentifier")), ScheduledFor.now);
         assertThat(todoDTOs).contains(new TodoDTO("someId", "first", "now"), new TodoDTO("someOtherId", "second", "later"));
     }
 

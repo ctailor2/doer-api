@@ -19,7 +19,7 @@ public class AuthenticatedUser {
     }
 
     public User getUser() {
-        return new User(new UniqueIdentifier(identifier));
+        return new User(new UniqueIdentifier<>(identifier));
     }
 
     @Override

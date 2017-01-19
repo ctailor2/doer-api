@@ -35,7 +35,7 @@ public class UserRepositoryTest {
 
     @Test
     public void add_user_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
-        User user = new User(new UniqueIdentifier("soUnique"));
+        User user = new User(new UniqueIdentifier<>("soUnique"));
 
         userRepository.add(user);
 
@@ -52,7 +52,7 @@ public class UserRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("soUnique");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
         Optional<User> userOptional = userRepository.find(uniqueIdentifier);
 
         verify(userDAO).findByEmail("soUnique");
@@ -64,7 +64,7 @@ public class UserRepositoryTest {
     public void find_callsUserDao_whenUserNotFound_returnsEmptyOptional() throws Exception {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
-        Optional<User> userOptional = userRepository.find(new UniqueIdentifier("soUnique"));
+        Optional<User> userOptional = userRepository.find(new UniqueIdentifier<>("soUnique"));
 
         verify(userDAO).findByEmail("soUnique");
         assertThat(userOptional.isPresent()).isFalse();

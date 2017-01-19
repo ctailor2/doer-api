@@ -1,6 +1,6 @@
 package integration;
 
-import com.doerapispring.authentication.UserSessionsService;
+import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -9,8 +9,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -24,7 +23,7 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
     @Autowired
     @SuppressWarnings("unused")
-    private UserSessionsService userSessionsService;
+    private UserSessionsApiService userSessionsApiService;
 
     private void doPost() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/login")
@@ -35,14 +34,18 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
 
     @Test
     public void login_whenUserWithEmailRegistered_correctPassword_respondsWithSessionToken() throws Exception {
-        userSessionsService.signup("test@email.com", "password");
+        userSessionsApiService.signup("test@email.com", "password");
 
         doPost();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.token", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.expiresAt", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session.token", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session.expiresAt", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/login")));
+        assertThat(responseContent, hasJsonPath("$._links.home.href", containsString("/v1/home")));
     }
 }

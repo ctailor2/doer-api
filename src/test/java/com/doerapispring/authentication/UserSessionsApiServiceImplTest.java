@@ -18,8 +18,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserSessionsServiceTest {
-    private UserSessionsService userSessionsService;
+public class UserSessionsApiServiceImplTest {
+    private UserSessionsApiServiceImpl userSessionsApiServiceImpl;
 
     @Mock
     private UserService mockUserService;
@@ -42,7 +42,7 @@ public class UserSessionsServiceTest {
         when(mockTransientAccessToken.getAccessToken()).thenReturn(accessToken);
         Date expiresAt = new Date();
         when(mockTransientAccessToken.getExpiresAt()).thenReturn(expiresAt);
-        userSessionsService = new UserSessionsService(mockUserService, mockAuthenticationTokenService, mockBasicAuthenticationService);
+        userSessionsApiServiceImpl = new UserSessionsApiServiceImpl(mockUserService, mockAuthenticationTokenService, mockBasicAuthenticationService);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class UserSessionsServiceTest {
 
         String identifier = "soUnique";
         String credentials = "soSecure";
-        SessionTokenDTO sessionTokenDTO = userSessionsService.signup(identifier, credentials);
+        SessionTokenDTO sessionTokenDTO = userSessionsApiServiceImpl.signup(identifier, credentials);
 
         verify(mockUserService).create(identifier);
         verify(mockBasicAuthenticationService).registerCredentials(identifier, credentials);
@@ -65,7 +65,7 @@ public class UserSessionsServiceTest {
         when(mockUserService.create(any())).thenThrow(OperationRefusedException.class);
 
         exception.expect(AccessDeniedException.class);
-        userSessionsService.signup("soUnique", "soSecure");
+        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
 
         verifyZeroInteractions(mockBasicAuthenticationService);
         verifyZeroInteractions(mockAuthenticationTokenService);
@@ -76,7 +76,7 @@ public class UserSessionsServiceTest {
         doThrow(CredentialsInvalidException.class).when(mockBasicAuthenticationService).registerCredentials(any(), any());
 
         exception.expect(AccessDeniedException.class);
-        userSessionsService.signup("soUnique", "soSecure");
+        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
 
         verifyZeroInteractions(mockAuthenticationTokenService);
     }
@@ -86,7 +86,7 @@ public class UserSessionsServiceTest {
         when(mockAuthenticationTokenService.grant(any())).thenThrow(new TokenRefusedException());
 
         exception.expect(AccessDeniedException.class);
-        userSessionsService.signup("soUnique", "soSecure");
+        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
     }
 
     @Test
@@ -94,7 +94,7 @@ public class UserSessionsServiceTest {
         when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(false);
 
         exception.expect(AccessDeniedException.class);
-        userSessionsService.login("test@email.com", "password");
+        userSessionsApiServiceImpl.login("test@email.com", "password");
 
         verifyZeroInteractions(mockAuthenticationTokenService);
     }
@@ -106,7 +106,7 @@ public class UserSessionsServiceTest {
 
         String identifier = "test@email.com";
         String credentials = "password";
-        SessionTokenDTO sessionTokenDTO = userSessionsService.login(identifier, credentials);
+        SessionTokenDTO sessionTokenDTO = userSessionsApiServiceImpl.login(identifier, credentials);
 
         verify(mockBasicAuthenticationService).authenticate(identifier, credentials);
         verify(mockAuthenticationTokenService).grant(identifier);
@@ -122,6 +122,6 @@ public class UserSessionsServiceTest {
         String identifier = "test@email.com";
         String credentials = "password";
         exception.expect(AccessDeniedException.class);
-        userSessionsService.login(identifier, credentials);
+        userSessionsApiServiceImpl.login(identifier, credentials);
     }
 }

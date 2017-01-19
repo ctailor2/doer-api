@@ -26,4 +26,16 @@ public class MasterListTest {
         assertThat(masterList.getPostponedList().getTodos()).contains(firstTodo);
         assertThat(firstTodo.getLocalIdentifier()).isEqualTo("1");
     }
+
+    @Test
+    public void displace_movesMatchingImmediateTodoToPostponedList_replacesWithTask() throws Exception {
+        Todo todo = masterList.add("someTask", ScheduledFor.now);
+        masterList.displace(todo.getLocalIdentifier(), "aMoreImportantTask");
+        assertThat(masterList.getImmediateList().getTodos().size()).isEqualTo(1);
+        assertThat(masterList.getImmediateList().getTodos().get(0))
+                .isEqualTo(new Todo("1i", "aMoreImportantTask", ScheduledFor.now));
+        assertThat(masterList.getImmediateList().getTodos().size()).isEqualTo(1);
+        assertThat(masterList.getImmediateList().getTodos().get(0))
+                .isEqualTo(new Todo("1", "someTask", ScheduledFor.now));
+    }
 }

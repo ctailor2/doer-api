@@ -15,7 +15,7 @@ public class UserService {
     }
 
     public User create(String identifier) throws OperationRefusedException {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
         Optional<User> userOptional = userRepository.find(uniqueIdentifier);
         if (userOptional.isPresent()) throw new OperationRefusedException();
         User user = new User(uniqueIdentifier);

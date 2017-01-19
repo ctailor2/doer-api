@@ -35,7 +35,7 @@ public class TodoServiceTest {
     public void getByScheduling_whenThereAreNoTodos_returnsAnEmptyList() throws Exception {
         when(masterListRepository.find(any())).thenReturn(Optional.empty());
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> todos = todoService.getByScheduling(user, ScheduledFor.now);
 
@@ -45,7 +45,7 @@ public class TodoServiceTest {
 
     @Test
     public void getByScheduling_whenScheduledForNow_returnsImmediateTodos() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
         MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(immediateTodos), new PostponedList(Collections.emptyList()));
@@ -59,7 +59,7 @@ public class TodoServiceTest {
 
     @Test
     public void getByScheduling_whenScheduledForLater_returnsPostponedTodos() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
         MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(Collections.emptyList()), new PostponedList(postponedTodos));
@@ -73,7 +73,7 @@ public class TodoServiceTest {
 
     @Test
     public void getByScheduling_whenScheduledAnytime_returnsAllTodos() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("one@two.com");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
         List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
@@ -93,7 +93,7 @@ public class TodoServiceTest {
         when(masterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier("testItUp");
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("testItUp");
         User user = new User(uniqueIdentifier);
         todoService.create(user, "some things", ScheduledFor.now);
 
@@ -107,7 +107,7 @@ public class TodoServiceTest {
         Todo todo = new Todo("someId", "some things", ScheduledFor.now);
         when(mockMasterList.add(any(), any())).thenReturn(todo);
 
-        todoService.create(new User(new UniqueIdentifier("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
 
         verify(mockMasterList).add("some things", ScheduledFor.now);
         verify(masterListRepository).add(mockMasterList, todo);
@@ -120,6 +120,16 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(masterListRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+    }
+
+    @Test
+    public void displace_whenMasterListFound() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(masterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+
+        todoService.displace(new User(new UniqueIdentifier<>("userId")), "someTodoId", "aMoreImportantTask");
+
+        verify(mockMasterList).displace("someTodoId", "aMoreImportantTask");
     }
 }

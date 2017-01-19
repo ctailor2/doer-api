@@ -1,11 +1,11 @@
 package integration;
 
-import com.doerapispring.authentication.UserSessionsService;
 import com.doerapispring.domain.ScheduledFor;
 import com.doerapispring.domain.TodoService;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,28 +22,25 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
-
     private HttpHeaders httpHeaders = new HttpHeaders();
-
-    @Autowired
-    UserSessionsService userSessionsService;
-
-    @Autowired
-    TodoService todosService;
-
-
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
     private MockHttpServletRequestBuilder mockRequestBuilder;
     private User user;
+
+    @Autowired
+    UserSessionsApiService userSessionsApiService;
+
+    @Autowired
+    TodoService todosService;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(identifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
-        SessionTokenDTO signupSessionToken = userSessionsService.signup(identifier, "password");
+        SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/todos")

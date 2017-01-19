@@ -36,6 +36,6 @@ class UserRepository implements ObjectRepository<User, String> {
         String email = uniqueIdentifier.get();
         UserEntity userEntity = userDAO.findByEmail(email);
         if (userEntity == null) return Optional.empty();
-        return Optional.of(new User(new UniqueIdentifier(email)));
+        return Optional.of(new User(new UniqueIdentifier<>(email)));
     }
 }

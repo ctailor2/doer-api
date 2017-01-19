@@ -10,35 +10,43 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequestMapping(value = "/v1")
 class UserSessionsController {
+    private final HateoasLinkGenerator hateoasLinkGenerator;
     private final UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    UserSessionsController(UserSessionsApiService userSessionsApiService) {
+    UserSessionsController(HateoasLinkGenerator hateoasLinkGenerator, UserSessionsApiService userSessionsApiService) {
+        this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.userSessionsApiService = userSessionsApiService;
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<SessionTokenDTO> signup(@RequestBody SignupForm signupForm) {
+    ResponseEntity<SessionResponse> signup(@RequestBody SignupForm signupForm) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(userSessionsApiService.signup(signupForm.getIdentifier(),
+            SessionResponse sessionResponse = new SessionResponse(
+                    userSessionsApiService.signup(signupForm.getIdentifier(),
                             signupForm.getCredentials()));
+            sessionResponse.add(hateoasLinkGenerator.signupLink().withSelfRel(),
+                    hateoasLinkGenerator.homeLink().withRel("home"));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(sessionResponse);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    // Resource - session (CRUD)
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    ResponseEntity<SessionTokenDTO> login(@RequestBody LoginForm loginForm) {
+    ResponseEntity<SessionResponse> login(@RequestBody LoginForm loginForm) {
         try {
+            SessionResponse sessionResponse = new SessionResponse(userSessionsApiService.login(loginForm.getIdentifier(),
+                    loginForm.getCredentials()));
+            sessionResponse.add(hateoasLinkGenerator.loginLink().withSelfRel(),
+                    hateoasLinkGenerator.homeLink().withRel("home"));
             return ResponseEntity.ok()
-                    .body(userSessionsApiService.login(loginForm.getIdentifier(),
-                            loginForm.getCredentials()));
+                    .body(sessionResponse);
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }

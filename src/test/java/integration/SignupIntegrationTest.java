@@ -20,9 +20,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
+    @SuppressWarnings("unused")
     private ObjectRepository<User, String> userRepository;
 
     @Autowired
+    @SuppressWarnings("unused")
     private CredentialsStore userCredentialsRepository;
 
     private String content =
@@ -45,7 +47,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         doPost();
 
         String userIdentifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier(userIdentifier);
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(userIdentifier);
         Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
         Optional<Credentials> storedCredentialsOptional = userCredentialsRepository.findLatest(userIdentifier);
 
@@ -56,7 +58,11 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         Credentials credentials = storedCredentialsOptional.get();
         assertThat(credentials.getUserIdentifier(), equalTo(userIdentifier));
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.token", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.expiresAt", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session.token", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.session.expiresAt", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/signup")));
+        assertThat(responseContent, hasJsonPath("$._links.home.href", containsString("/v1/home")));
     }
 }

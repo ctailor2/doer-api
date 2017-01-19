@@ -53,3 +53,13 @@ api
 - calls into the domain layer to create a user
 - user passes into auth layer to register secret for the user
 - auth layer can depend on storage layer, but should not depend on domain layer
+
+// Notes 1/19
+- I don't want the client to contain any business logic around when a task can
+be scheduled for "now" versus "later", so maybe this can be managed with hateoas links
+- Home resources will include a link to get todos
+- The Get todos resources will include a link to create a task scheduled for "now" and
+create a task scheduled for "later"
+- If the number of "now" tasks is equal to the focus size (goal), then the get todos resources
+will not include a link to create a task scheduled for "now" and the links for each active task will
+include a link to displace it

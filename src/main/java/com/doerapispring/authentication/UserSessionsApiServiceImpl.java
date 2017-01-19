@@ -8,15 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserSessionsService implements UserSessionsApiService {
+public class UserSessionsApiServiceImpl implements UserSessionsApiService {
     private final UserService userService;
     private final AuthenticationTokenService authenticationTokenService;
     private final BasicAuthenticationService authenticationService;
 
     @Autowired
-    public UserSessionsService(UserService userService,
-                               AuthenticationTokenService authenticationTokenService,
-                               BasicAuthenticationService authenticationService) {
+    public UserSessionsApiServiceImpl(UserService userService,
+                                      AuthenticationTokenService authenticationTokenService,
+                                      BasicAuthenticationService authenticationService) {
         this.userService = userService;
         this.authenticationTokenService = authenticationTokenService;
         this.authenticationService = authenticationService;

@@ -22,26 +22,33 @@ public class TodoService {
         // TODO: Maybe the todo creation method should live on the list like object?
         // For example, throw in the task and how you want it scheduled - out comes a domain object
         // This domain object has some local identifier, unique only within the aggregate
-        Optional<MasterList> masterList = masterListRepository.find(user.getIdentifier());
-        if (!masterList.isPresent()) throw new OperationRefusedException();
-        Todo todo = masterList.get().add(task, scheduling);
+        Optional<MasterList> masterListOptional = masterListRepository.find(user.getIdentifier());
+        if (!masterListOptional.isPresent()) throw new OperationRefusedException();
+        MasterList masterList = masterListOptional.get();
+        Todo todo = masterList.add(task, scheduling);
         try {
-            masterListRepository.add(masterList.get(), todo);
+            masterListRepository.add(masterList, todo);
         } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }
 
     public List<Todo> getByScheduling(User user, ScheduledFor scheduling) {
-        Optional<MasterList> masterList = masterListRepository.find(user.getIdentifier());
-        if (!masterList.isPresent()) return Collections.emptyList();
+        Optional<MasterList> masterListOptional = masterListRepository.find(user.getIdentifier());
+        if (!masterListOptional.isPresent()) return Collections.emptyList();
+        MasterList masterList = masterListOptional.get();
         switch (scheduling) {
             case now:
-                return masterList.get().getImmediateList().getTodos();
+                return masterList.getImmediateList().getTodos();
             case later:
-                return masterList.get().getPostponedList().getTodos();
+                return masterList.getPostponedList().getTodos();
             default:
-                return masterList.get().getAllTodos();
+                return masterList.getAllTodos();
         }
+    }
+
+    public void displace(User user, String todoLocalIdentifier, String task) {
+        Optional<MasterList> masterListOptional = masterListRepository.find(user.getIdentifier());
+        masterListOptional.get().displace(todoLocalIdentifier, task);
     }
 }

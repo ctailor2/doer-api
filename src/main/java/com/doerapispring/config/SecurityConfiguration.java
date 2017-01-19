@@ -29,9 +29,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private AuthenticationProvider authenticationProvider;
 
     public static final String SESSION_TOKEN_HEADER = "Session-Token";
-    public static final String SIGNUP_ENDPOINT = "/v1/signup";
-    public static final String LOGIN_ENDPOINT = "/v1/login";
-    public static final String TOKEN_AUTH_ENDPOINT = "/v1/**";
+
+    private static final String BASE_RESOURCES_ENDPOINT = "/v1/baseResources";
+    private static final String SIGNUP_ENDPOINT = "/v1/signup";
+    private static final String LOGIN_ENDPOINT = "/v1/login";
+    private static final String TOKEN_AUTH_ENDPOINT = "/v1/**";
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -50,6 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         httpSecurity
                 .csrf().disable()
                 .authorizeRequests()
+                .antMatchers(BASE_RESOURCES_ENDPOINT).permitAll()
                 .antMatchers(SIGNUP_ENDPOINT).permitAll()
                 .antMatchers(LOGIN_ENDPOINT).permitAll()
                 .and()
@@ -62,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     protected TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() throws Exception {
-        List<String> pathsToSkip = Arrays.asList(SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
+        List<String> pathsToSkip = Arrays.asList(BASE_RESOURCES_ENDPOINT, SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
         SkipAuthenticationPathRequestMatcher matcher = new SkipAuthenticationPathRequestMatcher(pathsToSkip, TOKEN_AUTH_ENDPOINT);
         TokenAuthenticationFilter filter = new TokenAuthenticationFilter(matcher);
         filter.setAuthenticationManager(this.authenticationManager);
