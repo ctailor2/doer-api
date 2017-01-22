@@ -21,7 +21,7 @@ public class HomeController {
     public ResponseEntity<HomeResponse> home() {
         HomeResponse homeResponse = new HomeResponse();
         homeResponse.add(hateoasLinkGenerator.homeLink().withSelfRel());
-        homeResponse.add(hateoasLinkGenerator.todosLink("anytime").withRel("todos"));
+        homeResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
         return ResponseEntity.status(HttpStatus.OK).body(homeResponse);
     }
 }

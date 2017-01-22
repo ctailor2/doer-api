@@ -63,3 +63,25 @@ create a task scheduled for "later"
 - If the number of "now" tasks is equal to the focus size (goal), then the get todos resources
 will not include a link to create a task scheduled for "now" and the links for each active task will
 include a link to displace it
+
+// Notes 1/20
+- The Web layer serves as a set of endpoints into the API layer
+- The API layer serves as a set of entrypoints into the Domain
+- The Domain layer exposes a set of actions that can be performed using its objects
+- The Domain layer can also expose a workflow of some sort that indicates which actions can be performed
+from any given point within the workflow. By including some introspective business logic, these workflows
+weave the story in between the actions.
+- These pieces are necessary to expose the business logic via a stateless protocol like HTTP
+
+**Actually**
+
+- Instead, the domain objects handled by the API layer should have business logic/rules baked into them
+such that the web layer can inspect them and include/exclude links to other endpoints
+
+// Notes 1/22
+- Need to change the home resources to include the create task links, since the home link is what gets stored
+in the browser upon login and used as the starting point for everything
+- But this gets weird if the idea is to have a dumb client for when it can/cannot add a task scheduled for "now".
+For example, after posting a new task and retrieving the list of todos should the client get the home resources again?
+- Or is it appropriate to have the home resources include a link for getting todos, and this endpoint returning
+the links for creating todos?

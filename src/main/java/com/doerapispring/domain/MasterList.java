@@ -7,19 +7,23 @@ import java.util.stream.Collectors;
 
 public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
+    private final Integer focusSize;
     private final ImmediateList immediateList;
     private final PostponedList postponedList;
 
-    MasterList(UniqueIdentifier uniqueIdentifier,
+    public MasterList(UniqueIdentifier uniqueIdentifier,
+               int focusSize,
                ImmediateList immediateList,
                PostponedList postponedList) {
         this.uniqueIdentifier = uniqueIdentifier;
+        this.focusSize = focusSize;
         this.immediateList = immediateList;
         this.postponedList = postponedList;
     }
 
     static public MasterList newEmpty(UniqueIdentifier uniqueIdentifier) {
         return new MasterList(uniqueIdentifier,
+                2,
                 new ImmediateList(new ArrayList<>()),
                 new PostponedList(new ArrayList<>()));
     }
@@ -43,12 +47,17 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    public Todo add(String task, ScheduledFor scheduling) {
+    public Todo add(String task, ScheduledFor scheduling) throws ListSizeExceededException {
         if (scheduling.equals(ScheduledFor.now)) {
+            if (isImmediateListFull()) throw new ListSizeExceededException();
             return immediateList.add(task);
         } else {
             return postponedList.add(task);
         }
+    }
+
+    public boolean isImmediateListFull() {
+        return focusSize.equals(immediateList.getTodos().size());
     }
 
     @Override

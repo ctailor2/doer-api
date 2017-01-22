@@ -18,7 +18,10 @@ import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
 public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
@@ -57,27 +60,14 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
-        assertThat(responseContent, hasJsonPath("$[0].task", equalTo("this and that")));
-        assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("later")));
-        assertThat(responseContent, hasJsonPath("$[0].id", equalTo("1")));
-    }
-
-    @Test
-    public void todos_whenUserHasTodos_withQueryForActive_returnsActiveTodos() throws Exception {
-        mockRequestBuilder = baseMockRequestBuilder.param("scheduling", "now");
-        todosService.create(user, "now task", ScheduledFor.now);
-        todosService.create(user, "later task", ScheduledFor.later);
-
-        doGet();
-
-        String responseContent = mvcResult.getResponse().getContentAsString();
-
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$", hasSize(equalTo(1))));
-        assertThat(responseContent, hasJsonPath("$[0].task", equalTo("now task")));
-        assertThat(responseContent, hasJsonPath("$[0].scheduling", equalTo("now")));
-        assertThat(responseContent, hasJsonPath("$[0].id", equalTo("1i")));
+        assertThat(responseContent, hasJsonPath("$.todos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("this and that")));
+        assertThat(responseContent, hasJsonPath("$.todos[0].scheduling", equalTo("later")));
+        assertThat(responseContent, hasJsonPath("$.todos[0].id", equalTo("1")));
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));
+        assertThat(responseContent, hasJsonPath("$._links.todoLater.href", containsString("/v1/todoLater")));
     }
 
     private void doGet() throws Exception {

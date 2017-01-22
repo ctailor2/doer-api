@@ -48,7 +48,7 @@ public class TodoServiceTest {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
-        MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(immediateTodos), new PostponedList(Collections.emptyList()));
+        MasterList masterList = new MasterList(uniqueIdentifier, 2, new ImmediateList(immediateTodos), new PostponedList(Collections.emptyList()));
         when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
 
         List<Todo> todos = todoService.getByScheduling(user, ScheduledFor.now);
@@ -62,7 +62,7 @@ public class TodoServiceTest {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         User user = new User(uniqueIdentifier);
         List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
-        MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(Collections.emptyList()), new PostponedList(postponedTodos));
+        MasterList masterList = new MasterList(uniqueIdentifier, 2, new ImmediateList(Collections.emptyList()), new PostponedList(postponedTodos));
         when(masterListRepository.find(any())).thenReturn(Optional.of(masterList));
 
         List<Todo> todos = todoService.getByScheduling(user, ScheduledFor.later);
@@ -77,7 +77,7 @@ public class TodoServiceTest {
         User user = new User(uniqueIdentifier);
         List<Todo> immediateTodos = Collections.singletonList(new Todo("someId", "one", ScheduledFor.anytime));
         List<Todo> postponedTodos = Collections.singletonList(new Todo("someId", "two", ScheduledFor.anytime));
-        MasterList masterList = new MasterList(uniqueIdentifier, new ImmediateList(immediateTodos), new PostponedList(postponedTodos));
+        MasterList masterList = new MasterList(uniqueIdentifier, 2, new ImmediateList(immediateTodos), new PostponedList(postponedTodos));
         when(masterListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(masterList));
 
         List<Todo> todos = todoService.getByScheduling(user, ScheduledFor.anytime);
@@ -86,6 +86,20 @@ public class TodoServiceTest {
         List<Todo> allTodos = new ArrayList<>(immediateTodos);
         allTodos.addAll(postponedTodos);
         assertThat(todos).isEqualTo(allTodos);
+    }
+
+    @Test
+    public void get_returnsMasterListFromRepository() throws Exception {
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        User user = new User(uniqueIdentifier);
+        MasterList masterListFromRepository = MasterList.newEmpty(uniqueIdentifier);
+        when(masterListRepository.find(uniqueIdentifier))
+                .thenReturn(Optional.of(masterListFromRepository));
+
+        MasterList masterList = todoService.get(user);
+
+        verify(masterListRepository).find(uniqueIdentifier);
+        assertThat(masterList).isEqualTo(masterListFromRepository);
     }
 
     @Test

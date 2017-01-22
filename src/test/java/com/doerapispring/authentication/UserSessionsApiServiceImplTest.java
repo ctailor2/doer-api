@@ -1,5 +1,6 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.api.UserSessionsApiServiceImpl;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;

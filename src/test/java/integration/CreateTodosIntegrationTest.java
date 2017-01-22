@@ -7,15 +7,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -29,17 +29,6 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Autowired
     TodoService todosService;
 
-    private void doPost() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/todos")
-                .content("{\n" +
-                        "  \"task\":\"read the things\",\n" +
-                        "  \"scheduling\":\"now\"\n" +
-                        "}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(httpHeaders))
-                .andReturn();
-    }
-
     @Override
     @Before
     public void setUp() throws Exception {
@@ -49,14 +38,40 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     }
 
     @Test
-    public void create() throws Exception {
-        doPost();
+    public void createForNow() throws Exception {
+        mvcResult = mockMvc.perform(post("/v1/todoNow")
+                .content("{\"task\":\"read the things\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn();
 
         List<Todo> todos = todosService.getByScheduling(new User(new UniqueIdentifier<>("test@email.com")), ScheduledFor.anytime);
 
         assertThat(todos.size(), equalTo(1));
 
-        MockHttpServletResponse response = mvcResult.getResponse();
-        assertThat(response.getStatus(), equalTo(HttpStatus.CREATED.value()));
+        String responseContent = mvcResult.getResponse().getContentAsString();
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todoNow")));
+        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+    }
+
+    @Test
+    public void createForLater() throws Exception {
+        mvcResult = mockMvc.perform(post("/v1/todoLater")
+                .content("{\"task\":\"read the things\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn();
+
+        List<Todo> todos = todosService.getByScheduling(new User(new UniqueIdentifier<>("test@email.com")), ScheduledFor.anytime);
+
+        assertThat(todos.size(), equalTo(1));
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todoLater")));
+        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
     }
 }

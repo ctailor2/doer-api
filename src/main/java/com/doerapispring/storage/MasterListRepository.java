@@ -24,9 +24,16 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
         String email = uniqueIdentifier.get();
         List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
         MasterList masterList = MasterList.newEmpty(uniqueIdentifier);
-        todoEntities.stream().forEach(todoEntity ->
-                masterList.add(todoEntity.task,
-                        todoEntity.active ? ScheduledFor.now : ScheduledFor.later)
+        todoEntities.stream().forEach(todoEntity -> {
+                    try {
+                        masterList.add(todoEntity.task,
+                                todoEntity.active ? ScheduledFor.now : ScheduledFor.later);
+                    } catch (ListSizeExceededException e) {
+                        // TODO: This shouldn't happen if the rules of the domain are enforced
+                        // when objects are added to the repository. Think about what to do here.
+                        e.printStackTrace();
+                    }
+                }
         );
         return Optional.of(masterList);
     }

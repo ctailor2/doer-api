@@ -1,12 +1,17 @@
 package com.doerapispring.domain;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class MasterListTest {
     private MasterList masterList;
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -28,14 +33,11 @@ public class MasterListTest {
     }
 
     @Test
-    public void displace_movesMatchingImmediateTodoToPostponedList_replacesWithTask() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
-        masterList.displace(todo.getLocalIdentifier(), "aMoreImportantTask");
-        assertThat(masterList.getImmediateList().getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getImmediateList().getTodos().get(0))
-                .isEqualTo(new Todo("1i", "aMoreImportantTask", ScheduledFor.now));
-        assertThat(masterList.getImmediateList().getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getImmediateList().getTodos().get(0))
-                .isEqualTo(new Todo("1", "someTask", ScheduledFor.now));
+    public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
+        masterList.add("someTask", ScheduledFor.now);
+        masterList.add("someOtherTask", ScheduledFor.now);
+
+        exception.expect(ListSizeExceededException.class);
+        masterList.add("stillAnotherTask", ScheduledFor.now);
     }
 }

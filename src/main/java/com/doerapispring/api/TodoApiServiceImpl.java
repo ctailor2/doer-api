@@ -1,13 +1,11 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.ScheduledFor;
-import com.doerapispring.domain.Todo;
-import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.TodoApiService;
 import com.doerapispring.web.TodoDTO;
+import com.doerapispring.web.TodoList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +26,13 @@ public class TodoApiServiceImpl implements TodoApiService {
         ScheduledFor scheduledFor = getScheduledFor(scheduling);
         List<Todo> todos = todoService.getByScheduling(authenticatedUser.getUser(), scheduledFor);
         return todos.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public TodoList get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        MasterList masterList = todoService.get(authenticatedUser.getUser());
+        List<TodoDTO> todoDTOs = masterList.getAllTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+        return new TodoList(todoDTOs, !masterList.isImmediateListFull());
     }
 
     @Override

@@ -11,7 +11,7 @@ public class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link todosLink(String scheduling) {
+    public Link todosLink() {
         return new Link(MOCK_BASE_URL + "/todos");
     }
 
@@ -28,5 +28,15 @@ public class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     @Override
     public Link baseResourcesLink() {
         return new Link(MOCK_BASE_URL + "/baseResources");
+    }
+
+    @Override
+    public Link createTodoForNowLink() {
+        return new Link(MOCK_BASE_URL + "/createTodoForNow");
+    }
+
+    @Override
+    public Link createTodoForLaterLink() {
+        return new Link(MOCK_BASE_URL + "/createTodoForLater");
     }
 }

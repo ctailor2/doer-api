@@ -25,7 +25,13 @@ public class TodoService {
         Optional<MasterList> masterListOptional = masterListRepository.find(user.getIdentifier());
         if (!masterListOptional.isPresent()) throw new OperationRefusedException();
         MasterList masterList = masterListOptional.get();
-        Todo todo = masterList.add(task, scheduling);
+        Todo todo = null;
+        try {
+            todo = masterList.add(task, scheduling);
+        } catch (ListSizeExceededException e) {
+            // TODO: Drive this behavior with tests
+            e.printStackTrace();
+        }
         try {
             masterListRepository.add(masterList, todo);
         } catch (AbnormalModelException e) {
@@ -50,5 +56,9 @@ public class TodoService {
     public void displace(User user, String todoLocalIdentifier, String task) {
         Optional<MasterList> masterListOptional = masterListRepository.find(user.getIdentifier());
         masterListOptional.get().displace(todoLocalIdentifier, task);
+    }
+
+    public MasterList get(User user) {
+        return masterListRepository.find(user.getIdentifier()).get();
     }
 }
