@@ -34,9 +34,6 @@ public class TodosControllerTest {
     @Mock
     private TodoApiService mockTodoApiService;
 
-    @Mock
-    private TodoWorkflowService todoWorkflowService;
-
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
     private List<TodoDTO> todoDTOs;
@@ -82,35 +79,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void create_mapping() throws Exception {
-        mockMvc.perform(post("/v1/todos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"task\": \"return redbox movie\"}"))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    public void create_callsTokenService_returns201() throws Exception {
-        String task = "browse the web";
-        String scheduling = "later";
-        TodoForm todoForm = new TodoForm(task, scheduling);
-        ResponseEntity responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), todoForm);
-        verify(mockTodoApiService).create(authenticatedUser, task, scheduling);
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    }
-
-    @Test
-    public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
-
-        ResponseEntity<TodoDTO> responseEntity = todosController.create(AuthenticatedUser.identifiedWith("test@email.com"), new TodoForm("something", "now"));
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void createForNow_mapping() throws Exception {
         mockMvc.perform(post("/v1/todoNow")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,8 +89,8 @@ public class TodosControllerTest {
     @Test
     public void createForNow_callsTokenService_returns201() throws Exception {
         String task = "some task";
-        SimpleTodoForm simpleTodoForm = new SimpleTodoForm(task);
-        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForNow(authenticatedUser, simpleTodoForm);
+        TodoForm todoForm = new TodoForm(task);
+        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForNow(authenticatedUser, todoForm);
 
         verify(mockTodoApiService).create(authenticatedUser, task, "now");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -136,7 +104,7 @@ public class TodosControllerTest {
     public void createForNow_whenInvalidRequest_returns400BadRequest() throws Exception {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
 
-        ResponseEntity responseEntity = todosController.createForNow(authenticatedUser, new SimpleTodoForm("some task"));
+        ResponseEntity responseEntity = todosController.createForNow(authenticatedUser, new TodoForm("some task"));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -153,8 +121,8 @@ public class TodosControllerTest {
     @Test
     public void createForLater_callsTokenService_returns201() throws Exception {
         String task = "some task";
-        SimpleTodoForm simpleTodoForm = new SimpleTodoForm(task);
-        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForLater(authenticatedUser, simpleTodoForm);
+        TodoForm todoForm = new TodoForm(task);
+        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForLater(authenticatedUser, todoForm);
 
         verify(mockTodoApiService).create(authenticatedUser, task, "later");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -167,7 +135,7 @@ public class TodosControllerTest {
     public void createForLater_whenInvalidRequest_returns400BadRequest() throws Exception {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
 
-        ResponseEntity responseEntity = todosController.createForLater(authenticatedUser, new SimpleTodoForm("some task"));
+        ResponseEntity responseEntity = todosController.createForLater(authenticatedUser, new TodoForm("some task"));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

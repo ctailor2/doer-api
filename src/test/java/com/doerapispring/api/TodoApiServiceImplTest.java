@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
-import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -57,26 +56,6 @@ public class TodoApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "bananas");
-
-        verifyZeroInteractions(mockTodoService);
-    }
-
-    @Test
-    public void getByScheduling_whenSchedulingCanBeParsed_callsTodoService_returnsTodoDTOs() throws Exception {
-        when(mockTodoService.getByScheduling(any(), any())).thenReturn(asList(
-                new Todo("someId", "first", ScheduledFor.now),
-                new Todo("someOtherId", "second", ScheduledFor.later)));
-
-        List<TodoDTO> todoDTOs = todoApiServiceImpl.getByScheduling(new AuthenticatedUser("someIdentifier"), "now");
-
-        verify(mockTodoService).getByScheduling(new User(new UniqueIdentifier<>("someIdentifier")), ScheduledFor.now);
-        assertThat(todoDTOs).contains(new TodoDTO("someId", "first", "now"), new TodoDTO("someOtherId", "second", "later"));
-    }
-
-    @Test
-    public void getByScheduling_whenSchedulingCannotBeParsed_throwsInvalidRequest() throws Exception {
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.getByScheduling(new AuthenticatedUser("someIdentifier"), "bananas");
 
         verifyZeroInteractions(mockTodoService);
     }

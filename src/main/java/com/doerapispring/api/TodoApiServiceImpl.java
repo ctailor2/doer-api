@@ -22,13 +22,6 @@ public class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public List<TodoDTO> getByScheduling(AuthenticatedUser authenticatedUser, String scheduling) throws InvalidRequestException {
-        ScheduledFor scheduledFor = getScheduledFor(scheduling);
-        List<Todo> todos = todoService.getByScheduling(authenticatedUser.getUser(), scheduledFor);
-        return todos.stream().map(this::mapToDTO).collect(Collectors.toList());
-    }
-
-    @Override
     public TodoList get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         MasterList masterList = todoService.get(authenticatedUser.getUser());
         List<TodoDTO> todoDTOs = masterList.getAllTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
