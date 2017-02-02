@@ -21,15 +21,16 @@ public class TodosController {
     }
 
     @RequestMapping(value = "/todos", method = RequestMethod.GET)
-    @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
     ResponseEntity<TodosResponse> index(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            TodoList todoList = todoApiService.get(authenticatedUser);
-            TodosResponse todosResponse = new TodosResponse(todoList.getTodoDTOs());
+            TodoListDTO todoListDTO = todoApiService.get(authenticatedUser);
+            TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel(),
                     hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
-            if (todoList.isSchedulingForNowAllowed()) {
+            todoListDTO.getTodoDTOs().stream().forEach(todoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete")));
+            if (todoListDTO.isSchedulingForNowAllowed()) {
                 todosResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
             }
             return ResponseEntity.status(HttpStatus.OK)
@@ -40,32 +41,45 @@ public class TodosController {
     }
 
     @RequestMapping(value = "/todoNow", method = RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<CreateTodoResponse> createForNow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                @RequestBody TodoForm todoForm) {
+    ResponseEntity<TodoLinksResponse> createForNow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                   @RequestBody TodoForm todoForm) {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "now");
-            CreateTodoResponse createTodoResponse = new CreateTodoResponse();
-            createTodoResponse.add(hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink().withRel("todos"));
-            return ResponseEntity.status(HttpStatus.CREATED).body(createTodoResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(todoLinksResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
     @RequestMapping(value = "/todoLater", method = RequestMethod.POST)
-    @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<CreateTodoResponse> createForLater(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                         @RequestBody TodoForm todoForm) {
+    ResponseEntity<TodoLinksResponse> createForLater(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                     @RequestBody TodoForm todoForm) {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "later");
-            CreateTodoResponse createTodoResponse = new CreateTodoResponse();
-            createTodoResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink().withRel("todos"));
-            return ResponseEntity.status(HttpStatus.CREATED).body(createTodoResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(todoLinksResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @PathVariable(value = "localId") String localId) {
+        try {
+            todoApiService.delete(authenticatedUser, localId);
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
+                    hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

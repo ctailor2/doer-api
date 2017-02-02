@@ -28,7 +28,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                     try {
                         masterList.add(todoEntity.task,
                                 todoEntity.active ? ScheduledFor.now : ScheduledFor.later);
-                    } catch (ListSizeExceededException e) {
+                    } catch (ListSizeExceededException | DuplicateTodoException e) {
                         // TODO: This shouldn't happen if the rules of the domain are enforced
                         // when objects are added to the repository. Think about what to do here.
                         e.printStackTrace();
@@ -49,5 +49,15 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build());
+    }
+
+    @Override
+    public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
+        TodoEntity todoEntity = todoDao.findUnfinished(
+                masterList.getIdentifier().get(),
+                todo.getTask(),
+                ScheduledFor.now.equals(todo.getScheduling()));
+        if (todoEntity == null) throw new AbnormalModelException();
+        todoDao.delete(todoEntity);
     }
 }

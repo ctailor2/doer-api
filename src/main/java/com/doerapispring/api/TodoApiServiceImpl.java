@@ -5,7 +5,7 @@ import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.TodoApiService;
 import com.doerapispring.web.TodoDTO;
-import com.doerapispring.web.TodoList;
+import com.doerapispring.web.TodoListDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +22,15 @@ public class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public TodoList get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        MasterList masterList = todoService.get(authenticatedUser.getUser());
-        List<TodoDTO> todoDTOs = masterList.getAllTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-        return new TodoList(todoDTOs, !masterList.isImmediateListFull());
+    public TodoListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        MasterList masterList;
+        try {
+            masterList = todoService.get(authenticatedUser.getUser());
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+        List<TodoDTO> todoDTOs = masterList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+        return new TodoListDTO(todoDTOs, !masterList.isImmediateListFull());
     }
 
     @Override
@@ -33,6 +38,15 @@ public class TodoApiServiceImpl implements TodoApiService {
         ScheduledFor scheduledFor = getScheduledFor(scheduling);
         try {
             todoService.create(authenticatedUser.getUser(), task, scheduledFor);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
+    public void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException {
+        try {
+            todoService.delete(authenticatedUser.getUser(), localId);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

@@ -23,8 +23,7 @@ import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,7 +44,7 @@ public class TodosControllerTest {
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
         todoDTOs = Collections.singletonList(new TodoDTO("someId", "someTask", "now"));
-        when(mockTodoApiService.get(any())).thenReturn(new TodoList(todoDTOs, false));
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -70,12 +69,22 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTodoService_whenListAllowsSchedulingTasksForNow_includesLink() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoList(todoDTOs, true));
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks())
                 .contains(new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"));
+    }
+
+    @Test
+    public void index_callsTodoService_includesLinksForEachTodo() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+
+        verify(mockTodoApiService).get(authenticatedUser);
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
+                .contains(new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"));
     }
 
     @Test
@@ -90,7 +99,7 @@ public class TodosControllerTest {
     public void createForNow_callsTokenService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
-        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForNow(authenticatedUser, todoForm);
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.createForNow(authenticatedUser, todoForm);
 
         verify(mockTodoApiService).create(authenticatedUser, task, "now");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -122,7 +131,7 @@ public class TodosControllerTest {
     public void createForLater_callsTokenService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
-        ResponseEntity<CreateTodoResponse> responseEntity = todosController.createForLater(authenticatedUser, todoForm);
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.createForLater(authenticatedUser, todoForm);
 
         verify(mockTodoApiService).create(authenticatedUser, task, "later");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -136,6 +145,35 @@ public class TodosControllerTest {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
 
         ResponseEntity responseEntity = todosController.createForLater(authenticatedUser, new TodoForm("some task"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void delete_mapping() throws Exception {
+        mockMvc.perform(delete("/v1/todos/someId"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void delete_callsTodoService_returns202() throws Exception {
+        String localId = "someId";
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.delete(authenticatedUser, localId);
+
+        verify(mockTodoApiService).delete(authenticatedUser, localId);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/deleteTodo/someId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void delete_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).delete(any(), any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.delete(authenticatedUser, "someId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

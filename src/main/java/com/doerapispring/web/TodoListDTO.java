@@ -2,11 +2,11 @@ package com.doerapispring.web;
 
 import java.util.List;
 
-public class TodoList {
+public class TodoListDTO {
     private final List<TodoDTO> todoDTOs;
     private final boolean schedulingForNowAllowed;
 
-    public TodoList(List<TodoDTO> todoDTOs, boolean schedulingForNowAllowed) {
+    public TodoListDTO(List<TodoDTO> todoDTOs, boolean schedulingForNowAllowed) {
         this.todoDTOs = todoDTOs;
         this.schedulingForNowAllowed = schedulingForNowAllowed;
     }
@@ -24,7 +24,7 @@ public class TodoList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TodoList that = (TodoList) o;
+        TodoListDTO that = (TodoListDTO) o;
 
         if (schedulingForNowAllowed != that.schedulingForNowAllowed) return false;
         return todoDTOs != null ? todoDTOs.equals(that.todoDTOs) : that.todoDTOs == null;
@@ -40,7 +40,7 @@ public class TodoList {
 
     @Override
     public String toString() {
-        return "TodoList{" +
+        return "TodoListDTO{" +
                 "todoDTOs=" + todoDTOs +
                 ", schedulingForNowAllowed=" + schedulingForNowAllowed +
                 '}';
