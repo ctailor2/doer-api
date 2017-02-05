@@ -18,4 +18,6 @@ public interface HateoasLinkGenerator {
     Link createTodoForLaterLink();
 
     Link deleteTodoLink(String localId);
+
+    Link displaceTodoLink(String localId);
 }

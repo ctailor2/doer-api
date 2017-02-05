@@ -39,4 +39,16 @@ public class TodoService {
             throw new OperationRefusedException();
         }
     }
+
+    public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            Todo updatedTodo = masterList.update(localIdentifier, task);
+            Todo displacedTodo = masterList.push(task, ScheduledFor.later);
+//            masterListRepository.update(masterList, updatedTodo);
+            masterListRepository.add(masterList, displacedTodo);
+        } catch (TodoNotFoundException | DuplicateTodoException | ListSizeExceededException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
 }

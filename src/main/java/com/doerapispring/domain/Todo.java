@@ -2,7 +2,7 @@ package com.doerapispring.domain;
 
 public class Todo {
     private final String localIdentifier;
-    private final String task;
+    private String task;
     private final ScheduledFor scheduling;
 
     public Todo(String localIdentifier, String task, ScheduledFor scheduling) {
@@ -52,5 +52,9 @@ public class Todo {
                 ", task='" + task + '\'' +
                 ", scheduling=" + scheduling +
                 '}';
+    }
+
+    public void setTask(String task) {
+        this.task = task;
     }
 }

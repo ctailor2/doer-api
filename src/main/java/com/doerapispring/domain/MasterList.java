@@ -29,6 +29,10 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
+    public boolean isImmediateListFull() {
+        return focusSize.equals(getNowList().size());
+    }
+
     public Todo add(String task, ScheduledFor scheduling) throws ListSizeExceededException, DuplicateTodoException {
         if (ScheduledFor.now.equals(scheduling) && isImmediateListFull()) {
             throw new ListSizeExceededException();
@@ -40,51 +44,30 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todo;
     }
 
-    private Optional<Todo> getByTask(String task, ScheduledFor scheduling) {
-        return todos.stream().filter(todo ->
-                todo.getTask().equals(task) && todo.getScheduling().equals(scheduling))
-                .findFirst();
+    public Todo delete(String localIdentifier) throws TodoNotFoundException {
+        Todo todoToDelete = getByLocalIdentifier(localIdentifier)
+                .orElseThrow(TodoNotFoundException::new);
+        todos.remove(todoToDelete);
+        return todoToDelete;
     }
 
-    private Integer nextIndexForScheduling(ScheduledFor scheduling) {
-        if (ScheduledFor.now.equals(scheduling)) {
-            return nextNowIndex();
+    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+        Todo todoToUpdate = getByLocalIdentifier(localIdentifier)
+                .orElseThrow(TodoNotFoundException::new);
+        if (getByTask(task, todoToUpdate.getScheduling()).isPresent()) throw new DuplicateTodoException();
+        todoToUpdate.setTask(task);
+        return todoToUpdate;
+    }
+
+    public Todo push(String task, ScheduledFor scheduling) throws DuplicateTodoException, ListSizeExceededException {
+        if (ScheduledFor.now.equals(scheduling) && isImmediateListFull()) {
+            throw new ListSizeExceededException();
         }
-        return nextLaterIndex();
-    }
-
-    private Integer nextNowIndex() {
-        List<Todo> immediateTodos = getNowList();
-        if (immediateTodos.isEmpty()) {
-            return 0;
-        } else {
-            return todos.indexOf(immediateTodos.get(immediateTodos.size() - 1)) + 1;
-        }
-    }
-
-    private Integer nextLaterIndex() {
-        List<Todo> postponedTodos = getLaterList();
-        if (postponedTodos.isEmpty()) {
-            return todos.size();
-        } else {
-            return todos.indexOf(postponedTodos.get(postponedTodos.size() - 1)) + 1;
-        }
-    }
-
-    private List<Todo> getNowList() {
-        return todos.stream()
-                .filter(todo -> ScheduledFor.now.equals(todo.getScheduling()))
-                .collect(Collectors.toList());
-    }
-
-    private List<Todo> getLaterList() {
-        return todos.stream()
-                .filter(todo -> ScheduledFor.later.equals(todo.getScheduling()))
-                .collect(Collectors.toList());
-    }
-
-    public boolean isImmediateListFull() {
-        return focusSize.equals(getNowList().size());
+        if (getByTask(task, scheduling).isPresent()) throw new DuplicateTodoException();
+        Integer indexToInsert = firstIndexForScheduling(scheduling);
+        Todo todo = new Todo(indexToInsert.toString(), task, scheduling);
+        todos.add(indexToInsert, todo);
+        return todo;
     }
 
     @Override
@@ -118,12 +101,72 @@ public class MasterList implements UniquelyIdentifiable<String> {
                 '}';
     }
 
-    public Todo delete(String localIdentifier) throws TodoNotFoundException {
-        Todo todoToDelete = todos.stream()
+    private Optional<Todo> getByTask(String task, ScheduledFor scheduling) {
+        return todos.stream().filter(todo ->
+                todo.getTask().equals(task) && todo.getScheduling().equals(scheduling))
+                .findFirst();
+    }
+
+    private Optional<Todo> getByLocalIdentifier(String localIdentifier) {
+        return todos.stream()
                 .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
-                .findFirst()
-                .orElseThrow(TodoNotFoundException::new);
-        todos.remove(todoToDelete);
-        return todoToDelete;
+                .findFirst();
+    }
+
+    private Integer nextIndexForScheduling(ScheduledFor scheduling) {
+        if (ScheduledFor.now.equals(scheduling)) {
+            return nextNowIndex();
+        }
+        return nextLaterIndex();
+    }
+
+    private Integer firstIndexForScheduling(ScheduledFor scheduling) {
+        if (ScheduledFor.now.equals(scheduling)) {
+            return firstNowIndex();
+        }
+        return firstLaterIndex();
+    }
+
+    private Integer firstNowIndex() {
+        return 0;
+    }
+
+    private Integer firstLaterIndex() {
+        List<Todo> postponedTodos = getLaterList();
+        if (postponedTodos.isEmpty()) {
+            return todos.size();
+        } else {
+            return todos.indexOf(postponedTodos.get(0));
+        }
+    }
+
+    private Integer nextNowIndex() {
+        List<Todo> immediateTodos = getNowList();
+        if (immediateTodos.isEmpty()) {
+            return 0;
+        } else {
+            return todos.indexOf(immediateTodos.get(immediateTodos.size() - 1)) + 1;
+        }
+    }
+
+    private Integer nextLaterIndex() {
+        List<Todo> postponedTodos = getLaterList();
+        if (postponedTodos.isEmpty()) {
+            return todos.size();
+        } else {
+            return todos.indexOf(postponedTodos.get(postponedTodos.size() - 1)) + 1;
+        }
+    }
+
+    private List<Todo> getNowList() {
+        return todos.stream()
+                .filter(todo -> ScheduledFor.now.equals(todo.getScheduling()))
+                .collect(Collectors.toList());
+    }
+
+    private List<Todo> getLaterList() {
+        return todos.stream()
+                .filter(todo -> ScheduledFor.later.equals(todo.getScheduling()))
+                .collect(Collectors.toList());
     }
 }

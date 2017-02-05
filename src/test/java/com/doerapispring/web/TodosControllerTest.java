@@ -178,4 +178,38 @@ public class TodosControllerTest {
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    @Test
+    public void displace_mapping() throws Exception {
+        mockMvc.perform(post("/v1/todos/123/displace")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"task\": \"return redbox movie\"}"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void displace_callsTodoService_returns202() throws Exception {
+        String localId = "someId";
+        String task = "some task";
+        ResponseEntity<TodoLinksResponse> responseEntity =
+                todosController.displace(authenticatedUser, localId,  new TodoForm(task));
+
+        verify(mockTodoApiService).displace(authenticatedUser, localId, task);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/displaceTodo/someId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void displace_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).displace(any(), any(), any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.displace(authenticatedUser, "someId", new TodoForm("do it to it"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
 }

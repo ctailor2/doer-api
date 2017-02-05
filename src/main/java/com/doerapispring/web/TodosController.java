@@ -84,4 +84,20 @@ public class TodosController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    @RequestMapping(value = "/todos/{localId}/displace", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                               @PathVariable(value = "localId") String localId,
+                                               @RequestBody TodoForm todoForm) {
+        try {
+            todoApiService.displace(authenticatedUser, localId, todoForm.getTask());
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.displaceTodoLink(localId).withSelfRel(),
+                    hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }

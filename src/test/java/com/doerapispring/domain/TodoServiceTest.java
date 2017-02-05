@@ -123,9 +123,6 @@ public class TodoServiceTest {
 
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
-
-        verify(mockMasterList).delete("someTodoId");
-        verify(mockMasterListRepository).remove(mockMasterList, todo);
     }
 
     @Test
@@ -140,4 +137,21 @@ public class TodoServiceTest {
         verify(mockMasterList).delete("someTodoId");
         verifyZeroInteractions(mockMasterListRepository);
     }
+
+//    @Test
+//    public void displace_whenMasterListFound_whenTodoFound_updatesTodo_pushesNewIntoPostponedList_updatedAndAddsTodoUsingRepository() throws Exception {
+//        MasterList mockMasterList = mock(MasterList.class);
+//        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+//        Todo updatedTodo = new Todo("someId", "someTask", ScheduledFor.now);
+//        when(mockMasterList.update(any(), any())).thenReturn(updatedTodo);
+//        Todo displacedTodo = new Todo("someOtherId", "someOtherTask", ScheduledFor.later);
+//        when(mockMasterList.push(any(), any())).thenReturn(displacedTodo);
+//
+//        todoService.displace(new User(new UniqueIdentifier<>("userId")), "someTodoId", "someTask");
+//
+//        verify(mockMasterList).update("someTodoId", "someTask");
+//        verify(mockMasterListRepository).update(mockMasterList, updatedTodo);
+//        verify(mockMasterList).push("someOtherTask", ScheduledFor.later);
+//        verify(mockMasterListRepository).add(mockMasterList, displacedTodo);
+//    }
 }

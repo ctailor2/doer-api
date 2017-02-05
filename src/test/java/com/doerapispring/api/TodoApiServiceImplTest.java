@@ -119,4 +119,19 @@ public class TodoApiServiceImplTest {
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId");
     }
+
+    @Test
+    public void displace_callsTodoService() throws Exception {
+        todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+
+        verify(mockTodoService).displace(new User(new UniqueIdentifier<>("someIdentifier")), "someId", "someTask");
+    }
+
+    @Test
+    public void displace_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
+        doThrow(new OperationRefusedException()).when(mockTodoService).displace(any(), any(), any());
+
+        exception.expect(InvalidRequestException.class);
+        todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+    }
 }
