@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
-public class TodosController {
+class TodosController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private TodoApiService todoApiService;
 
     @Autowired
-    public TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
+    TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.todoApiService = todoApiService;
     }
@@ -73,7 +73,7 @@ public class TodosController {
     @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
     @ResponseBody
     ResponseEntity<TodoLinksResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable(value = "localId") String localId) {
+                                             @PathVariable(value = "localId") Integer localId) {
         try {
             todoApiService.delete(authenticatedUser, localId);
             TodoLinksResponse todoLinksResponse = new TodoLinksResponse();

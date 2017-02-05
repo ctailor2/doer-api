@@ -2,8 +2,8 @@ package com.doerapispring.web;
 
 import org.springframework.hateoas.Link;
 
-public class MockHateoasLinkGenerator implements HateoasLinkGenerator {
-    public static final String MOCK_BASE_URL = "http://some.api";
+class MockHateoasLinkGenerator implements HateoasLinkGenerator {
+    static final String MOCK_BASE_URL = "http://some.api";
 
     @Override
     public Link homeLink() {
@@ -41,7 +41,7 @@ public class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String localId) {
+    public Link deleteTodoLink(Integer localId) {
         return new Link(MOCK_BASE_URL + "/deleteTodo/" + localId);
     }
 }

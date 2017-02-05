@@ -1,11 +1,11 @@
 package com.doerapispring.domain;
 
 public class Todo {
-    private final String localIdentifier;
+    private final Integer localIdentifier;
     private final String task;
     private final ScheduledFor scheduling;
 
-    public Todo(String localIdentifier, String task, ScheduledFor scheduling) {
+    public Todo(Integer localIdentifier, String task, ScheduledFor scheduling) {
         this.localIdentifier = localIdentifier;
         this.task = task;
         this.scheduling = scheduling;
@@ -19,7 +19,7 @@ public class Todo {
         return scheduling;
     }
 
-    public String getLocalIdentifier() {
+    public Integer getLocalIdentifier() {
         return localIdentifier;
     }
 

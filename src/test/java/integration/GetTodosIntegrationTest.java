@@ -31,10 +31,10 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     private User user;
 
     @Autowired
-    UserSessionsApiService userSessionsApiService;
+    private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    TodoService todosService;
+    private TodoService todosService;
 
     @Override
     @Before
@@ -63,7 +63,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$.todos", hasSize(1)));
         assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("this and that")));
         assertThat(responseContent, hasJsonPath("$.todos[0].scheduling", equalTo("later")));
-        assertThat(responseContent, hasJsonPath("$.todos[0].id", equalTo("0")));
+        assertThat(responseContent, hasJsonPath("$.todos[0].id", equalTo(0)));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/0")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

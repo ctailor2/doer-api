@@ -2,7 +2,7 @@ package com.doerapispring.web;
 
 import org.springframework.hateoas.Link;
 
-public interface HateoasLinkGenerator {
+interface HateoasLinkGenerator {
     Link homeLink();
 
     Link todosLink();
@@ -17,5 +17,5 @@ public interface HateoasLinkGenerator {
 
     Link createTodoForLaterLink();
 
-    Link deleteTodoLink(String localId);
+    Link deleteTodoLink(Integer localId);
 }

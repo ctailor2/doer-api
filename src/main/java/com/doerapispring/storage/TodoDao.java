@@ -6,12 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 interface TodoDao extends JpaRepository<TodoEntity, Long> {
-    @Query("SELECT t FROM TodoEntity t INNER JOIN t.userEntity u WHERE t.completed = false AND u.email = ?1")
+    @Query("SELECT t FROM TodoEntity t " +
+            "INNER JOIN t.userEntity u " +
+            "WHERE t.completed = false " +
+            "AND u.email = ?1 " +
+            "ORDER BY t.position ASC")
     List<TodoEntity> findUnfinishedByUserEmail(String userEmail);
 
     @Query("SELECT t FROM TodoEntity t " +
             "INNER JOIN t.userEntity u " +
             "WHERE t.completed = false " +
-            "AND u.email = ?1 AND t.task = ?2 AND t.active = ?3 ")
-    TodoEntity findUnfinished(String userEmail, String task, boolean active);
+            "AND u.email = ?1 AND t.position = ?2")
+    TodoEntity findUnfinished(String userEmail, Integer localIdentifier);
 }

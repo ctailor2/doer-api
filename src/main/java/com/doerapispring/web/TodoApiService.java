@@ -7,5 +7,5 @@ public interface TodoApiService {
 
     void create(AuthenticatedUser authenticatedUser, String task, String scheduling) throws InvalidRequestException;
 
-    void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;
+    void delete(AuthenticatedUser authenticatedUser, Integer localId) throws InvalidRequestException;
 }

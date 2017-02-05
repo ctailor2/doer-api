@@ -22,7 +22,7 @@ public class MasterListTest {
     public void add_immediateTodo_toEmptyList_addsToList_returnsTodoWithIdentifier_matchingItsPosition() throws Exception {
         Todo firstTodo = masterList.add("someTask", ScheduledFor.now);
         assertThat(masterList.getTodos()).containsExactly(firstTodo);
-        assertThat(firstTodo.getLocalIdentifier()).isEqualTo("0");
+        assertThat(firstTodo.getLocalIdentifier()).isEqualTo(0);
     }
 
     @Test
@@ -31,7 +31,7 @@ public class MasterListTest {
         Todo secondTodo = masterList.add("someOtherTask", ScheduledFor.now);
 
         assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getLocalIdentifier()).isEqualTo("1");
+        assertThat(secondTodo.getLocalIdentifier()).isEqualTo(1);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class MasterListTest {
         Todo secondTodo = masterList.add("stillSomeOtherTask", ScheduledFor.now);
 
         assertThat(masterList.getTodos()).containsExactly(secondTodo, firstTodo);
-        assertThat(secondTodo.getLocalIdentifier()).isEqualTo("0");
+        assertThat(secondTodo.getLocalIdentifier()).isEqualTo(0);
     }
 
     @Test
@@ -50,14 +50,14 @@ public class MasterListTest {
         Todo thirdTodo = masterList.add("stillSomeOtherTask", ScheduledFor.now);
 
         assertThat(masterList.getTodos()).containsExactly(firstTodo, thirdTodo, secondTodo);
-        assertThat(thirdTodo.getLocalIdentifier()).isEqualTo("1");
+        assertThat(thirdTodo.getLocalIdentifier()).isEqualTo(1);
     }
 
     @Test
     public void add_postponedTodo_toEmptyList_addsToList_returnsTodoWithIdentifier_matchingItsPosition() throws Exception {
         Todo firstTodo = masterList.add("someTask", ScheduledFor.later);
         assertThat(masterList.getTodos()).containsExactly(firstTodo);
-        assertThat(firstTodo.getLocalIdentifier()).isEqualTo("0");
+        assertThat(firstTodo.getLocalIdentifier()).isEqualTo(0);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class MasterListTest {
         Todo secondTodo = masterList.add("someOtherTask", ScheduledFor.later);
 
         assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getLocalIdentifier()).isEqualTo("1");
+        assertThat(secondTodo.getLocalIdentifier()).isEqualTo(1);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class MasterListTest {
         Todo secondTodo = masterList.add("someOtherTask", ScheduledFor.later);
 
         assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getLocalIdentifier()).isEqualTo("1");
+        assertThat(secondTodo.getLocalIdentifier()).isEqualTo(1);
     }
 
     @Test
@@ -109,6 +109,6 @@ public class MasterListTest {
     @Test
     public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.delete("someBogusIdentifier");
+        masterList.delete(123);
     }
 }

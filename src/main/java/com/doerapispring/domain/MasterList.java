@@ -35,7 +35,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         }
         if (getByTask(task, scheduling).isPresent()) throw new DuplicateTodoException();
         Integer indexToInsert = nextIndexForScheduling(scheduling);
-        Todo todo = new Todo(indexToInsert.toString(), task, scheduling);
+        Todo todo = new Todo(indexToInsert, task, scheduling);
         todos.add(indexToInsert, todo);
         return todo;
     }
@@ -118,7 +118,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
                 '}';
     }
 
-    public Todo delete(String localIdentifier) throws TodoNotFoundException {
+    public Todo delete(Integer localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = todos.stream()
                 .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
                 .findFirst()

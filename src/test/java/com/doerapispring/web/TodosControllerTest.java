@@ -43,7 +43,7 @@ public class TodosControllerTest {
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
-        todoDTOs = Collections.singletonList(new TodoDTO("someId", "someTask", "now"));
+        todoDTOs = Collections.singletonList(new TodoDTO(2, "someTask", "now"));
         when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
@@ -84,7 +84,7 @@ public class TodosControllerTest {
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"));
+                .contains(new Link(MOCK_BASE_URL + "/deleteTodo/2").withRel("delete"));
     }
 
     @Test
@@ -152,20 +152,20 @@ public class TodosControllerTest {
 
     @Test
     public void delete_mapping() throws Exception {
-        mockMvc.perform(delete("/v1/todos/someId"))
+        mockMvc.perform(delete("/v1/todos/123"))
                 .andExpect(status().isAccepted());
     }
 
     @Test
     public void delete_callsTodoService_returns202() throws Exception {
-        String localId = "someId";
+        Integer localId = 123;
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.delete(authenticatedUser, localId);
 
         verify(mockTodoApiService).delete(authenticatedUser, localId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/deleteTodo/someId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/deleteTodo/123").withSelfRel(),
                 new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
     }
 
@@ -173,7 +173,7 @@ public class TodosControllerTest {
     public void delete_whenInvalidRequest_returns400BadRequest() throws Exception {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).delete(any(), any());
 
-        ResponseEntity<TodoLinksResponse> responseEntity = todosController.delete(authenticatedUser, "someId");
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.delete(authenticatedUser, 123);
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

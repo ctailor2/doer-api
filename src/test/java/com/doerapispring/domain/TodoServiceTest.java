@@ -53,7 +53,7 @@ public class TodoServiceTest {
     public void create_whenMasterListFound_addsTodoToRepository() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        Todo todo = new Todo("someId", "some things", ScheduledFor.now);
+        Todo todo = new Todo(123, "some things", ScheduledFor.now);
         when(mockMasterList.add(any(), any())).thenReturn(todo);
 
         todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
@@ -104,12 +104,12 @@ public class TodoServiceTest {
     public void delete_whenMasterListFound_whenTodoFound_deletesTodoUsingRepository() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        Todo todo = new Todo("someTodoId", "tasky", ScheduledFor.now);
+        Todo todo = new Todo(1, "tasky", ScheduledFor.now);
         when(mockMasterList.delete(any())).thenReturn(todo);
 
-        todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
+        todoService.delete(new User(new UniqueIdentifier<>("userId")), 1);
 
-        verify(mockMasterList).delete("someTodoId");
+        verify(mockMasterList).delete(1);
         verify(mockMasterListRepository).remove(mockMasterList, todo);
     }
 
@@ -117,15 +117,12 @@ public class TodoServiceTest {
     public void delete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModels_refusesDelete() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        Todo todo = new Todo("someTodoId", "tasky", ScheduledFor.now);
+        Todo todo = new Todo(1, "tasky", ScheduledFor.now);
         when(mockMasterList.delete(any())).thenReturn(todo);
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).remove(any(), any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
-
-        verify(mockMasterList).delete("someTodoId");
-        verify(mockMasterListRepository).remove(mockMasterList, todo);
+        todoService.delete(new User(new UniqueIdentifier<>("userId")), 1);
     }
 
     @Test
@@ -135,9 +132,8 @@ public class TodoServiceTest {
         when(mockMasterList.delete(any())).thenThrow(new TodoNotFoundException());
 
         exception.expect(OperationRefusedException.class);
-        todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
+        todoService.delete(new User(new UniqueIdentifier<>("userId")), 1);
 
-        verify(mockMasterList).delete("someTodoId");
         verifyZeroInteractions(mockMasterListRepository);
     }
 }

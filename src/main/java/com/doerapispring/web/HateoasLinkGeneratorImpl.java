@@ -44,7 +44,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String localId) {
+    public Link deleteTodoLink(Integer localId) {
         return linkTo(methodOn(TodosController.class).delete(null, localId)).withSelfRel();
     }
 }

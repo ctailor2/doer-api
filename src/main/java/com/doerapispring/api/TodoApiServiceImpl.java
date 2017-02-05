@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class TodoApiServiceImpl implements TodoApiService {
+class TodoApiServiceImpl implements TodoApiService {
     private final TodoService todoService;
 
     @Autowired
-    public TodoApiServiceImpl(TodoService todoService) {
+    TodoApiServiceImpl(TodoService todoService) {
         this.todoService = todoService;
     }
 
@@ -44,7 +44,7 @@ public class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException {
+    public void delete(AuthenticatedUser authenticatedUser, Integer localId) throws InvalidRequestException {
         try {
             todoService.delete(authenticatedUser.getUser(), localId);
         } catch (OperationRefusedException e) {

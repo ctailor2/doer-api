@@ -33,6 +33,9 @@ class TodoEntity {
     @Column(name = "completed")
     public boolean completed;
 
+    @Column(name = "position")
+    public Integer position;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     public UserEntity userEntity;

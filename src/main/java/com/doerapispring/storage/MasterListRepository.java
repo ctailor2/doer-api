@@ -46,6 +46,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .userEntity(userEntity)
                 .task(todo.getTask())
                 .active(ScheduledFor.now.equals(todo.getScheduling()))
+                .position(todo.getLocalIdentifier())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build());
@@ -55,8 +56,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
     public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
         TodoEntity todoEntity = todoDao.findUnfinished(
                 masterList.getIdentifier().get(),
-                todo.getTask(),
-                ScheduledFor.now.equals(todo.getScheduling()));
+                todo.getLocalIdentifier());
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.delete(todoEntity);
     }

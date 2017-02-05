@@ -10,7 +10,7 @@ public class TodoService {
     private final AggregateRootRepository<MasterList, Todo, String> masterListRepository;
 
     @Autowired
-    public TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
+    TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
         this.masterListRepository = masterListRepository;
     }
 
@@ -30,7 +30,7 @@ public class TodoService {
                 .orElseThrow(OperationRefusedException::new);
     }
 
-    public void delete(User user, String localIdentifier) throws OperationRefusedException {
+    public void delete(User user, Integer localIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = get(user);
             Todo todo = masterList.delete(localIdentifier);
