@@ -78,13 +78,23 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_callsTodoService_includesLinksForEachTodo() throws Exception {
+    public void index_callsTodoService_whenListDoesNotAllowSchedulingTasksForNow_includesDisplaceLinkForEachTodo() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+
+        verify(mockTodoApiService).get(authenticatedUser);
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
+                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
+    }
+
+    @Test
+    public void index_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
         when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"));
+                .containsOnly(new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"));
     }
 
     @Test

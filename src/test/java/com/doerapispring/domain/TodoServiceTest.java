@@ -178,8 +178,6 @@ public class TodoServiceTest {
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        Todo firstTodo = new Todo("tisket", ScheduledFor.now, 5);
-        Todo secondTodo = new Todo("tasket", ScheduledFor.now, 3);
         when(mockMasterList.displace(any(), any())).thenThrow(DuplicateTodoException.class);
 
         exception.expect(OperationRefusedException.class);

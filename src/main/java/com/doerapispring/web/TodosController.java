@@ -28,11 +28,16 @@ public class TodosController {
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel(),
                     hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
-            todoListDTO.getTodoDTOs().stream().forEach(todoDTO ->
-                    todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete")));
-            if (todoListDTO.isSchedulingForNowAllowed()) {
+            boolean canScheduleForNow = todoListDTO.isSchedulingForNowAllowed();
+            if (canScheduleForNow) {
                 todosResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
             }
+            todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
+                if (!canScheduleForNow) {
+                    todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
+                }
+            });
             return ResponseEntity.status(HttpStatus.OK)
                     .body(todosResponse);
         } catch (InvalidRequestException e) {

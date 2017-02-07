@@ -62,7 +62,7 @@ public class MasterListRepositoryTest {
     }
 
     @Test
-    public void find_whenThereAreImmediateTodos_returnsMasterListWithTodos() throws Exception {
+    public void find_whenThereAreTodos_returnsMasterListWithTodos() throws Exception {
         String userEmail = "thisUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
                 .userEntity(UserEntity.builder().email(userEmail).build())
@@ -77,7 +77,7 @@ public class MasterListRepositoryTest {
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getTodos()).containsExactly(new Todo("do it now", ScheduledFor.now, 5));
+        assertThat(masterList.getTodos()).contains(new Todo("do it now", ScheduledFor.now, 5));
     }
 
     @Test
