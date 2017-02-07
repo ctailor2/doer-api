@@ -50,6 +50,6 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link displaceTodoLink(String localId) {
-        return null;
+        return linkTo(methodOn(TodosController.class).displace(null, localId, null)).withSelfRel();
     }
 }

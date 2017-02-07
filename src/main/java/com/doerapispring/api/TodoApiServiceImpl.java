@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class TodoApiServiceImpl implements TodoApiService {
+class TodoApiServiceImpl implements TodoApiService {
     private final TodoService todoService;
 
     @Autowired
-    public TodoApiServiceImpl(TodoService todoService) {
+    TodoApiServiceImpl(TodoService todoService) {
         this.todoService = todoService;
     }
 
@@ -55,7 +55,7 @@ public class TodoApiServiceImpl implements TodoApiService {
     @Override
     public void displace(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException {
         try {
-            todoService.displace(authenticatedUser.getUser(), localId, "someTask");
+            todoService.displace(authenticatedUser.getUser(), localId, task);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

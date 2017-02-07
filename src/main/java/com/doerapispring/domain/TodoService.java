@@ -4,13 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class TodoService {
     private final AggregateRootRepository<MasterList, Todo, String> masterListRepository;
 
     @Autowired
-    public TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
+    TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
         this.masterListRepository = masterListRepository;
     }
 
@@ -43,11 +45,13 @@ public class TodoService {
     public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
         try {
             MasterList masterList = get(user);
-            Todo updatedTodo = masterList.update(localIdentifier, task);
-            Todo displacedTodo = masterList.push(task, ScheduledFor.later);
-//            masterListRepository.update(masterList, updatedTodo);
-            masterListRepository.add(masterList, displacedTodo);
-        } catch (TodoNotFoundException | DuplicateTodoException | ListSizeExceededException | AbnormalModelException e) {
+            List<Todo> newAndExistingTodos = masterList.displace(localIdentifier, task);
+            // TODO: This stinks, fix it
+            Todo newTodo = newAndExistingTodos.get(0);
+            Todo existingTodo = newAndExistingTodos.get(1);
+            masterListRepository.add(masterList, newTodo);
+            masterListRepository.update(masterList, existingTodo);
+        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

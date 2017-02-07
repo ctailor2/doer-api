@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 class MasterListRepository implements AggregateRootRepository<MasterList, Todo, String> {
@@ -23,18 +24,13 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
         List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
-        MasterList masterList = MasterList.newEmpty(uniqueIdentifier);
-        todoEntities.stream().forEach(todoEntity -> {
-                    try {
-                        masterList.add(todoEntity.task,
-                                todoEntity.active ? ScheduledFor.now : ScheduledFor.later);
-                    } catch (ListSizeExceededException | DuplicateTodoException e) {
-                        // TODO: This shouldn't happen if the rules of the domain are enforced
-                        // when objects are added to the repository. Think about what to do here.
-                        e.printStackTrace();
-                    }
-                }
-        );
+        List<Todo> todos = todoEntities.stream()
+                .map(todoEntity -> new Todo(
+                        todoEntity.task,
+                        todoEntity.active ? ScheduledFor.now : ScheduledFor.later,
+                        todoEntity.position))
+                .collect(Collectors.toList());
+        MasterList masterList = new MasterList(uniqueIdentifier, 2, todos);
         return Optional.of(masterList);
     }
 
@@ -46,6 +42,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .userEntity(userEntity)
                 .task(todo.getTask())
                 .active(ScheduledFor.now.equals(todo.getScheduling()))
+                .position(todo.getPosition())
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build());
@@ -53,11 +50,29 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
 
     @Override
     public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
-        TodoEntity todoEntity = todoDao.findUnfinished(
+        TodoEntity todoEntity = todoDao.findUnfinishedInList(
                 masterList.getIdentifier().get(),
-                todo.getTask(),
+                todo.getPosition(),
                 ScheduledFor.now.equals(todo.getScheduling()));
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.delete(todoEntity);
+    }
+
+    @Override
+    public void update(MasterList masterList, Todo todo) throws AbnormalModelException {
+        TodoEntity todoEntity = todoDao.findUnfinishedInList(
+                masterList.getIdentifier().get(),
+                todo.getPosition(),
+                ScheduledFor.now.equals(todo.getScheduling()));
+        if (todoEntity == null) throw new AbnormalModelException();
+        todoDao.save(TodoEntity.builder()
+                .id(todoEntity.id)
+                .userEntity(todoEntity.userEntity)
+                .task(todo.getTask())
+                .active(ScheduledFor.now.equals(todo.getScheduling()))
+                .position(todo.getPosition())
+                .createdAt(todoEntity.createdAt)
+                .updatedAt(new Date())
+                .build());
     }
 }

@@ -85,3 +85,60 @@ in the browser upon login and used as the starting point for everything
 For example, after posting a new task and retrieving the list of todos should the client get the home resources again?
 - Or is it appropriate to have the home resources include a link for getting todos, and this endpoint returning
 the links for creating todos?
+
+// Notes 2/4
+- Managing positions in the database is tricky
+
+# left pipes represent the markers for the top of the now & later lists, respectively
+# and their positions
+# unpiped #s on the same line represent the positions stored in the database based on these markers
+# 2nd line shows how the positions are resolved relative to the marker
+# adding to the beginning of the now list moves the marker back one
+# adding to the beginning of the later list moves the marker back one
+# adding to the end of any list does not change any marker positions
+
+|0|   |0|
+
+|0| 1 |0| 1
+	1     1
+
+|-1|  0 1 |0| 1
+	 -1 0     1
+
+|-1|  0 1 2 |0| 1
+	 -1 0 1     1
+
+|-1|  0 1 2 |0| 1 2
+	 -1 0 1     1 2
+
+
+# when nothing on the side, don't change the marker
+|0|
+
+-1 |0|
+-1
+
+-1 |0| 1
+-1     1
+
+-1 |-1|  0 1
+-2      -1 0
+
+-1  0 |-1|  0 1
+-2 -1      -1 0
+
+# in general, the trouble with list positions comes from the push situation
+# consider the following single list
+# this is probably the best separation of concerns - bring back the 2 lists
+|0| 1
+	1
+
+|-1|  0 1
+
+|-1|  0 1 2
+
+|-2| -1  0  1 2
+
+|-1|  X  0  1 2       |-2| -1  X  1 2
+
+|-1|  0  1 2          |-2| -1     1 2

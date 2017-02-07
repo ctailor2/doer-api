@@ -1,14 +1,14 @@
 package com.doerapispring.domain;
 
 public class Todo {
-    private final String localIdentifier;
     private String task;
     private final ScheduledFor scheduling;
+    private final Integer position;
 
-    public Todo(String localIdentifier, String task, ScheduledFor scheduling) {
-        this.localIdentifier = localIdentifier;
+    public Todo(String task, ScheduledFor scheduling, Integer position) {
         this.task = task;
         this.scheduling = scheduling;
+        this.position = position;
     }
 
     public String getTask() {
@@ -20,7 +20,18 @@ public class Todo {
     }
 
     public String getLocalIdentifier() {
-        return localIdentifier;
+        return String.format("%d%s", position, getTodoIdentifierSuffix());
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    private String getTodoIdentifierSuffix() {
+        if (ScheduledFor.now.equals(scheduling)) {
+            return "i";
+        }
+        return "";
     }
 
     @Override
@@ -30,27 +41,26 @@ public class Todo {
 
         Todo todo = (Todo) o;
 
-        if (localIdentifier != null ? !localIdentifier.equals(todo.localIdentifier) : todo.localIdentifier != null)
-            return false;
         if (task != null ? !task.equals(todo.task) : todo.task != null) return false;
-        return scheduling == todo.scheduling;
+        if (scheduling != todo.scheduling) return false;
+        return position != null ? position.equals(todo.position) : todo.position == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = localIdentifier != null ? localIdentifier.hashCode() : 0;
-        result = 31 * result + (task != null ? task.hashCode() : 0);
+        int result = task != null ? task.hashCode() : 0;
         result = 31 * result + (scheduling != null ? scheduling.hashCode() : 0);
+        result = 31 * result + (position != null ? position.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "Todo{" +
-                "localIdentifier='" + localIdentifier + '\'' +
-                ", task='" + task + '\'' +
+                "task='" + task + '\'' +
                 ", scheduling=" + scheduling +
+                ", position=" + position +
                 '}';
     }
 

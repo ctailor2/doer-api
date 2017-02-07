@@ -14,7 +14,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -24,9 +23,9 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     private HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
-    UserSessionsApiService userSessionsApiService;
+    private UserSessionsApiService userSessionsApiService;
     @Autowired
-    TodoService todosService;
+    private TodoService todosService;
 
     @Override
     @Before
@@ -55,8 +54,8 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), contains(
-                new Todo(todo.getLocalIdentifier(), "do the things", ScheduledFor.now),
-                new Todo("1", "some task", ScheduledFor.later)));
+                new Todo("do the things", ScheduledFor.now, 1),
+                new Todo("some task", ScheduledFor.later, 1)));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier() + "/displace")));
