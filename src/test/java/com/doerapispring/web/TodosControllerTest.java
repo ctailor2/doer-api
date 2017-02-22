@@ -94,7 +94,9 @@ public class TodosControllerTest {
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
-                .containsOnly(new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"));
+                .containsOnly(
+                        new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
+                        new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"));
     }
 
     @Test
@@ -148,7 +150,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/createTodoForLater").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));   }
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
 
     @Test
     public void createForLater_whenInvalidRequest_returns400BadRequest() throws Exception {
@@ -202,7 +205,7 @@ public class TodosControllerTest {
         String localId = "someId";
         String task = "some task";
         ResponseEntity<TodoLinksResponse> responseEntity =
-                todosController.displace(authenticatedUser, localId,  new TodoForm(task));
+                todosController.displace(authenticatedUser, localId, new TodoForm(task));
 
         verify(mockTodoApiService).displace(authenticatedUser, localId, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -220,6 +223,38 @@ public class TodosControllerTest {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 
+    @Test
+    public void update_mapping() throws Exception {
+        mockMvc.perform(put("/v1/todos/123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"task\": \"return redbox movie\"}"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void update_callsTodoService_returns202() throws Exception {
+        String localId = "someId";
+        String task = "some task";
+        ResponseEntity<TodoLinksResponse> responseEntity =
+                todosController.update(authenticatedUser, localId, new TodoForm(task));
+
+        verify(mockTodoApiService).update(authenticatedUser, localId, task);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void update_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).update(any(), any(), any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.update(authenticatedUser, "someId", new TodoForm("do it to it"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
-public class TodosController {
+class TodosController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private TodoApiService todoApiService;
 
     @Autowired
-    public TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
+    TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.todoApiService = todoApiService;
     }
@@ -34,6 +34,7 @@ public class TodosController {
             }
             todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
                 if (!canScheduleForNow) {
                     todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
                 }
@@ -99,6 +100,22 @@ public class TodosController {
             todoApiService.displace(authenticatedUser, localId, todoForm.getTask());
             TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
             todoLinksResponse.add(hateoasLinkGenerator.displaceTodoLink(localId).withSelfRel(),
+                    hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @RequestMapping(value = "/todos/{localId}", method = RequestMethod.PUT)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @PathVariable(value = "localId") String localId,
+                                             @RequestBody TodoForm todoForm) {
+        try {
+            todoApiService.update(authenticatedUser, localId, todoForm.getTask());
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
                     hateoasLinkGenerator.todosLink().withRel("todos"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
         } catch (InvalidRequestException e) {

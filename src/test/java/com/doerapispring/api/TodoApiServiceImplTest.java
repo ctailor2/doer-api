@@ -134,4 +134,19 @@ public class TodoApiServiceImplTest {
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
     }
+
+    @Test
+    public void update_callsTodoService() throws Exception {
+        todoApiServiceImpl.update(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+
+        verify(mockTodoService).update(new User(new UniqueIdentifier<>("someIdentifier")), "someId", "someTask");
+    }
+
+    @Test
+    public void update_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
+        doThrow(new OperationRefusedException()).when(mockTodoService).update(any(), any(), any());
+
+        exception.expect(InvalidRequestException.class);
+        todoApiServiceImpl.update(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+    }
 }

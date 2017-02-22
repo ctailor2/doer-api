@@ -88,6 +88,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return asList(todoCopy, existingTodo);
     }
 
+    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
+        Todo existingTodo = getByLocalIdentifier(localIdentifier);
+        existingTodo.setTask(task);
+        return existingTodo;
+    }
+
     public boolean isImmediateListFull() {
         return focusSize.equals(immediateList.size());
     }

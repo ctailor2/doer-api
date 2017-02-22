@@ -124,4 +124,28 @@ public class MasterListTest {
         exception.expect(DuplicateTodoException.class);
         masterList.displace(todo.getLocalIdentifier(), "sameTask");
     }
+
+    @Test
+    public void update_whenTodoWithIdentifierExists_updatesTodo() throws Exception {
+        Todo todo = masterList.add("someTask", ScheduledFor.now);
+
+        Todo updatedTodo = masterList.update(todo.getLocalIdentifier(), "someOtherTask");
+
+        assertThat(updatedTodo).isEqualTo(new Todo("someOtherTask", todo.getScheduling(), todo.getPosition()));
+        assertThat(masterList.getTodos()).containsOnly(updatedTodo);
+    }
+
+    @Test
+    public void update_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
+        Todo todo = masterList.add("sameTask", ScheduledFor.now);
+
+        exception.expect(DuplicateTodoException.class);
+        masterList.update(todo.getLocalIdentifier(), "sameTask");
+    }
+
+    @Test
+    public void update_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+        exception.expect(TodoNotFoundException.class);
+        masterList.update("bananaPudding", "sameTask");
+    }
 }

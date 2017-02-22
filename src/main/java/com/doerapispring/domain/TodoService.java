@@ -55,4 +55,14 @@ public class TodoService {
             throw new OperationRefusedException();
         }
     }
+
+    public void update(User user, String localIdentifier, String task) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            Todo todo = masterList.update(localIdentifier, task);
+            masterListRepository.update(masterList, todo);
+        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
 }
