@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 public class TodoService {
@@ -36,6 +38,30 @@ public class TodoService {
             Todo todo = masterList.delete(localIdentifier);
             masterListRepository.remove(masterList, todo);
         } catch (TodoNotFoundException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
+
+    public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            List<Todo> newAndExistingTodos = masterList.displace(localIdentifier, task);
+            // TODO: This stinks, fix it
+            Todo newTodo = newAndExistingTodos.get(0);
+            Todo existingTodo = newAndExistingTodos.get(1);
+            masterListRepository.add(masterList, newTodo);
+            masterListRepository.update(masterList, existingTodo);
+        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
+
+    public void update(User user, String localIdentifier, String task) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            Todo todo = masterList.update(localIdentifier, task);
+            masterListRepository.update(masterList, todo);
+        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

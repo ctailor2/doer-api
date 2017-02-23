@@ -4,4 +4,6 @@ public interface AggregateRootRepository<Parent extends UniquelyIdentifiable, Ch
     void add(Parent parent, Child child) throws AbnormalModelException;
 
     void remove(Parent parent, Child child) throws AbnormalModelException;
+
+    void update(Parent parent, Child child) throws AbnormalModelException;
 }

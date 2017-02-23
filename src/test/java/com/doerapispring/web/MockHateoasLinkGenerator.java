@@ -44,4 +44,14 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link deleteTodoLink(Integer localId) {
         return new Link(MOCK_BASE_URL + "/deleteTodo/" + localId);
     }
+
+    @Override
+    public Link displaceTodoLink(String localId) {
+        return new Link(MOCK_BASE_URL + "/displaceTodo/" + localId);
+    }
+
+    @Override
+    public Link updateTodoLink(String localId) {
+        return new Link(MOCK_BASE_URL + "/updateTodo/" + localId);
+    }
 }

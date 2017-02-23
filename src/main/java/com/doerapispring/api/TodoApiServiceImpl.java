@@ -52,6 +52,24 @@ class TodoApiServiceImpl implements TodoApiService {
         }
     }
 
+    @Override
+    public void displace(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException {
+        try {
+            todoService.displace(authenticatedUser.getUser(), localId, task);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
+    public void update(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException {
+        try {
+            todoService.update(authenticatedUser.getUser(), localId, task);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
         return new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString());
