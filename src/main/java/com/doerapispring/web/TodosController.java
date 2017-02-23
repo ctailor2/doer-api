@@ -79,7 +79,7 @@ class TodosController {
     @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
     @ResponseBody
     ResponseEntity<TodoLinksResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable(value = "localId") Integer localId) {
+                                             @PathVariable(value = "localId") String localId) {
         try {
             todoApiService.delete(authenticatedUser, localId);
             TodoLinksResponse todoLinksResponse = new TodoLinksResponse();

@@ -4,18 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.ResourceSupport;
 
 public class TodoDTO extends ResourceSupport {
-    private final Integer localIdentifier;
+    private final String localIdentifier;
     private final String task;
     private final String scheduling;
 
-    public TodoDTO(Integer localIdentifier, String task, String scheduling) {
+    public TodoDTO(String localIdentifier, String task, String scheduling) {
         this.localIdentifier = localIdentifier;
         this.task = task;
         this.scheduling = scheduling;
     }
 
     @JsonProperty("id")
-    Integer getLocalIdentifier() {
+    String getLocalIdentifier() {
         return localIdentifier;
     }
 

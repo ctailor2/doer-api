@@ -107,9 +107,9 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void delete_callsTodoService() throws Exception {
-        todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), 1);
+        todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId");
 
-        verify(mockTodoService).delete(new User(new UniqueIdentifier<>("someIdentifier")), 1);
+        verify(mockTodoService).delete(new User(new UniqueIdentifier<>("someIdentifier")), "someId");
     }
 
     @Test
@@ -117,7 +117,7 @@ public class TodoApiServiceImplTest {
         doThrow(new OperationRefusedException()).when(mockTodoService).delete(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), 1);
+        todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId");
     }
 
     @Test

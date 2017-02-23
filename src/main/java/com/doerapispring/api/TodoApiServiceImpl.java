@@ -44,7 +44,7 @@ class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public void delete(AuthenticatedUser authenticatedUser, Integer localId) throws InvalidRequestException {
+    public void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException {
         try {
             todoService.delete(authenticatedUser.getUser(), localId);
         } catch (OperationRefusedException e) {
