@@ -67,6 +67,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$.todos[0]._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/1")));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.update.href", containsString("v1/todos/1")));
+        assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/1/complete")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos")));
         assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));

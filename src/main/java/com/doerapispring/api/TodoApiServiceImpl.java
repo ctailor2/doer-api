@@ -70,6 +70,15 @@ class TodoApiServiceImpl implements TodoApiService {
         }
     }
 
+    @Override
+    public void complete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException {
+        try {
+            todoService.complete(authenticatedUser.getUser(), localId);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
         return new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString());

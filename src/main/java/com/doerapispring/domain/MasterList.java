@@ -95,6 +95,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return existingTodo;
     }
 
+    public Todo complete(String localIdentifier) throws TodoNotFoundException {
+        Todo existingTodo = getByLocalIdentifier(localIdentifier);
+        getListForScheduling(existingTodo.getScheduling()).remove(existingTodo);
+        existingTodo.complete();
+        return existingTodo;
+    }
+
     public boolean isImmediateListFull() {
         return focusSize.equals(immediateList.size());
     }

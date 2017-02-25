@@ -71,6 +71,7 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .task(todo.getTask())
                 .active(ScheduledFor.now.equals(todo.getScheduling()))
                 .position(todo.getPosition())
+                .completed(todo.isComplete())
                 .createdAt(todoEntity.createdAt)
                 .updatedAt(new Date())
                 .build());

@@ -263,4 +263,48 @@ public class TodoServiceTest {
         exception.expect(OperationRefusedException.class);
         todoService.update(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
     }
+
+    @Test
+    public void complete_whenMasterListFound_whenTodoFound_completesUsingRepository() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        Todo todo = new Todo("tisket", ScheduledFor.now, 5);
+        when(mockMasterList.complete(any())).thenReturn(todo);
+
+        todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
+
+        verify(mockMasterList).complete("someId");
+        verify(mockMasterListRepository).update(mockMasterList, todo);
+    }
+
+    @Test
+    public void complete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        Todo todo = new Todo("tisket", ScheduledFor.now, 5);
+        when(mockMasterList.complete(any())).thenReturn(todo);
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), any());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
+    }
+
+    @Test
+    public void complete_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        when(mockMasterList.complete(any())).thenThrow(new TodoNotFoundException());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
+    }
+
+    @Test
+    public void complete_whenMasterListNotFound_refusesUpdate() throws Exception {
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
+    }
+
 }

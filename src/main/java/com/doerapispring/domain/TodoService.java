@@ -65,4 +65,14 @@ public class TodoService {
             throw new OperationRefusedException();
         }
     }
+
+    public void complete(User user, String localIdentifier) throws OperationRefusedException{
+        try {
+            MasterList masterList = get(user);
+            Todo todo = masterList.complete(localIdentifier);
+            masterListRepository.update(masterList, todo);
+        } catch (TodoNotFoundException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
 }

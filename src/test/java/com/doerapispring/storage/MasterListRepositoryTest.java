@@ -215,6 +215,25 @@ public class MasterListRepositoryTest {
     }
 
     @Test
+    public void update_findsTodo_whenFound_whenTodoIsComplete_updatesTodo() throws Exception {
+        TodoEntity existingTodoEntity = TodoEntity.builder()
+                .id(123L)
+                .completed(false)
+                .build();
+        when(mockTodoDAO.findUnfinishedInList(any(), anyInt(), anyBoolean())).thenReturn(existingTodoEntity);
+
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        Todo todo = new Todo("bingo", ScheduledFor.later, 5);
+        todo.complete();
+        masterListRepository.update(masterList, todo);
+
+        verify(mockTodoDAO).findUnfinishedInList("someUserId", 5, false);
+        verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
+        TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
+        assertThat(todoEntity.completed).isEqualTo(true);
+    }
+
+    @Test
     public void update_findsTodo_whenNotFound_throwsAbnormalModelException() throws Exception {
         when(mockTodoDAO.findUnfinishedInList(any(), anyInt(), anyBoolean())).thenReturn(null);
 

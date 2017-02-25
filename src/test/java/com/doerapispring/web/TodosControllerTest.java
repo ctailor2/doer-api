@@ -96,7 +96,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
                 .containsOnly(
                         new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
-                        new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"));
+                        new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
+                        new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
     }
 
     @Test
@@ -253,6 +254,36 @@ public class TodosControllerTest {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).update(any(), any(), any());
 
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.update(authenticatedUser, "someId", new TodoForm("do it to it"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void complete_mapping() throws Exception {
+        mockMvc.perform(post("/v1/todos/123/complete"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void complete_callsTodoService_returns202() throws Exception {
+        String localId = "someId";
+        ResponseEntity<TodoLinksResponse> responseEntity =
+                todosController.complete(authenticatedUser, localId);
+
+        verify(mockTodoApiService).complete(authenticatedUser, localId);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/completeTodo/someId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void complete_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).complete(any(), any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.complete(authenticatedUser, "someId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

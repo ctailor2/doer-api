@@ -12,4 +12,6 @@ public interface TodoApiService {
     void displace(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException;
 
     void update(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException;
+
+    void complete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;
 }

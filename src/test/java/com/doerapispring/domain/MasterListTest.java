@@ -148,4 +148,20 @@ public class MasterListTest {
         exception.expect(TodoNotFoundException.class);
         masterList.update("bananaPudding", "sameTask");
     }
+
+    @Test
+    public void complete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
+        Todo todo = masterList.add("someTask", ScheduledFor.now);
+
+        Todo completedTodo = masterList.complete(todo.getLocalIdentifier());
+
+        assertThat(completedTodo.isComplete()).isEqualTo(true);
+        assertThat(masterList.getTodos()).doesNotContain(todo);
+    }
+
+    @Test
+    public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+        exception.expect(TodoNotFoundException.class);
+        masterList.complete("someBogusIdentifier");
+    }
 }
