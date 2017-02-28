@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,8 +51,12 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        CompletedList newCompletedList = todosService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
+        List<CompletedTodo> completedTodos = newCompletedList.getTodos();
+        assertThat(completedTodos, hasSize(1));
+        assertThat(completedTodos.get(0).getTask(), equalTo("some task"));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier() + "/complete")));

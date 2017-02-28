@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,12 +23,15 @@ public class TodoServiceTest {
     @Mock
     private AggregateRootRepository<MasterList, Todo, String> mockMasterListRepository;
 
+    @Mock
+    private AggregateRootRepository<CompletedList, CompletedTodo, String> mockCompletedListRepository;
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        todoService = new TodoService(mockMasterListRepository);
+        todoService = new TodoService(mockMasterListRepository, mockCompletedListRepository);
     }
 
     @Test
@@ -307,4 +311,24 @@ public class TodoServiceTest {
         todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
     }
 
+    @Test
+    public void getCompleted_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        CompletedList completedListFromRepository = new CompletedList(uniqueIdentifier, Collections.emptyList());
+        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedListFromRepository));
+        User user = new User(uniqueIdentifier);
+
+        CompletedList completedList = todoService.getCompleted(user);
+
+        verify(mockCompletedListRepository).find(uniqueIdentifier);
+        assertThat(completedList).isEqualTo(completedListFromRepository);
+    }
+
+    @Test
+    public void getCompleted_whenCompletedListNotFound_refusesGet() throws Exception {
+        when(mockCompletedListRepository.find(any())).thenReturn(Optional.empty());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.getCompleted(new User(new UniqueIdentifier<>("one@two.com")));
+    }
 }

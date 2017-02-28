@@ -1,17 +1,36 @@
 package com.doerapispring.web;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.ResourceSupport;
 
+import java.util.Date;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public class TodoDTO extends ResourceSupport {
     private final String localIdentifier;
     private final String task;
     private final String scheduling;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssZ")
+    private final Date completedAt;
+
     public TodoDTO(String localIdentifier, String task, String scheduling) {
         this.localIdentifier = localIdentifier;
         this.task = task;
         this.scheduling = scheduling;
+        this.completedAt = null;
+    }
+
+    // TODO: Nulling out fields and using json include non null is not ideal
+    public TodoDTO(String task, Date completedAt) {
+        this.task = task;
+        this.completedAt = completedAt;
+        this.localIdentifier = null;
+        this.scheduling = null;
     }
 
     @JsonProperty("id")
@@ -25,6 +44,10 @@ public class TodoDTO extends ResourceSupport {
 
     public String getScheduling() {
         return scheduling;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
     }
 
     @Override

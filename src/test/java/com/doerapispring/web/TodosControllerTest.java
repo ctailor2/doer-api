@@ -44,7 +44,6 @@ public class TodosControllerTest {
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
         todoDTOs = Collections.singletonList(new TodoDTO("someId", "someTask", "now"));
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -53,12 +52,24 @@ public class TodosControllerTest {
 
     @Test
     public void index_mapping() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
+
         mockMvc.perform(get("/v1/todos"))
                 .andExpect(status().isOk());
     }
 
     @Test
+    public void index_whenInvalidRequest_returns400BadRequest() throws Exception {
+        when(mockTodoApiService.get(any())).thenThrow(new InvalidRequestException());
+
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     public void index_callsTodoService_includesLinksByDefault() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
@@ -285,6 +296,35 @@ public class TodosControllerTest {
 
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.complete(authenticatedUser, "someId");
 
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void completedTodos_mapping() throws Exception {
+        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(todoDTOs));
+
+        mockMvc.perform(get("/v1/completedTodos"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void completedTodos_callsTodoService_includesLinksByDefault() throws Exception {
+        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(todoDTOs));
+
+        ResponseEntity<TodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
+
+        verify(mockTodoApiService).getCompleted(authenticatedUser);
+        assertThat(responseEntity.getBody().getLinks())
+                .contains(new Link(MOCK_BASE_URL + "/completedTodos").withSelfRel(),
+                        new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void completedTodos_whenInvalidRequest_returns400BadRequest() throws Exception {
+        when(mockTodoApiService.getCompleted(any())).thenThrow(new InvalidRequestException());
+
+        ResponseEntity<TodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

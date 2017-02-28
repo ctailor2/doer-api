@@ -17,4 +17,10 @@ interface TodoDao extends JpaRepository<TodoEntity, Long> {
             "WHERE t.completed = false " +
             "AND u.email = ?1 AND t.position = ?2 AND t.active = ?3")
     TodoEntity findUnfinishedInList(String userEmail, int position, boolean active);
+
+    @Query("SELECT t FROM TodoEntity t " +
+            "INNER JOIN t.userEntity u " +
+            "WHERE t.completed = true AND u.email = ?1 " +
+            "ORDER BY t.updatedAt DESC")
+    List<TodoEntity> findFinishedByUserEmail(String userEmail);
 }

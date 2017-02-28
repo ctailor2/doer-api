@@ -2,10 +2,7 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.TodoApiService;
-import com.doerapispring.web.TodoDTO;
-import com.doerapispring.web.TodoListDTO;
+import com.doerapispring.web.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +20,13 @@ class TodoApiServiceImpl implements TodoApiService {
 
     @Override
     public TodoListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        MasterList masterList;
         try {
-            masterList = todoService.get(authenticatedUser.getUser());
+            MasterList masterList = todoService.get(authenticatedUser.getUser());
+            List<TodoDTO> todoDTOs = masterList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+            return new TodoListDTO(todoDTOs, !masterList.isImmediateListFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
-        List<TodoDTO> todoDTOs = masterList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-        return new TodoListDTO(todoDTOs, !masterList.isImmediateListFull());
     }
 
     @Override
@@ -79,9 +75,25 @@ class TodoApiServiceImpl implements TodoApiService {
         }
     }
 
+    @Override
+    public CompletedTodoListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        try {
+            CompletedList completedList = todoService.getCompleted(authenticatedUser.getUser());
+            List<TodoDTO> todoDTOs = completedList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+            return new CompletedTodoListDTO(todoDTOs);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
         return new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString());
+    }
+
+    // TODO: Maybe these behaviors should exist in a mapping layer of some sort
+    private TodoDTO mapToDTO(CompletedTodo completedTodo) {
+        return new TodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt());
     }
 
     private ScheduledFor getScheduledFor(String scheduling) throws InvalidRequestException {

@@ -138,4 +138,18 @@ class TodosController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    @RequestMapping(value = "/completedTodos", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<TodosResponse> completedTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        try {
+            CompletedTodoListDTO completedTodoListDTO = todoApiService.getCompleted(authenticatedUser);
+            TodosResponse todosResponse = new TodosResponse(completedTodoListDTO.getTodoDTOs());
+            todosResponse.add(hateoasLinkGenerator.completedTodosLink().withSelfRel());
+            todosResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.OK).body(todosResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }

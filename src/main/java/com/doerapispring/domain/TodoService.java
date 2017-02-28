@@ -10,10 +10,13 @@ import java.util.List;
 @Transactional
 public class TodoService {
     private final AggregateRootRepository<MasterList, Todo, String> masterListRepository;
+    private final AggregateRootRepository<CompletedList, CompletedTodo, String> completedListRepository;
 
     @Autowired
-    TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
+    TodoService(AggregateRootRepository<MasterList, Todo, String> masterListRepository,
+                AggregateRootRepository<CompletedList, CompletedTodo, String> completedListRepository) {
         this.masterListRepository = masterListRepository;
+        this.completedListRepository = completedListRepository;
     }
 
     public void create(User user, String task, ScheduledFor scheduling) throws OperationRefusedException {
@@ -74,5 +77,10 @@ public class TodoService {
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
+    }
+
+    public CompletedList getCompleted(User user) throws OperationRefusedException {
+        return completedListRepository.find(user.getIdentifier())
+                .orElseThrow(OperationRefusedException::new);
     }
 }
