@@ -41,6 +41,7 @@ public class HomeIntegrationTest extends AbstractWebAppJUnit4SpringContextTests 
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/home")));
         assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.completedTodos.href", containsString("/v1/completedTodos")));
     }
 
     private void doGet() throws Exception {

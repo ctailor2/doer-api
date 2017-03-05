@@ -48,6 +48,7 @@ public class HomeControllerTest {
 
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/home").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/completedTodos").withRel("completedTodos"));
     }
 }
