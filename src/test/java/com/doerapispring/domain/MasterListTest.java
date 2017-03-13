@@ -7,6 +7,7 @@ import org.junit.rules.ExpectedException;
 
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -163,5 +164,84 @@ public class MasterListTest {
     public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
         masterList.complete("someBogusIdentifier");
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetDoesNotExist_throwsNotFoundException() throws Exception {
+        Todo todo = masterList.add("someTask", ScheduledFor.later);
+
+        exception.expect(TodoNotFoundException.class);
+        masterList.move(todo.getLocalIdentifier(), "nonExistentIdentifier");
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+        exception.expect(TodoNotFoundException.class);
+        masterList.move("junk", "bogus");
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
+        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4);
+        List<Todo> todos = asList(
+                new Todo("A", "someTask", ScheduledFor.later, 1),
+                new Todo("B", "anotherTask", ScheduledFor.later, 2),
+                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
+                fourthTodo);
+
+        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+
+        List<Todo> effectedTodos = masterList.move("A", "C");
+
+        Todo expectedFirstTodo = new Todo("B", "anotherTask", ScheduledFor.later, 1);
+        Todo expectedSecondTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 2);
+        Todo expectedThirdTodo = new Todo("A", "someTask", ScheduledFor.later, 3);
+
+        assertThat(effectedTodos).contains(expectedFirstTodo, expectedSecondTodo, expectedThirdTodo);
+        assertThat(masterList.getTodos()).containsExactly(
+                expectedFirstTodo,
+                expectedSecondTodo,
+                expectedThirdTodo,
+                fourthTodo);
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
+        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.later, 1);
+        List<Todo> todos = asList(firstTodo,
+                new Todo("B", "anotherTask", ScheduledFor.later, 2),
+                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
+                new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4));
+
+        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+
+        List<Todo> effectedTodos = masterList.move("D", "B");
+
+        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 2);
+        Todo expectedThirdTodo = new Todo("B", "anotherTask", ScheduledFor.later, 3);
+        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 4);
+
+        assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
+        assertThat(masterList.getTodos()).containsExactly(
+                firstTodo,
+                expectedSecondTodo,
+                expectedThirdTodo,
+                expectedFourthTodo);
+    }
+
+    @Test
+    public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
+        List<Todo> todos = asList(
+                new Todo("A", "someTask", ScheduledFor.later, 1),
+                new Todo("B", "anotherTask", ScheduledFor.later, 2),
+                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
+                new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4));
+
+        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+
+        List<Todo> effectedTodos = masterList.move("A", "A");
+
+        assertThat(effectedTodos).isEmpty();
+        assertThat(masterList.getTodos()).isEqualTo(todos);
     }
 }

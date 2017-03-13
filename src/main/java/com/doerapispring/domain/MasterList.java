@@ -1,9 +1,6 @@
 package com.doerapispring.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -22,7 +19,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         postponedList = new TodoList(ScheduledFor.later);
     }
 
-    public MasterList(UniqueIdentifier uniqueIdentifier,
+    public MasterList(UniqueIdentifier<String> uniqueIdentifier,
                       int focusSize,
                       List<Todo> todos) {
         this.uniqueIdentifier = uniqueIdentifier;
@@ -141,7 +138,20 @@ public class MasterList implements UniquelyIdentifiable<String> {
                 '}';
     }
 
-    private class TodoList {
+    public List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
+        Todo originalTodo = getPostponedByLocalIdentifier(originalTodoIdentifier);
+        Todo targetTodo = getPostponedByLocalIdentifier(targetTodoIdentifier);
+        return postponedList.move(originalTodo, targetTodo);
+    }
+
+    private Todo getPostponedByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+        return postponedList.todos.stream()
+                .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
+                .findFirst()
+                .orElseThrow(TodoNotFoundException::new);
+    }
+
+    private static class TodoList {
         private final ScheduledFor scheduling;
         private List<Todo> todos = new ArrayList<>();
 
@@ -154,7 +164,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
             this.todos.addAll(todos);
         }
 
-        public Todo add(String task) {
+        Todo add(String task) {
             int position = getNextPosition();
             Todo todo = new Todo(task, scheduling, position);
             todos.add(todo);
@@ -192,6 +202,70 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
         void remove(Todo todo) {
             todos.remove(todo);
+        }
+
+        List<Todo> move(Todo originalTodo, Todo targetTodo) {
+            Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), originalTodo.getPosition()));
+
+            int originalIndex = todos.indexOf(originalTodo);
+            int targetIndex = todos.indexOf(targetTodo);
+
+            Map<Integer, Integer> originalMapping = new HashMap<>();
+            for (int index = originalIndex; direction.targetNotExceeded(index, targetIndex); index += direction.getValue()) {
+                originalMapping.put(index, todos.get(index).getPosition());
+            }
+
+            remove(originalTodo);
+            todos.add(targetIndex, originalTodo);
+
+            return originalMapping.entrySet().stream()
+                    .map(entry -> {
+                        Todo todo = this.todos.get(entry.getKey());
+                        todo.setPosition(entry.getValue());
+                        return todo;
+                    })
+                    .collect(Collectors.toList());
+        }
+    }
+
+    private enum Direction {
+        UP(-1),
+        DOWN(1),
+        NONE(0);
+
+        private static Map<Integer, Direction> valueMapping = new HashMap<>();
+
+        static {
+            for (Direction direction : Direction.values()) {
+                valueMapping.put(direction.value, direction);
+            }
+        }
+
+        private final int value;
+
+        Direction(int value) {
+            this.value = value;
+        }
+
+        public static Direction valueOf(int directionValue) {
+            return valueMapping.get(directionValue);
+        }
+
+        public boolean targetNotExceeded(int currentIndex, int targetIndex) {
+            switch (this) {
+                case UP:
+                    return currentIndex >= targetIndex;
+                case DOWN:
+                    return currentIndex <= targetIndex;
+                case NONE:
+                    return false;
+                default:
+                    return false;
+            }
+        }
+
+        public int getValue() {
+            return value;
         }
     }
 }

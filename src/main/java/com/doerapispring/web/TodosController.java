@@ -127,7 +127,7 @@ class TodosController {
     @RequestMapping(value = "/todos/{localId}/complete", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<TodoLinksResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable(value = "localId") String localId) {
+                                               @PathVariable(value = "localId") String localId) {
         try {
             todoApiService.complete(authenticatedUser, localId);
             TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
@@ -148,6 +148,22 @@ class TodosController {
             todosResponse.add(hateoasLinkGenerator.completedTodosLink().withSelfRel());
             todosResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
             return ResponseEntity.status(HttpStatus.OK).body(todosResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @RequestMapping(value = "/todos/{localId}/move/{targetLocalId}", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> move(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                           @PathVariable(value = "localId") String localId,
+                                           @PathVariable(value = "targetLocalId") String targetLocalId) {
+        try {
+            todoApiService.move(authenticatedUser, localId, targetLocalId);
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
+                    hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

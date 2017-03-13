@@ -328,4 +328,35 @@ public class TodosControllerTest {
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    @Test
+    public void move_mapping() throws Exception {
+        mockMvc.perform(post("/v1/todos/1/move/3"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void move_callsTodoService_returns202() throws Exception {
+        String localId = "localId";
+        String targetLocalId = "targetLocalId";
+        ResponseEntity<TodoLinksResponse> responseEntity =
+                todosController.move(authenticatedUser, localId, targetLocalId);
+
+        verify(mockTodoApiService).move(authenticatedUser, localId, targetLocalId);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/todos/localId/moveTodo/targetLocalId").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void move_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).move(any(), any(), any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.move(authenticatedUser, "localId", "targetLocalId");
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }

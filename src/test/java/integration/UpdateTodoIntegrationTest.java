@@ -53,7 +53,10 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getTodos(), contains(new Todo("do the things", ScheduledFor.now, 1)));
+        assertThat(newMasterList.getTodos(), hasItem(allOf(
+                hasProperty("task", equalTo("do the things")),
+                hasProperty("scheduling", equalTo(ScheduledFor.now)),
+                hasProperty("position", equalTo(1)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier())));

@@ -7,16 +7,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
     private MvcResult mvcResult;
 
@@ -39,31 +39,33 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     }
 
     @Test
-    public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
-        todosService.create(user, "some task", ScheduledFor.now);
+    public void move_movesTodos() throws Exception {
+        todosService.create(user, "some task", ScheduledFor.later);
+        todosService.create(user, "some other task", ScheduledFor.later);
         MasterList masterList = todosService.get(user);
-        Todo todo = masterList.getTodos().get(0);
+        Todo firstTodo = masterList.getTodos().get(0);
+        Todo secondTodo = masterList.getTodos().get(1);
 
-        mvcResult = mockMvc.perform(post("/v1/todos/" + todo.getLocalIdentifier() + "/displace")
-                .content("{\"task\":\"do the things\"}")
-                .contentType(MediaType.APPLICATION_JSON)
+        mvcResult = mockMvc.perform(post("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())
                 .headers(httpHeaders))
                 .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("do the things")),
-                hasProperty("scheduling", equalTo(ScheduledFor.now)),
-                hasProperty("position", equalTo(1)))));
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("some task")),
-                hasProperty("scheduling", equalTo(ScheduledFor.later)),
-                hasProperty("position", equalTo(1)))));
+        assertThat(newMasterList.getTodos().get(0), equalTo(
+                new Todo(secondTodo.getLocalIdentifier(),
+                        secondTodo.getTask(),
+                        secondTodo.getScheduling(),
+                        firstTodo.getPosition())));
+        assertThat(newMasterList.getTodos().get(1), equalTo(
+                new Todo(firstTodo.getLocalIdentifier(),
+                        firstTodo.getTask(),
+                        firstTodo.getScheduling(),
+                        secondTodo.getPosition())));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier() + "/displace")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
     }
 }

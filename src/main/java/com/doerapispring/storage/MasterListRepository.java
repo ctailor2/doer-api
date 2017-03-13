@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,12 +21,14 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
         this.todoDao = todoDao;
     }
 
+    // TODO: Move away from using db primary key for identifier
     @Override
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
         List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
         List<Todo> todos = todoEntities.stream()
                 .map(todoEntity -> new Todo(
+                        todoEntity.id.toString(),
                         todoEntity.task,
                         todoEntity.active ? ScheduledFor.now : ScheduledFor.later,
                         todoEntity.position))
@@ -50,20 +53,18 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
 
     @Override
     public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
-        TodoEntity todoEntity = todoDao.findUnfinishedInList(
+        TodoEntity todoEntity = todoDao.findUserTodo(
                 masterList.getIdentifier().get(),
-                todo.getPosition(),
-                ScheduledFor.now.equals(todo.getScheduling()));
+                Long.valueOf(todo.getLocalIdentifier()));
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.delete(todoEntity);
     }
 
     @Override
     public void update(MasterList masterList, Todo todo) throws AbnormalModelException {
-        TodoEntity todoEntity = todoDao.findUnfinishedInList(
+        TodoEntity todoEntity = todoDao.findUserTodo(
                 masterList.getIdentifier().get(),
-                todo.getPosition(),
-                ScheduledFor.now.equals(todo.getScheduling()));
+                Long.valueOf(todo.getLocalIdentifier()));
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.save(TodoEntity.builder()
                 .id(todoEntity.id)
@@ -75,5 +76,31 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .createdAt(todoEntity.createdAt)
                 .updatedAt(new Date())
                 .build());
+    }
+
+
+    @Override
+    public void update(MasterList masterList, List<Todo> todos) throws AbnormalModelException {
+        List<TodoEntity> todoEntities = todos.stream()
+                .map(todo -> {
+                    TodoEntity todoEntity = todoDao.findUserTodo(
+                            masterList.getIdentifier().get(),
+                            Long.valueOf(todo.getLocalIdentifier()));
+                    if (todoEntity == null) return null;
+                    return TodoEntity.builder()
+                            .id(todoEntity.id)
+                            .userEntity(todoEntity.userEntity)
+                            .task(todo.getTask())
+                            .active(ScheduledFor.now.equals(todo.getScheduling()))
+                            .position(todo.getPosition())
+                            .completed(todo.isComplete())
+                            .createdAt(todoEntity.createdAt)
+                            .updatedAt(new Date())
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if(todoEntities.size() < todos.size()) throw new AbnormalModelException();
+        todoDao.save(todoEntities);
     }
 }

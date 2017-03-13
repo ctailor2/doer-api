@@ -83,4 +83,14 @@ public class TodoService {
         return completedListRepository.find(user.getIdentifier())
                 .orElseThrow(OperationRefusedException::new);
     }
+
+    public void move(User user, String localIdentifier, String targetLocalIdentifier) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            List<Todo> todos = masterList.move(localIdentifier, targetLocalIdentifier);
+            masterListRepository.update(masterList, todos);
+        } catch (TodoNotFoundException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
 }
