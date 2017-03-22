@@ -7,6 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
@@ -40,6 +44,14 @@ class TodosController {
                     todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
                 }
             });
+            Map<Boolean, List<TodoDTO>> partitionedTodos = todoListDTO.getTodoDTOs().stream()
+                    .collect(Collectors.partitioningBy(todoDTO -> "later".equals(todoDTO.getScheduling())));
+            List<TodoDTO> laterTodos = partitionedTodos.get(true);
+            laterTodos.stream().forEach(todoDTO ->
+                    laterTodos.stream().forEach(targetTodoDTO ->
+                            todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                                    todoDTO.getLocalIdentifier(),
+                                    targetTodoDTO.getLocalIdentifier()).withRel("move"))));
             return ResponseEntity.status(HttpStatus.OK)
                     .body(todosResponse);
         } catch (InvalidRequestException e) {

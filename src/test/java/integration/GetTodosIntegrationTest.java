@@ -70,6 +70,11 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move", hasSize(2)));
+        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[0].href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[1].href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[0].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[1].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos")));
         assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));

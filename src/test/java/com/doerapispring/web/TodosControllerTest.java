@@ -16,10 +16,10 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
 import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -43,7 +43,10 @@ public class TodosControllerTest {
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
-        todoDTOs = Collections.singletonList(new TodoDTO("someId", "someTask", "now"));
+        todoDTOs = asList(
+                new TodoDTO("someId", "someTask", "now"),
+                new TodoDTO("oneLaterId", "procrastination", "later"),
+                new TodoDTO("twoLaterId", "station", "later"));
         mockMvc = MockMvcBuilders
                 .standaloneSetup(todosController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -109,6 +112,12 @@ public class TodosControllerTest {
                         new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
                         new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
                         new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks()).containsSequence(
+                new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
+                new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks()).containsSequence(
+                new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
+                new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
     }
 
     @Test
