@@ -181,6 +181,15 @@ public class MasterListTest {
     }
 
     @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetDoesNotExist_inMatchingList_throwsNotFoundException() throws Exception {
+        Todo laterTodo = masterList.add("someTask", ScheduledFor.later);
+        masterList.add("identifierFromDifferentList", ScheduledFor.now);
+
+        exception.expect(TodoNotFoundException.class);
+        masterList.move(laterTodo.getLocalIdentifier(), "identifierFromDifferentList");
+    }
+
+    @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
         Todo fourthTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4);
         List<Todo> todos = asList(
@@ -207,19 +216,19 @@ public class MasterListTest {
 
     @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.later, 1);
+        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.now, 1);
         List<Todo> todos = asList(firstTodo,
-                new Todo("B", "anotherTask", ScheduledFor.later, 2),
-                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
-                new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4));
+                new Todo("B", "anotherTask", ScheduledFor.now, 2),
+                new Todo("C", "yetAnotherTask", ScheduledFor.now, 3),
+                new Todo("D", "evenYetAnotherTask", ScheduledFor.now, 4));
 
         MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
 
         List<Todo> effectedTodos = masterList.move("D", "B");
 
-        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 2);
-        Todo expectedThirdTodo = new Todo("B", "anotherTask", ScheduledFor.later, 3);
-        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 4);
+        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.now, 2);
+        Todo expectedThirdTodo = new Todo("B", "anotherTask", ScheduledFor.now, 3);
+        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", ScheduledFor.now, 4);
 
         assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
         assertThat(masterList.getTodos()).containsExactly(

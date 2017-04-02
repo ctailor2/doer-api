@@ -139,16 +139,10 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
-        Todo originalTodo = getPostponedByLocalIdentifier(originalTodoIdentifier);
-        Todo targetTodo = getPostponedByLocalIdentifier(targetTodoIdentifier);
-        return postponedList.move(originalTodo, targetTodo);
-    }
-
-    private Todo getPostponedByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        return postponedList.todos.stream()
-                .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
-                .findFirst()
-                .orElseThrow(TodoNotFoundException::new);
+        Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
+        TodoList todoList = getListForScheduling(originalTodo.getScheduling());
+        Todo targetTodo = todoList.getByIdentifier(targetTodoIdentifier);
+        return todoList.move(originalTodo, targetTodo);
     }
 
     private static class TodoList {
@@ -225,6 +219,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
                         return todo;
                     })
                     .collect(Collectors.toList());
+        }
+
+        Todo getByIdentifier(String targetTodoIdentifier) throws TodoNotFoundException {
+            return todos.stream()
+                    .filter(todo -> targetTodoIdentifier.equals(todo.getLocalIdentifier()))
+                    .findFirst()
+                    .orElseThrow(TodoNotFoundException::new);
         }
     }
 

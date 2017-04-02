@@ -40,13 +40,20 @@ class TodosController {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
                 todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
-                if (!canScheduleForNow) {
-                    todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
-                }
             });
             Map<Boolean, List<TodoDTO>> partitionedTodos = todoListDTO.getTodoDTOs().stream()
-                    .collect(Collectors.partitioningBy(todoDTO -> "later".equals(todoDTO.getScheduling())));
-            List<TodoDTO> laterTodos = partitionedTodos.get(true);
+                    .collect(Collectors.partitioningBy(todoDTO -> "now".equals(todoDTO.getScheduling())));
+            List<TodoDTO> nowTodos = partitionedTodos.get(true);
+            nowTodos.stream().forEach(todoDTO ->
+                    nowTodos.stream().forEach(targetTodoDTO -> {
+                        todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                                todoDTO.getLocalIdentifier(),
+                                targetTodoDTO.getLocalIdentifier()).withRel("move"));
+                        if (!canScheduleForNow) {
+                            todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
+                        }
+                    }));
+            List<TodoDTO> laterTodos = partitionedTodos.get(false);
             laterTodos.stream().forEach(todoDTO ->
                     laterTodos.stream().forEach(targetTodoDTO ->
                             todoDTO.add(hateoasLinkGenerator.moveTodoLink(

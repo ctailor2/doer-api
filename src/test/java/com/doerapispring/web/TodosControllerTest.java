@@ -92,13 +92,17 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_callsTodoService_whenListDoesNotAllowSchedulingTasksForNow_includesDisplaceLinkForEachTodo() throws Exception {
+    public void index_callsTodoService_whenListDoesNotAllowSchedulingTasksForNow_includesDisplaceLink_forEachNowTodo() throws Exception {
         when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
                 .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks())
+                .doesNotContain(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks())
+                .doesNotContain(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
     }
 
     @Test
@@ -108,10 +112,12 @@ public class TodosControllerTest {
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
-                .containsOnly(
+                .contains(
                         new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
                         new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
                         new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).containsSequence(
+                new Link(MOCK_BASE_URL + "/todos/someId/moveTodo/someId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks()).containsSequence(
                 new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
                 new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
