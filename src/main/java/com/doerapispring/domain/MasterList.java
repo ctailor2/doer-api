@@ -51,6 +51,16 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return getListForScheduling(scheduling).add(task);
     }
 
+    public List<Todo> pull() {
+        TodoList laterList = getListForScheduling(ScheduledFor.later);
+        TodoList nowList = getListForScheduling(ScheduledFor.now);
+        List<Todo> laterTodos = laterList.pop(focusSize - nowList.todos.size());
+        return laterTodos.stream()
+                .map(todo ->
+                        nowList.addExisting(todo.getLocalIdentifier(), todo.getTask()))
+                .collect(Collectors.toList());
+    }
+
     private TodoList getListForScheduling(ScheduledFor scheduling) {
         if (ScheduledFor.now.equals(scheduling)) {
             return immediateList;
@@ -165,6 +175,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
             return todo;
         }
 
+        Todo addExisting(String localIdentifier, String task) {
+            int position = getNextPosition();
+            Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
+            todos.add(newTodo);
+            return newTodo;
+        }
+
         Todo push(String task) {
             int position = getNextTopPosition();
             Todo todo = new Todo(task, scheduling, position);
@@ -190,15 +207,15 @@ public class MasterList implements UniquelyIdentifiable<String> {
             return size() == 0;
         }
 
-        Integer size() {
+        private Integer size() {
             return todos.size();
         }
 
-        void remove(Todo todo) {
+        private void remove(Todo todo) {
             todos.remove(todo);
         }
 
-        List<Todo> move(Todo originalTodo, Todo targetTodo) {
+        private List<Todo> move(Todo originalTodo, Todo targetTodo) {
             Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), originalTodo.getPosition()));
 
             int originalIndex = todos.indexOf(originalTodo);
@@ -221,11 +238,19 @@ public class MasterList implements UniquelyIdentifiable<String> {
                     .collect(Collectors.toList());
         }
 
-        Todo getByIdentifier(String targetTodoIdentifier) throws TodoNotFoundException {
+        private Todo getByIdentifier(String targetTodoIdentifier) throws TodoNotFoundException {
             return todos.stream()
                     .filter(todo -> targetTodoIdentifier.equals(todo.getLocalIdentifier()))
                     .findFirst()
                     .orElseThrow(TodoNotFoundException::new);
+        }
+
+        private List<Todo> pop(Integer count) {
+            List<Todo> todos = this.todos.stream()
+                    .limit(count)
+                    .collect(Collectors.toList());
+            todos.stream().forEach(this::remove);
+            return todos;
         }
     }
 

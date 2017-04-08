@@ -253,4 +253,53 @@ public class MasterListTest {
         assertThat(effectedTodos).isEmpty();
         assertThat(masterList.getTodos()).isEqualTo(todos);
     }
+
+    @Test
+    public void pull_whenThereAreNoNowTodos_returnsLaterTodos() throws Exception {
+        List<Todo> todos = asList(
+                new Todo("A", "firstLater", ScheduledFor.later, 1),
+                new Todo("B", "secondLater", ScheduledFor.later, 2));
+        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+
+        List<Todo> effectedTodos = masterList.pull();
+
+        assertThat(effectedTodos).contains(
+                new Todo("A", "firstLater", ScheduledFor.now, 1),
+                new Todo("B", "secondLater", ScheduledFor.now, 2));
+        assertThat(masterList.getTodos()).isEqualTo(effectedTodos);
+    }
+
+    @Test
+    public void pull_whenThereAreLessNowTodosThanFocusSize_returnsAsManyLaterTodosAsTheDifference() throws Exception {
+        List<Todo> todos = asList(
+                new Todo("A", "onlyNow", ScheduledFor.now, 1),
+                new Todo("B", "firstLater", ScheduledFor.later, 1),
+                new Todo("C", "secondLater", ScheduledFor.later, 2));
+        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+
+        List<Todo> effectedTodos = masterList.pull();
+
+        assertThat(effectedTodos).contains(new Todo("B", "firstLater", ScheduledFor.now, 2));
+        assertThat(masterList.getTodos()).containsExactly(
+                new Todo("A", "onlyNow", ScheduledFor.now, 1),
+                new Todo("B", "firstLater", ScheduledFor.now, 2),
+                new Todo("C", "secondLater", ScheduledFor.later, 2));
+    }
+
+    @Test
+    public void pull_whenThereAreAsManyNowTodosAsFocusSize_returnsNoLaterTodos() throws Exception {
+        masterList.add("firstNow", ScheduledFor.now);
+        masterList.add("secondNow", ScheduledFor.now);
+        masterList.add("firstLater", ScheduledFor.later);
+        masterList.add("secondLater", ScheduledFor.later);
+
+        List<Todo> todos = masterList.pull();
+
+        assertThat(todos).isEmpty();
+        assertThat(masterList.getTodos()).containsExactly(
+                new Todo("firstNow", ScheduledFor.now, 1),
+                new Todo("secondNow", ScheduledFor.now, 2),
+                new Todo("firstLater", ScheduledFor.later, 1),
+                new Todo("secondLater", ScheduledFor.later, 2));
+    }
 }

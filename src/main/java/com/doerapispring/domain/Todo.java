@@ -5,7 +5,7 @@ public class Todo {
     private boolean complete = false;
     private Integer position;
     private final String localIdentifier;
-    private final ScheduledFor scheduling;
+    private ScheduledFor scheduling;
 
     public Todo(String task, ScheduledFor scheduling, Integer position) {
         this.localIdentifier = "0";
@@ -88,5 +88,9 @@ public class Todo {
 
     void setPosition(Integer position) {
         this.position = position;
+    }
+
+    public void setScheduling(ScheduledFor scheduling) {
+        this.scheduling = scheduling;
     }
 }

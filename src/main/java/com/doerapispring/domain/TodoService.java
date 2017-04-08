@@ -93,4 +93,14 @@ public class TodoService {
             throw new OperationRefusedException();
         }
     }
+
+    public void pull(User user) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            List<Todo> todos = masterList.pull();
+            masterListRepository.update(masterList, todos);
+        } catch (AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
 }

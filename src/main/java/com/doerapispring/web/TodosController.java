@@ -35,6 +35,8 @@ class TodosController {
             boolean canScheduleForNow = todoListDTO.isSchedulingForNowAllowed();
             if (canScheduleForNow) {
                 todosResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
+                // TODO: Only include this link if there are any later todos to pull
+                todosResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
             }
             todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
@@ -181,6 +183,20 @@ class TodosController {
             todoApiService.move(authenticatedUser, localId, targetLocalId);
             TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
             todoLinksResponse.add(hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
+                    hateoasLinkGenerator.todosLink().withRel("todos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @RequestMapping(value = "/todos/pull", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        try {
+            todoApiService.pull(authenticatedUser);
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(hateoasLinkGenerator.pullTodosLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink().withRel("todos"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
         } catch (InvalidRequestException e) {

@@ -28,4 +28,6 @@ interface HateoasLinkGenerator {
     Link completedTodosLink();
 
     Link moveTodoLink(String localId, String targetLocalId);
+
+    Link pullTodosLink();
 }

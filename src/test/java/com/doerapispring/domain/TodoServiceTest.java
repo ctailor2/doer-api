@@ -375,4 +375,33 @@ public class TodoServiceTest {
         exception.expect(OperationRefusedException.class);
         todoService.move(new User(new UniqueIdentifier<>("one@two.com")), "idOne", "idTwo");
     }
+
+    @Test
+    public void pull_whenMasterListFound_whenTodosPulled_updatesPulledTodosUsingRepository() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        List<Todo> todos = asList(
+                new Todo("some task", ScheduledFor.now, 1),
+                new Todo("some other task", ScheduledFor.now, 2));
+        when(mockMasterList.pull()).thenReturn(todos);
+
+        todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
+
+        verify(mockMasterList).pull();
+        verify(mockMasterListRepository).update(mockMasterList, todos);
+    }
+
+    @Test
+    public void pull_whenMasterListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        List<Todo> todos = asList(
+                new Todo("some task", ScheduledFor.now, 1),
+                new Todo("some other task", ScheduledFor.now, 2));
+        when(mockMasterList.pull()).thenReturn(todos);
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), anyListOf(Todo.class));
+
+        exception.expect(OperationRefusedException.class);
+        todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
+    }
 }

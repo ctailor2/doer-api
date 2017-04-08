@@ -82,13 +82,14 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_callsTodoService_whenListAllowsSchedulingTasksForNow_includesLink() throws Exception {
+    public void index_callsTodoService_whenListAllowsSchedulingTasksForNow_includesLinks() throws Exception {
         when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
-        assertThat(responseEntity.getBody().getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"));
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
+                new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
     }
 
     @Test
@@ -370,6 +371,34 @@ public class TodosControllerTest {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).move(any(), any(), any());
 
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.move(authenticatedUser, "localId", "targetLocalId");
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void pull_mapping() throws Exception {
+        mockMvc.perform(post("/v1/todos/pull"))
+                .andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void pull_callsTodoService_returns202() throws Exception {
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.pull(authenticatedUser);
+
+        verify(mockTodoApiService).pull(authenticatedUser);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/todos/pullTodos").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+    }
+
+    @Test
+    public void pull_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).pull(any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.pull(authenticatedUser);
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
