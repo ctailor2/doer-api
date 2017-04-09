@@ -10,6 +10,10 @@ buildscript {
 	}
 }
 
+plugins {
+	id "org.flywaydb.flyway" version "4.1.2"
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
@@ -24,7 +28,6 @@ targetCompatibility = 1.8
 repositories {
 	mavenCentral()
 }
-
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
@@ -41,12 +44,21 @@ dependencies {
 	testCompile('com.jayway.jsonpath:json-path-assert:2.2.0')
 }
 
-
 eclipse {
 	classpath {
 		 containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
 		 containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
 	}
+}
+
+flyway {
+	def database
+	if(!project.hasProperty('testdb')) {
+		database = "doer_api"
+	} else {
+		database = "doer_api_test"
+	}
+	url = 'jdbc:postgresql://localhost:5432/' + database
 }
 
 apply from: "$projectDir/gradle/integrationTest.gradle"
