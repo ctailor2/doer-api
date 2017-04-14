@@ -46,6 +46,6 @@ public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests
         assertThat(responseContent, hasJsonPath("$.session.expiresAt", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/login")));
-        assertThat(responseContent, hasJsonPath("$._links.home.href", containsString("/v1/home")));
+        assertThat(responseContent, hasJsonPath("$._links.root.href", containsString("/v1/root")));
     }
 }

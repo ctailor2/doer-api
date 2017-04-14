@@ -26,9 +26,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(MockitoJUnitRunner.class)
-public class HomeControllerTest {
+public class ResourcesControllerTest {
     private MockMvc mockMvc;
-    private HomeController homeController;
+    private ResourcesController resourcesController;
     private AuthenticatedUser authenticatedUser;
 
     @Mock
@@ -39,37 +39,37 @@ public class HomeControllerTest {
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        homeController = new HomeController(new MockHateoasLinkGenerator(), mockTodoApiService);
+        resourcesController = new ResourcesController(new MockHateoasLinkGenerator(), mockTodoApiService);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(homeController)
+                .standaloneSetup(resourcesController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
         when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
     }
 
     @Test
-    public void home_mapping() throws Exception {
-        mockMvc.perform(get("/v1/home"))
+    public void root_mapping() throws Exception {
+        mockMvc.perform(get("/v1/root"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void home_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
-        ResponseEntity<HomeResponse> responseEntity = homeController.home(authenticatedUser);
+    public void root_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/home").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/root").withSelfRel(),
                 new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
                 new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"),
                 new Link(MOCK_BASE_URL + "/completedTodos").withRel("completedTodos"));
     }
 
     @Test
-    public void home_whenSchedulingForNowIsAllowed_includesLink() throws Exception {
+    public void root_whenSchedulingForNowIsAllowed_includesLink() throws Exception {
         when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), true));
 
-        ResponseEntity<HomeResponse> responseEntity = homeController.home(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks())
@@ -78,10 +78,10 @@ public class HomeControllerTest {
     }
 
     @Test
-    public void home_whenInvalidRequest_throws400BadRequest() throws Exception {
+    public void root_whenInvalidRequest_throws400BadRequest() throws Exception {
         when(mockTodoApiService.get(any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<HomeResponse> responseEntity = homeController.home(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

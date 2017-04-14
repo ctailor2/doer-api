@@ -3,7 +3,7 @@ package com.doerapispring.web;
 import org.springframework.hateoas.Link;
 
 interface HateoasLinkGenerator {
-    Link homeLink();
+    Link rootLink();
 
     Link todosLink();
 

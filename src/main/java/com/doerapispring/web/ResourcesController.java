@@ -10,33 +10,33 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
-class HomeController {
+class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final TodoApiService todoApiService;
 
     @Autowired
-    HomeController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
+    ResourcesController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.todoApiService = todoApiService;
     }
 
-    @RequestMapping(value = "/home", method = RequestMethod.GET)
+    @RequestMapping(value = "/root", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<HomeResponse> home(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> root(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         // TODO: Move all of the links related to the main page to their own endpoint
         // so this endpoint truly becomes the root resources of the application
         try {
             MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
-            HomeResponse homeResponse = new HomeResponse();
-            homeResponse.add(hateoasLinkGenerator.homeLink().withSelfRel());
-            homeResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
-            homeResponse.add(hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"));
-            homeResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.rootLink().withSelfRel());
+            resourcesResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
+            resourcesResponse.add(hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"));
+            resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
             if (masterListDTO.isSchedulingForNowAllowed()) {
-                homeResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
-                homeResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
+                resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
+                resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
             }
-            return ResponseEntity.status(HttpStatus.OK).body(homeResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

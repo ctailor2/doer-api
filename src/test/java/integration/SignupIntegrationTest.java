@@ -63,6 +63,6 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         assertThat(responseContent, hasJsonPath("$.session.expiresAt", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/signup")));
-        assertThat(responseContent, hasJsonPath("$._links.home.href", containsString("/v1/home")));
+        assertThat(responseContent, hasJsonPath("$._links.root.href", containsString("/v1/root")));
     }
 }

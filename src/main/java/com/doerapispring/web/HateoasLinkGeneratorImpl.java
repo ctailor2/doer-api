@@ -9,8 +9,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Component
 public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
-    public Link homeLink() {
-        return linkTo(methodOn(HomeController.class).home(null)).withSelfRel();
+    public Link rootLink() {
+        return linkTo(methodOn(ResourcesController.class).root(null)).withSelfRel();
     }
 
     @Override

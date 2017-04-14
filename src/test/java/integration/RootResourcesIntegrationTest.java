@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-public class HomeIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
     private HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -32,14 +32,14 @@ public class HomeIntegrationTest extends AbstractWebAppJUnit4SpringContextTests 
     }
 
     @Test
-    public void home_includesLinks() throws Exception {
+    public void root_includesLinks() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/home")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/root")));
         assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));
         assertThat(responseContent, hasJsonPath("$._links.todoLater.href", containsString("/v1/todoLater")));
         assertThat(responseContent, hasJsonPath("$._links.pull.href", containsString("/v1/todos/pull")));
@@ -48,6 +48,6 @@ public class HomeIntegrationTest extends AbstractWebAppJUnit4SpringContextTests 
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/home").headers(httpHeaders)).andReturn();
+        mvcResult = mockMvc.perform(get("/v1/root").headers(httpHeaders)).andReturn();
     }
 }

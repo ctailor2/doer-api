@@ -59,7 +59,7 @@ public class UserSessionsControllerTest {
         verify(mockUserSessionsApiService).signup(identifier, credentials);
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/signup").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/home").withRel("home"));
+                new Link(MOCK_BASE_URL + "/root").withRel("root"));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class UserSessionsControllerTest {
         verify(mockUserSessionsApiService).login(identifier, credentials);
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/login").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/home").withRel("home"));
+                new Link(MOCK_BASE_URL + "/root").withRel("root"));
     }
 
     @Test

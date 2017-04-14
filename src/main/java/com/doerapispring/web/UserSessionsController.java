@@ -28,7 +28,7 @@ class UserSessionsController {
                     userSessionsApiService.signup(signupForm.getIdentifier(),
                             signupForm.getCredentials()));
             sessionResponse.add(hateoasLinkGenerator.signupLink().withSelfRel(),
-                    hateoasLinkGenerator.homeLink().withRel("home"));
+                    hateoasLinkGenerator.rootLink().withRel("root"));
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(sessionResponse);
         } catch (AccessDeniedException e) {
@@ -44,7 +44,7 @@ class UserSessionsController {
             SessionResponse sessionResponse = new SessionResponse(userSessionsApiService.login(loginForm.getIdentifier(),
                     loginForm.getCredentials()));
             sessionResponse.add(hateoasLinkGenerator.loginLink().withSelfRel(),
-                    hateoasLinkGenerator.homeLink().withRel("home"));
+                    hateoasLinkGenerator.rootLink().withRel("root"));
             return ResponseEntity.ok()
                     .body(sessionResponse);
         } catch (AccessDeniedException e) {
