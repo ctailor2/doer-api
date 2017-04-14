@@ -7,10 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @RestController
 @CrossOrigin
 @RequestMapping(value = "/v1")
@@ -26,35 +22,26 @@ class TodosController {
 
     @RequestMapping(value = "/todos", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<TodosResponse> index(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<TodosResponse> index(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                        @RequestParam(defaultValue = "now") String scheduling) {
         try {
-            TodoListDTO todoListDTO = todoApiService.get(authenticatedUser);
+            TodoListDTO todoListDTO = todoApiService.getSubList(authenticatedUser, scheduling);
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel());
-            boolean canScheduleForNow = todoListDTO.isSchedulingForNowAllowed();
             todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
                 todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
-            });
-            Map<Boolean, List<TodoDTO>> partitionedTodos = todoListDTO.getTodoDTOs().stream()
-                    .collect(Collectors.partitioningBy(todoDTO -> "now".equals(todoDTO.getScheduling())));
-            List<TodoDTO> nowTodos = partitionedTodos.get(true);
-            nowTodos.stream().forEach(todoDTO -> {
-                nowTodos.stream().forEach(targetTodoDTO ->
+
+                todoListDTO.getTodoDTOs().stream().forEach(targetTodoDTO ->
                         todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                                 todoDTO.getLocalIdentifier(),
                                 targetTodoDTO.getLocalIdentifier()).withRel("move")));
-                if (!canScheduleForNow) {
+
+                if (todoListDTO.isDisplacementAllowed()) {
                     todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
                 }
             });
-            List<TodoDTO> laterTodos = partitionedTodos.get(false);
-            laterTodos.stream().forEach(todoDTO ->
-                    laterTodos.stream().forEach(targetTodoDTO ->
-                            todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                                    todoDTO.getLocalIdentifier(),
-                                    targetTodoDTO.getLocalIdentifier()).withRel("move"))));
             return ResponseEntity.status(HttpStatus.OK)
                     .body(todosResponse);
         } catch (InvalidRequestException e) {

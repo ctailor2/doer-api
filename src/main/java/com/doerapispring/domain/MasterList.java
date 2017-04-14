@@ -1,6 +1,9 @@
 package com.doerapispring.domain;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -15,8 +18,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
                       int focusSize) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.focusSize = focusSize;
-        immediateList = new TodoList(ScheduledFor.now);
-        postponedList = new TodoList(ScheduledFor.later);
+        immediateList = new TodoList(ScheduledFor.now, focusSize);
+        postponedList = new TodoList(ScheduledFor.later, -1);
     }
 
     public MasterList(UniqueIdentifier<String> uniqueIdentifier,
@@ -27,14 +30,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
         Map<Boolean, List<Todo>> partitionedTodos = todos.stream()
                 .collect(Collectors.partitioningBy(todo ->
                         ScheduledFor.now.equals(todo.getScheduling())));
-        immediateList = new TodoList(ScheduledFor.now, partitionedTodos.get(true));
-        postponedList = new TodoList(ScheduledFor.later, partitionedTodos.get(false));
+        immediateList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), focusSize);
+        postponedList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
     }
 
     public List<Todo> getTodos() {
         ArrayList<Todo> todos = new ArrayList<>();
-        todos.addAll(immediateList.todos);
-        todos.addAll(postponedList.todos);
+        todos.addAll(immediateList.getTodos());
+        todos.addAll(postponedList.getTodos());
         return todos;
     }
 
@@ -54,14 +57,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
     public List<Todo> pull() {
         TodoList laterList = getListForScheduling(ScheduledFor.later);
         TodoList nowList = getListForScheduling(ScheduledFor.now);
-        List<Todo> laterTodos = laterList.pop(focusSize - nowList.todos.size());
+        List<Todo> laterTodos = laterList.pop(focusSize - nowList.getTodos().size());
         return laterTodos.stream()
                 .map(todo ->
                         nowList.addExisting(todo.getLocalIdentifier(), todo.getTask()))
                 .collect(Collectors.toList());
     }
 
-    private TodoList getListForScheduling(ScheduledFor scheduling) {
+    TodoList getListForScheduling(ScheduledFor scheduling) {
         if (ScheduledFor.now.equals(scheduling)) {
             return immediateList;
         }
@@ -110,7 +113,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public boolean isImmediateListFull() {
-        return focusSize.equals(immediateList.size());
+        return immediateList.isFull();
     }
 
     @Override
@@ -153,145 +156,5 @@ public class MasterList implements UniquelyIdentifiable<String> {
         TodoList todoList = getListForScheduling(originalTodo.getScheduling());
         Todo targetTodo = todoList.getByIdentifier(targetTodoIdentifier);
         return todoList.move(originalTodo, targetTodo);
-    }
-
-    private static class TodoList {
-        private final ScheduledFor scheduling;
-        private List<Todo> todos = new ArrayList<>();
-
-        TodoList(ScheduledFor scheduling) {
-            this.scheduling = scheduling;
-        }
-
-        TodoList(ScheduledFor scheduling, List<Todo> todos) {
-            this.scheduling = scheduling;
-            this.todos.addAll(todos);
-        }
-
-        Todo add(String task) {
-            int position = getNextPosition();
-            Todo todo = new Todo(task, scheduling, position);
-            todos.add(todo);
-            return todo;
-        }
-
-        Todo addExisting(String localIdentifier, String task) {
-            int position = getNextPosition();
-            Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
-            todos.add(newTodo);
-            return newTodo;
-        }
-
-        Todo push(String task) {
-            int position = getNextTopPosition();
-            Todo todo = new Todo(task, scheduling, position);
-            todos.add(0, todo);
-            return todo;
-        }
-
-        private Integer getNextPosition() {
-            if (isEmpty()) {
-                return 1;
-            }
-            return todos.get(todos.size() - 1).getPosition() + 1;
-        }
-
-        private Integer getNextTopPosition() {
-            if (isEmpty()) {
-                return 1;
-            }
-            return todos.get(0).getPosition() - 1;
-        }
-
-        private boolean isEmpty() {
-            return size() == 0;
-        }
-
-        private Integer size() {
-            return todos.size();
-        }
-
-        private void remove(Todo todo) {
-            todos.remove(todo);
-        }
-
-        private List<Todo> move(Todo originalTodo, Todo targetTodo) {
-            Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), originalTodo.getPosition()));
-
-            int originalIndex = todos.indexOf(originalTodo);
-            int targetIndex = todos.indexOf(targetTodo);
-
-            Map<Integer, Integer> originalMapping = new HashMap<>();
-            for (int index = originalIndex; direction.targetNotExceeded(index, targetIndex); index += direction.getValue()) {
-                originalMapping.put(index, todos.get(index).getPosition());
-            }
-
-            remove(originalTodo);
-            todos.add(targetIndex, originalTodo);
-
-            return originalMapping.entrySet().stream()
-                    .map(entry -> {
-                        Todo todo = this.todos.get(entry.getKey());
-                        todo.setPosition(entry.getValue());
-                        return todo;
-                    })
-                    .collect(Collectors.toList());
-        }
-
-        private Todo getByIdentifier(String targetTodoIdentifier) throws TodoNotFoundException {
-            return todos.stream()
-                    .filter(todo -> targetTodoIdentifier.equals(todo.getLocalIdentifier()))
-                    .findFirst()
-                    .orElseThrow(TodoNotFoundException::new);
-        }
-
-        private List<Todo> pop(Integer count) {
-            List<Todo> todos = this.todos.stream()
-                    .limit(count)
-                    .collect(Collectors.toList());
-            todos.stream().forEach(this::remove);
-            return todos;
-        }
-    }
-
-    private enum Direction {
-        UP(-1),
-        DOWN(1),
-        NONE(0);
-
-        private static Map<Integer, Direction> valueMapping = new HashMap<>();
-
-        static {
-            for (Direction direction : Direction.values()) {
-                valueMapping.put(direction.value, direction);
-            }
-        }
-
-        private final int value;
-
-        Direction(int value) {
-            this.value = value;
-        }
-
-        public static Direction valueOf(int directionValue) {
-            return valueMapping.get(directionValue);
-        }
-
-        public boolean targetNotExceeded(int currentIndex, int targetIndex) {
-            switch (this) {
-                case UP:
-                    return currentIndex >= targetIndex;
-                case DOWN:
-                    return currentIndex <= targetIndex;
-                case NONE:
-                    return false;
-                default:
-                    return false;
-            }
-        }
-
-        public int getValue() {
-            return value;
-        }
     }
 }

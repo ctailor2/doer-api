@@ -2,10 +2,7 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.CompletedTodoListDTO;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.TodoDTO;
-import com.doerapispring.web.TodoListDTO;
+import com.doerapispring.web.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +57,49 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
+    public void getSubList_withValidScheduling_callsTodoService() throws Exception {
+        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+
+        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "later");
+
+        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.later);
+    }
+
+    @Test
+    public void getSubList_withInvalidScheduling_throwsInvalidRequest() throws Exception {
+        exception.expect(InvalidRequestException.class);
+        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "unknownScheduling");
+    }
+
+    @Test
+    public void getSubList_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any()))
+                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
+
+        assertThat(todoListDTO.isDisplacementAllowed()).isEqualTo(true);
+    }
+
+    @Test
+    public void getSubList_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), -1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
+
+        assertThat(todoListDTO.isDisplacementAllowed()).isEqualTo(false);
+    }
+
+    @Test
+    public void getSubList_whenOperationIsRefused_throwsInvalidRequest() throws Exception {
+        when(mockTodoService.getSubList(any(), any())).thenThrow(new OperationRefusedException());
+
+        exception.expect(InvalidRequestException.class);
+        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
+    }
+
+    @Test
     public void get_callsTodoService_returnsTodoListDTO_containingAllTodos() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         MasterList masterList = new MasterList(uniqueIdentifier, 400);
@@ -67,10 +107,10 @@ public class TodoApiServiceImplTest {
         Todo second = masterList.add("second", ScheduledFor.later);
         when(mockTodoService.get(any())).thenReturn(masterList);
 
-        TodoListDTO todoListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(todoListDTO.getTodoDTOs()).contains(
+        assertThat(masterListDTO.getTodoDTOs()).contains(
                 new TodoDTO(first.getLocalIdentifier(), "first", "now"),
                 new TodoDTO(second.getLocalIdentifier(), "second", "later"));
     }
@@ -81,10 +121,10 @@ public class TodoApiServiceImplTest {
         when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 0
         ));
 
-        TodoListDTO todoListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(todoListDTO).isEqualTo(new TodoListDTO(Collections.emptyList(), false));
+        assertThat(masterListDTO).isEqualTo(new MasterListDTO(Collections.emptyList(), false));
     }
 
     @Test
@@ -92,10 +132,10 @@ public class TodoApiServiceImplTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1));
 
-        TodoListDTO todoListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(todoListDTO).isEqualTo(new TodoListDTO(Collections.emptyList(), true));
+        assertThat(masterListDTO).isEqualTo(new MasterListDTO(Collections.emptyList(), true));
     }
 
     @Test

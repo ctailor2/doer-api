@@ -56,6 +56,42 @@ public class TodoServiceTest {
     }
 
     @Test
+    public void getSubList_whenMasterListFound_whenScheduledForNow_returnsImmediateListUsingRepository() throws Exception {
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        Todo nowTodo = new Todo("taskOne", ScheduledFor.now, 1);
+        List<Todo> todos = asList(nowTodo, new Todo("taskTwo", ScheduledFor.later, 1));
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, todos);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
+        User user = new User(uniqueIdentifier);
+
+        TodoList todoList = todoService.getSubList(user, ScheduledFor.now);
+
+        assertThat(todoList.getTodos()).containsOnly(nowTodo);
+    }
+
+    @Test
+    public void getSubList_whenMasterListFound_whenScheduledForLater_returnsPostponedListUsingRepository() throws Exception {
+        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        Todo laterTodo = new Todo("taskTwo", ScheduledFor.later, 1);
+        List<Todo> todos = asList(new Todo("taskOne", ScheduledFor.now, 1), laterTodo);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, todos);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
+        User user = new User(uniqueIdentifier);
+
+        TodoList todoList = todoService.getSubList(user, ScheduledFor.later);
+
+        assertThat(todoList.getTodos()).containsOnly(laterTodo);
+    }
+
+    @Test
+    public void getSubList_whenMasterListNotFound_refusesGet() throws Exception {
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.getSubList(new User(new UniqueIdentifier<>("one@two.com")), ScheduledFor.now);
+    }
+
+    @Test
     public void create_whenMasterListFound_addsTodoToRepository() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));

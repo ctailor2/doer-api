@@ -44,7 +44,7 @@ public class HomeControllerTest {
                 .standaloneSetup(homeController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(Collections.emptyList(), false));
+        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class HomeControllerTest {
 
     @Test
     public void home_whenSchedulingForNowIsAllowed_includesLink() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(Collections.emptyList(), true));
+        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), true));
 
         ResponseEntity<HomeResponse> responseEntity = homeController.home(authenticatedUser);
 

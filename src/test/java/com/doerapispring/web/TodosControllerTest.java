@@ -54,52 +54,60 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void index_mapping() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
+    public void index_mapping_callsTodoService_withNowSchedulingByDefault() throws Exception {
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
 
         mockMvc.perform(get("/v1/todos"))
                 .andExpect(status().isOk());
+
+        verify(mockTodoApiService).getSubList(authenticatedUser, "now");
+    }
+
+    @Test
+    public void index_callsTodoService_withSuppliedScheduling() throws Exception {
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
+
+        todosController.index(authenticatedUser, "someScheduling");
+
+        verify(mockTodoApiService).getSubList(authenticatedUser, "someScheduling");
     }
 
     @Test
     public void index_whenInvalidRequest_returns400BadRequest() throws Exception {
-        when(mockTodoApiService.get(any())).thenThrow(new InvalidRequestException());
+        when(mockTodoApiService.getSubList(any(), any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
     public void index_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
-        verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks())
                 .contains(new Link(MOCK_BASE_URL + "/todos").withSelfRel());
     }
 
     @Test
-    public void index_callsTodoService_whenListDoesNotAllowSchedulingTasksForNow_includesDisplaceLink_forEachNowTodo() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, false));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+    public void index_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
-        verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
                 .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks())
-                .doesNotContain(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
+                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks())
-                .doesNotContain(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
+                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
     }
 
     @Test
     public void index_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
-        verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
                 .contains(
                         new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),

@@ -103,4 +103,8 @@ public class TodoService {
             throw new OperationRefusedException();
         }
     }
+
+    public TodoList getSubList(User user, ScheduledFor scheduling) throws OperationRefusedException {
+        return get(user).getListForScheduling(scheduling);
+    }
 }

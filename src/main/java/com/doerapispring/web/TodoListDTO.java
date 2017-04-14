@@ -4,19 +4,19 @@ import java.util.List;
 
 public class TodoListDTO {
     private final List<TodoDTO> todoDTOs;
-    private final boolean schedulingForNowAllowed;
+    private final boolean displacementAllowed;
 
-    public TodoListDTO(List<TodoDTO> todoDTOs, boolean schedulingForNowAllowed) {
+    public TodoListDTO(List<TodoDTO> todoDTOs, boolean displacementAllowed) {
         this.todoDTOs = todoDTOs;
-        this.schedulingForNowAllowed = schedulingForNowAllowed;
+        this.displacementAllowed = displacementAllowed;
     }
 
-    public List<TodoDTO> getTodoDTOs() {
+    List<TodoDTO> getTodoDTOs() {
         return todoDTOs;
     }
 
-    public boolean isSchedulingForNowAllowed() {
-        return schedulingForNowAllowed;
+    public boolean isDisplacementAllowed() {
+        return displacementAllowed;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class TodoListDTO {
 
         TodoListDTO that = (TodoListDTO) o;
 
-        if (schedulingForNowAllowed != that.schedulingForNowAllowed) return false;
+        if (displacementAllowed != that.displacementAllowed) return false;
         return todoDTOs != null ? todoDTOs.equals(that.todoDTOs) : that.todoDTOs == null;
 
     }
@@ -34,7 +34,7 @@ public class TodoListDTO {
     @Override
     public int hashCode() {
         int result = todoDTOs != null ? todoDTOs.hashCode() : 0;
-        result = 31 * result + (schedulingForNowAllowed ? 1 : 0);
+        result = 31 * result + (displacementAllowed ? 1 : 0);
         return result;
     }
 
@@ -42,7 +42,7 @@ public class TodoListDTO {
     public String toString() {
         return "TodoListDTO{" +
                 "todoDTOs=" + todoDTOs +
-                ", schedulingForNowAllowed=" + schedulingForNowAllowed +
+                ", displacementAllowed=" + displacementAllowed +
                 '}';
     }
 }
