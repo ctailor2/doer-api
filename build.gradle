@@ -62,5 +62,10 @@ flyway {
 	url = 'jdbc:postgresql://localhost:5432/' + database
 }
 
-apply from: "$projectDir/gradle/integrationTest.gradle"
-apply from: "$projectDir/gradle/test.gradle"
+test {
+	exclude 'integration/**'
+}
+
+task integrationTest(type: Test) {
+	include 'integration/**'
+}
