@@ -90,8 +90,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void get_callsTodoService_whenImmediateListNotFull_returnsTodoListDTO_whereCanScheduleForNow() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1
-        ));
+        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 

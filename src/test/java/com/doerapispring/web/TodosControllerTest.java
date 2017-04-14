@@ -77,19 +77,7 @@ public class TodosControllerTest {
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/todos").withSelfRel(),
-                        new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"));
-    }
-
-    @Test
-    public void index_callsTodoService_whenListAllowsSchedulingTasksForNow_includesLinks() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new TodoListDTO(todoDTOs, true));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser);
-
-        verify(mockTodoApiService).get(authenticatedUser);
-        assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
-                new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
+                .contains(new Link(MOCK_BASE_URL + "/todos").withSelfRel());
     }
 
     @Test

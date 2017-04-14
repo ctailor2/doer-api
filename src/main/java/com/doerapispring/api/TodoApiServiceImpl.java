@@ -106,7 +106,10 @@ class TodoApiServiceImpl implements TodoApiService {
 
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
-        return new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString());
+        return new TodoDTO(
+                todo.getLocalIdentifier(),
+                todo.getTask(),
+                todo.getScheduling().toString());
     }
 
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort

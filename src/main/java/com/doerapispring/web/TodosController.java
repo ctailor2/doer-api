@@ -30,14 +30,8 @@ class TodosController {
         try {
             TodoListDTO todoListDTO = todoApiService.get(authenticatedUser);
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
-            todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel(),
-                    hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
+            todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel());
             boolean canScheduleForNow = todoListDTO.isSchedulingForNowAllowed();
-            if (canScheduleForNow) {
-                todosResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
-                // TODO: Only include this link if there are any later todos to pull
-                todosResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
-            }
             todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
                 todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
