@@ -9,8 +9,8 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Component
 public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
-    public Link rootLink() {
-        return linkTo(methodOn(ResourcesController.class).root(null)).withSelfRel();
+    public Link todoResourcesLink() {
+        return linkTo(methodOn(ResourcesController.class).todo(null)).withSelfRel();
     }
 
     @Override
@@ -76,5 +76,15 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
     public Link pullTodosLink() {
         return linkTo(methodOn(TodosController.class).pull(null)).withSelfRel();
+    }
+
+    @Override
+    public Link rootResourcesLink() {
+        return linkTo(methodOn(ResourcesController.class).root()).withSelfRel();
+    }
+
+    @Override
+    public Link historyResourcesLink() {
+        return linkTo(methodOn(ResourcesController.class).history()).withSelfRel();
     }
 }

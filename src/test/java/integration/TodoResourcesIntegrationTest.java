@@ -14,11 +14,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
     private HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
+    @SuppressWarnings("unused")
     private UserSessionsApiService userSessionsApiService;
 
     @Override
@@ -31,19 +32,21 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void rootResources_includesLinksToOtherResources() throws Exception {
+    public void todoResources_includesLinks() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/root")));
-        assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
-        assertThat(responseContent, hasJsonPath("$._links.historyResources.href", containsString("/v1/resources/history")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/todo")));
+        assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));
+        assertThat(responseContent, hasJsonPath("$._links.todoLater.href", containsString("/v1/todoLater")));
+        assertThat(responseContent, hasJsonPath("$._links.pull.href", containsString("/v1/todos/pull")));
+        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/resources/root").headers(httpHeaders)).andReturn();
+        mvcResult = mockMvc.perform(get("/v1/resources/todo").headers(httpHeaders)).andReturn();
     }
 }

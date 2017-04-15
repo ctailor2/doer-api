@@ -6,8 +6,8 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     static final String MOCK_BASE_URL = "http://some.api";
 
     @Override
-    public Link rootLink() {
-        return new Link(MOCK_BASE_URL + "/root");
+    public Link todoResourcesLink() {
+        return new Link(MOCK_BASE_URL + "/todoResources");
     }
 
     @Override
@@ -73,5 +73,15 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     @Override
     public Link pullTodosLink() {
         return new Link(MOCK_BASE_URL + "/todos/pullTodos");
+    }
+
+    @Override
+    public Link rootResourcesLink() {
+        return new Link(MOCK_BASE_URL + "/rootResources");
+    }
+
+    @Override
+    public Link historyResourcesLink() {
+        return new Link(MOCK_BASE_URL + "/historyResources");
     }
 }

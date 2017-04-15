@@ -20,17 +20,36 @@ class ResourcesController {
         this.todoApiService = todoApiService;
     }
 
+    @RequestMapping(value = "/base", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> base() {
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.baseResourcesLink().withSelfRel(),
+                hateoasLinkGenerator.loginLink().withRel("login"),
+                hateoasLinkGenerator.signupLink().withRel("signup"));
+        return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
+    }
+
     @RequestMapping(value = "/root", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> root(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> root() {
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
+                hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"),
+                hateoasLinkGenerator.historyResourcesLink().withRel("historyResources"));
+        return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
+    }
+
+    @RequestMapping(value = "/todo", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         // TODO: Move all of the links related to the main page to their own endpoint
         // so this endpoint truly becomes the root resources of the application
         try {
             MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.rootLink().withSelfRel());
+            resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
             resourcesResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
-            resourcesResponse.add(hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"));
             resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
             if (masterListDTO.isSchedulingForNowAllowed()) {
                 resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
@@ -42,13 +61,12 @@ class ResourcesController {
         }
     }
 
-    @RequestMapping(value = "/base", method = RequestMethod.GET)
+    @RequestMapping(value = "/history", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> base() {
+    ResponseEntity<ResourcesResponse> history() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.baseResourcesLink().withSelfRel(),
-                hateoasLinkGenerator.loginLink().withRel("login"),
-                hateoasLinkGenerator.signupLink().withRel("signup"));
+        resourcesResponse.add(hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
+                hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 }

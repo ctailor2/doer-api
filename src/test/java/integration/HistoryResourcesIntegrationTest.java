@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
     private HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -31,19 +31,18 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void rootResources_includesLinksToOtherResources() throws Exception {
+    public void historyResources_includesLinksToOtherResources() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/root")));
-        assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
-        assertThat(responseContent, hasJsonPath("$._links.historyResources.href", containsString("/v1/resources/history")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/history")));
+        assertThat(responseContent, hasJsonPath("$._links.completedTodos.href", containsString("/v1/completedTodos")));
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/resources/root").headers(httpHeaders)).andReturn();
+        mvcResult = mockMvc.perform(get("/v1/resources/history").headers(httpHeaders)).andReturn();
     }
 }

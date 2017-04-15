@@ -48,13 +48,13 @@ public class ResourcesControllerTest {
     }
 
     @Test
-    public void baseResources_mapping() throws Exception {
+    public void base_mapping() throws Exception {
         mockMvc.perform(get("/v1/resources/base"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void baseResources_includesLinks() throws Exception {
+    public void base_includesLinks() throws Exception {
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.base();
 
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -70,35 +70,65 @@ public class ResourcesControllerTest {
     }
 
     @Test
-    public void root_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
+    public void root_includesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root();
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/rootResources").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"),
+                new Link(MOCK_BASE_URL + "/historyResources").withRel("historyResources"));
+    }
+
+    @Test
+    public void todo_mapping() throws Exception {
+        mockMvc.perform(get("/v1/resources/todo"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void todo_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/root").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
                 new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
-                new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"),
-                new Link(MOCK_BASE_URL + "/completedTodos").withRel("completedTodos"));
+                new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"));
     }
 
     @Test
-    public void root_whenSchedulingForNowIsAllowed_includesLink() throws Exception {
+    public void todo_whenSchedulingForNowIsAllowed_includesLinks() throws Exception {
         when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), true));
 
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
         verify(mockTodoApiService).get(authenticatedUser);
-        assertThat(responseEntity.getBody().getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
-                        new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
+                new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
     }
 
     @Test
-    public void root_whenInvalidRequest_throws400BadRequest() throws Exception {
+    public void todo_whenInvalidRequest_throws400BadRequest() throws Exception {
         when(mockTodoApiService.get(any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void history_mapping() throws Exception {
+        mockMvc.perform(get("/v1/resources/history"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void history_includesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.history();
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/historyResources").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/completedTodos").withRel("completedTodos"));
     }
 }

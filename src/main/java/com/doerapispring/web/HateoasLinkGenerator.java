@@ -3,7 +3,7 @@ package com.doerapispring.web;
 import org.springframework.hateoas.Link;
 
 interface HateoasLinkGenerator {
-    Link rootLink();
+    Link todoResourcesLink();
 
     Link todosLink();
 
@@ -30,4 +30,8 @@ interface HateoasLinkGenerator {
     Link moveTodoLink(String localId, String targetLocalId);
 
     Link pullTodosLink();
+
+    Link rootResourcesLink();
+
+    Link historyResourcesLink();
 }
