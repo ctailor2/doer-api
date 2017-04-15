@@ -66,5 +66,6 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/pull")));
         assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
     }
 }

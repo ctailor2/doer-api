@@ -142,7 +142,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/createTodoForNow").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -174,7 +175,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/createTodoForLater").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -203,7 +205,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/deleteTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -236,7 +239,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/displaceTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -269,7 +273,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -299,7 +304,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/completeTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -359,7 +365,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/todos/localId/moveTodo/targetLocalId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -387,7 +394,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/todos/pullTodos").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"));
+                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
