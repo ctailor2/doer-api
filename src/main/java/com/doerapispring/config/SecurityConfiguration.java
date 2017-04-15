@@ -21,16 +21,16 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
     private AuthenticationProvider authenticationProvider;
 
-    public static final String SESSION_TOKEN_HEADER = "Session-Token";
+    static final String SESSION_TOKEN_HEADER = "Session-Token";
 
-    private static final String BASE_RESOURCES_ENDPOINT = "/v1/baseResources";
+    private static final String BASE_RESOURCES_ENDPOINT = "/v1/resources/base";
     private static final String SIGNUP_ENDPOINT = "/v1/signup";
     private static final String LOGIN_ENDPOINT = "/v1/login";
     private static final String TOKEN_AUTH_ENDPOINT = "/v1/**";
@@ -64,7 +64,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    protected TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() throws Exception {
+    TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() throws Exception {
         List<String> pathsToSkip = Arrays.asList(BASE_RESOURCES_ENDPOINT, SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
         SkipAuthenticationPathRequestMatcher matcher = new SkipAuthenticationPathRequestMatcher(pathsToSkip, TOKEN_AUTH_ENDPOINT);
         TokenAuthenticationFilter filter = new TokenAuthenticationFilter(matcher);

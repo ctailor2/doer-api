@@ -48,8 +48,24 @@ public class ResourcesControllerTest {
     }
 
     @Test
+    public void baseResources_mapping() throws Exception {
+        mockMvc.perform(get("/v1/resources/base"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void baseResources_includesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.base();
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/baseResources").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/login").withRel("login"),
+                new Link(MOCK_BASE_URL + "/signup").withRel("signup"));
+    }
+
+    @Test
     public void root_mapping() throws Exception {
-        mockMvc.perform(get("/v1/root"))
+        mockMvc.perform(get("/v1/resources/root"))
                 .andExpect(status().isOk());
     }
 

@@ -20,12 +20,12 @@ public class BaseResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/baseResources")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/base")));
         assertThat(responseContent, hasJsonPath("$._links.login.href", containsString("/v1/login")));
         assertThat(responseContent, hasJsonPath("$._links.signup.href", containsString("/v1/signup")));
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/baseResources")).andReturn();
+        mvcResult = mockMvc.perform(get("/v1/resources/base")).andReturn();
     }
 }

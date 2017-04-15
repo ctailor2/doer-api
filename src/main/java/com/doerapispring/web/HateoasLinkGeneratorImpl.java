@@ -30,7 +30,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link baseResourcesLink() {
-        return linkTo(methodOn(BaseResourcesController.class).baseResources()).withSelfRel();
+        return linkTo(methodOn(ResourcesController.class).base()).withSelfRel();
     }
 
     @Override

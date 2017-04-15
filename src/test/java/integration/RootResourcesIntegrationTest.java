@@ -39,7 +39,7 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/root")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/root")));
         assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));
         assertThat(responseContent, hasJsonPath("$._links.todoLater.href", containsString("/v1/todoLater")));
         assertThat(responseContent, hasJsonPath("$._links.pull.href", containsString("/v1/todos/pull")));
@@ -48,6 +48,6 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/root").headers(httpHeaders)).andReturn();
+        mvcResult = mockMvc.perform(get("/v1/resources/root").headers(httpHeaders)).andReturn();
     }
 }
