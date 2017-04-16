@@ -48,7 +48,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
+    public void todos_whenUserHasLaterTodos_returnsLaterTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that", ScheduledFor.now);
         todosService.create(user, "here and now", ScheduledFor.later);
@@ -74,7 +74,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos?scheduling=later")));
     }
 
     private void doGet() throws Exception {

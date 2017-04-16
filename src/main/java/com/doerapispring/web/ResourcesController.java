@@ -49,7 +49,8 @@ class ResourcesController {
             MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
-            resourcesResponse.add(hateoasLinkGenerator.todosLink().withRel("todos"));
+            resourcesResponse.add(hateoasLinkGenerator.todosLink("now").withRel("nowTodos"));
+            resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
             resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
             if (masterListDTO.isSchedulingForNowAllowed()) {
                 resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));

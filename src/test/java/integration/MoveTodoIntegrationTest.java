@@ -65,7 +65,8 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos?scheduling=later")));
         assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
     }
 }

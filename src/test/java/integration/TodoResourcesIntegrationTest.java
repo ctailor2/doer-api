@@ -43,7 +43,8 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$._links.todoNow.href", containsString("/v1/todoNow")));
         assertThat(responseContent, hasJsonPath("$._links.todoLater.href", containsString("/v1/todoLater")));
         assertThat(responseContent, hasJsonPath("$._links.pull.href", containsString("/v1/todos/pull")));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos")));
     }
 
     private void doGet() throws Exception {

@@ -92,7 +92,8 @@ public class ResourcesControllerTest {
         verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
                 new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos").withRel("todos"),
+                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
                 new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"));
     }
 

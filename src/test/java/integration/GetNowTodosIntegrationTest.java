@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
-public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
     private HttpHeaders httpHeaders = new HttpHeaders();
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
@@ -43,12 +43,12 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/todos")
+                .get("/v1/todos?scheduling=now")
                 .headers(httpHeaders);
     }
 
     @Test
-    public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
+    public void todos_whenUserHasNowTodos_returnsNowTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that", ScheduledFor.now);
         todosService.create(user, "here and now", ScheduledFor.later);
@@ -72,7 +72,7 @@ public class GetTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos?scheduling=now")));
     }
 
     private void doGet() throws Exception {

@@ -60,7 +60,8 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos?scheduling=later")));
         assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.hateoas.Link;
 interface HateoasLinkGenerator {
     Link todoResourcesLink();
 
-    Link todosLink();
+    Link todosLink(String scheduling);
 
     Link signupLink();
 

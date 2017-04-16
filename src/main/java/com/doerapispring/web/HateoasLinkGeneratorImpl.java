@@ -14,8 +14,8 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link todosLink() {
-        return linkTo(methodOn(TodosController.class).index(null, null)).withSelfRel();
+    public Link todosLink(String scheduling) {
+        return linkTo(methodOn(TodosController.class).index(null, scheduling)).withSelfRel();
     }
 
     @Override

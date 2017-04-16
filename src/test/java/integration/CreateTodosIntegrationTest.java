@@ -56,8 +56,8 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todoNow")));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos?scheduling=later")));
         assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
     }
 
@@ -77,7 +77,8 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todoLater")));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos?scheduling=later")));
         assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
     }
 }

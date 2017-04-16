@@ -52,7 +52,7 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
     }
 
     @Test
-    public void todos_whenUserHasTodos_returnsAllTodos() throws Exception {
+    public void todos_whenUserHasCompletedTodos_returnsCompletedTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that", ScheduledFor.later);
         MasterList masterList = todosService.get(user);
@@ -74,7 +74,6 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
         assertThat(responseContent, hasNoJsonPath("$.todos[0].scheduling"));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/completedTodos")));
-        assertThat(responseContent, hasJsonPath("$._links.todos.href", containsString("/v1/todos")));
     }
 
     private void doGet() throws Exception {
