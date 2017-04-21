@@ -1,9 +1,6 @@
 package com.doerapispring.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -18,8 +15,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
                       int focusSize) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.focusSize = focusSize;
-        immediateList = new TodoList(ScheduledFor.now, focusSize);
-        postponedList = new TodoList(ScheduledFor.later, -1);
+        immediateList = new TodoList(ScheduledFor.now, Collections.emptyList(), focusSize);
+        postponedList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
     }
 
     public MasterList(UniqueIdentifier<String> uniqueIdentifier,
@@ -93,9 +90,11 @@ public class MasterList implements UniquelyIdentifiable<String> {
     public List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        Todo todoCopy = getListForScheduling(ScheduledFor.later).push(existingTodo.getTask());
-        existingTodo.setTask(task);
-        return asList(todoCopy, existingTodo);
+        Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getScheduling(), existingTodo.getPosition());
+        // TODO: maybe push this ^^ logic into the replace method??
+        immediateList.replace(existingTodo, replacementTodo);
+        Todo displacedTodo = getListForScheduling(ScheduledFor.later).push(existingTodo.getTask());
+        return asList(displacedTodo, replacementTodo);
     }
 
     public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {

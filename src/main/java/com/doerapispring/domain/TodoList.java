@@ -115,6 +115,11 @@ public class TodoList {
         return maxSize >= 0 && todos.size() >= maxSize;
     }
 
+    void replace(Todo existingTodo, Todo replacementTodo) {
+        int indexOfExistingTodo = todos.indexOf(existingTodo);
+        todos.set(indexOfExistingTodo, replacementTodo);
+    }
+
     private enum Direction {
         UP(-1),
         DOWN(1),
