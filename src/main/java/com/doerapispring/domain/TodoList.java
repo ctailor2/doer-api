@@ -11,11 +11,6 @@ public class TodoList {
     private List<Todo> todos = new ArrayList<>();
     private final int maxSize;
 
-    TodoList(ScheduledFor scheduling, int maxSize) {
-        this.scheduling = scheduling;
-        this.maxSize = maxSize;
-    }
-
     public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize) {
         this.scheduling = scheduling;
         this.maxSize = maxSize;
@@ -24,6 +19,10 @@ public class TodoList {
 
     public List<Todo> getTodos() {
         return todos;
+    }
+
+    public boolean isFull() {
+        return maxSize >= 0 && todos.size() >= maxSize;
     }
 
     Todo add(String task) {
@@ -45,28 +44,6 @@ public class TodoList {
         Todo todo = new Todo(task, scheduling, position);
         todos.add(0, todo);
         return todo;
-    }
-
-    private Integer getNextPosition() {
-        if (isEmpty()) {
-            return 1;
-        }
-        return todos.get(todos.size() - 1).getPosition() + 1;
-    }
-
-    private Integer getNextTopPosition() {
-        if (isEmpty()) {
-            return 1;
-        }
-        return todos.get(0).getPosition() - 1;
-    }
-
-    private boolean isEmpty() {
-        return size() == 0;
-    }
-
-    private Integer size() {
-        return todos.size();
     }
 
     void remove(Todo todo) {
@@ -111,13 +88,31 @@ public class TodoList {
         return todos;
     }
 
-    public boolean isFull() {
-        return maxSize >= 0 && todos.size() >= maxSize;
-    }
-
     void replace(Todo existingTodo, Todo replacementTodo) {
         int indexOfExistingTodo = todos.indexOf(existingTodo);
         todos.set(indexOfExistingTodo, replacementTodo);
+    }
+
+    private Integer getNextPosition() {
+        if (isEmpty()) {
+            return 1;
+        }
+        return todos.get(todos.size() - 1).getPosition() + 1;
+    }
+
+    private Integer getNextTopPosition() {
+        if (isEmpty()) {
+            return 1;
+        }
+        return todos.get(0).getPosition() - 1;
+    }
+
+    private boolean isEmpty() {
+        return size() == 0;
+    }
+
+    private Integer size() {
+        return todos.size();
     }
 
     private enum Direction {
