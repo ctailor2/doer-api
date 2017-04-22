@@ -105,6 +105,6 @@ public class TodoService {
     }
 
     public TodoList getSubList(User user, ScheduledFor scheduling) throws OperationRefusedException {
-        return get(user).getListForScheduling(scheduling);
+        return get(user).getListByScheduling(scheduling);
     }
 }

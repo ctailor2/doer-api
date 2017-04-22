@@ -1,6 +1,9 @@
 package com.doerapispring.domain;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -10,14 +13,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     private final Integer focusSize;
     private final TodoList immediateList;
     private final TodoList postponedList;
-
-    public MasterList(UniqueIdentifier uniqueIdentifier,
-                      int focusSize) {
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.focusSize = focusSize;
-        immediateList = new TodoList(ScheduledFor.now, Collections.emptyList(), focusSize);
-        postponedList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-    }
+    private boolean allowedToViewLaterList;
 
     public MasterList(UniqueIdentifier<String> uniqueIdentifier,
                       int focusSize,
@@ -52,29 +48,20 @@ public class MasterList implements UniquelyIdentifiable<String> {
             throw new ListSizeExceededException();
         }
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        return getListForScheduling(scheduling).add(task);
+        return getListByScheduling(scheduling).add(task);
     }
 
     List<Todo> pull() {
-        TodoList laterList = getListForScheduling(ScheduledFor.later);
-        TodoList nowList = getListForScheduling(ScheduledFor.now);
-        List<Todo> laterTodos = laterList.pop(focusSize - nowList.getTodos().size());
+        List<Todo> laterTodos = postponedList.pop(focusSize - immediateList.getTodos().size());
         return laterTodos.stream()
                 .map(todo ->
-                        nowList.addExisting(todo.getLocalIdentifier(), todo.getTask()))
+                        immediateList.addExisting(todo.getLocalIdentifier(), todo.getTask()))
                 .collect(Collectors.toList());
-    }
-
-    TodoList getListForScheduling(ScheduledFor scheduling) {
-        if (ScheduledFor.now.equals(scheduling)) {
-            return immediateList;
-        }
-        return postponedList;
     }
 
     Todo delete(String localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = getByLocalIdentifier(localIdentifier);
-        getListForScheduling(todoToDelete.getScheduling()).remove(todoToDelete);
+        getListByScheduling(todoToDelete.getScheduling()).remove(todoToDelete);
         return todoToDelete;
     }
 
@@ -84,7 +71,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getScheduling(), existingTodo.getPosition());
         // TODO: maybe push this ^^ logic into the replace method??
         immediateList.replace(existingTodo, replacementTodo);
-        Todo displacedTodo = getListForScheduling(ScheduledFor.later).push(existingTodo.getTask());
+        Todo displacedTodo = postponedList.push(existingTodo.getTask());
         return asList(displacedTodo, replacementTodo);
     }
 
@@ -97,16 +84,23 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     Todo complete(String localIdentifier) throws TodoNotFoundException {
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        getListForScheduling(existingTodo.getScheduling()).remove(existingTodo);
+        getListByScheduling(existingTodo.getScheduling()).remove(existingTodo);
         existingTodo.complete();
         return existingTodo;
     }
 
     List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
         Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
-        TodoList todoList = getListForScheduling(originalTodo.getScheduling());
+        TodoList todoList = getListByScheduling(originalTodo.getScheduling());
         Todo targetTodo = todoList.getByIdentifier(targetTodoIdentifier);
         return todoList.move(originalTodo, targetTodo);
+    }
+
+    TodoList getListByScheduling(ScheduledFor scheduling) {
+        if (ScheduledFor.now.equals(scheduling)) {
+            return immediateList;
+        }
+        return postponedList;
     }
 
     private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {

@@ -112,7 +112,7 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2, Collections.emptyList());
         Todo todo = new Todo("bingo", ScheduledFor.later, 3);
         masterListRepository.add(masterList, todo);
 
@@ -132,7 +132,7 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2, Collections.emptyList());
         Todo todo = new Todo("bingo", ScheduledFor.now, 5);
         masterListRepository.add(masterList, todo);
 
@@ -148,7 +148,7 @@ public class MasterListRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("listUserIdentifier"), 2, Collections.emptyList());
         Todo todo = new Todo("bingo", ScheduledFor.later, 5);
         masterListRepository.add(masterList, todo);
 
@@ -165,7 +165,7 @@ public class MasterListRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         Todo todo = new Todo("bingo", ScheduledFor.later, 5);
-        MasterList masterList = new MasterList(new UniqueIdentifier("nonExistentUser"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("nonExistentUser"), 2, Collections.emptyList());
         masterListRepository.add(masterList, todo);
 
         verify(mockUserDAO).findByEmail("nonExistentUser");
@@ -176,7 +176,7 @@ public class MasterListRepositoryTest {
         TodoEntity todoEntity = TodoEntity.builder().build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(todoEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
         Todo todo = new Todo("123", "bingo", ScheduledFor.later, 5);
         masterListRepository.remove(masterList, todo);
 
@@ -186,7 +186,7 @@ public class MasterListRepositoryTest {
 
     @Test
     public void remove_findsTodo_whenNotFound_throwsAbnormalModelException() throws Exception {
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
         Todo todo = new Todo("123", "bingo", ScheduledFor.now, 5);
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(null);
 
@@ -205,7 +205,7 @@ public class MasterListRepositoryTest {
                 .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
         Todo todo = new Todo("123", "bingo", ScheduledFor.later, 5);
         masterListRepository.update(masterList, todo);
 
@@ -229,7 +229,7 @@ public class MasterListRepositoryTest {
                 .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
         Todo todo = new Todo("123", "bingo", ScheduledFor.later, 5);
         todo.complete();
         masterListRepository.update(masterList, todo);
@@ -246,7 +246,7 @@ public class MasterListRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         Todo todo = new Todo("bingo", ScheduledFor.later, 5);
-        MasterList masterList = new MasterList(new UniqueIdentifier("nonExistentUser"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("nonExistentUser"), 2, Collections.emptyList());
         masterListRepository.update(masterList, todo);
 
         verify(mockTodoDAO).findUserTodo("nonExistentUser", 5L);
@@ -257,7 +257,7 @@ public class MasterListRepositoryTest {
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(TodoEntity.builder().build());
         List<Todo> todos = asList(new Todo("123", "bingo", ScheduledFor.later, 5),
                 new Todo("456", "bango", ScheduledFor.later, 2));
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
 
         masterListRepository.update(masterList, todos);
 
@@ -282,7 +282,7 @@ public class MasterListRepositoryTest {
         when(mockTodoDAO.findUserTodo(any(), eq(456L))).thenReturn(null);
         List<Todo> todos = asList(new Todo("123", "bingo", ScheduledFor.later, 5),
                 new Todo("456", "bango", ScheduledFor.later, 2));
-        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2);
+        MasterList masterList = new MasterList(new UniqueIdentifier("someUserId"), 2, Collections.emptyList());
 
         exception.expect(AbnormalModelException.class);
         masterListRepository.update(masterList, todos);

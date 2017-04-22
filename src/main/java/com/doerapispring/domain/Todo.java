@@ -7,6 +7,7 @@ public class Todo {
     private final String localIdentifier;
     private ScheduledFor scheduling;
 
+    // TODO: Remove this constructor
     public Todo(String task, ScheduledFor scheduling, Integer position) {
         this.localIdentifier = "0";
         this.task = task;

@@ -37,7 +37,7 @@ public class TodoServiceTest {
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 

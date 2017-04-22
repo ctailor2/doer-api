@@ -102,7 +102,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void get_callsTodoService_returnsTodoListDTO_containingAllTodos() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        MasterList masterList = new MasterList(uniqueIdentifier, 400);
+        MasterList masterList = new MasterList(uniqueIdentifier, 400, Collections.emptyList());
         Todo first = masterList.add("first", ScheduledFor.now);
         Todo second = masterList.add("second", ScheduledFor.later);
         when(mockTodoService.get(any())).thenReturn(masterList);
@@ -118,8 +118,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void get_callsTodoService_whenImmediateListFull_returnsTodoList_whereCanNotScheduleForNow() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 0
-        ));
+        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 0, Collections.emptyList()));
 
         MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -130,7 +129,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void get_callsTodoService_whenImmediateListNotFull_returnsTodoListDTO_whereCanScheduleForNow() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1));
+        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1, Collections.emptyList()));
 
         MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
