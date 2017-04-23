@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 @Service
 class TodoApiServiceImpl implements TodoApiService {
     private final TodoService todoService;
+    private final ListViewService listViewService;
 
     @Autowired
-    TodoApiServiceImpl(TodoService todoService) {
+    TodoApiServiceImpl(TodoService todoService, ListViewService listViewService) {
         this.todoService = todoService;
+        this.listViewService = listViewService;
     }
 
     @Override
@@ -35,6 +37,15 @@ class TodoApiServiceImpl implements TodoApiService {
             TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), getScheduledFor(scheduling));
             List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
             return new TodoListDTO(todoDTOs, todoList.isFull());
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
+    public void unlock(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        try {
+            listViewService.create(authenticatedUser.getUser());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

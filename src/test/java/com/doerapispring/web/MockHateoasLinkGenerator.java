@@ -84,4 +84,9 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link historyResourcesLink() {
         return new Link(MOCK_BASE_URL + "/historyResources");
     }
+
+    @Override
+    public Link unlockTodosLink() {
+        return new Link(MOCK_BASE_URL + "/todos/unlockTodos");
+    }
 }

@@ -105,7 +105,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void create_whenMasterListFound_whenTodoWithTask_refusesCreate() throws Exception {
+    public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         when(mockMasterList.add(any(), any())).thenThrow(new DuplicateTodoException());

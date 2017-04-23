@@ -388,13 +388,14 @@ public class TodosControllerTest {
     public void pull_mapping() throws Exception {
         mockMvc.perform(post("/v1/todos/pull"))
                 .andExpect(status().isAccepted());
+
+        verify(mockTodoApiService).pull(authenticatedUser);
     }
 
     @Test
     public void pull_callsTodoService_returns202() throws Exception {
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.pull(authenticatedUser);
 
-        verify(mockTodoApiService).pull(authenticatedUser);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -409,6 +410,35 @@ public class TodosControllerTest {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).pull(any());
 
         ResponseEntity<TodoLinksResponse> responseEntity = todosController.pull(authenticatedUser);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void unlock_mapping() throws Exception {
+        mockMvc.perform(post("/v1/todos/unlock"))
+                .andExpect(status().isAccepted());
+
+        verify(mockTodoApiService).unlock(authenticatedUser);
+    }
+
+    @Test
+    public void unlock_callsTodoService_returns202() throws Exception {
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.unlock(authenticatedUser);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/todos/unlockTodos").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
+    }
+
+    @Test
+    public void unlock_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).unlock(any());
+
+        ResponseEntity<TodoLinksResponse> responseEntity = todosController.unlock(authenticatedUser);
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

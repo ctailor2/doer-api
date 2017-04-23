@@ -199,4 +199,19 @@ class TodosController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    @RequestMapping(value = "/todos/unlock", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<TodoLinksResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        try {
+            todoApiService.unlock(authenticatedUser);
+            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
+            todoLinksResponse.add(
+                    hateoasLinkGenerator.unlockTodosLink().withSelfRel(),
+                    hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }

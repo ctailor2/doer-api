@@ -87,4 +87,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     public Link historyResourcesLink() {
         return linkTo(methodOn(ResourcesController.class).history()).withSelfRel();
     }
+
+    @Override
+    public Link unlockTodosLink() {
+        return linkTo(methodOn(TodosController.class).unlock(null)).withSelfRel();
+    }
 }

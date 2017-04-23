@@ -13,7 +13,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
     private final Integer focusSize;
     private final TodoList immediateList;
     private final TodoList postponedList;
-    private boolean allowedToViewLaterList;
 
     public MasterList(UniqueIdentifier<String> uniqueIdentifier,
                       int focusSize,

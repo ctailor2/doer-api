@@ -43,8 +43,6 @@ class ResourcesController {
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        // TODO: Move all of the links related to the main page to their own endpoint
-        // so this endpoint truly becomes the root resources of the application
         try {
             MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
