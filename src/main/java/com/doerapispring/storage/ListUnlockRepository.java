@@ -25,12 +25,12 @@ class ListUnlockRepository implements AggregateRootRepository<ListManager, ListU
     @Override
     public Optional<ListManager> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
-        List<ListUnlockEntity> listViewEntities = listUnlockDao.findUserListView(email);
-        List<ListUnlock> listUnlocks = listViewEntities.stream()
-                .map(listViewEntity -> new ListUnlock(listViewEntity.updatedAt))
+        List<ListUnlockEntity> listUnlockEntities = listUnlockDao.findAllUserListUnlocks(email);
+        List<ListUnlock> listUnlocks = listUnlockEntities.stream()
+                .map(listUnlockEntity -> new ListUnlock(listUnlockEntity.updatedAt))
                 .collect(Collectors.toList());
-        ListManager listViewManager = new ListManager(uniqueIdentifier, listUnlocks);
-        return Optional.of(listViewManager);
+        ListManager listManager = new ListManager(uniqueIdentifier, listUnlocks);
+        return Optional.of(listManager);
     }
 
     @Override

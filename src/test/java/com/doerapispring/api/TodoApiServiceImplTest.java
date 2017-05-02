@@ -33,7 +33,7 @@ public class TodoApiServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService, mockListService);
+        todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
     }
 
     @Test

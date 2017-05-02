@@ -12,5 +12,5 @@ interface ListUnlockDao extends JpaRepository<ListUnlockEntity, Long> {
             "INNER JOIN lv.userEntity u " +
             "WHERE u.email = ?1 " +
             "ORDER BY lv.createdAt DESC")
-    List<ListUnlockEntity> findUserListView(String email);
+    List<ListUnlockEntity> findAllUserListUnlocks(String email);
 }

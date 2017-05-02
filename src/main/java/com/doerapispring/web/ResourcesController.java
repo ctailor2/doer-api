@@ -44,12 +44,12 @@ class ResourcesController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
             resourcesResponse.add(hateoasLinkGenerator.todosLink("now").withRel("nowTodos"));
             resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
             resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
+            MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
             if (masterListDTO.isSchedulingForNowAllowed()) {
                 resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
                 resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));

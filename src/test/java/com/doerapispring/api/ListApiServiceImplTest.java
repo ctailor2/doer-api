@@ -34,7 +34,7 @@ public class ListApiServiceImplTest {
     }
 
     @Test
-    public void unlock_callsListViewService() throws Exception {
+    public void unlock_callsListService() throws Exception {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser("someIdentifier");
         listApiServiceImpl.unlock(authenticatedUser);
 

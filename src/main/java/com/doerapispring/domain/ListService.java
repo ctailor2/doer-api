@@ -4,22 +4,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ListService {
-    private final AggregateRootRepository<ListManager, ListUnlock, String> listViewRepository;
+    private final AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository;
 
-    ListService(AggregateRootRepository<ListManager, ListUnlock, String> listViewRepository) {
-        this.listViewRepository = listViewRepository;
+    ListService(AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository) {
+        this.listUnlockRepository = listUnlockRepository;
     }
 
     public ListManager get(User user) throws OperationRefusedException {
-        return listViewRepository.find(user.getIdentifier())
+        return listUnlockRepository.find(user.getIdentifier())
                 .orElseThrow(OperationRefusedException::new);
     }
 
     public void unlock(User user) throws OperationRefusedException {
-        ListManager listViewManager = get(user);
+        ListManager listManager = get(user);
         try {
-            ListUnlock listUnlock = listViewManager.unlock();
-            listViewRepository.add(listViewManager, listUnlock);
+            ListUnlock listUnlock = listManager.unlock();
+            listUnlockRepository.add(listManager, listUnlock);
         } catch (LockTimerNotExpiredException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }

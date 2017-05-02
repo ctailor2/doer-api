@@ -12,12 +12,10 @@ import java.util.stream.Collectors;
 @Service
 class TodoApiServiceImpl implements TodoApiService {
     private final TodoService todoService;
-    private final ListService listService;
 
     @Autowired
-    TodoApiServiceImpl(TodoService todoService, ListService listService) {
+    TodoApiServiceImpl(TodoService todoService) {
         this.todoService = todoService;
-        this.listService = listService;
     }
 
     @Override

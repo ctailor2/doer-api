@@ -15,30 +15,30 @@ public class ListManagerTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void recordView_whenThereAreNoListViews_returnsAListView() throws Exception {
-        ListManager listViewManager = new ListManager(new UniqueIdentifier<>("someIdentifier"), Collections.emptyList());
+    public void recordView_whenThereAreNoListUnlocks_returnsAListUnlock() throws Exception {
+        ListManager listManager = new ListManager(new UniqueIdentifier<>("someIdentifier"), Collections.emptyList());
 
-        ListUnlock listUnlock = listViewManager.unlock();
+        ListUnlock listUnlock = listManager.unlock();
         assertThat(listUnlock).isNotNull();
     }
 
     @Test
-    public void recordView_whenThereAreListViews_whenFirstListViewWasCreatedToday_throwsLockTimerNotExpiredException() throws Exception {
+    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_throwsLockTimerNotExpiredException() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         List<ListUnlock> listUnlocks = Collections.singletonList(new ListUnlock());
-        ListManager listViewManager = new ListManager(uniqueIdentifier, listUnlocks);
+        ListManager listManager = new ListManager(uniqueIdentifier, listUnlocks);
 
         exception.expect(LockTimerNotExpiredException.class);
-        listViewManager.unlock();
+        listManager.unlock();
     }
 
     @Test
-    public void recordView_whenThereAreListViews_whenFirstListViewWasCreatedBeforeToday_returnsAListView() throws Exception {
+    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsAListUnlock() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         List<ListUnlock> listUnlocks = Collections.singletonList(new ListUnlock(new Date(0L)));
-        ListManager listViewManager = new ListManager(uniqueIdentifier, listUnlocks);
+        ListManager listManager = new ListManager(uniqueIdentifier, listUnlocks);
 
-        ListUnlock listUnlock = listViewManager.unlock();
+        ListUnlock listUnlock = listManager.unlock();
         assertThat(listUnlock).isNotNull();
     }
 }

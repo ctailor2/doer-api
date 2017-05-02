@@ -44,7 +44,6 @@ public class ResourcesControllerTest {
                 .standaloneSetup(resourcesController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
-        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
     }
 
     @Test
@@ -81,15 +80,20 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_mapping() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
+
         mockMvc.perform(get("/v1/resources/todo"))
                 .andExpect(status().isOk());
+
+        verify(mockTodoApiService).get(authenticatedUser);
     }
 
     @Test
     public void todo_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
+        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
+
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
-        verify(mockTodoApiService).get(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
                 new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
                 new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),

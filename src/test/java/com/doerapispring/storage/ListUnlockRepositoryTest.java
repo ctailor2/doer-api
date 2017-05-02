@@ -38,7 +38,7 @@ public class ListUnlockRepositoryTest {
     UserDAO mockUserDao;
 
     @Captor
-    ArgumentCaptor<ListUnlockEntity> listViewEntityArgumentCaptor;
+    ArgumentCaptor<ListUnlockEntity> listUnlockEntityArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -46,39 +46,39 @@ public class ListUnlockRepositoryTest {
     }
 
     @Test
-    public void find_callsListViewDao() throws Exception {
+    public void find_callsListUnlockDao() throws Exception {
         listUnlockRepository.find(new UniqueIdentifier<>("somethingSecret"));
 
-        verify(mockListUnlockDao).findUserListView("somethingSecret");
+        verify(mockListUnlockDao).findAllUserListUnlocks("somethingSecret");
     }
 
     @Test
-    public void find_whenThereAreNoListViews_returnsListViewManagerWithNoListViews() throws Exception {
-        when(mockListUnlockDao.findUserListView(any())).thenReturn(Collections.emptyList());
+    public void find_whenThereAreNoListUnlocks_returnsListManagerWithNoListUnlocks() throws Exception {
+        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(Collections.emptyList());
 
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
-        Optional<ListManager> listViewOptional = listUnlockRepository.find(uniqueIdentifier);
+        Optional<ListManager> listManagerOptional = listUnlockRepository.find(uniqueIdentifier);
 
-        assertThat(listViewOptional.isPresent()).isTrue();
-        ListManager listView = listViewOptional.get();
-        assertThat(listView).isEqualTo(new ListManager(uniqueIdentifier, Collections.emptyList()));
+        assertThat(listManagerOptional.isPresent()).isTrue();
+        ListManager listManager = listManagerOptional.get();
+        assertThat(listManager).isEqualTo(new ListManager(uniqueIdentifier, Collections.emptyList()));
     }
 
     @Test
-    public void find_whenThereAreListViews_returnsListViewManagerWithListViews() throws Exception {
-        List<ListUnlockEntity> listViewEntities = Collections.singletonList(
+    public void find_whenThereAreListUnlocks_returnsListManagerWithListUnlocks() throws Exception {
+        List<ListUnlockEntity> listUnlockEntities = Collections.singletonList(
                 ListUnlockEntity.builder()
                         .updatedAt(new Date(0L))
                         .build());
-        when(mockListUnlockDao.findUserListView(any())).thenReturn(listViewEntities);
+        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(listUnlockEntities);
 
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
-        Optional<ListManager> listViewOptional = listUnlockRepository.find(uniqueIdentifier);
+        Optional<ListManager> listManagerOptional = listUnlockRepository.find(uniqueIdentifier);
 
-        assertThat(listViewOptional.isPresent()).isTrue();
-        ListManager listView = listViewOptional.get();
+        assertThat(listManagerOptional.isPresent()).isTrue();
+        ListManager listManager = listManagerOptional.get();
         List<ListUnlock> listUnlocks = Collections.singletonList(new ListUnlock(new Date(0)));
-        assertThat(listView).isEqualTo(new ListManager(uniqueIdentifier, listUnlocks));
+        assertThat(listManager).isEqualTo(new ListManager(uniqueIdentifier, listUnlocks));
     }
 
     @Test
@@ -87,12 +87,12 @@ public class ListUnlockRepositoryTest {
         when(mockUserDao.findByEmail(any())).thenReturn(userEntity);
 
         ListUnlock listUnlock = new ListUnlock();
-        ListManager listViewManager = new ListManager(new UniqueIdentifier("listUserIdentifier"), Collections.emptyList());
-        listUnlockRepository.add(listViewManager, listUnlock);
+        ListManager listManager = new ListManager(new UniqueIdentifier("listUserIdentifier"), Collections.emptyList());
+        listUnlockRepository.add(listManager, listUnlock);
 
         verify(mockUserDao).findByEmail("listUserIdentifier");
-        verify(mockListUnlockDao).save(listViewEntityArgumentCaptor.capture());
-        ListUnlockEntity todoEntity = listViewEntityArgumentCaptor.getValue();
+        verify(mockListUnlockDao).save(listUnlockEntityArgumentCaptor.capture());
+        ListUnlockEntity todoEntity = listUnlockEntityArgumentCaptor.getValue();
         assertThat(todoEntity).isNotNull();
         assertThat(todoEntity.userEntity).isEqualTo(userEntity);
         assertThat(todoEntity.createdAt).isToday();
@@ -105,8 +105,8 @@ public class ListUnlockRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         ListUnlock listUnlock = new ListUnlock();
-        ListManager listViewManager = new ListManager(new UniqueIdentifier("nonExistentUser"), Collections.emptyList());
-        listUnlockRepository.add(listViewManager, listUnlock);
+        ListManager listManager = new ListManager(new UniqueIdentifier("nonExistentUser"), Collections.emptyList());
+        listUnlockRepository.add(listManager, listUnlock);
 
         verify(mockUserDao).findByEmail("nonExistentUser");
     }

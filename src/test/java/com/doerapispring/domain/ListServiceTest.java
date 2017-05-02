@@ -22,77 +22,77 @@ public class ListServiceTest {
     private ListService listService;
 
     @Mock
-    private AggregateRootRepository<ListManager, ListUnlock, String> mockListViewRepository;
+    private AggregateRootRepository<ListManager, ListUnlock, String> mockListUnlockRepository;
 
     @Captor
-    ArgumentCaptor<ListUnlock> listViewArgumentCaptor;
+    ArgumentCaptor<ListUnlock> listUnlockArgumentCaptor;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockListViewRepository);
+        listService = new ListService(mockListUnlockRepository);
     }
 
     @Test
-    public void get_whenListViewManagerFound_returnsListViewManagerFromRepository() throws Exception {
+    public void get_whenListManagerFound_returnsListManagerFromRepository() throws Exception {
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        ListManager listViewManagerFromRepository = new ListManager(uniqueIdentifier, Collections.emptyList());
-        when(mockListViewRepository.find(any())).thenReturn(Optional.of(listViewManagerFromRepository));
+        ListManager listUnlockManagerFromRepository = new ListManager(uniqueIdentifier, Collections.emptyList());
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(listUnlockManagerFromRepository));
 
-        ListManager listViewManager = listService.get(new User(uniqueIdentifier));
+        ListManager listManager = listService.get(new User(uniqueIdentifier));
 
-        verify(mockListViewRepository).find(uniqueIdentifier);
-        Assertions.assertThat(listViewManager).isEqualTo(listViewManagerFromRepository);
+        verify(mockListUnlockRepository).find(uniqueIdentifier);
+        Assertions.assertThat(listManager).isEqualTo(listUnlockManagerFromRepository);
     }
 
     @Test
-    public void get_whenListViewManagerNotFound_refusesGet() throws Exception {
-        when(mockListViewRepository.find(any())).thenReturn(Optional.empty());
+    public void get_whenListManagerNotFound_refusesGet() throws Exception {
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
         listService.get(new User(new UniqueIdentifier<>("one@two.com")));
     }
 
     @Test
-    public void create_whenListViewManagerFound_addsListViewToRepository() throws Exception {
-        ListManager mockListViewManager = mock(ListManager.class);
-        when(mockListViewRepository.find(any())).thenReturn(Optional.of(mockListViewManager));
+    public void create_whenListManagerFound_addsListUnlockToRepository() throws Exception {
+        ListManager mockListManager = mock(ListManager.class);
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
         ListUnlock listUnlock = new ListUnlock();
-        when(mockListViewManager.unlock()).thenReturn(listUnlock);
+        when(mockListManager.unlock()).thenReturn(listUnlock);
 
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
 
-        verify(mockListViewManager).unlock();
-        verify(mockListViewRepository).add(mockListViewManager, listUnlock);
+        verify(mockListManager).unlock();
+        verify(mockListUnlockRepository).add(mockListManager, listUnlock);
     }
 
     @Test
-    public void create_whenListViewManagerFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        ListManager mockListViewManager = mock(ListManager.class);
-        when(mockListViewRepository.find(any())).thenReturn(Optional.of(mockListViewManager));
+    public void create_whenListManagerFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
+        ListManager mockListManager = mock(ListManager.class);
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
         ListUnlock listUnlock = new ListUnlock();
-        when(mockListViewManager.unlock()).thenReturn(listUnlock);
-        doThrow(new AbnormalModelException()).when(mockListViewRepository).add(any(), any());
+        when(mockListManager.unlock()).thenReturn(listUnlock);
+        doThrow(new AbnormalModelException()).when(mockListUnlockRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
     }
 
     @Test
-    public void create_whenListViewManagerFound_whenLockTimerNotExpired_refusesCreate() throws Exception {
-        ListManager mockListViewManager = mock(ListManager.class);
-        when(mockListViewRepository.find(any())).thenReturn(Optional.of(mockListViewManager));
-        when(mockListViewManager.unlock()).thenThrow(new LockTimerNotExpiredException());
+    public void create_whenListManagerFound_whenLockTimerNotExpired_refusesCreate() throws Exception {
+        ListManager mockListManager = mock(ListManager.class);
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
+        when(mockListManager.unlock()).thenThrow(new LockTimerNotExpiredException());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
     }
 
     @Test
-    public void create_whenListViewManagerNotFound_refusesCreate() throws Exception {
-        when(mockListViewRepository.find(any())).thenReturn(Optional.empty());
+    public void create_whenListManagerNotFound_refusesCreate() throws Exception {
+        when(mockListUnlockRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));

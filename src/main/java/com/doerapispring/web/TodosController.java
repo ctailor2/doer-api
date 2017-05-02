@@ -25,6 +25,7 @@ class TodosController {
     ResponseEntity<TodosResponse> index(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                         @RequestParam(defaultValue = "now") String scheduling) {
         try {
+            // TODO: This should probably include a link to the todo resources
             TodoListDTO todoListDTO = todoApiService.getSubList(authenticatedUser, scheduling);
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.todosLink(scheduling).withSelfRel());
