@@ -26,14 +26,14 @@ public class TodoApiServiceImplTest {
     private TodoService mockTodoService;
 
     @Mock
-    private ListViewService mockListViewService;
+    private ListService mockListService;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService, mockListViewService);
+        todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService, mockListService);
     }
 
     @Test
@@ -260,21 +260,5 @@ public class TodoApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.pull(new AuthenticatedUser("someIdentifier"));
-    }
-
-    @Test
-    public void unlock_callsListViewService() throws Exception {
-        AuthenticatedUser authenticatedUser = new AuthenticatedUser("someIdentifier");
-        todoApiServiceImpl.unlock(authenticatedUser);
-
-        verify(mockListViewService).create(new User(new UniqueIdentifier("someIdentifier")));
-    }
-
-    @Test
-    public void unlock_whenOperationRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockListViewService).create(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.unlock(new AuthenticatedUser("someIdentifier"));
     }
 }

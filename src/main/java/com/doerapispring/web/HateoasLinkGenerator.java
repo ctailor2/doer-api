@@ -35,5 +35,5 @@ interface HateoasLinkGenerator {
 
     Link historyResourcesLink();
 
-    Link unlockTodosLink();
+    Link unlockListLink();
 }

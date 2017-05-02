@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-interface ListViewDao extends JpaRepository<ListViewEntity, Long> {
-    @Query("SELECT lv FROM ListViewEntity lv " +
+interface ListUnlockDao extends JpaRepository<ListUnlockEntity, Long> {
+    @Query("SELECT lv FROM ListUnlockEntity lv " +
             "INNER JOIN lv.userEntity u " +
             "WHERE u.email = ?1 " +
-            "ORDER BY lv.updatedAt DESC")
-    List<ListViewEntity> findUserListView(String email);
+            "ORDER BY lv.createdAt DESC")
+    List<ListUnlockEntity> findUserListView(String email);
 }

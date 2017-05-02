@@ -1,7 +1,7 @@
 package integration;
 
-import com.doerapispring.domain.ListView;
-import com.doerapispring.domain.ListViewService;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.ListUnlock;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
@@ -30,7 +30,7 @@ public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringCo
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private ListViewService listViewService;
+    private ListService listService;
 
     @Override
     @Before
@@ -45,17 +45,17 @@ public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringCo
 
     @Test
     public void unlockLaterList() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/todos/unlock")
+        mvcResult = mockMvc.perform(post("/v1/lists/unlock")
                 .headers(httpHeaders))
                 .andReturn();
 
-        List<ListView> listViews = listViewService.get(user).getListViews();
+        List<ListUnlock> listUnlocks = listService.get(user).getListUnlocks();
 
-        assertThat(listViews.size(), equalTo(1));
+        assertThat(listUnlocks.size(), equalTo(1));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/unlock")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/unlock")));
     }
 }

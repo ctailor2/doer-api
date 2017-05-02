@@ -51,16 +51,16 @@ class TodosController {
 
     @RequestMapping(value = "/todoNow", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> createForNow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> createForNow(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @RequestBody TodoForm todoForm) {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "now");
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.CREATED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -68,16 +68,16 @@ class TodosController {
 
     @RequestMapping(value = "/todoLater", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> createForLater(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> createForLater(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @RequestBody TodoForm todoForm) {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "later");
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.CREATED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -85,16 +85,16 @@ class TodosController {
 
     @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId) {
         try {
             todoApiService.delete(authenticatedUser, localId);
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -102,17 +102,17 @@ class TodosController {
 
     @RequestMapping(value = "/todos/{localId}/displace", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable(value = "localId") String localId,
                                                @RequestBody TodoForm todoForm) {
         try {
             todoApiService.displace(authenticatedUser, localId, todoForm.getTask());
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.displaceTodoLink(localId).withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink(localId).withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -120,17 +120,17 @@ class TodosController {
 
     @RequestMapping(value = "/todos/{localId}", method = RequestMethod.PUT)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId,
                                              @RequestBody TodoForm todoForm) {
         try {
             todoApiService.update(authenticatedUser, localId, todoForm.getTask());
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -138,16 +138,16 @@ class TodosController {
 
     @RequestMapping(value = "/todos/{localId}/complete", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable(value = "localId") String localId) {
         try {
             todoApiService.complete(authenticatedUser, localId);
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -168,17 +168,17 @@ class TodosController {
 
     @RequestMapping(value = "/todos/{localId}/move/{targetLocalId}", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> move(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<ResourcesResponse> move(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                            @PathVariable(value = "localId") String localId,
                                            @PathVariable(value = "targetLocalId") String targetLocalId) {
         try {
             todoApiService.move(authenticatedUser, localId, targetLocalId);
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -186,30 +186,15 @@ class TodosController {
 
     @RequestMapping(value = "/todos/pull", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<TodoLinksResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             todoApiService.pull(authenticatedUser);
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(hateoasLinkGenerator.pullTodosLink().withSelfRel(),
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-    @RequestMapping(value = "/todos/unlock", method = RequestMethod.POST)
-    @ResponseBody
-    ResponseEntity<TodoLinksResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        try {
-            todoApiService.unlock(authenticatedUser);
-            TodoLinksResponse todoLinksResponse = new TodoLinksResponse();
-            todoLinksResponse.add(
-                    hateoasLinkGenerator.unlockTodosLink().withSelfRel(),
-                    hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoLinksResponse);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

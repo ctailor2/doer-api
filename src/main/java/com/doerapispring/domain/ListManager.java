@@ -5,14 +5,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public class ListViewManager implements UniquelyIdentifiable<String> {
+public class ListManager implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
-    private final List<ListView> listViews;
+    private final List<ListUnlock> listUnlocks;
 
-    public ListViewManager(UniqueIdentifier<String> uniqueIdentifier,
-                           List<ListView> listViews) {
+    public ListManager(UniqueIdentifier<String> uniqueIdentifier,
+                       List<ListUnlock> listUnlocks) {
         this.uniqueIdentifier = uniqueIdentifier;
-        this.listViews = listViews;
+        this.listUnlocks = listUnlocks;
     }
 
     @Override
@@ -20,24 +20,24 @@ public class ListViewManager implements UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    public List<ListView> getListViews() {
-        return listViews;
+    public List<ListUnlock> getListUnlocks() {
+        return listUnlocks;
     }
 
-    ListView recordView() throws LockTimerNotExpiredException {
+    ListUnlock unlock() throws LockTimerNotExpiredException {
         Boolean viewNotAllowed = getLastViewedAt()
                 .map(lastViewedAt -> lastViewedAt.after(beginningOfToday()))
                 .orElse(false);
         if (viewNotAllowed) {
             throw new LockTimerNotExpiredException();
         }
-        return new ListView();
+        return new ListUnlock();
     }
 
     private Optional<Date> getLastViewedAt() {
-        return listViews.stream()
+        return listUnlocks.stream()
                 .findFirst()
-                .map(ListView::getLastViewedAt);
+                .map(ListUnlock::getCreatedAt);
     }
 
     private Date beginningOfToday() {
@@ -56,26 +56,26 @@ public class ListViewManager implements UniquelyIdentifiable<String> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ListViewManager that = (ListViewManager) o;
+        ListManager that = (ListManager) o;
 
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
             return false;
-        return listViews != null ? listViews.equals(that.listViews) : that.listViews == null;
+        return listUnlocks != null ? listUnlocks.equals(that.listUnlocks) : that.listUnlocks == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
-        result = 31 * result + (listViews != null ? listViews.hashCode() : 0);
+        result = 31 * result + (listUnlocks != null ? listUnlocks.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "ListViewManager{" +
+        return "ListManager{" +
                 "uniqueIdentifier=" + uniqueIdentifier +
-                ", listViews=" + listViews +
+                ", listUnlocks=" + listUnlocks +
                 '}';
     }
 }

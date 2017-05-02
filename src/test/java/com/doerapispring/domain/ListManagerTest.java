@@ -10,35 +10,35 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ListViewManagerTest {
+public class ListManagerTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void recordView_whenThereAreNoListViews_returnsAListView() throws Exception {
-        ListViewManager listViewManager = new ListViewManager(new UniqueIdentifier<>("someIdentifier"), Collections.emptyList());
+        ListManager listViewManager = new ListManager(new UniqueIdentifier<>("someIdentifier"), Collections.emptyList());
 
-        ListView listView = listViewManager.recordView();
-        assertThat(listView).isNotNull();
+        ListUnlock listUnlock = listViewManager.unlock();
+        assertThat(listUnlock).isNotNull();
     }
 
     @Test
     public void recordView_whenThereAreListViews_whenFirstListViewWasCreatedToday_throwsLockTimerNotExpiredException() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        List<ListView> listViews = Collections.singletonList(new ListView());
-        ListViewManager listViewManager = new ListViewManager(uniqueIdentifier, listViews);
+        List<ListUnlock> listUnlocks = Collections.singletonList(new ListUnlock());
+        ListManager listViewManager = new ListManager(uniqueIdentifier, listUnlocks);
 
         exception.expect(LockTimerNotExpiredException.class);
-        listViewManager.recordView();
+        listViewManager.unlock();
     }
 
     @Test
     public void recordView_whenThereAreListViews_whenFirstListViewWasCreatedBeforeToday_returnsAListView() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        List<ListView> listViews = Collections.singletonList(new ListView(new Date(0L)));
-        ListViewManager listViewManager = new ListViewManager(uniqueIdentifier, listViews);
+        List<ListUnlock> listUnlocks = Collections.singletonList(new ListUnlock(new Date(0L)));
+        ListManager listViewManager = new ListManager(uniqueIdentifier, listUnlocks);
 
-        ListView listView = listViewManager.recordView();
-        assertThat(listView).isNotNull();
+        ListUnlock listUnlock = listViewManager.unlock();
+        assertThat(listUnlock).isNotNull();
     }
 }
