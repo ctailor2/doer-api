@@ -15,8 +15,6 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
-
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -32,14 +30,14 @@ public class ResourcesControllerTest {
     private AuthenticatedUser authenticatedUser;
 
     @Mock
-    TodoApiService mockTodoApiService;
+    ResourceApiService mockResourceApiService;
 
     @Before
     public void setUp() throws Exception {
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        resourcesController = new ResourcesController(new MockHateoasLinkGenerator(), mockTodoApiService);
+        resourcesController = new ResourcesController(new MockHateoasLinkGenerator(), mockResourceApiService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(resourcesController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -80,17 +78,17 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_mapping() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
+        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, false));
 
         mockMvc.perform(get("/v1/resources/todo"))
                 .andExpect(status().isOk());
 
-        verify(mockTodoApiService).get(authenticatedUser);
+        verify(mockResourceApiService).getTodoResources(authenticatedUser);
     }
 
     @Test
-    public void todo_whenSchedulingForNowIsNotAllowed_includesLinks() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), false));
+    public void todo_whenSchedulingForNowIsNotAllowed_whenLaterListIsUnlocked_includesLinks() throws Exception {
+        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, false));
 
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
@@ -102,12 +100,22 @@ public class ResourcesControllerTest {
     }
 
     @Test
-    public void todo_whenSchedulingForNowIsAllowed_includesLinks() throws Exception {
-        when(mockTodoApiService.get(any())).thenReturn(new MasterListDTO(Collections.emptyList(), true));
+    public void todo_whenLaterListIsLocked_excludesLinks() throws Exception {
+        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, true));
 
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
-        verify(mockTodoApiService).get(authenticatedUser);
+        assertThat(responseEntity.getBody().getLinks()).doesNotContain(
+                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
+    }
+
+    @Test
+    public void todo_whenSchedulingForNowIsAllowed_includesLinks() throws Exception {
+        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(false, true));
+
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
+
+        verify(mockResourceApiService).getTodoResources(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
                 new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
@@ -115,7 +123,7 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(mockTodoApiService.get(any())).thenThrow(new InvalidRequestException());
+        when(mockResourceApiService.getTodoResources(any())).thenThrow(new InvalidRequestException());
 
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 

@@ -2,7 +2,10 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.*;
+import com.doerapispring.web.CompletedTodoListDTO;
+import com.doerapispring.web.InvalidRequestException;
+import com.doerapispring.web.TodoDTO;
+import com.doerapispring.web.TodoListDTO;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,52 +103,6 @@ public class TodoApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
-    }
-
-    @Test
-    public void get_callsTodoService_returnsTodoListDTO_containingAllTodos() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        MasterList masterList = new MasterList(uniqueIdentifier, 400, Collections.emptyList());
-        Todo first = masterList.add("first", ScheduledFor.now);
-        Todo second = masterList.add("second", ScheduledFor.later);
-        when(mockTodoService.get(any())).thenReturn(masterList);
-
-        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(masterListDTO.getTodoDTOs()).contains(
-                new TodoDTO(first.getLocalIdentifier(), "first", "now"),
-                new TodoDTO(second.getLocalIdentifier(), "second", "later"));
-    }
-
-    @Test
-    public void get_callsTodoService_whenImmediateListFull_returnsTodoList_whereCanNotScheduleForNow() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 0, Collections.emptyList()));
-
-        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(masterListDTO).isEqualTo(new MasterListDTO(Collections.emptyList(), false));
-    }
-
-    @Test
-    public void get_callsTodoService_whenImmediateListNotFull_returnsTodoListDTO_whereCanScheduleForNow() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(new MasterList(uniqueIdentifier, 1, Collections.emptyList()));
-
-        MasterListDTO masterListDTO = todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).get(new User(uniqueIdentifier));
-        assertThat(masterListDTO).isEqualTo(new MasterListDTO(Collections.emptyList(), true));
-    }
-
-    @Test
-    public void get_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        when(mockTodoService.get(any())).thenThrow(new OperationRefusedException());
-
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
     }
 
     @Test

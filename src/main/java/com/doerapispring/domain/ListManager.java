@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -34,21 +35,10 @@ public class ListManager implements UniquelyIdentifiable<String> {
         return new ListUnlock();
     }
 
-    private Optional<Date> getLastViewedAt() {
-        return listUnlocks.stream()
-                .findFirst()
-                .map(ListUnlock::getCreatedAt);
-    }
-
-    private Date beginningOfToday() {
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(now);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
+    public boolean isLocked() {
+        return getLastViewedAt()
+                .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(1800L).toEpochMilli())))
+                .orElse(false);
     }
 
     @Override
@@ -77,5 +67,22 @@ public class ListManager implements UniquelyIdentifiable<String> {
                 "uniqueIdentifier=" + uniqueIdentifier +
                 ", listUnlocks=" + listUnlocks +
                 '}';
+    }
+
+    private Optional<Date> getLastViewedAt() {
+        return listUnlocks.stream()
+                .findFirst()
+                .map(ListUnlock::getCreatedAt);
+    }
+
+    private Date beginningOfToday() {
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 }

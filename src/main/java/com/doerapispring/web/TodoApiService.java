@@ -3,8 +3,6 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedUser;
 
 public interface TodoApiService {
-    MasterListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
-
     void create(AuthenticatedUser authenticatedUser, String task, String scheduling) throws InvalidRequestException;
 
     void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;

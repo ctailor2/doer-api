@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1/resources")
 class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
-    private final TodoApiService todoApiService;
+    private final ResourceApiService resourceApiService;
 
     @Autowired
-    ResourcesController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
+    ResourcesController(HateoasLinkGenerator hateoasLinkGenerator, ResourceApiService resourceApiService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
-        this.todoApiService = todoApiService;
+        this.resourceApiService = resourceApiService;
     }
 
     @RequestMapping(value = "/base", method = RequestMethod.GET)
@@ -47,10 +47,12 @@ class ResourcesController {
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
             resourcesResponse.add(hateoasLinkGenerator.todosLink("now").withRel("nowTodos"));
-            resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
             resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
-            MasterListDTO masterListDTO = todoApiService.get(authenticatedUser);
-            if (masterListDTO.isSchedulingForNowAllowed()) {
+            TodoResourcesDTO todoResourcesDTO = resourceApiService.getTodoResources(authenticatedUser);
+            if (todoResourcesDTO.isLaterListUnlocked()) {
+                resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
+            }
+            if (todoResourcesDTO.doesNowListHaveCapacity()) {
                 resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
                 resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
             }
