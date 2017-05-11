@@ -12,8 +12,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -96,5 +99,14 @@ public class ListServiceTest {
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
+    }
+
+    @Test
+    public void getAll_returnsNowAndLaterLists() throws Exception {
+        List<BasicTodoList> basicTodoLists = listService.getAll();
+
+        assertThat(basicTodoLists).isEqualTo(asList(
+                new BasicTodoList("now"),
+                new BasicTodoList("later")));
     }
 }

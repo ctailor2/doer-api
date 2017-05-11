@@ -1,8 +1,10 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
-public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class GetListsIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
     private HttpHeaders httpHeaders = new HttpHeaders();
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
@@ -29,9 +31,6 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
-
-    @Autowired
-    private TodoService todosService;
 
     @Override
     @Before
@@ -43,32 +42,28 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/todos?scheduling=now")
+                .get("/v1/lists")
                 .headers(httpHeaders);
     }
 
     @Test
-    public void todos_whenUserHasNowTodos_returnsNowTodos() throws Exception {
+    public void todos_whenUserHasLaterTodos_returnsLaterTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that", ScheduledFor.now);
-        MasterList masterList = todosService.get(user);
-        Todo firstTodo = masterList.getTodos().get(0);
 
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.todos", hasSize(1)));
-        assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("this and that")));
-        assertThat(responseContent, hasJsonPath("$.todos[0].scheduling", equalTo("now")));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.lists", hasSize(2)));
+        assertThat(responseContent, hasJsonPath("$.lists[0].name", equalTo("now")));
+        assertThat(responseContent, hasJsonPath("$.lists[0]._links", not(Matchers.isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.lists[0]._links.list.href", containsString("v1/lists/now")));
+        assertThat(responseContent, hasJsonPath("$.lists[1].name", equalTo("later")));
+        assertThat(responseContent, hasJsonPath("$.lists[1]._links", not(Matchers.isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.lists[1]._links.list.href", containsString("v1/lists/later")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists")));
     }
 
     private void doGet() throws Exception {

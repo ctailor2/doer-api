@@ -15,11 +15,14 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
+
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,6 +72,52 @@ public class ListsControllerTest {
         doThrow(new InvalidRequestException()).when(mockListApiService).unlock(any());
 
         ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void index_mapping() throws Exception {
+        mockMvc.perform(get("/v1/lists"))
+                .andExpect(status().isOk());
+
+        verify(mockListApiService).getAll(authenticatedUser);
+    }
+
+    @Test
+    public void index_callsListService_includesLinksByDefault() throws Exception {
+        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getBody().getLinks())
+                .contains(new Link(MOCK_BASE_URL + "/lists").withSelfRel());
+    }
+
+    @Test
+    public void index_callsListService_byDefault_includesLinksForEachList() throws Exception {
+        when(mockListApiService.getAll(any()))
+                .thenReturn(asList(new ListDTO("someName"), new ListDTO("someOtherName")));
+
+        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
+
+        List<ListDTO> listDTOs = responseEntity.getBody().getListDTOs();
+        assertThat(listDTOs.size()).isEqualTo(2);
+        ListDTO firstListDTO = listDTOs.get(0);
+        assertThat(firstListDTO.getName()).isEqualTo("someName");
+        assertThat(firstListDTO.getLinks()).containsOnly(
+                new Link(MOCK_BASE_URL + "/lists/someName").withRel("list"));
+        ListDTO secondListDTO = listDTOs.get(1);
+        assertThat(secondListDTO.getName()).isEqualTo("someOtherName");
+        assertThat(secondListDTO.getLinks()).containsOnly(
+                new Link(MOCK_BASE_URL + "/lists/someOtherName").withRel("list"));
+    }
+
+    @Test
+    public void index_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockListApiService).getAll(any());
+
+        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

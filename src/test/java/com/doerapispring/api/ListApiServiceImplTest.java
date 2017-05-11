@@ -1,11 +1,9 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
+import com.doerapispring.web.ListDTO;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,9 +12,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ListApiServiceImplTest {
@@ -47,5 +48,33 @@ public class ListApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         listApiServiceImpl.unlock(new AuthenticatedUser("someIdentifier"));
+    }
+
+    @Test
+    public void getAll_callsListService() throws Exception {
+        listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
+
+        verify(mockListService).getAll();
+    }
+
+    @Test
+    public void getAll_whenListServiceReturnsLists_returnsMatchingListDTOs() throws Exception {
+        when(mockListService.getAll()).thenReturn(asList(
+                new BasicTodoList("someName"),
+                new BasicTodoList("someOtherName")));
+
+        List<ListDTO> listDTOs = listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(listDTOs).isEqualTo(asList(
+                new ListDTO("someName"),
+                new ListDTO("someOtherName")));
+    }
+
+    @Test
+    public void getAll_whenOperationRefused_throwsInvalidRequest() throws Exception {
+        when(mockListService.getAll()).thenThrow(new OperationRefusedException());
+
+        exception.expect(InvalidRequestException.class);
+        listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
     }
 }

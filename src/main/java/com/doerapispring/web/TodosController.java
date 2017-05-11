@@ -57,7 +57,8 @@ class TodosController {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "now");
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
+            resourcesResponse.add(
+                    hateoasLinkGenerator.createTodoForNowLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));

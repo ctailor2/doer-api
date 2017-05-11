@@ -92,4 +92,14 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     public Link unlockListLink() {
         return linkTo(methodOn(ListsController.class).unlock(null)).withSelfRel();
     }
+
+    @Override
+    public Link listsLink() {
+        return linkTo(methodOn(ListsController.class).index(null)).withSelfRel();
+    }
+
+    @Override
+    public Link listLink(String name) {
+        return linkTo(methodOn(ListsController.class).show(null, name)).withSelfRel();
+    }
 }

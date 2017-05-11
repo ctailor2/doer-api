@@ -5,16 +5,16 @@ import org.springframework.hateoas.ResourceSupport;
 
 import java.util.List;
 
-class TodosResponse extends ResourceSupport {
-    @JsonProperty("todos")
-    private final List<TodoDTO> todoDTOs;
+class ListsResponse extends ResourceSupport {
+    @JsonProperty("lists")
+    private final List<ListDTO> listDTOs;
 
-    TodosResponse(List<TodoDTO> todoDTOs) {
-        this.todoDTOs = todoDTOs;
+    ListsResponse(List<ListDTO> listDTOs) {
+        this.listDTOs = listDTOs;
     }
 
-    List<TodoDTO> getTodoDTOs() {
-        return todoDTOs;
+    List<ListDTO> getListDTOs() {
+        return listDTOs;
     }
 
     @Override
@@ -23,23 +23,23 @@ class TodosResponse extends ResourceSupport {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        TodosResponse that = (TodosResponse) o;
+        ListsResponse that = (ListsResponse) o;
 
-        return todoDTOs != null ? todoDTOs.equals(that.todoDTOs) : that.todoDTOs == null;
+        return listDTOs != null ? listDTOs.equals(that.listDTOs) : that.listDTOs == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (todoDTOs != null ? todoDTOs.hashCode() : 0);
+        result = 31 * result + (listDTOs != null ? listDTOs.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "TodosResponse{" +
-                "todoDTOs=" + todoDTOs +
+        return "ListsResponse{" +
+                "listDTOs=" + listDTOs +
                 '}';
     }
 }
