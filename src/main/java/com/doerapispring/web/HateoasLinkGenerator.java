@@ -40,4 +40,8 @@ interface HateoasLinkGenerator {
     Link listsLink();
 
     Link listLink(String name);
+
+    Link createTodoLink(String name);
+
+    Link listPullTodosLink(String name);
 }

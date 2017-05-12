@@ -23,7 +23,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), getScheduledFor(scheduling));
             List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs, todoList.isFull());
+            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

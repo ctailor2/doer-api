@@ -26,6 +26,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
         postponedList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
     }
 
+    public MasterList(UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList) {
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.immediateList = immediateList;
+        this.focusSize = immediateList.getMaxSize();
+        this.postponedList = postponedList;
+    }
+
     @Override
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
@@ -38,7 +45,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todos;
     }
 
-    public boolean isImmediateListFull() {
+    private boolean isImmediateListFull() {
         return immediateList.isFull();
     }
 

@@ -3,9 +3,8 @@ package com.doerapispring.api;
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListService;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.ListApiService;
-import com.doerapispring.web.ListDTO;
+import com.doerapispring.domain.TodoList;
+import com.doerapispring.web.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,11 +30,21 @@ class ListApiServiceImpl implements ListApiService {
     }
 
     @Override
-    public List<ListDTO> getAll(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+    public List<ListDTO> getAll(AuthenticatedUser authenticatedUser) {
+        return listService.getAll().stream()
+                .map(basicTodoList -> new ListDTO(basicTodoList.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TodoListDTO get(AuthenticatedUser authenticatedUser, String name) throws InvalidRequestException {
         try {
-            return listService.getAll().stream()
-                    .map(basicTodoList -> new ListDTO(basicTodoList.getName()))
+            TodoList todoList = listService.get(authenticatedUser.getUser(), name);
+            List<TodoDTO> todoDTOs = todoList.getTodos()
+                    .stream()
+                    .map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString()))
                     .collect(Collectors.toList());
+            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

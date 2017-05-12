@@ -85,16 +85,19 @@ public class TodoApiServiceImplTest {
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
 
-        assertThat(todoListDTO.isDisplacementAllowed()).isEqualTo(true);
+        assertThat(todoListDTO.isFull()).isEqualTo(true);
+        assertThat(todoListDTO.getName()).isEqualTo("now");
     }
 
     @Test
     public void getSubList_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), -1));
+        when(mockTodoService.getSubList(any(), any()))
+                .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
 
-        assertThat(todoListDTO.isDisplacementAllowed()).isEqualTo(false);
+        assertThat(todoListDTO.isFull()).isEqualTo(false);
+        assertThat(todoListDTO.getName()).isEqualTo("later");
     }
 
     @Test

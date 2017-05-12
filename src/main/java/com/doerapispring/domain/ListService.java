@@ -12,9 +12,12 @@ public class ListService {
     private static final String SECONDARY_LIST_NAME = "later";
 
     private final AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository;
+    private final AggregateRootRepository<MasterList, Todo, String> masterListRepository;
 
-    ListService(AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository) {
+    ListService(AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository,
+                AggregateRootRepository<MasterList, Todo, String> masterListRepository) {
         this.listUnlockRepository = listUnlockRepository;
+        this.masterListRepository = masterListRepository;
     }
 
     public ListManager get(User user) throws OperationRefusedException {
@@ -32,9 +35,22 @@ public class ListService {
         }
     }
 
-    public List<BasicTodoList> getAll() throws OperationRefusedException {
+    public List<BasicTodoList> getAll() {
         return asList(
                 new BasicTodoList(PRIMARY_LIST_NAME),
                 new BasicTodoList(SECONDARY_LIST_NAME));
+    }
+
+    public TodoList get(User user, String name) throws OperationRefusedException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier()).orElseThrow(OperationRefusedException::new);
+        return masterList.getListByScheduling(getScheduledFor(name));
+    }
+
+    private ScheduledFor getScheduledFor(String scheduling) throws OperationRefusedException {
+        try {
+            return Enum.valueOf(ScheduledFor.class, scheduling);
+        } catch (IllegalArgumentException e) {
+            throw new OperationRefusedException();
+        }
     }
 }

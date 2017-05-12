@@ -39,7 +39,7 @@ class TodosController {
                                 todoDTO.getLocalIdentifier(),
                                 targetTodoDTO.getLocalIdentifier()).withRel("move")));
 
-                if (todoListDTO.isDisplacementAllowed()) {
+                if (todoListDTO.isFull()) {
                     todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
                 }
             });
@@ -75,7 +75,8 @@ class TodosController {
         try {
             todoApiService.create(authenticatedUser, todoForm.getTask(), "later");
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
+            resourcesResponse.add(
+                    hateoasLinkGenerator.createTodoForLaterLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
@@ -171,8 +172,8 @@ class TodosController {
     @RequestMapping(value = "/todos/{localId}/move/{targetLocalId}", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> move(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                           @PathVariable(value = "localId") String localId,
-                                           @PathVariable(value = "targetLocalId") String targetLocalId) {
+                                           @PathVariable String localId,
+                                           @PathVariable String targetLocalId) {
         try {
             todoApiService.move(authenticatedUser, localId, targetLocalId);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
@@ -192,7 +193,8 @@ class TodosController {
         try {
             todoApiService.pull(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withSelfRel(),
+            resourcesResponse.add(
+                    hateoasLinkGenerator.pullTodosLink().withSelfRel(),
                     hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
                     hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
                     hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
@@ -200,5 +202,19 @@ class TodosController {
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
+    }
+
+    @RequestMapping(value = "/lists/{name}/todos", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @PathVariable String name) {
+        return null;
+    }
+
+    @RequestMapping(value = "/lists/{name}/pull", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                           @PathVariable String name) {
+        return null;
     }
 }

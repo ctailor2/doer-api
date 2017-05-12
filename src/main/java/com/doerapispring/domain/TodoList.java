@@ -17,6 +17,14 @@ public class TodoList {
         this.todos.addAll(todos);
     }
 
+    public ScheduledFor getScheduling() {
+        return scheduling;
+    }
+
+    int getMaxSize() {
+        return maxSize;
+    }
+
     public List<Todo> getTodos() {
         return todos;
     }
@@ -91,6 +99,37 @@ public class TodoList {
     void replace(Todo existingTodo, Todo replacementTodo) {
         int indexOfExistingTodo = todos.indexOf(existingTodo);
         todos.set(indexOfExistingTodo, replacementTodo);
+    }
+
+    @Override
+    public String toString() {
+        return "TodoList{" +
+                "scheduling=" + scheduling +
+                ", todos=" + todos +
+                ", maxSize=" + maxSize +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TodoList todoList = (TodoList) o;
+
+        if (maxSize != todoList.maxSize) return false;
+        if (scheduling != todoList.scheduling) return false;
+        if (todos != null ? !todos.equals(todoList.todos) : todoList.todos != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = scheduling != null ? scheduling.hashCode() : 0;
+        result = 31 * result + (todos != null ? todos.hashCode() : 0);
+        result = 31 * result + maxSize;
+        return result;
     }
 
     private Integer getNextPosition() {

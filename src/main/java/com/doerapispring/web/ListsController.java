@@ -40,23 +40,30 @@ class ListsController {
     @RequestMapping(value = "/lists", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ListsResponse> index(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        try {
-            List<ListDTO> listDTOs = listApiService.getAll(authenticatedUser);
-            listDTOs.stream().forEach(listDTO ->
-                    listDTO.add(hateoasLinkGenerator.listLink(listDTO.getName()).withRel("list")));
-            ListsResponse listsResponse = new ListsResponse(listDTOs);
-            listsResponse.add(hateoasLinkGenerator.listsLink().withSelfRel());
-            return ResponseEntity.ok(listsResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        List<ListDTO> listDTOs = listApiService.getAll(authenticatedUser);
+        listDTOs.stream().forEach(listDTO ->
+                listDTO.add(hateoasLinkGenerator.listLink(listDTO.getName()).withRel("list")));
+        ListsResponse listsResponse = new ListsResponse(listDTOs);
+        listsResponse.add(hateoasLinkGenerator.listsLink().withSelfRel());
+        return ResponseEntity.ok(listsResponse);
     }
 
     @RequestMapping(value = "/lists/{name}", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                        @PathVariable String name) {
-        return null;
+    ResponseEntity<ListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                      @PathVariable String name) {
+        try {
+            TodoListDTO todoListDTO = listApiService.get(authenticatedUser, name);
+            if (!todoListDTO.isFull()) {
+                todoListDTO.add(hateoasLinkGenerator.createTodoLink(name).withRel("create"));
+                todoListDTO.add(hateoasLinkGenerator.listPullTodosLink(name).withRel("pull"));
+            }
+            ListResponse listResponse = new ListResponse(todoListDTO);
+            listResponse.add(hateoasLinkGenerator.listLink(name).withSelfRel());
+            return ResponseEntity.ok(listResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     // TODO: Need to start treating the lists as their own resources

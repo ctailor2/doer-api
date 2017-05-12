@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
@@ -114,12 +116,51 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void index_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockListApiService).getAll(any());
+    public void show_mapping() throws Exception {
+        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
 
-        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
+        mockMvc.perform(get("/v1/lists/someName"))
+                .andExpect(status().isOk());
 
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        verify(mockListApiService).get(authenticatedUser, "someName");
+    }
+
+    @Test
+    public void show_includesLinks_byDefault() throws Exception {
+        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/lists/someName").withSelfRel());
+    }
+
+    @Test
+    public void show_whenListIsNotFull_includesListLinks() throws Exception {
+        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+
+        Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/lists/someName/createTodo").withRel("create"),
+                new Link(MOCK_BASE_URL + "/lists/someName/pullTodos").withRel("pull"));
+    }
+
+    @Test
+    public void show_whenListIsFull_doesNotIncludeListLinks() throws Exception {
+        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), true));
+
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+
+        Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).isEmpty();
+    }
+
+    @Test
+    public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
+        when(mockListApiService.get(any(), any())).thenThrow(new InvalidRequestException());
+
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+
+        Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

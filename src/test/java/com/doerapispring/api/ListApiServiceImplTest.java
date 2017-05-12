@@ -4,6 +4,9 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.ListDTO;
+import com.doerapispring.web.TodoDTO;
+import com.doerapispring.web.TodoListDTO;
+import org.fest.assertions.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -71,10 +75,46 @@ public class ListApiServiceImplTest {
     }
 
     @Test
-    public void getAll_whenOperationRefused_throwsInvalidRequest() throws Exception {
-        when(mockListService.getAll()).thenThrow(new OperationRefusedException());
+    public void get_callsListService() throws Exception {
+        when(mockListService.get(any(), any()))
+                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
+
+        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+
+        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")), "someName");
+    }
+
+    @Test
+    public void get_callsListService_returnsMatchingTodoListDTO_whenListIsNotFull() throws Exception {
+        when(mockListService.get(any(), any()))
+                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
+
+        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+
+        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")), "someName");
+        assertThat(todoListDTO).isNotNull();
+        assertThat(todoListDTO.getTodoDTOs()).contains(new TodoDTO("someId", "someTask", "now"));
+        assertThat(todoListDTO.isFull()).isFalse();
+        assertThat(todoListDTO.getName()).isEqualTo("now");
+    }
+
+    @Test
+    public void get_callsListService_returnsMatchingTodoListDTO_whenListIsFull() throws Exception {
+        when(mockListService.get(any(), any()))
+                .thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 0));
+
+        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+
+        assertThat(todoListDTO).isNotNull();
+        Assertions.assertThat(todoListDTO.isFull()).isEqualTo(true);
+        assertThat(todoListDTO.getName()).isEqualTo("now");
+    }
+
+    @Test
+    public void get_whenOperationRefused_throwsInvalidRequest() throws Exception {
+        when(mockListService.get(any(), any())).thenThrow(new OperationRefusedException());
 
         exception.expect(InvalidRequestException.class);
-        listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
+        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
     }
 }

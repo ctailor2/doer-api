@@ -55,7 +55,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_mapping_callsTodoService_withNowSchedulingByDefault() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
 
         mockMvc.perform(get("/v1/todos"))
                 .andExpect(status().isOk());
@@ -65,7 +65,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTodoService_withSuppliedScheduling() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
 
         todosController.index(authenticatedUser, "someScheduling");
 
@@ -83,7 +83,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, false));
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
         assertThat(responseEntity.getBody().getLinks())
@@ -92,7 +92,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, true));
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
@@ -105,7 +105,7 @@ public class TodosControllerTest {
 
     @Test
     public void index_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO(todoDTOs, true));
+        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).contains(
