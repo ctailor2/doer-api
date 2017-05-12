@@ -414,4 +414,36 @@ public class TodosControllerTest {
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    @Test
+    public void create_mapping() throws Exception {
+        mockMvc.perform(post("/v1/lists/now/todos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"task\": \"return redbox movie\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void create_callsTokenService_returns201() throws Exception {
+        String task = "some task";
+        TodoForm todoForm = new TodoForm(task);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, "now", todoForm);
+
+        verify(mockTodoApiService).create(authenticatedUser, task, "now");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/lists/now/createTodo").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/lists/now").withRel("list"));
+    }
+
+    @Test
+    public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
+
+        ResponseEntity responseEntity = todosController.createForNow(authenticatedUser, new TodoForm("some task"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }

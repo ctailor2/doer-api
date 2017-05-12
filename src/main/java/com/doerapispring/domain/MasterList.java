@@ -45,14 +45,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todos;
     }
 
-    private boolean isImmediateListFull() {
-        return immediateList.isFull();
-    }
-
     public Todo add(String task, ScheduledFor scheduling) throws ListSizeExceededException, DuplicateTodoException {
-        if (ScheduledFor.now.equals(scheduling) && isImmediateListFull()) {
-            throw new ListSizeExceededException();
-        }
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         return getListByScheduling(scheduling).add(task);
     }

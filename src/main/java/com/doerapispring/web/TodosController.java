@@ -207,8 +207,19 @@ class TodosController {
     @RequestMapping(value = "/lists/{name}/todos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable String name) {
-        return null;
+                                             @PathVariable String name,
+                                             @RequestBody TodoForm todoForm) {
+        try {
+            todoApiService.create(authenticatedUser, todoForm.getTask(), name);
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(
+                    hateoasLinkGenerator.createTodoLink(name).withSelfRel(),
+                    hateoasLinkGenerator.listLink(name).withRel("list"));
+            return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
     }
 
     @RequestMapping(value = "/lists/{name}/pull", method = RequestMethod.POST)

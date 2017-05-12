@@ -105,7 +105,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link createTodoLink(String name) {
-        return linkTo(methodOn(TodosController.class).create(null, name)).withSelfRel();
+        return linkTo(methodOn(TodosController.class).create(null, name, null)).withSelfRel();
     }
 
     @Override

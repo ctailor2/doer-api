@@ -33,7 +33,10 @@ public class TodoList {
         return maxSize >= 0 && todos.size() >= maxSize;
     }
 
-    Todo add(String task) {
+    Todo add(String task) throws ListSizeExceededException {
+        if (isFull()) {
+            throw new ListSizeExceededException();
+        }
         int position = getNextPosition();
         Todo todo = new Todo(task, scheduling, position);
         todos.add(todo);

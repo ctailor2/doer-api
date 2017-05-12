@@ -53,6 +53,7 @@ class ListsController {
     ResponseEntity<ListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                       @PathVariable String name) {
         try {
+            // TODO: Either add todo links here or separate it out to a todos index endpoint
             TodoListDTO todoListDTO = listApiService.get(authenticatedUser, name);
             if (!todoListDTO.isFull()) {
                 todoListDTO.add(hateoasLinkGenerator.createTodoLink(name).withRel("create"));
