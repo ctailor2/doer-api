@@ -47,14 +47,9 @@ class ResourcesController {
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
             resourcesResponse.add(hateoasLinkGenerator.todosLink("now").withRel("nowTodos"));
-            resourcesResponse.add(hateoasLinkGenerator.createTodoForLaterLink().withRel("todoLater"));
             TodoResourcesDTO todoResourcesDTO = resourceApiService.getTodoResources(authenticatedUser);
             if (todoResourcesDTO.isLaterListUnlocked()) {
                 resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
-            }
-            if (todoResourcesDTO.doesNowListHaveCapacity()) {
-                resourcesResponse.add(hateoasLinkGenerator.pullTodosLink().withRel("pull"));
-                resourcesResponse.add(hateoasLinkGenerator.createTodoForNowLink().withRel("todoNow"));
             }
             return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
         } catch (InvalidRequestException e) {

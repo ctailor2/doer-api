@@ -87,7 +87,7 @@ public class ResourcesControllerTest {
     }
 
     @Test
-    public void todo_whenSchedulingForNowIsNotAllowed_whenLaterListIsUnlocked_includesLinks() throws Exception {
+    public void todo_whenLaterListIsUnlocked_includesLinks() throws Exception {
         when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, false));
 
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
@@ -95,8 +95,7 @@ public class ResourcesControllerTest {
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
                 new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
                 new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/createTodoForLater").withRel("todoLater"));
+                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
     }
 
     @Test
@@ -107,18 +106,6 @@ public class ResourcesControllerTest {
 
         assertThat(responseEntity.getBody().getLinks()).doesNotContain(
                 new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
-    }
-
-    @Test
-    public void todo_whenSchedulingForNowIsAllowed_includesLinks() throws Exception {
-        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(false, true));
-
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
-
-        verify(mockResourceApiService).getTodoResources(authenticatedUser);
-        assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/createTodoForNow").withRel("todoNow"),
-                new Link(MOCK_BASE_URL + "/todos/pullTodos").withRel("pull"));
     }
 
     @Test

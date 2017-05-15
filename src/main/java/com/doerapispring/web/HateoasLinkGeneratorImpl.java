@@ -34,16 +34,6 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link createTodoForNowLink() {
-        return linkTo(methodOn(TodosController.class).createForNow(null, null)).withSelfRel();
-    }
-
-    @Override
-    public Link createTodoForLaterLink() {
-        return linkTo(methodOn(TodosController.class).createForLater(null, null)).withSelfRel();
-    }
-
-    @Override
     public Link deleteTodoLink(String localId) {
         return linkTo(methodOn(TodosController.class).delete(null, localId)).withSelfRel();
     }

@@ -13,10 +13,6 @@ interface HateoasLinkGenerator {
 
     Link baseResourcesLink();
 
-    Link createTodoForNowLink();
-
-    Link createTodoForLaterLink();
-
     Link deleteTodoLink(String localId);
 
     Link displaceTodoLink(String localId);
