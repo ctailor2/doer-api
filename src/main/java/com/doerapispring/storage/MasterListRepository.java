@@ -4,10 +4,7 @@ import com.doerapispring.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -26,14 +23,16 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
         List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
-        List<Todo> todos = todoEntities.stream()
+        Map<Boolean, List<Todo>> partitionedTodos = todoEntities.stream()
                 .map(todoEntity -> new Todo(
                         todoEntity.id.toString(),
                         todoEntity.task,
                         todoEntity.active ? ScheduledFor.now : ScheduledFor.later,
                         todoEntity.position))
-                .collect(Collectors.toList());
-        MasterList masterList = new MasterList(uniqueIdentifier, 2, todos);
+                .collect(Collectors.partitioningBy(todo -> ScheduledFor.now.equals(todo.getScheduling())));
+        TodoList laterList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
+        TodoList nowList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), 2, laterList);
+        MasterList masterList = new MasterList(uniqueIdentifier, nowList, laterList);
         return Optional.of(masterList);
     }
 

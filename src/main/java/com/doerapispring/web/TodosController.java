@@ -219,7 +219,6 @@ class TodosController {
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
-
     }
 
     @RequestMapping(value = "/lists/{name}/pull", method = RequestMethod.POST)

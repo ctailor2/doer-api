@@ -36,8 +36,10 @@ public class TodoServiceTest {
 
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, Collections.emptyList());
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -57,10 +59,11 @@ public class TodoServiceTest {
 
     @Test
     public void getSubList_whenMasterListFound_whenScheduledForNow_returnsImmediateListUsingRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         Todo nowTodo = new Todo("taskOne", ScheduledFor.now, 1);
-        List<Todo> todos = asList(nowTodo, new Todo("taskTwo", ScheduledFor.later, 1));
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, todos);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("taskTwo", ScheduledFor.later, 1)), -1);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -71,10 +74,11 @@ public class TodoServiceTest {
 
     @Test
     public void getSubList_whenMasterListFound_whenScheduledForLater_returnsPostponedListUsingRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         Todo laterTodo = new Todo("taskTwo", ScheduledFor.later, 1);
-        List<Todo> todos = asList(new Todo("taskOne", ScheduledFor.now, 1), laterTodo);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, 2, todos);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("taskOne", ScheduledFor.now, 1)), 2);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -201,6 +205,16 @@ public class TodoServiceTest {
 
         exception.expect(OperationRefusedException.class);
         todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
+    }
+
+    @Test
+    public void displace_whenMasterListFound_whenThereIsNoSourceConfigured_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        doThrow(new NoSourceListConfiguredException()).when(mockMasterList).displace(any(), any());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.displace(new User(new UniqueIdentifier<>("one@two.com")), "someId", "someTask");
     }
 
     @Test
@@ -349,7 +363,7 @@ public class TodoServiceTest {
 
     @Test
     public void getCompleted_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         CompletedList completedListFromRepository = new CompletedList(uniqueIdentifier, Collections.emptyList());
         when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedListFromRepository));
         User user = new User(uniqueIdentifier);
@@ -425,6 +439,16 @@ public class TodoServiceTest {
 
         verify(mockMasterList).pull();
         verify(mockMasterListRepository).update(mockMasterList, todos);
+    }
+
+    @Test
+    public void pull_whenMasterListFound_whenThereIsNoSourceConfigured_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        doThrow(new NoSourceListConfiguredException()).when(mockMasterList).pull();
+
+        exception.expect(OperationRefusedException.class);
+        todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
     }
 
     @Test

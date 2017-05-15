@@ -6,23 +6,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+
 public class TodoList {
     private final ScheduledFor scheduling;
     private List<Todo> todos = new ArrayList<>();
     private final int maxSize;
+    private final TodoList sourceList;
 
     public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize) {
         this.scheduling = scheduling;
         this.maxSize = maxSize;
         this.todos.addAll(todos);
+        this.sourceList = null;
+    }
+
+    public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize, TodoList sourceList) {
+        this.scheduling = scheduling;
+        this.todos.addAll(todos);
+        this.maxSize = maxSize;
+        this.sourceList = sourceList;
     }
 
     public ScheduledFor getScheduling() {
         return scheduling;
-    }
-
-    int getMaxSize() {
-        return maxSize;
     }
 
     public List<Todo> getTodos() {
@@ -43,18 +50,24 @@ public class TodoList {
         return todo;
     }
 
-    Todo addExisting(String localIdentifier, String task) {
-        int position = getNextPosition();
-        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
-        todos.add(newTodo);
-        return newTodo;
+    List<Todo> pull() throws NoSourceListConfiguredException {
+        if (sourceList == null) {
+            throw new NoSourceListConfiguredException();
+        }
+        List<Todo> sourceTodos = sourceList.pop(maxSize - getTodos().size());
+        return sourceTodos.stream()
+                .map(todo -> addExisting(todo.getLocalIdentifier(), todo.getTask()))
+                .collect(Collectors.toList());
     }
 
-    Todo push(String task) {
-        int position = getNextTopPosition();
-        Todo todo = new Todo(task, scheduling, position);
-        todos.add(0, todo);
-        return todo;
+    List<Todo> displace(Todo originalTodo, String task) throws NoSourceListConfiguredException {
+        if (sourceList == null) {
+            throw new NoSourceListConfiguredException();
+        }
+        Todo replacementTodo = new Todo(originalTodo.getLocalIdentifier(), task, originalTodo.getScheduling(), originalTodo.getPosition());
+        replace(originalTodo, replacementTodo);
+        Todo displacedTodo = sourceList.push(originalTodo.getTask());
+        return asList(displacedTodo, replacementTodo);
     }
 
     void remove(Todo todo) {
@@ -91,26 +104,16 @@ public class TodoList {
                 .orElseThrow(TodoNotFoundException::new);
     }
 
-    List<Todo> pop(Integer count) {
-        List<Todo> todos = this.todos.stream()
-                .limit(count)
-                .collect(Collectors.toList());
-        todos.stream().forEach(this::remove);
-        return todos;
+    private Todo push(String task) {
+        int position = getNextTopPosition();
+        Todo todo = new Todo(task, scheduling, position);
+        todos.add(0, todo);
+        return todo;
     }
 
-    void replace(Todo existingTodo, Todo replacementTodo) {
+    private void replace(Todo existingTodo, Todo replacementTodo) {
         int indexOfExistingTodo = todos.indexOf(existingTodo);
         todos.set(indexOfExistingTodo, replacementTodo);
-    }
-
-    @Override
-    public String toString() {
-        return "TodoList{" +
-                "scheduling=" + scheduling +
-                ", todos=" + todos +
-                ", maxSize=" + maxSize +
-                '}';
     }
 
     @Override
@@ -133,6 +136,30 @@ public class TodoList {
         result = 31 * result + (todos != null ? todos.hashCode() : 0);
         result = 31 * result + maxSize;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "TodoList{" +
+                "scheduling=" + scheduling +
+                ", todos=" + todos +
+                ", maxSize=" + maxSize +
+                '}';
+    }
+
+    private List<Todo> pop(Integer count) {
+        List<Todo> todos = this.todos.stream()
+                .limit(count)
+                .collect(Collectors.toList());
+        todos.stream().forEach(this::remove);
+        return todos;
+    }
+
+    private Todo addExisting(String localIdentifier, String task) {
+        int position = getNextPosition();
+        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
+        todos.add(newTodo);
+        return newTodo;
     }
 
     private Integer getNextPosition() {

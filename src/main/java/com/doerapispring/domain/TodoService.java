@@ -54,7 +54,7 @@ public class TodoService {
             Todo existingTodo = newAndExistingTodos.get(1);
             masterListRepository.add(masterList, newTodo);
             masterListRepository.update(masterList, existingTodo);
-        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (NoSourceListConfiguredException | TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }
@@ -99,7 +99,7 @@ public class TodoService {
             MasterList masterList = get(user);
             List<Todo> todos = masterList.pull();
             masterListRepository.update(masterList, todos);
-        } catch (AbnormalModelException e) {
+        } catch (NoSourceListConfiguredException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

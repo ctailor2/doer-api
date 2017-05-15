@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-public class DuplicateTodoException extends Exception {
+class DuplicateTodoException extends Exception {
 }

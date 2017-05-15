@@ -4,113 +4,74 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class MasterListTest {
     private MasterList masterList;
+
+    @Mock
+    private TodoList mockNowList;
+
+    @Mock
+    private TodoList mockLaterList;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        masterList = new MasterList(new UniqueIdentifier("something"), 2, Collections.emptyList());
+        when(mockNowList.getTodos()).thenReturn(Collections.emptyList());
+        when(mockLaterList.getTodos()).thenReturn(Collections.emptyList());
+        masterList = new MasterList(new UniqueIdentifier<>("something"), mockNowList, mockLaterList);
     }
 
     @Test
-    public void add_immediateTodo_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws Exception {
-        Todo firstTodo = masterList.add("someTask", ScheduledFor.now);
-        assertThat(masterList.getTodos()).containsExactly(firstTodo);
-        assertThat(firstTodo.getPosition()).isEqualTo(1);
+    public void add_whenScheduledForNow_addsToNowList() throws ListSizeExceededException, DuplicateTodoException {
+        masterList.add("someTask", ScheduledFor.now);
+
+        verify(mockNowList).add("someTask");
     }
 
     @Test
-    public void add_immediateTodo_toListWithImmediateTodos_addsTodoAfterLast() throws Exception {
-        Todo firstTodo = masterList.add("someTask", ScheduledFor.now);
-        Todo secondTodo = masterList.add("someOtherTask", ScheduledFor.now);
+    public void add_whenScheduledForLater_addsToLaterList() throws ListSizeExceededException, DuplicateTodoException {
+        masterList.add("someTask", ScheduledFor.later);
 
-        assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getPosition()).isEqualTo(2);
-    }
-
-    @Test
-    public void add_postponedTodo_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws Exception {
-        Todo firstTodo = masterList.add("someTask", ScheduledFor.later);
-        assertThat(masterList.getTodos()).containsExactly(firstTodo);
-        assertThat(firstTodo.getPosition()).isEqualTo(1);
-    }
-
-    @Test
-    public void add_postponedTodo_toListWithPostponedTodos_addsTodoAfterLast() throws Exception {
-        Todo firstTodo = masterList.add("someTask", ScheduledFor.later);
-        Todo secondTodo = masterList.add("someOtherTask", ScheduledFor.later);
-
-        assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getPosition()).isEqualTo(2);
+        verify(mockLaterList).add("someTask");
     }
 
     @Test
     public void add_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() throws Exception {
-        masterList.add("someTask", ScheduledFor.now);
+        Todo todo = new Todo("someId", "sameTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         exception.expect(DuplicateTodoException.class);
-        masterList.add("someTask", ScheduledFor.later);
+        masterList.add("sameTask", ScheduledFor.now);
     }
 
     @Test
-    public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
-        masterList.add("someTask", ScheduledFor.now);
-        masterList.add("someOtherTask", ScheduledFor.now);
-
-        exception.expect(ListSizeExceededException.class);
-        masterList.add("stillAnotherTask", ScheduledFor.now);
-    }
-
-    @Test
-    public void delete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
+    public void delete_whenTodoWithIdentifierExists_removesTodoFromMatchingList() throws Exception {
+        Todo todo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         Todo deletedTodo = masterList.delete(todo.getLocalIdentifier());
 
         assertThat(deletedTodo).isEqualTo(todo);
-        assertThat(masterList.getTodos()).doesNotContain(todo);
+        verify(mockNowList).remove(todo);
     }
 
     @Test
     public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
         masterList.delete("someBogusIdentifier");
-    }
-
-    @Test
-    public void displace_whenTodoWithIdentifierExists_inImmediateList_displacesIt_correctlyPositionsWhenNoPostponedTodos() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
-
-        List<Todo> todos = masterList.displace(todo.getLocalIdentifier(), "displace it");
-
-        Todo displacedTodo = new Todo("someTask", ScheduledFor.later, 1);
-        Todo newTodo = new Todo("displace it", ScheduledFor.now, todo.getPosition());
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(masterList.getTodos()).contains(newTodo, displacedTodo);
-    }
-
-    @Test
-    public void displace_whenTodoWithIdentifierExists_inImmediateList_displacesIt_correctlyPositionsWhenThereArePostponedTodos() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
-        Todo postponedTodo = masterList.add("someOtherTask", ScheduledFor.later);
-
-        List<Todo> todos = masterList.displace(todo.getLocalIdentifier(), "displace it");
-
-        Todo displacedTodo = new Todo("someTask", ScheduledFor.later, 0);
-        Todo newTodo = new Todo("displace it", ScheduledFor.now, todo.getPosition());
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(masterList.getTodos()).contains(newTodo, displacedTodo, postponedTodo);
     }
 
     @Test
@@ -121,25 +82,38 @@ public class MasterListTest {
 
     @Test
     public void displace_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
-        Todo todo = masterList.add("sameTask", ScheduledFor.now);
+        Todo todo = new Todo("someId", "sameTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         exception.expect(DuplicateTodoException.class);
         masterList.displace(todo.getLocalIdentifier(), "sameTask");
     }
 
     @Test
+    public void displace_whenTodoWithIdentifierExists_displacesTodoInMatchingList() throws TodoNotFoundException, DuplicateTodoException, NoSourceListConfiguredException {
+        Todo originalTodo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(originalTodo));
+
+        masterList.displace(originalTodo.getLocalIdentifier(), "coolNewTask");
+
+        verify(mockNowList).displace(originalTodo, "coolNewTask");
+    }
+
+    @Test
     public void update_whenTodoWithIdentifierExists_updatesTodo() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
+        Todo todo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         Todo updatedTodo = masterList.update(todo.getLocalIdentifier(), "someOtherTask");
 
-        assertThat(updatedTodo).isEqualTo(new Todo("someOtherTask", todo.getScheduling(), todo.getPosition()));
+        assertThat(updatedTodo).isEqualTo(new Todo(todo.getLocalIdentifier(), "someOtherTask", todo.getScheduling(), todo.getPosition()));
         assertThat(masterList.getTodos()).containsOnly(updatedTodo);
     }
 
     @Test
     public void update_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
-        Todo todo = masterList.add("sameTask", ScheduledFor.now);
+        Todo todo = new Todo("someId", "sameTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         exception.expect(DuplicateTodoException.class);
         masterList.update(todo.getLocalIdentifier(), "sameTask");
@@ -152,13 +126,14 @@ public class MasterListTest {
     }
 
     @Test
-    public void complete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.now);
+    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() throws Exception {
+        Todo todo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         Todo completedTodo = masterList.complete(todo.getLocalIdentifier());
 
+        verify(mockNowList).remove(todo);
         assertThat(completedTodo.isComplete()).isEqualTo(true);
-        assertThat(masterList.getTodos()).doesNotContain(todo);
     }
 
     @Test
@@ -168,139 +143,51 @@ public class MasterListTest {
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetDoesNotExist_throwsNotFoundException() throws Exception {
-        Todo todo = masterList.add("someTask", ScheduledFor.later);
-
-        exception.expect(TodoNotFoundException.class);
-        masterList.move(todo.getLocalIdentifier(), "nonExistentIdentifier");
-    }
-
-    @Test
     public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
         masterList.move("junk", "bogus");
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetDoesNotExist_inMatchingList_throwsNotFoundException() throws Exception {
-        Todo laterTodo = masterList.add("someTask", ScheduledFor.later);
-        masterList.add("identifierFromDifferentList", ScheduledFor.now);
+    public void move_whenTodoWithIdentifierExists_findsTargetInMatchingList() throws TodoNotFoundException, ListSizeExceededException, DuplicateTodoException {
+        Todo todo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
+
+        masterList.move(todo.getLocalIdentifier(), "someOtherId");
+
+        verify(mockNowList).getByIdentifier("someOtherId");
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetNotFoundInList_throwsTodoNotFoundException() throws Exception {
+        Todo todo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
+        when(mockNowList.getByIdentifier(any())).thenThrow(new TodoNotFoundException());
 
         exception.expect(TodoNotFoundException.class);
-        masterList.move(laterTodo.getLocalIdentifier(), "identifierFromDifferentList");
+        masterList.move(todo.getLocalIdentifier(), "nonExistentIdentifier");
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
-        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4);
-        List<Todo> todos = asList(
-                new Todo("A", "someTask", ScheduledFor.later, 1),
-                new Todo("B", "anotherTask", ScheduledFor.later, 2),
-                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
-                fourthTodo);
+    public void move_whenTodoWithIdentifierExists_whenTargetFoundInList_movesTodoInMatchingList() throws TodoNotFoundException {
+        Todo originalTodo = new Todo("someId", "someTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(originalTodo));
+        Todo targetTodo = new Todo("someOtherId", "someTask", ScheduledFor.now, 2);
+        when(mockNowList.getByIdentifier(any())).thenReturn(targetTodo);
 
-        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+        masterList.move(originalTodo.getLocalIdentifier(), "someOtherId");
 
-        List<Todo> effectedTodos = masterList.move("A", "C");
-
-        Todo expectedFirstTodo = new Todo("B", "anotherTask", ScheduledFor.later, 1);
-        Todo expectedSecondTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 2);
-        Todo expectedThirdTodo = new Todo("A", "someTask", ScheduledFor.later, 3);
-
-        assertThat(effectedTodos).contains(expectedFirstTodo, expectedSecondTodo, expectedThirdTodo);
-        assertThat(masterList.getTodos()).containsExactly(
-                expectedFirstTodo,
-                expectedSecondTodo,
-                expectedThirdTodo,
-                fourthTodo);
+        verify(mockNowList).move(originalTodo, targetTodo);
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.now, 1);
-        List<Todo> todos = asList(firstTodo,
-                new Todo("B", "anotherTask", ScheduledFor.now, 2),
-                new Todo("C", "yetAnotherTask", ScheduledFor.now, 3),
-                new Todo("D", "evenYetAnotherTask", ScheduledFor.now, 4));
-
-        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
-
-        List<Todo> effectedTodos = masterList.move("D", "B");
-
-        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.now, 2);
-        Todo expectedThirdTodo = new Todo("B", "anotherTask", ScheduledFor.now, 3);
-        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", ScheduledFor.now, 4);
-
-        assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
-        assertThat(masterList.getTodos()).containsExactly(
-                firstTodo,
-                expectedSecondTodo,
-                expectedThirdTodo,
-                expectedFourthTodo);
-    }
-
-    @Test
-    public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
-        List<Todo> todos = asList(
-                new Todo("A", "someTask", ScheduledFor.later, 1),
-                new Todo("B", "anotherTask", ScheduledFor.later, 2),
-                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
-                new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4));
-
-        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
-
-        List<Todo> effectedTodos = masterList.move("A", "A");
-
-        assertThat(effectedTodos).isEmpty();
-        assertThat(masterList.getTodos()).isEqualTo(todos);
-    }
-
-    @Test
-    public void pull_whenThereAreNoNowTodos_returnsLaterTodos() throws Exception {
-        List<Todo> todos = asList(
-                new Todo("A", "firstLater", ScheduledFor.later, 1),
-                new Todo("B", "secondLater", ScheduledFor.later, 2));
-        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
+    public void pull_pullsFromNowList_returnsResults() throws NoSourceListConfiguredException {
+        List<Todo> todos = Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1));
+        when(mockNowList.pull()).thenReturn(todos);
 
         List<Todo> effectedTodos = masterList.pull();
 
-        assertThat(effectedTodos).contains(
-                new Todo("A", "firstLater", ScheduledFor.now, 1),
-                new Todo("B", "secondLater", ScheduledFor.now, 2));
-        assertThat(masterList.getTodos()).isEqualTo(effectedTodos);
-    }
-
-    @Test
-    public void pull_whenThereAreLessNowTodosThanFocusSize_returnsAsManyLaterTodosAsTheDifference() throws Exception {
-        List<Todo> todos = asList(
-                new Todo("A", "onlyNow", ScheduledFor.now, 1),
-                new Todo("B", "firstLater", ScheduledFor.later, 1),
-                new Todo("C", "secondLater", ScheduledFor.later, 2));
-        MasterList masterList = new MasterList(new UniqueIdentifier("something"), 2, todos);
-
-        List<Todo> effectedTodos = masterList.pull();
-
-        assertThat(effectedTodos).contains(new Todo("B", "firstLater", ScheduledFor.now, 2));
-        assertThat(masterList.getTodos()).containsExactly(
-                new Todo("A", "onlyNow", ScheduledFor.now, 1),
-                new Todo("B", "firstLater", ScheduledFor.now, 2),
-                new Todo("C", "secondLater", ScheduledFor.later, 2));
-    }
-
-    @Test
-    public void pull_whenThereAreAsManyNowTodosAsFocusSize_returnsNoLaterTodos() throws Exception {
-        masterList.add("firstNow", ScheduledFor.now);
-        masterList.add("secondNow", ScheduledFor.now);
-        masterList.add("firstLater", ScheduledFor.later);
-        masterList.add("secondLater", ScheduledFor.later);
-
-        List<Todo> todos = masterList.pull();
-
-        assertThat(todos).isEmpty();
-        assertThat(masterList.getTodos()).containsExactly(
-                new Todo("firstNow", ScheduledFor.now, 1),
-                new Todo("secondNow", ScheduledFor.now, 2),
-                new Todo("firstLater", ScheduledFor.later, 1),
-                new Todo("secondLater", ScheduledFor.later, 2));
+        verify(mockNowList).pull();
+        assertThat(effectedTodos).isEqualTo(todos);
     }
 }
