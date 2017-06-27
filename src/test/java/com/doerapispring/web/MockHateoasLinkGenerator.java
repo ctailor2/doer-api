@@ -76,8 +76,8 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link unlockListLink() {
-        return new Link(MOCK_BASE_URL + "/todos/unlockTodos");
+    public Link listUnlockLink() {
+        return new Link(MOCK_BASE_URL + "/list/unlockTodos");
     }
 
     @Override

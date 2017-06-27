@@ -2,14 +2,13 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.MasterList;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.domain.TodoList;
-import com.doerapispring.web.*;
+import com.doerapispring.web.InvalidRequestException;
+import com.doerapispring.web.ListApiService;
+import com.doerapispring.web.MasterListDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 class ListApiServiceImpl implements ListApiService {
@@ -30,21 +29,13 @@ class ListApiServiceImpl implements ListApiService {
     }
 
     @Override
-    public List<ListDTO> getAll(AuthenticatedUser authenticatedUser) {
-        return listService.getAll().stream()
-                .map(basicTodoList -> new ListDTO(basicTodoList.getName()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public TodoListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+    public MasterListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
-            TodoList todoList = listService.get(authenticatedUser.getUser());
-            List<TodoDTO> todoDTOs = todoList.getTodos()
-                    .stream()
-                    .map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString()))
-                    .collect(Collectors.toList());
-            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
+            MasterList masterList = listService.get(authenticatedUser.getUser());
+            return new MasterListDTO(
+                    masterList.getImmediateList().getScheduling().toString(),
+                    masterList.getPostponedList().getScheduling().toString(),
+                    masterList.getImmediateList().isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

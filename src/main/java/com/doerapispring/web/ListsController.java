@@ -20,15 +20,15 @@ class ListsController {
         this.listApiService = listApiService;
     }
 
-    @RequestMapping(value = "/lists/unlock", method = RequestMethod.POST)
+    @RequestMapping(value = "/list/unlock", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             listApiService.unlock(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                    hateoasLinkGenerator.unlockListLink().withSelfRel(),
-                    hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
+                    hateoasLinkGenerator.listUnlockLink().withSelfRel(),
+                    hateoasLinkGenerator.listLink().withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -40,12 +40,12 @@ class ListsController {
     ResponseEntity<ListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             // TODO: Either add todo links here or separate it out to a todos index endpoint
-            TodoListDTO todoListDTO = listApiService.get(authenticatedUser);
-            if (!todoListDTO.isFull()) {
-                todoListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
-                todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
+            MasterListDTO masterListDTO = listApiService.get(authenticatedUser);
+            if (!masterListDTO.isFull()) {
+                masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
+                masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
-            ListResponse listResponse = new ListResponse(todoListDTO);
+            ListResponse listResponse = new ListResponse(masterListDTO);
             listResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
             return ResponseEntity.ok(listResponse);
         } catch (InvalidRequestException e) {

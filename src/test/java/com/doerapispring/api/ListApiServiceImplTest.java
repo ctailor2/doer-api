@@ -3,10 +3,7 @@ package com.doerapispring.api;
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.ListDTO;
-import com.doerapispring.web.TodoDTO;
-import com.doerapispring.web.TodoListDTO;
-import org.fest.assertions.api.Assertions;
+import com.doerapispring.web.MasterListDTO;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,9 +13,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
-import java.util.List;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -55,29 +50,9 @@ public class ListApiServiceImplTest {
     }
 
     @Test
-    public void getAll_callsListService() throws Exception {
-        listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockListService).getAll();
-    }
-
-    @Test
-    public void getAll_whenListServiceReturnsLists_returnsMatchingListDTOs() throws Exception {
-        when(mockListService.getAll()).thenReturn(asList(
-                new BasicTodoList("someName"),
-                new BasicTodoList("someOtherName")));
-
-        List<ListDTO> listDTOs = listApiServiceImpl.getAll(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(listDTOs).isEqualTo(asList(
-                new ListDTO("someName"),
-                new ListDTO("someOtherName")));
-    }
-
-    @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
+                .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -85,29 +60,48 @@ public class ListApiServiceImplTest {
     }
 
     @Test
-    public void get_callsListService_returnsMatchingTodoListDTO_whenListIsNotFull() throws Exception {
+    public void get_callsListService_returnsMasterListDTO() throws Exception {
         when(mockListService.get(any()))
-                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
+                .thenReturn(new MasterList(
+                        new UniqueIdentifier<>("someIdentifier"),
+                        new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
 
-        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+        MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
-        assertThat(todoListDTO).isNotNull();
-        assertThat(todoListDTO.getTodoDTOs()).contains(new TodoDTO("someId", "someTask", "now"));
-        assertThat(todoListDTO.isFull()).isFalse();
-        assertThat(todoListDTO.getName()).isEqualTo("now");
+        assertThat(masterListDTO).isNotNull();
+        assertThat(masterListDTO.getName()).isEqualTo("now");
+        assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
     }
 
     @Test
-    public void get_callsListService_returnsMatchingTodoListDTO_whenListIsFull() throws Exception {
+    public void get_callsListService_returnsMasterListDTO_whenNowListIsNotFull() throws Exception {
         when(mockListService.get(any()))
-                .thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 0));
+                .thenReturn(new MasterList(
+                        new UniqueIdentifier<>("someIdentifier"),
+                        new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
 
-        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+        MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
-        assertThat(todoListDTO).isNotNull();
-        Assertions.assertThat(todoListDTO.isFull()).isEqualTo(true);
-        assertThat(todoListDTO.getName()).isEqualTo("now");
+        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
+        assertThat(masterListDTO).isNotNull();
+        assertThat(masterListDTO.isFull()).isFalse();
+    }
+
+    @Test
+    public void get_callsListService_returnsMatchingTodoListDTO_whenNowListIsFull() throws Exception {
+        when(mockListService.get(any()))
+                .thenReturn(new MasterList(
+                        new UniqueIdentifier<>("someIdentifier"),
+                        new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
+
+        MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(masterListDTO).isNotNull();
+        assertThat(masterListDTO.isFull()).isTrue();
     }
 
     @Test

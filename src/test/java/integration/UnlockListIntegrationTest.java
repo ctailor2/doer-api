@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
     private MvcResult mvcResult;
 
@@ -45,7 +45,7 @@ public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringCo
 
     @Test
     public void unlockLaterList() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/lists/unlock")
+        mvcResult = mockMvc.perform(post("/v1/list/unlock")
                 .headers(httpHeaders))
                 .andReturn();
 
@@ -56,6 +56,7 @@ public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringCo
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/unlock")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/unlock")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
     }
 }

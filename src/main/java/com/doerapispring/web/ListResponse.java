@@ -5,13 +5,13 @@ import org.springframework.hateoas.ResourceSupport;
 
 class ListResponse extends ResourceSupport {
     @JsonProperty("list")
-    private final TodoListDTO todoListDTO;
+    private final MasterListDTO masterListDTO;
 
-    ListResponse(TodoListDTO todoListDTO) {
-        this.todoListDTO = todoListDTO;
+    ListResponse(MasterListDTO masterListDTO) {
+        this.masterListDTO = masterListDTO;
     }
 
-    TodoListDTO getTodoListDTO() {
-        return todoListDTO;
+    MasterListDTO getMasterListDTO() {
+        return masterListDTO;
     }
 }

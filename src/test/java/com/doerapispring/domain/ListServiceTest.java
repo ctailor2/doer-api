@@ -12,10 +12,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -105,16 +103,7 @@ public class ListServiceTest {
     }
 
     @Test
-    public void getAll_returnsNowAndLaterLists() throws Exception {
-        List<BasicTodoList> basicTodoLists = listService.getAll();
-
-        assertThat(basicTodoLists).isEqualTo(asList(
-                new BasicTodoList("now"),
-                new BasicTodoList("later")));
-    }
-
-    @Test
-    public void get_whenMasterListFound_returnsNowList() throws Exception {
+    public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
@@ -122,9 +111,9 @@ public class ListServiceTest {
         when(mockTodoListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
-        TodoList todoList = listService.get(user);
+        MasterList masterList = listService.get(user);
 
-        assertThat(todoList).isEqualTo(nowList);
+        assertThat(masterList).isEqualTo(masterListFromRepository);
     }
 
     @Test

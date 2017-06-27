@@ -16,7 +16,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
@@ -55,7 +56,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list.name", equalTo("now")));
-        assertThat(responseContent, hasJsonPath("$.list.todos", empty()));
+        assertThat(responseContent, hasJsonPath("$.list.deferredName", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));

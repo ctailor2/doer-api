@@ -16,8 +16,6 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
-
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -50,7 +48,7 @@ public class ListsControllerTest {
 
     @Test
     public void unlock_mapping() throws Exception {
-        mockMvc.perform(post("/v1/lists/unlock"))
+        mockMvc.perform(post("/v1/list/unlock"))
                 .andExpect(status().isAccepted());
 
         verify(mockListApiService).unlock(authenticatedUser);
@@ -63,8 +61,8 @@ public class ListsControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/todos/unlockTodos").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
+                new Link(MOCK_BASE_URL + "/list/unlockTodos").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
@@ -79,7 +77,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_mapping() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", false));
 
         mockMvc.perform(get("/v1/list"))
                 .andExpect(status().isOk());
@@ -89,7 +87,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_includesLinks_byDefault() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", false));
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -98,23 +96,33 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void show_whenListIsNotFull_includesListLinks() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+    public void show_returnsList() throws Exception {
+        MasterListDTO masterListDTO = new MasterListDTO("someName", "someDeferredName", false);
+        when(mockListApiService.get(any())).thenReturn(masterListDTO);
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
-        Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getMasterListDTO()).isEqualTo(masterListDTO);
+    }
+
+    @Test
+    public void show_whenListIsNotFull_includesListLinks() throws Exception {
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", false));
+
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
+
+        Assertions.assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"),
                 new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
     }
 
     @Test
     public void show_whenListIsFull_doesNotIncludeListLinks() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), true));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", true));
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
-        Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).isEmpty();
+        Assertions.assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).isEmpty();
     }
 
     @Test

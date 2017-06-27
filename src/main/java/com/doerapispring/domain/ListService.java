@@ -2,15 +2,8 @@ package com.doerapispring.domain;
 
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
-
 @Service
 public class ListService {
-    private static final String PRIMARY_LIST_NAME = "now";
-    private static final String SECONDARY_LIST_NAME = "later";
-
     private final AggregateRootRepository<ListManager, ListUnlock, String> listUnlockRepository;
     private final AggregateRootRepository<MasterList, Todo, String> masterListRepository;
 
@@ -35,14 +28,7 @@ public class ListService {
         }
     }
 
-    public List<BasicTodoList> getAll() {
-        return asList(
-                new BasicTodoList(PRIMARY_LIST_NAME),
-                new BasicTodoList(SECONDARY_LIST_NAME));
-    }
-
-    public TodoList get(User user) throws OperationRefusedException {
-        MasterList masterList = masterListRepository.find(user.getIdentifier()).orElseThrow(OperationRefusedException::new);
-        return masterList.getImmediateList();
+    public MasterList get(User user) throws OperationRefusedException {
+        return masterListRepository.find(user.getIdentifier()).orElseThrow(OperationRefusedException::new);
     }
 }
