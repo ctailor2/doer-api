@@ -20,13 +20,13 @@ public class ListService {
         this.masterListRepository = masterListRepository;
     }
 
-    public ListManager get(User user) throws OperationRefusedException {
+    public ListManager getListManager(User user) throws OperationRefusedException {
         return listUnlockRepository.find(user.getIdentifier())
                 .orElseThrow(OperationRefusedException::new);
     }
 
     public void unlock(User user) throws OperationRefusedException {
-        ListManager listManager = get(user);
+        ListManager listManager = getListManager(user);
         try {
             ListUnlock listUnlock = listManager.unlock();
             listUnlockRepository.add(listManager, listUnlock);
@@ -41,16 +41,8 @@ public class ListService {
                 new BasicTodoList(SECONDARY_LIST_NAME));
     }
 
-    public TodoList get(User user, String name) throws OperationRefusedException {
+    public TodoList get(User user) throws OperationRefusedException {
         MasterList masterList = masterListRepository.find(user.getIdentifier()).orElseThrow(OperationRefusedException::new);
-        return masterList.getListByScheduling(getScheduledFor(name));
-    }
-
-    private ScheduledFor getScheduledFor(String scheduling) throws OperationRefusedException {
-        try {
-            return Enum.valueOf(ScheduledFor.class, scheduling);
-        } catch (IllegalArgumentException e) {
-            throw new OperationRefusedException();
-        }
+        return masterList.getImmediateList();
     }
 }

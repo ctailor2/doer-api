@@ -49,7 +49,7 @@ public class UnlockLaterListIntegrationTest extends AbstractWebAppJUnit4SpringCo
                 .headers(httpHeaders))
                 .andReturn();
 
-        List<ListUnlock> listUnlocks = listService.get(user).getListUnlocks();
+        List<ListUnlock> listUnlocks = listService.getListManager(user).getListUnlocks();
 
         assertThat(listUnlocks.size(), equalTo(1));
 

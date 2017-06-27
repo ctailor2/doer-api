@@ -43,8 +43,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         todosService.create(user, "will also get pulled", ScheduledFor.later);
         todosService.create(user, "keep for later", ScheduledFor.later);
 
-
-        mvcResult = mockMvc.perform(post("/v1/todos/pull")
+        mvcResult = mockMvc.perform(post("/v1/list/pull")
                 .headers(httpHeaders))
                 .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
@@ -64,9 +63,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
                 hasProperty("position", equalTo(3)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/pull")));
-        assertThat(responseContent, hasJsonPath("$._links.nowTodos.href", containsString("/v1/todos?scheduling=now")));
-        assertThat(responseContent, hasJsonPath("$._links.laterTodos.href", containsString("/v1/todos?scheduling=later")));
-        assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/pull")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
     }
 }

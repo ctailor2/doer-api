@@ -37,9 +37,9 @@ class ListApiServiceImpl implements ListApiService {
     }
 
     @Override
-    public TodoListDTO get(AuthenticatedUser authenticatedUser, String name) throws InvalidRequestException {
+    public TodoListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
-            TodoList todoList = listService.get(authenticatedUser.getUser(), name);
+            TodoList todoList = listService.get(authenticatedUser.getUser());
             List<TodoDTO> todoDTOs = todoList.getTodos()
                     .stream()
                     .map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask(), todo.getScheduling().toString()))

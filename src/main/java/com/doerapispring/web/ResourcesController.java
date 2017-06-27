@@ -43,18 +43,10 @@ class ResourcesController {
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        try {
-            ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
-            resourcesResponse.add(hateoasLinkGenerator.todosLink("now").withRel("nowTodos"));
-            TodoResourcesDTO todoResourcesDTO = resourceApiService.getTodoResources(authenticatedUser);
-            if (todoResourcesDTO.isLaterListUnlocked()) {
-                resourcesResponse.add(hateoasLinkGenerator.todosLink("later").withRel("laterTodos"));
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
+        resourcesResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
+        return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/history", method = RequestMethod.GET)

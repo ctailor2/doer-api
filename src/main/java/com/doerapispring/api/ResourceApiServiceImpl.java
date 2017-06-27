@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ResourceApiServiceImpl implements ResourceApiService {
+class ResourceApiServiceImpl implements ResourceApiService {
     private final TodoService todoService;
     private final ListService listService;
 
@@ -23,7 +23,7 @@ public class ResourceApiServiceImpl implements ResourceApiService {
     public TodoResourcesDTO getTodoResources(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
             TodoList nowList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.now);
-            ListManager listManager = listService.get(authenticatedUser.getUser());
+            ListManager listManager = listService.getListManager(authenticatedUser.getUser());
             return new TodoResourcesDTO(nowList.isFull(), listManager.isLocked());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();

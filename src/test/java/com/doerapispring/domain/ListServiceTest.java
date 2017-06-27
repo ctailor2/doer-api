@@ -47,7 +47,7 @@ public class ListServiceTest {
         ListManager listUnlockManagerFromRepository = new ListManager(uniqueIdentifier, Collections.emptyList());
         when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(listUnlockManagerFromRepository));
 
-        ListManager listManager = listService.get(new User(uniqueIdentifier));
+        ListManager listManager = listService.getListManager(new User(uniqueIdentifier));
 
         verify(mockListUnlockRepository).find(uniqueIdentifier);
         Assertions.assertThat(listManager).isEqualTo(listUnlockManagerFromRepository);
@@ -58,7 +58,7 @@ public class ListServiceTest {
         when(mockListUnlockRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
-        listService.get(new User(new UniqueIdentifier<>("one@two.com")));
+        listService.getListManager(new User(new UniqueIdentifier<>("one@two.com")));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class ListServiceTest {
     }
 
     @Test
-    public void get_whenMasterListFound_whenListWithNameExists_returnsMatchingList() throws Exception {
+    public void get_whenMasterListFound_returnsNowList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
@@ -122,22 +122,9 @@ public class ListServiceTest {
         when(mockTodoListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
-        TodoList todoList = listService.get(user, "now");
+        TodoList todoList = listService.get(user);
 
         assertThat(todoList).isEqualTo(nowList);
-    }
-
-    @Test
-    public void get_whenMasterListFound_whenListWithNameDoesNotExist_refusesOperation() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
-        User user = new User(uniqueIdentifier);
-
-        exception.expect(OperationRefusedException.class);
-        listService.get(user, "notThere");
     }
 
     @Test
@@ -146,6 +133,6 @@ public class ListServiceTest {
         when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
-        listService.get(new User(uniqueIdentifier), "now");
+        listService.get(new User(uniqueIdentifier));
     }
 }

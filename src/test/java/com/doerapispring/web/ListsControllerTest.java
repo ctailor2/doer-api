@@ -17,10 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Collections;
-import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
-import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -80,86 +78,50 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void index_mapping() throws Exception {
-        mockMvc.perform(get("/v1/lists"))
-                .andExpect(status().isOk());
-
-        verify(mockListApiService).getAll(authenticatedUser);
-    }
-
-    @Test
-    public void index_callsListService_includesLinksByDefault() throws Exception {
-        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getBody().getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/lists").withSelfRel());
-    }
-
-    @Test
-    public void index_callsListService_byDefault_includesLinksForEachList() throws Exception {
-        when(mockListApiService.getAll(any()))
-                .thenReturn(asList(new ListDTO("someName"), new ListDTO("someOtherName")));
-
-        ResponseEntity<ListsResponse> responseEntity = listsController.index(authenticatedUser);
-
-        List<ListDTO> listDTOs = responseEntity.getBody().getListDTOs();
-        assertThat(listDTOs.size()).isEqualTo(2);
-        ListDTO firstListDTO = listDTOs.get(0);
-        assertThat(firstListDTO.getName()).isEqualTo("someName");
-        assertThat(firstListDTO.getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/lists/someName").withRel("list"));
-        ListDTO secondListDTO = listDTOs.get(1);
-        assertThat(secondListDTO.getName()).isEqualTo("someOtherName");
-        assertThat(secondListDTO.getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/lists/someOtherName").withRel("list"));
-    }
-
-    @Test
     public void show_mapping() throws Exception {
-        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
 
-        mockMvc.perform(get("/v1/lists/someName"))
+        mockMvc.perform(get("/v1/list"))
                 .andExpect(status().isOk());
 
-        verify(mockListApiService).get(authenticatedUser, "someName");
+        verify(mockListApiService).get(authenticatedUser);
     }
 
     @Test
     public void show_includesLinks_byDefault() throws Exception {
-        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
 
-        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/lists/someName").withSelfRel());
+                new Link(MOCK_BASE_URL + "/list").withSelfRel());
     }
 
     @Test
     public void show_whenListIsNotFull_includesListLinks() throws Exception {
-        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
+        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), false));
 
-        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/lists/someName/createTodo").withRel("create"),
-                new Link(MOCK_BASE_URL + "/lists/someName/pullTodos").withRel("pull"));
+                new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"),
+                new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
     }
 
     @Test
     public void show_whenListIsFull_doesNotIncludeListLinks() throws Exception {
-        when(mockListApiService.get(any(), any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), true));
+        when(mockListApiService.get(any())).thenReturn(new TodoListDTO("someName", Collections.emptyList(), true));
 
-        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         Assertions.assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).isEmpty();
     }
 
     @Test
     public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(mockListApiService.get(any(), any())).thenThrow(new InvalidRequestException());
+        when(mockListApiService.get(any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser, "someName");
+        ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

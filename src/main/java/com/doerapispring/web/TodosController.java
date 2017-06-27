@@ -151,44 +151,50 @@ class TodosController {
         }
     }
 
-    @RequestMapping(value = "/todos/pull", method = RequestMethod.POST)
+    @RequestMapping(value = "/list/pull", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             todoApiService.pull(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                    hateoasLinkGenerator.pullTodosLink().withSelfRel(),
-                    hateoasLinkGenerator.todosLink("now").withRel("nowTodos"),
-                    hateoasLinkGenerator.todosLink("later").withRel("laterTodos"),
-                    hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"));
+                    hateoasLinkGenerator.listPullTodosLink().withSelfRel(),
+                    hateoasLinkGenerator.listLink().withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    @RequestMapping(value = "/lists/{name}/todos", method = RequestMethod.POST)
+    @RequestMapping(value = "/list/todos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable String name,
                                              @RequestBody TodoForm todoForm) {
         try {
-            todoApiService.create(authenticatedUser, todoForm.getTask(), name);
+            todoApiService.create(authenticatedUser, todoForm.getTask(), "now");
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                    hateoasLinkGenerator.createTodoLink(name).withSelfRel(),
-                    hateoasLinkGenerator.listLink(name).withRel("list"));
+                    hateoasLinkGenerator.createTodoLink().withSelfRel(),
+                    hateoasLinkGenerator.listLink().withRel("list"));
             return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
-    @RequestMapping(value = "/lists/{name}/pull", method = RequestMethod.POST)
+    @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                           @PathVariable String name) {
-        return null;
+    ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @RequestBody TodoForm todoForm) {
+        try {
+            todoApiService.create(authenticatedUser, todoForm.getTask(), "later");
+            ResourcesResponse resourcesResponse = new ResourcesResponse();
+            resourcesResponse.add(
+                    hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),
+                    hateoasLinkGenerator.listLink().withRel("list"));
+            return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }

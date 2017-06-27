@@ -76,22 +76,22 @@ public class ListApiServiceImplTest {
 
     @Test
     public void get_callsListService() throws Exception {
-        when(mockListService.get(any(), any()))
+        when(mockListService.get(any()))
                 .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
 
-        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
-        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")), "someName");
+        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
     }
 
     @Test
     public void get_callsListService_returnsMatchingTodoListDTO_whenListIsNotFull() throws Exception {
-        when(mockListService.get(any(), any()))
+        when(mockListService.get(any()))
                 .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1)), 2));
 
-        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
-        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")), "someName");
+        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
         assertThat(todoListDTO).isNotNull();
         assertThat(todoListDTO.getTodoDTOs()).contains(new TodoDTO("someId", "someTask", "now"));
         assertThat(todoListDTO.isFull()).isFalse();
@@ -100,10 +100,10 @@ public class ListApiServiceImplTest {
 
     @Test
     public void get_callsListService_returnsMatchingTodoListDTO_whenListIsFull() throws Exception {
-        when(mockListService.get(any(), any()))
+        when(mockListService.get(any()))
                 .thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 0));
 
-        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+        TodoListDTO todoListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO).isNotNull();
         Assertions.assertThat(todoListDTO.isFull()).isEqualTo(true);
@@ -112,9 +112,9 @@ public class ListApiServiceImplTest {
 
     @Test
     public void get_whenOperationRefused_throwsInvalidRequest() throws Exception {
-        when(mockListService.get(any(), any())).thenThrow(new OperationRefusedException());
+        when(mockListService.get(any())).thenThrow(new OperationRefusedException());
 
         exception.expect(InvalidRequestException.class);
-        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"), "someName");
+        listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
     }
 }

@@ -64,7 +64,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link pullTodosLink() {
+    public Link listPullTodosLink() {
         return linkTo(methodOn(TodosController.class).pull(null)).withSelfRel();
     }
 
@@ -84,22 +84,17 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link listsLink() {
-        return linkTo(methodOn(ListsController.class).index(null)).withSelfRel();
+    public Link listLink() {
+        return linkTo(methodOn(ListsController.class).show(null)).withSelfRel();
     }
 
     @Override
-    public Link listLink(String name) {
-        return linkTo(methodOn(ListsController.class).show(null, name)).withSelfRel();
+    public Link createTodoLink() {
+        return linkTo(methodOn(TodosController.class).create(null, null)).withSelfRel();
     }
 
     @Override
-    public Link createTodoLink(String name) {
-        return linkTo(methodOn(TodosController.class).create(null, name, null)).withSelfRel();
-    }
-
-    @Override
-    public Link listPullTodosLink(String name) {
-        return linkTo(methodOn(TodosController.class).pull(null, name)).withSelfRel();
+    public Link createDeferredTodoLink() {
+        return linkTo(methodOn(TodosController.class).createDeferred(null, null)).withSelfRel();
     }
 }

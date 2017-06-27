@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.hateoas.Link;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
@@ -17,9 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -78,43 +74,17 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_mapping() throws Exception {
-        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, false));
-
         mockMvc.perform(get("/v1/resources/todo"))
                 .andExpect(status().isOk());
-
-        verify(mockResourceApiService).getTodoResources(authenticatedUser);
     }
 
     @Test
-    public void todo_whenLaterListIsUnlocked_includesLinks() throws Exception {
-        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, false));
-
+    public void todo_includesLinksByDefault() throws Exception {
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
                 new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
-    }
-
-    @Test
-    public void todo_whenLaterListIsLocked_excludesLinks() throws Exception {
-        when(mockResourceApiService.getTodoResources(any())).thenReturn(new TodoResourcesDTO(true, true));
-
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
-
-        assertThat(responseEntity.getBody().getLinks()).doesNotContain(
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"));
-    }
-
-    @Test
-    public void todo_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(mockResourceApiService.getTodoResources(any())).thenThrow(new InvalidRequestException());
-
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test

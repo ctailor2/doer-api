@@ -25,7 +25,7 @@ interface HateoasLinkGenerator {
 
     Link moveTodoLink(String localId, String targetLocalId);
 
-    Link pullTodosLink();
+    Link listPullTodosLink();
 
     Link rootResourcesLink();
 
@@ -33,11 +33,9 @@ interface HateoasLinkGenerator {
 
     Link unlockListLink();
 
-    Link listsLink();
+    Link listLink();
 
-    Link listLink(String name);
+    Link createTodoLink();
 
-    Link createTodoLink(String name);
-
-    Link listPullTodosLink(String name);
+    Link createDeferredTodoLink();
 }

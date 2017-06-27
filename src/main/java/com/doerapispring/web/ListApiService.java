@@ -9,5 +9,5 @@ public interface ListApiService {
 
     List<ListDTO> getAll(AuthenticatedUser authenticatedUser);
 
-    TodoListDTO get(AuthenticatedUser authenticatedUser, String name) throws InvalidRequestException;
+    TodoListDTO get(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
 }

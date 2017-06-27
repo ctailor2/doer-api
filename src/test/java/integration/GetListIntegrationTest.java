@@ -40,7 +40,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/lists/now")
+                .get("/v1/list")
                 .headers(httpHeaders);
     }
 
@@ -57,10 +57,10 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, hasJsonPath("$.list.name", equalTo("now")));
         assertThat(responseContent, hasJsonPath("$.list.todos", empty()));
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/lists/now/todos")));
-        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/lists/now/pull")));
+        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/now")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list")));
     }
 
     private void doGet() throws Exception {

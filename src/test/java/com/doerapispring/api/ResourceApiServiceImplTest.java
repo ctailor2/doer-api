@@ -43,12 +43,12 @@ public class ResourceApiServiceImplTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         ListManager mockListManager = mock(ListManager.class);
         when(mockListManager.isLocked()).thenReturn(false);
-        when(mockListService.get(any())).thenReturn(mockListManager);
+        when(mockListService.getListManager(any())).thenReturn(mockListManager);
 
         TodoResourcesDTO todoResourcesDTO = resourceApiService.getTodoResources(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.now);
-        verify(mockListService).get(new User(uniqueIdentifier));
+        verify(mockListService).getListManager(new User(uniqueIdentifier));
         assertThat(todoResourcesDTO.doesNowListHaveCapacity()).isFalse();
         assertThat(todoResourcesDTO.isLaterListUnlocked()).isTrue();
     }
@@ -63,7 +63,7 @@ public class ResourceApiServiceImplTest {
 
     @Test
     public void getTodoResources_whenListServiceRefusesOperation_throwsInvalidRequestException() throws Exception {
-        when(mockListService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockListService.getListManager(any())).thenThrow(new OperationRefusedException());
 
         exception.expect(InvalidRequestException.class);
         resourceApiService.getTodoResources(new AuthenticatedUser("someIdentifier"));

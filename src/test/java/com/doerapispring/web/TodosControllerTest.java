@@ -318,7 +318,7 @@ public class TodosControllerTest {
 
     @Test
     public void pull_mapping() throws Exception {
-        mockMvc.perform(post("/v1/todos/pull"))
+        mockMvc.perform(post("/v1/list/pull"))
                 .andExpect(status().isAccepted());
 
         verify(mockTodoApiService).pull(authenticatedUser);
@@ -330,11 +330,9 @@ public class TodosControllerTest {
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/todos/pullTodos").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+        assertThat(responseEntity.getBody().getLinks()).containsOnly(
+                new Link(MOCK_BASE_URL + "/list/pullTodos").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
@@ -349,7 +347,7 @@ public class TodosControllerTest {
 
     @Test
     public void create_mapping() throws Exception {
-        mockMvc.perform(post("/v1/lists/now/todos")
+        mockMvc.perform(post("/v1/list/todos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"task\": \"return redbox movie\"}"))
                 .andExpect(status().isCreated());
@@ -359,21 +357,53 @@ public class TodosControllerTest {
     public void create_callsTokenService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, "now", todoForm);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, todoForm);
 
         verify(mockTodoApiService).create(authenticatedUser, task, "now");
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/lists/now/createTodo").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/lists/now").withRel("list"));
+                new Link(MOCK_BASE_URL + "/list/createTodo").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
     public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
         doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
 
-        ResponseEntity responseEntity = todosController.create(authenticatedUser, "now", new TodoForm("someTask"));
+        ResponseEntity responseEntity = todosController.create(authenticatedUser, new TodoForm("someTask"));
+
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void createDeferred_mapping() throws Exception {
+        mockMvc.perform(post("/v1/list/deferredTodos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"task\": \"return redbox movie\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void createDeferred_callsTokenService_returns201() throws Exception {
+        String task = "some task";
+        TodoForm todoForm = new TodoForm(task);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, todoForm);
+
+        verify(mockTodoApiService).create(authenticatedUser, task, "later");
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+                new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withSelfRel(),
+                new Link(MOCK_BASE_URL + "/list").withRel("list"));
+    }
+
+    @Test
+    public void createDeferred_whenInvalidRequest_returns400BadRequest() throws Exception {
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
+
+        ResponseEntity responseEntity = todosController.createDeferred(authenticatedUser, new TodoForm("someTask"));
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
