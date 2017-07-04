@@ -63,15 +63,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void todos_callsTodoService_withSuppliedScheduling() throws Exception {
-        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
-
-        todosController.todos(authenticatedUser);
-
-        verify(mockTodoApiService).getTodos(authenticatedUser);
-    }
-
-    @Test
     public void todos_whenInvalidRequest_returns400BadRequest() throws Exception {
         when(mockTodoApiService.getTodos(any())).thenThrow(new InvalidRequestException());
 
@@ -110,9 +101,69 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void getTodos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
+    public void todos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
         when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
+    }
+
+    @Test
+    public void deferredTodos_mapping_callsTodoService() throws Exception {
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+
+        mockMvc.perform(get("/v1/list/deferredTodos")).andExpect(status().isOk());
+
+        verify(mockTodoApiService).getDeferredTodos(authenticatedUser);
+    }
+
+    @Test
+    public void deferredTodos_whenInvalidRequest_returns400BadRequest() throws Exception {
+        when(mockTodoApiService.getDeferredTodos(any())).thenThrow(new InvalidRequestException());
+
+        ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
+        assertThat(responseEntity).isNotNull();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void deferredTodos_callsTodoService_includesLinksByDefault() throws Exception {
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/list/deferredTodos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+    }
+
+    @Test
+    public void deferredTodos_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
+            new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).containsSequence(
+            new Link(MOCK_BASE_URL + "/todos/someId/moveTodo/someId").withRel("move"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks()).containsSequence(
+            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks()).containsSequence(
+            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
+    }
+
+    @Test
+    public void deferredTodos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
             .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));

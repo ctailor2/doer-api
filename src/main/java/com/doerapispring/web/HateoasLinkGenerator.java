@@ -40,4 +40,6 @@ interface HateoasLinkGenerator {
     Link createTodoLink();
 
     Link createDeferredTodoLink();
+
+    Link deferredTodosLink();
 }

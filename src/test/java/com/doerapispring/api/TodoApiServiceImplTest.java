@@ -223,7 +223,7 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void getTodos_callsTodoService_forLaterTodos() throws Exception {
+    public void getTodos_callsTodoService_forNowTodos() throws Exception {
         when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
 
@@ -249,6 +249,38 @@ public class TodoApiServiceImplTest {
             .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(todoListDTO.isFull()).isEqualTo(false);
+        assertThat(todoListDTO.getName()).isEqualTo("later");
+    }
+
+    @Test
+    public void getDeferredTodos_callsTodoService_forLaterTodos() throws Exception {
+        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+
+        todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
+
+        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.later);
+    }
+
+    @Test
+    public void getDeferredTodos_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any()))
+            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(todoListDTO.isFull()).isEqualTo(true);
+        assertThat(todoListDTO.getName()).isEqualTo("now");
+    }
+
+    @Test
+    public void getDeferredTodos_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any()))
+            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(false);
         assertThat(todoListDTO.getName()).isEqualTo("later");

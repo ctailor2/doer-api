@@ -42,6 +42,17 @@ class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
+    public TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        try {
+            TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.later);
+            List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
     public void create(AuthenticatedUser authenticatedUser, String task, String scheduling) throws InvalidRequestException {
         ScheduledFor scheduledFor = getScheduledFor(scheduling);
         try {

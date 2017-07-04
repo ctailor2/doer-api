@@ -22,4 +22,6 @@ public interface TodoApiService {
     TodoListDTO getSubList(AuthenticatedUser authenticatedUser, String scheduling) throws InvalidRequestException;
 
     TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
+
+    TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
 }

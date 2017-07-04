@@ -224,4 +224,32 @@ class TodosController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.GET)
+    @ResponseBody
+    ResponseEntity<TodosResponse> deferredTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        try {
+            TodoListDTO todoListDTO = todoApiService.getDeferredTodos(authenticatedUser);
+            todoListDTO.getTodoDTOs().stream().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
+
+                todoListDTO.getTodoDTOs().stream().forEach(targetTodoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                        todoDTO.getLocalIdentifier(),
+                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
+
+                if (todoListDTO.isFull()) {
+                    todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
+                }
+            });
+            TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
+            todosResponse.add(hateoasLinkGenerator.deferredTodosLink().withSelfRel());
+            todosResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
+            return ResponseEntity.status(HttpStatus.OK).body(todosResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }

@@ -15,8 +15,7 @@ import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
@@ -43,7 +42,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/todos?scheduling=later")
+                .get("/v1/list/deferredTodos")
                 .headers(httpHeaders);
     }
 
@@ -74,11 +73,11 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos?scheduling=later")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list/deferredTodos")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 
     private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(mockRequestBuilder)
-                .andReturn();
+        mvcResult = mockMvc.perform(mockRequestBuilder).andReturn();
     }
 }
