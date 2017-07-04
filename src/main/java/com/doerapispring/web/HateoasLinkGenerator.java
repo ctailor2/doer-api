@@ -3,15 +3,19 @@ package com.doerapispring.web;
 import org.springframework.hateoas.Link;
 
 interface HateoasLinkGenerator {
-    Link todoResourcesLink();
-
-    Link todosLink(String scheduling);
-
     Link signupLink();
 
     Link loginLink();
 
     Link baseResourcesLink();
+
+    Link rootResourcesLink();
+
+    Link historyResourcesLink();
+
+    Link todoResourcesLink();
+
+    Link todosLink(String scheduling);
 
     Link deleteTodoLink(String localId);
 
@@ -27,13 +31,11 @@ interface HateoasLinkGenerator {
 
     Link listPullTodosLink();
 
-    Link rootResourcesLink();
-
-    Link historyResourcesLink();
-
     Link listUnlockLink();
 
     Link listLink();
+
+    Link todosLink();
 
     Link createTodoLink();
 

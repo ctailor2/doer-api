@@ -97,4 +97,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     public Link createDeferredTodoLink() {
         return linkTo(methodOn(TodosController.class).createDeferred(null, null)).withSelfRel();
     }
+
+    @Override
+    public Link todosLink() {
+        return linkTo(methodOn(TodosController.class).todos(null)).withSelfRel();
+    }
 }

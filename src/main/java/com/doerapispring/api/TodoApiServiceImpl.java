@@ -18,10 +18,22 @@ class TodoApiServiceImpl implements TodoApiService {
         this.todoService = todoService;
     }
 
+    // TODO: Deprecate this
     @Override
     public TodoListDTO getSubList(AuthenticatedUser authenticatedUser, String scheduling) throws InvalidRequestException {
         try {
             TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), getScheduledFor(scheduling));
+            List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
+            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
+    public TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        try {
+            TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.now);
             List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
             return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
         } catch (OperationRefusedException e) {

@@ -5,7 +5,6 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +24,12 @@ public class ResourcesControllerTest {
     private ResourcesController resourcesController;
     private AuthenticatedUser authenticatedUser;
 
-    @Mock
-    ResourceApiService mockResourceApiService;
-
     @Before
     public void setUp() throws Exception {
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        resourcesController = new ResourcesController(new MockHateoasLinkGenerator(), mockResourceApiService);
+        resourcesController = new ResourcesController(new MockHateoasLinkGenerator());
         mockMvc = MockMvcBuilders
                 .standaloneSetup(resourcesController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())

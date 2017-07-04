@@ -81,7 +81,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void getSubList_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
         when(mockTodoService.getSubList(any(), any()))
-                .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
 
@@ -92,7 +92,7 @@ public class TodoApiServiceImplTest {
     @Test
     public void getSubList_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
         when(mockTodoService.getSubList(any(), any()))
-                .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
+            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
 
@@ -180,7 +180,7 @@ public class TodoApiServiceImplTest {
 
         verify(mockTodoService).getCompleted(new User(uniqueIdentifier));
         assertThat(completedTodoListDTO.getTodoDTOs()).contains(
-                new TodoDTO("some task", completedAt));
+            new TodoDTO("some task", completedAt));
     }
 
     @Test
@@ -220,5 +220,37 @@ public class TodoApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         todoApiServiceImpl.pull(new AuthenticatedUser("someIdentifier"));
+    }
+
+    @Test
+    public void getTodos_callsTodoService_forLaterTodos() throws Exception {
+        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+
+        todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+
+        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.now);
+    }
+
+    @Test
+    public void getTodos_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any()))
+            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(todoListDTO.isFull()).isEqualTo(true);
+        assertThat(todoListDTO.getName()).isEqualTo("now");
+    }
+
+    @Test
+    public void getTodos_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
+        when(mockTodoService.getSubList(any(), any()))
+            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+
+        assertThat(todoListDTO.isFull()).isEqualTo(false);
+        assertThat(todoListDTO.getName()).isEqualTo("later");
     }
 }

@@ -94,4 +94,9 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link createDeferredTodoLink() {
         return new Link(MOCK_BASE_URL + "/list/createDeferredTodo");
     }
+
+    @Override
+    public Link todosLink() {
+        return new Link(MOCK_BASE_URL + "/list/todos");
+    }
 }

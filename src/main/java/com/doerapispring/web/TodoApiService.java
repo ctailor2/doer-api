@@ -20,4 +20,6 @@ public interface TodoApiService {
     void pull(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
 
     TodoListDTO getSubList(AuthenticatedUser authenticatedUser, String scheduling) throws InvalidRequestException;
+
+    TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
 }

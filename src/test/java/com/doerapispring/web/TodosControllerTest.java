@@ -44,88 +44,88 @@ public class TodosControllerTest {
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
         todoDTOs = asList(
-                new TodoDTO("someId", "someTask", "now"),
-                new TodoDTO("oneLaterId", "procrastination", "later"),
-                new TodoDTO("twoLaterId", "station", "later"));
+            new TodoDTO("someId", "someTask", "now"),
+            new TodoDTO("oneLaterId", "procrastination", "later"),
+            new TodoDTO("twoLaterId", "station", "later"));
         mockMvc = MockMvcBuilders
-                .standaloneSetup(todosController)
-                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
-                .build();
+            .standaloneSetup(todosController)
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+            .build();
     }
 
     @Test
-    public void index_mapping_callsTodoService_withNowSchedulingByDefault() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+    public void todos_mapping_callsTodoService() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
 
-        mockMvc.perform(get("/v1/todos"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/v1/list/todos")).andExpect(status().isOk());
 
-        verify(mockTodoApiService).getSubList(authenticatedUser, "now");
+        verify(mockTodoApiService).getTodos(authenticatedUser);
     }
 
     @Test
-    public void index_callsTodoService_withSuppliedScheduling() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+    public void todos_callsTodoService_withSuppliedScheduling() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
 
-        todosController.index(authenticatedUser, "someScheduling");
+        todosController.todos(authenticatedUser);
 
-        verify(mockTodoApiService).getSubList(authenticatedUser, "someScheduling");
+        verify(mockTodoApiService).getTodos(authenticatedUser);
     }
 
     @Test
-    public void index_whenInvalidRequest_returns400BadRequest() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenThrow(new InvalidRequestException());
+    public void todos_whenInvalidRequest_returns400BadRequest() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
+        ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void index_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
+    public void todos_callsTodoService_includesLinksByDefault() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
 
-        assertThat(responseEntity.getBody().getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/todos?scheduling=someScheduling").withSelfRel());
+        assertThat(responseEntity.getBody().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/list/todos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
-    public void index_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
-
-        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
-        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
-        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks())
-                .contains(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
-    }
-
-    @Test
-    public void index_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
-        when(mockTodoApiService.getSubList(any(), any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
-        ResponseEntity<TodosResponse> responseEntity = todosController.index(authenticatedUser, "someScheduling");
+    public void todos_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
-                new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
-                new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
+            new Link(MOCK_BASE_URL + "/deleteTodo/someId").withRel("delete"),
+            new Link(MOCK_BASE_URL + "/updateTodo/someId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/completeTodo/someId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).containsSequence(
-                new Link(MOCK_BASE_URL + "/todos/someId/moveTodo/someId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/todos/someId/moveTodo/someId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks()).containsSequence(
-                new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
-                new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks()).containsSequence(
-                new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
-                new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
+    }
+
+    @Test
+    public void getTodos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/someId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(1).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/oneLaterId").withRel("displace"));
+        assertThat(responseEntity.getBody().getTodoDTOs().get(2).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/displaceTodo/twoLaterId").withRel("displace"));
     }
 
     @Test
     public void delete_mapping() throws Exception {
         mockMvc.perform(delete("/v1/todos/someId"))
-                .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted());
     }
 
     @Test
@@ -137,10 +137,10 @@ public class TodosControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/deleteTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+            new Link(MOCK_BASE_URL + "/deleteTodo/someId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -156,9 +156,9 @@ public class TodosControllerTest {
     @Test
     public void displace_mapping() throws Exception {
         mockMvc.perform(post("/v1/todos/123/displace")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"task\": \"return redbox movie\"}"))
-                .andExpect(status().isAccepted());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"return redbox movie\"}"))
+            .andExpect(status().isAccepted());
     }
 
     @Test
@@ -166,16 +166,16 @@ public class TodosControllerTest {
         String localId = "someId";
         String task = "some task";
         ResponseEntity<ResourcesResponse> responseEntity =
-                todosController.displace(authenticatedUser, localId, new TodoForm(task));
+            todosController.displace(authenticatedUser, localId, new TodoForm(task));
 
         verify(mockTodoApiService).displace(authenticatedUser, localId, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/displaceTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+            new Link(MOCK_BASE_URL + "/displaceTodo/someId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -191,9 +191,9 @@ public class TodosControllerTest {
     @Test
     public void update_mapping() throws Exception {
         mockMvc.perform(put("/v1/todos/123")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"task\": \"return redbox movie\"}"))
-                .andExpect(status().isAccepted());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"return redbox movie\"}"))
+            .andExpect(status().isAccepted());
     }
 
     @Test
@@ -201,16 +201,16 @@ public class TodosControllerTest {
         String localId = "someId";
         String task = "some task";
         ResponseEntity<ResourcesResponse> responseEntity =
-                todosController.update(authenticatedUser, localId, new TodoForm(task));
+            todosController.update(authenticatedUser, localId, new TodoForm(task));
 
         verify(mockTodoApiService).update(authenticatedUser, localId, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+            new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -226,23 +226,23 @@ public class TodosControllerTest {
     @Test
     public void complete_mapping() throws Exception {
         mockMvc.perform(post("/v1/todos/123/complete"))
-                .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted());
     }
 
     @Test
     public void complete_callsTodoService_returns202() throws Exception {
         String localId = "someId";
         ResponseEntity<ResourcesResponse> responseEntity =
-                todosController.complete(authenticatedUser, localId);
+            todosController.complete(authenticatedUser, localId);
 
         verify(mockTodoApiService).complete(authenticatedUser, localId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/completeTodo/someId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+            new Link(MOCK_BASE_URL + "/completeTodo/someId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -260,7 +260,7 @@ public class TodosControllerTest {
         when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(todoDTOs));
 
         mockMvc.perform(get("/v1/completedTodos"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -271,7 +271,7 @@ public class TodosControllerTest {
 
         verify(mockTodoApiService).getCompleted(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/completedTodos").withSelfRel());
+            new Link(MOCK_BASE_URL + "/completedTodos").withSelfRel());
     }
 
     @Test
@@ -286,7 +286,7 @@ public class TodosControllerTest {
     @Test
     public void move_mapping() throws Exception {
         mockMvc.perform(post("/v1/todos/1/move/3"))
-                .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted());
     }
 
     @Test
@@ -294,16 +294,16 @@ public class TodosControllerTest {
         String localId = "localId";
         String targetLocalId = "targetLocalId";
         ResponseEntity<ResourcesResponse> responseEntity =
-                todosController.move(authenticatedUser, localId, targetLocalId);
+            todosController.move(authenticatedUser, localId, targetLocalId);
 
         verify(mockTodoApiService).move(authenticatedUser, localId, targetLocalId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/todos/localId/moveTodo/targetLocalId").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
-                new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
+            new Link(MOCK_BASE_URL + "/todos/localId/moveTodo/targetLocalId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=now").withRel("nowTodos"),
+            new Link(MOCK_BASE_URL + "/todos?scheduling=later").withRel("laterTodos"),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"));
     }
 
     @Test
@@ -319,7 +319,7 @@ public class TodosControllerTest {
     @Test
     public void pull_mapping() throws Exception {
         mockMvc.perform(post("/v1/list/pull"))
-                .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted());
 
         verify(mockTodoApiService).pull(authenticatedUser);
     }
@@ -331,8 +331,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/list/pullTodos").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/list/pullTodos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
@@ -348,9 +348,9 @@ public class TodosControllerTest {
     @Test
     public void create_mapping() throws Exception {
         mockMvc.perform(post("/v1/list/todos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"task\": \"return redbox movie\"}"))
-                .andExpect(status().isCreated());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"return redbox movie\"}"))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -363,8 +363,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/list/createTodo").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/list/createTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
@@ -380,9 +380,9 @@ public class TodosControllerTest {
     @Test
     public void createDeferred_mapping() throws Exception {
         mockMvc.perform(post("/v1/list/deferredTodos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"task\": \"return redbox movie\"}"))
-                .andExpect(status().isCreated());
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"return redbox movie\"}"))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -395,8 +395,8 @@ public class TodosControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test

@@ -15,8 +15,7 @@ import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
@@ -43,7 +42,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/todos?scheduling=now")
+                .get("/v1/list/todos")
                 .headers(httpHeaders);
     }
 
@@ -68,7 +67,8 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos?scheduling=now")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 
     private void doGet() throws Exception {
