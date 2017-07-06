@@ -63,52 +63,6 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void getSubList_withValidScheduling_callsTodoService() throws Exception {
-        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-
-        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "later");
-
-        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.later);
-    }
-
-    @Test
-    public void getSubList_withInvalidScheduling_throwsInvalidRequest() throws Exception {
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "unknownScheduling");
-    }
-
-    @Test
-    public void getSubList_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
-
-        assertThat(todoListDTO.isFull()).isEqualTo(true);
-        assertThat(todoListDTO.getName()).isEqualTo("now");
-    }
-
-    @Test
-    public void getSubList_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
-
-        assertThat(todoListDTO.isFull()).isEqualTo(false);
-        assertThat(todoListDTO.getName()).isEqualTo("later");
-    }
-
-    @Test
-    public void getSubList_whenOperationIsRefused_throwsInvalidRequest() throws Exception {
-        when(mockTodoService.getSubList(any(), any())).thenThrow(new OperationRefusedException());
-
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.getSubList(new AuthenticatedUser("someIdentifier"), "now");
-    }
-
-    @Test
     public void delete_callsTodoService() throws Exception {
         todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId");
 

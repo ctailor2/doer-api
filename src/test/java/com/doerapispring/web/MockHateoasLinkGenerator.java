@@ -11,11 +11,6 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link todosLink(String scheduling) {
-        return new Link(MOCK_BASE_URL + "/todos?scheduling=" + scheduling);
-    }
-
-    @Override
     public Link signupLink() {
         return new Link(MOCK_BASE_URL + "/signup");
     }
