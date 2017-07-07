@@ -1,8 +1,8 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.AggregateRootRepository;
 import com.doerapispring.domain.CompletedList;
 import com.doerapispring.domain.CompletedTodo;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CompletedListRepositoryTest {
-    private AggregateRootRepository<CompletedList, CompletedTodo, String> completedListRepository;
+    private ObjectRepository<CompletedList, String> completedListRepository;
 
     @Mock
     private UserDAO mockUserDAO;

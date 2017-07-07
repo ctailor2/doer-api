@@ -1,18 +1,18 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.AbnormalModelException;
+import com.doerapispring.domain.AggregateRootRepository;
+import com.doerapispring.domain.ListUnlock;
+import com.doerapispring.domain.MasterList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Transactional
-class ListUnlockRepository implements AggregateRootRepository<ListManager, ListUnlock, String> {
+class ListUnlockRepository implements AggregateRootRepository<MasterList, ListUnlock> {
     private final ListUnlockDao listUnlockDao;
     private final UserDAO userDAO;
 
@@ -23,19 +23,8 @@ class ListUnlockRepository implements AggregateRootRepository<ListManager, ListU
     }
 
     @Override
-    public Optional<ListManager> find(UniqueIdentifier<String> uniqueIdentifier) {
-        String email = uniqueIdentifier.get();
-        List<ListUnlockEntity> listUnlockEntities = listUnlockDao.findAllUserListUnlocks(email);
-        List<ListUnlock> listUnlocks = listUnlockEntities.stream()
-                .map(listUnlockEntity -> new ListUnlock(listUnlockEntity.updatedAt))
-                .collect(Collectors.toList());
-        ListManager listManager = new ListManager(uniqueIdentifier, listUnlocks);
-        return Optional.of(listManager);
-    }
-
-    @Override
-    public void add(ListManager listManager, ListUnlock listUnlock) throws AbnormalModelException {
-        UserEntity userEntity = userDAO.findByEmail(listManager.getIdentifier().get());
+    public void add(MasterList masterList, ListUnlock listUnlock) throws AbnormalModelException {
+        UserEntity userEntity = userDAO.findByEmail(masterList.getIdentifier().get());
         if (userEntity == null) throw new AbnormalModelException();
         ListUnlockEntity listUnlockEntity = ListUnlockEntity.builder()
                 .userEntity(userEntity)

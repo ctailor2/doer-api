@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import org.fest.assertions.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,10 +22,10 @@ public class ListServiceTest {
     private ListService listService;
 
     @Mock
-    private AggregateRootRepository<ListManager, ListUnlock, String> mockListUnlockRepository;
+    private ObjectRepository<MasterList, String> mockMasterListRepository;
 
     @Mock
-    private AggregateRootRepository<MasterList, Todo, String> mockTodoListRepository;
+    private AggregateRootRepository<MasterList, ListUnlock> mockListUnlockRepository;
 
     @Captor
     ArgumentCaptor<ListUnlock> listUnlockArgumentCaptor;
@@ -36,48 +35,28 @@ public class ListServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockListUnlockRepository, mockTodoListRepository);
+        listService = new ListService(mockMasterListRepository, mockListUnlockRepository);
     }
 
     @Test
-    public void get_whenListManagerFound_returnsListManagerFromRepository() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        ListManager listUnlockManagerFromRepository = new ListManager(uniqueIdentifier, Collections.emptyList());
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(listUnlockManagerFromRepository));
-
-        ListManager listManager = listService.getListManager(new User(uniqueIdentifier));
-
-        verify(mockListUnlockRepository).find(uniqueIdentifier);
-        Assertions.assertThat(listManager).isEqualTo(listUnlockManagerFromRepository);
-    }
-
-    @Test
-    public void get_whenListManagerNotFound_refusesGet() throws Exception {
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.empty());
-
-        exception.expect(OperationRefusedException.class);
-        listService.getListManager(new User(new UniqueIdentifier<>("one@two.com")));
-    }
-
-    @Test
-    public void create_whenListManagerFound_addsListUnlockToRepository() throws Exception {
-        ListManager mockListManager = mock(ListManager.class);
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
+    public void unlock_whenMasterListFound_addsListUnlockToRepository() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         ListUnlock listUnlock = new ListUnlock();
-        when(mockListManager.unlock()).thenReturn(listUnlock);
+        when(mockMasterList.unlock()).thenReturn(listUnlock);
 
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
 
-        verify(mockListManager).unlock();
-        verify(mockListUnlockRepository).add(mockListManager, listUnlock);
+        verify(mockMasterList).unlock();
+        verify(mockListUnlockRepository).add(mockMasterList, listUnlock);
     }
 
     @Test
-    public void create_whenListManagerFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        ListManager mockListManager = mock(ListManager.class);
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
+    public void unlock_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         ListUnlock listUnlock = new ListUnlock();
-        when(mockListManager.unlock()).thenReturn(listUnlock);
+        when(mockMasterList.unlock()).thenReturn(listUnlock);
         doThrow(new AbnormalModelException()).when(mockListUnlockRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
@@ -85,18 +64,18 @@ public class ListServiceTest {
     }
 
     @Test
-    public void create_whenListManagerFound_whenLockTimerNotExpired_refusesCreate() throws Exception {
-        ListManager mockListManager = mock(ListManager.class);
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.of(mockListManager));
-        when(mockListManager.unlock()).thenThrow(new LockTimerNotExpiredException());
+    public void unlock_whenMasterListFound_whenLockTimerNotExpired_refusesCreate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        when(mockMasterList.unlock()).thenThrow(new LockTimerNotExpiredException());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
     }
 
     @Test
-    public void create_whenListManagerNotFound_refusesCreate() throws Exception {
-        when(mockListUnlockRepository.find(any())).thenReturn(Optional.empty());
+    public void unlock_whenMasterListNotFound_refusesCreate() throws Exception {
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(new UniqueIdentifier<>("testItUp")));
@@ -107,8 +86,8 @@ public class ListServiceTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
         MasterList masterList = listService.get(user);
@@ -119,7 +98,7 @@ public class ListServiceTest {
     @Test
     public void get_whenMasterListNotFound_refusesOperation() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
         listService.get(new User(uniqueIdentifier));

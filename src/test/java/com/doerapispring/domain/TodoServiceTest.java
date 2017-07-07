@@ -21,17 +21,20 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private AggregateRootRepository<MasterList, Todo, String> mockMasterListRepository;
+    private ObjectRepository<MasterList, String> mockMasterListRepository;
 
     @Mock
-    private AggregateRootRepository<CompletedList, CompletedTodo, String> mockCompletedListRepository;
+    private AggregateRootRepository<MasterList, Todo> mockTodoRepository;
+
+    @Mock
+    private ObjectRepository<CompletedList, String> mockCompletedListRepository;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        todoService = new TodoService(mockMasterListRepository, mockCompletedListRepository);
+        todoService = new TodoService(mockMasterListRepository, mockTodoRepository, mockCompletedListRepository);
     }
 
     @Test
@@ -39,7 +42,7 @@ public class TodoServiceTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -63,7 +66,7 @@ public class TodoServiceTest {
         Todo nowTodo = new Todo("taskOne", ScheduledFor.now, 1);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("taskTwo", ScheduledFor.later, 1)), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -78,7 +81,7 @@ public class TodoServiceTest {
         Todo laterTodo = new Todo("taskTwo", ScheduledFor.later, 1);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("taskOne", ScheduledFor.now, 1)), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList);
+        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
@@ -105,7 +108,7 @@ public class TodoServiceTest {
         todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
 
         verify(mockMasterList).add("some things", ScheduledFor.now);
-        verify(mockMasterListRepository).add(mockMasterList, todo);
+        verify(mockTodoRepository).add(mockMasterList, todo);
     }
 
     @Test
@@ -140,7 +143,7 @@ public class TodoServiceTest {
     public void create_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
         MasterList masterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).add(any(), any());
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
         todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
@@ -156,7 +159,7 @@ public class TodoServiceTest {
         todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
 
         verify(mockMasterList).delete("someTodoId");
-        verify(mockMasterListRepository).remove(mockMasterList, todo);
+        verify(mockTodoRepository).remove(mockMasterList, todo);
     }
 
     @Test
@@ -165,7 +168,7 @@ public class TodoServiceTest {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         Todo todo = new Todo("tasky", ScheduledFor.now, 5);
         when(mockMasterList.delete(any())).thenReturn(todo);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).remove(any(), any());
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).remove(any(), any());
 
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
@@ -180,7 +183,7 @@ public class TodoServiceTest {
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(new UniqueIdentifier<>("userId")), "someTodoId");
 
-        verifyZeroInteractions(mockMasterListRepository);
+        verifyZeroInteractions(mockTodoRepository);
     }
 
     @Test
@@ -195,8 +198,8 @@ public class TodoServiceTest {
         todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
 
         verify(mockMasterList).displace("someId", "someTask");
-        verify(mockMasterListRepository).add(mockMasterList, firstTodo);
-        verify(mockMasterListRepository).update(mockMasterList, secondTodo);
+        verify(mockTodoRepository).add(mockMasterList, firstTodo);
+        verify(mockTodoRepository).update(mockMasterList, secondTodo);
     }
 
     @Test
@@ -245,7 +248,7 @@ public class TodoServiceTest {
         Todo secondTodo = new Todo("tasket", ScheduledFor.now, 3);
         List<Todo> todos = asList(firstTodo, secondTodo);
         when(mockMasterList.displace(any(), any())).thenReturn(todos);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).add(any(), any());
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
         todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
@@ -259,7 +262,7 @@ public class TodoServiceTest {
         Todo secondTodo = new Todo("tasket", ScheduledFor.now, 3);
         List<Todo> todos = asList(firstTodo, secondTodo);
         when(mockMasterList.displace(any(), any())).thenReturn(todos);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), any(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
 
         exception.expect(OperationRefusedException.class);
         todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
@@ -275,7 +278,7 @@ public class TodoServiceTest {
         todoService.update(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
 
         verify(mockMasterList).update("someId", "someTask");
-        verify(mockMasterListRepository).update(mockMasterList, todo);
+        verify(mockTodoRepository).update(mockMasterList, todo);
     }
 
     @Test
@@ -284,7 +287,7 @@ public class TodoServiceTest {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         Todo todo = new Todo("tisket", ScheduledFor.now, 5);
         when(mockMasterList.update(any(), any())).thenReturn(todo);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), any(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
 
         exception.expect(OperationRefusedException.class);
         todoService.update(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
@@ -328,7 +331,7 @@ public class TodoServiceTest {
         todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
 
         verify(mockMasterList).complete("someId");
-        verify(mockMasterListRepository).update(mockMasterList, todo);
+        verify(mockTodoRepository).update(mockMasterList, todo);
     }
 
     @Test
@@ -337,7 +340,7 @@ public class TodoServiceTest {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         Todo todo = new Todo("tisket", ScheduledFor.now, 5);
         when(mockMasterList.complete(any())).thenReturn(todo);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), any(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
 
         exception.expect(OperationRefusedException.class);
         todoService.complete(new User(new UniqueIdentifier<>("userId")), "someId");
@@ -394,7 +397,7 @@ public class TodoServiceTest {
         todoService.move(new User(new UniqueIdentifier<>("one@two.com")), "idOne", "idTwo");
 
         verify(mockMasterList).move("idOne", "idTwo");
-        verify(mockMasterListRepository).update(mockMasterList, todos);
+        verify(mockTodoRepository).update(mockMasterList, todos);
     }
 
     @Test
@@ -402,7 +405,7 @@ public class TodoServiceTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
         when(mockMasterList.move(any(), any())).thenReturn(Collections.emptyList());
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), anyListOf(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
 
         exception.expect(OperationRefusedException.class);
         todoService.move(new User(new UniqueIdentifier<>("one@two.com")), "idOne", "idTwo");
@@ -438,7 +441,7 @@ public class TodoServiceTest {
         todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
 
         verify(mockMasterList).pull();
-        verify(mockMasterListRepository).update(mockMasterList, todos);
+        verify(mockTodoRepository).update(mockMasterList, todos);
     }
 
     @Test
@@ -459,7 +462,7 @@ public class TodoServiceTest {
                 new Todo("some task", ScheduledFor.now, 1),
                 new Todo("some other task", ScheduledFor.now, 2));
         when(mockMasterList.pull()).thenReturn(todos);
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).update(any(), anyListOf(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
 
         exception.expect(OperationRefusedException.class);
         todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));

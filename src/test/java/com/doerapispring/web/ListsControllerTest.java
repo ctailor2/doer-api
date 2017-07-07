@@ -92,7 +92,8 @@ public class ListsControllerTest {
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/list").withSelfRel());
-        assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"));
+        assertThat(responseEntity.getBody().getMasterListDTO().getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"));
     }
 
     @Test
@@ -122,7 +123,10 @@ public class ListsControllerTest {
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
-        Assertions.assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).isEmpty();
+        Assertions.assertThat(responseEntity.getBody().getMasterListDTO().getLinks())
+            .doesNotContain(
+                new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"),
+                new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
     }
 
     @Test

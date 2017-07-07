@@ -49,7 +49,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
                 .headers(httpHeaders))
                 .andReturn();
 
-        List<ListUnlock> listUnlocks = listService.getListManager(user).getListUnlocks();
+        List<ListUnlock> listUnlocks = listService.get(user).getListUnlocks();
 
         assertThat(listUnlocks.size(), equalTo(1));
 

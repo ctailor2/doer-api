@@ -8,7 +8,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +20,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class MasterListTest {
     private MasterList masterList;
+
+    private ArrayList<ListUnlock> listUnlocks;
 
     @Mock
     private TodoList mockNowList;
@@ -31,7 +36,8 @@ public class MasterListTest {
     public void setUp() throws Exception {
         when(mockNowList.getTodos()).thenReturn(Collections.emptyList());
         when(mockLaterList.getTodos()).thenReturn(Collections.emptyList());
-        masterList = new MasterList(new UniqueIdentifier<>("something"), mockNowList, mockLaterList);
+        listUnlocks = new ArrayList<>();
+        masterList = new MasterList(new UniqueIdentifier<>("something"), mockNowList, mockLaterList, listUnlocks);
     }
 
     @Test
@@ -189,5 +195,50 @@ public class MasterListTest {
 
         verify(mockNowList).pull();
         assertThat(effectedTodos).isEqualTo(todos);
+    }
+
+    @Test
+    public void recordView_whenThereAreNoListUnlocks_returnsAListUnlock() throws Exception {
+        ListUnlock listUnlock = masterList.unlock();
+        assertThat(listUnlock).isNotNull();
+    }
+
+    @Test
+    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_throwsLockTimerNotExpiredException() throws Exception {
+        listUnlocks.add(new ListUnlock());
+
+        exception.expect(LockTimerNotExpiredException.class);
+        masterList.unlock();
+    }
+
+    @Test
+    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsAListUnlock() throws Exception {
+        listUnlocks.add(new ListUnlock(new Date(0L)));
+
+        ListUnlock listUnlock = masterList.unlock();
+        assertThat(listUnlock).isNotNull();
+    }
+
+    @Test
+    public void isLocked_whenThereAreNoListUnlocks_returnsFalse() throws Exception {
+        assertThat(masterList.isLocked()).isFalse();
+    }
+
+    @Test
+    public void isLocked_whenThereAreListUnlocks_whenItHasBeenMoreThan30MinutesSinceFirstUnlockCreated_returnsTrue() throws Exception {
+        Instant now = Instant.now();
+        Date lastUnlockDate = new Date(now.minusSeconds(1801L).toEpochMilli());
+        listUnlocks.add(new ListUnlock(lastUnlockDate));
+
+        assertThat(masterList.isLocked()).isTrue();
+    }
+
+    @Test
+    public void isLocked_whenThereAreListUnlocks_whenItHasBeen30MinutesOrLessSinceFirstUnlockCreated_returnsFalse() throws Exception {
+        Instant now = Instant.now();
+        Date lastUnlockDate = new Date(now.minusSeconds(1799L).toEpochMilli());
+        listUnlocks.add(new ListUnlock(lastUnlockDate));
+
+        assertThat(masterList.isLocked()).isFalse();
     }
 }

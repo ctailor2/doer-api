@@ -1,8 +1,8 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.AggregateRootRepository;
 import com.doerapispring.domain.CompletedList;
 import com.doerapispring.domain.CompletedTodo;
+import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-class CompletedListRepository implements AggregateRootRepository<CompletedList, CompletedTodo, String> {
+class CompletedListRepository implements ObjectRepository<CompletedList, String> {
     private final TodoDao todoDAO;
 
     CompletedListRepository(TodoDao todoDAO) {

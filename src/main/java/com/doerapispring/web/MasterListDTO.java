@@ -1,5 +1,6 @@
 package com.doerapispring.web;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.hateoas.ResourceSupport;
 
 public class MasterListDTO extends ResourceSupport {
@@ -13,6 +14,7 @@ public class MasterListDTO extends ResourceSupport {
         this.full = full;
     }
 
+    @JsonIgnore
     public boolean isFull() {
         return full;
     }

@@ -20,6 +20,10 @@ class ListsController {
         this.listApiService = listApiService;
     }
 
+    // TODO: Need to start treating the lists as their own resources
+    // Lists can be locked or unlocked
+    // When unlocked, they have a property indicating the time at which they will be locked again
+    // When locked, they have a property indicating when they can be locked again
     @RequestMapping(value = "/list/unlock", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
@@ -52,9 +56,4 @@ class ListsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
-    // TODO: Need to start treating the lists as their own resources
-    // Lists can be locked or unlocked
-    // When unlocked, they have a property indicating the time at which they will be locked again
-    // When locked, they have a property indicating when they can be locked again
 }

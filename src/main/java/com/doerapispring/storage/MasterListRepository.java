@@ -4,18 +4,22 @@ import com.doerapispring.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-class MasterListRepository implements AggregateRootRepository<MasterList, Todo, String> {
+class MasterListRepository implements ObjectRepository<MasterList, String> {
     private final UserDAO userDAO;
     private final TodoDao todoDao;
+    private final ListUnlockDao listUnlockDao;
 
     @Autowired
-    MasterListRepository(UserDAO userDAO, TodoDao todoDao) {
+    MasterListRepository(UserDAO userDAO, TodoDao todoDao, ListUnlockDao listUnlockDao) {
         this.userDAO = userDAO;
         this.todoDao = todoDao;
+        this.listUnlockDao = listUnlockDao;
     }
 
     // TODO: Move away from using db primary key for identifier
@@ -32,74 +36,11 @@ class MasterListRepository implements AggregateRootRepository<MasterList, Todo, 
                 .collect(Collectors.partitioningBy(todo -> ScheduledFor.now.equals(todo.getScheduling())));
         TodoList laterList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
         TodoList nowList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), 2, laterList);
-        MasterList masterList = new MasterList(uniqueIdentifier, nowList, laterList);
-        return Optional.of(masterList);
-    }
-
-    @Override
-    public void add(MasterList masterList, Todo todo) throws AbnormalModelException {
-        UserEntity userEntity = userDAO.findByEmail(masterList.getIdentifier().get());
-        if (userEntity == null) throw new AbnormalModelException();
-        todoDao.save(TodoEntity.builder()
-                .userEntity(userEntity)
-                .task(todo.getTask())
-                .active(ScheduledFor.now.equals(todo.getScheduling()))
-                .position(todo.getPosition())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build());
-    }
-
-    @Override
-    public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
-        TodoEntity todoEntity = todoDao.findUserTodo(
-                masterList.getIdentifier().get(),
-                Long.valueOf(todo.getLocalIdentifier()));
-        if (todoEntity == null) throw new AbnormalModelException();
-        todoDao.delete(todoEntity);
-    }
-
-    @Override
-    public void update(MasterList masterList, Todo todo) throws AbnormalModelException {
-        TodoEntity todoEntity = todoDao.findUserTodo(
-                masterList.getIdentifier().get(),
-                Long.valueOf(todo.getLocalIdentifier()));
-        if (todoEntity == null) throw new AbnormalModelException();
-        todoDao.save(TodoEntity.builder()
-                .id(todoEntity.id)
-                .userEntity(todoEntity.userEntity)
-                .task(todo.getTask())
-                .active(ScheduledFor.now.equals(todo.getScheduling()))
-                .position(todo.getPosition())
-                .completed(todo.isComplete())
-                .createdAt(todoEntity.createdAt)
-                .updatedAt(new Date())
-                .build());
-    }
-
-
-    @Override
-    public void update(MasterList masterList, List<Todo> todos) throws AbnormalModelException {
-        List<TodoEntity> todoEntities = todos.stream()
-                .map(todo -> {
-                    TodoEntity todoEntity = todoDao.findUserTodo(
-                            masterList.getIdentifier().get(),
-                            Long.valueOf(todo.getLocalIdentifier()));
-                    if (todoEntity == null) return null;
-                    return TodoEntity.builder()
-                            .id(todoEntity.id)
-                            .userEntity(todoEntity.userEntity)
-                            .task(todo.getTask())
-                            .active(ScheduledFor.now.equals(todo.getScheduling()))
-                            .position(todo.getPosition())
-                            .completed(todo.isComplete())
-                            .createdAt(todoEntity.createdAt)
-                            .updatedAt(new Date())
-                            .build();
-                })
-                .filter(Objects::nonNull)
+        List<ListUnlockEntity> listUnlockEntities = listUnlockDao.findAllUserListUnlocks(email);
+                List<ListUnlock> listUnlocks = listUnlockEntities.stream()
+                .map(listUnlockEntity -> new ListUnlock(listUnlockEntity.updatedAt))
                 .collect(Collectors.toList());
-        if(todoEntities.size() < todos.size()) throw new AbnormalModelException();
-        todoDao.save(todoEntities);
+        MasterList masterList = new MasterList(uniqueIdentifier, nowList, laterList, listUnlocks);
+        return Optional.of(masterList);
     }
 }

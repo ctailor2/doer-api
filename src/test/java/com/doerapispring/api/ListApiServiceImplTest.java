@@ -52,7 +52,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-                .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
+                .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -65,7 +65,7 @@ public class ListApiServiceImplTest {
                 .thenReturn(new MasterList(
                         new UniqueIdentifier<>("someIdentifier"),
                         new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -81,7 +81,7 @@ public class ListApiServiceImplTest {
                 .thenReturn(new MasterList(
                         new UniqueIdentifier<>("someIdentifier"),
                         new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -96,7 +96,7 @@ public class ListApiServiceImplTest {
                 .thenReturn(new MasterList(
                         new UniqueIdentifier<>("someIdentifier"),
                         new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2)));
+                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 

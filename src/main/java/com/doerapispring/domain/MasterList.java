@@ -1,18 +1,24 @@
 package com.doerapispring.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 
 public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final TodoList immediateList;
     private final TodoList postponedList;
+    private List<ListUnlock> listUnlocks;
 
-    public MasterList(UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList) {
+    public MasterList(UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList, List<ListUnlock> listUnlocks) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.immediateList = immediateList;
         this.postponedList = postponedList;
+        this.listUnlocks = listUnlocks;
+    }
+
+    @Override
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
     }
 
     public TodoList getImmediateList() {
@@ -23,9 +29,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return postponedList;
     }
 
-    @Override
-    public UniqueIdentifier<String> getIdentifier() {
-        return uniqueIdentifier;
+    public List<ListUnlock> getListUnlocks() {
+        return listUnlocks;
     }
 
     public List<Todo> getTodos() {
@@ -85,17 +90,20 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return postponedList;
     }
 
-    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        return getTodos().stream()
-                .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
-                .findFirst()
-                .orElseThrow(TodoNotFoundException::new);
+    ListUnlock unlock() throws LockTimerNotExpiredException {
+        Boolean viewNotAllowed = getLastViewedAt()
+            .map(lastViewedAt -> lastViewedAt.after(beginningOfToday()))
+            .orElse(false);
+        if (viewNotAllowed) {
+            throw new LockTimerNotExpiredException();
+        }
+        return new ListUnlock();
     }
 
-    private Optional<Todo> getByTask(String task) {
-        return getTodos().stream().filter(todo ->
-                todo.getTask().equals(task))
-                .findFirst();
+    boolean isLocked() {
+        return getLastViewedAt()
+            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(1800L).toEpochMilli())))
+            .orElse(false);
     }
 
     @Override
@@ -109,7 +117,9 @@ public class MasterList implements UniquelyIdentifiable<String> {
             return false;
         if (immediateList != null ? !immediateList.equals(that.immediateList) : that.immediateList != null)
             return false;
-        return postponedList != null ? postponedList.equals(that.postponedList) : that.postponedList == null;
+        if (postponedList != null ? !postponedList.equals(that.postponedList) : that.postponedList != null)
+            return false;
+        return listUnlocks != null ? listUnlocks.equals(that.listUnlocks) : that.listUnlocks == null;
 
     }
 
@@ -118,15 +128,47 @@ public class MasterList implements UniquelyIdentifiable<String> {
         int result = uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
         result = 31 * result + (immediateList != null ? immediateList.hashCode() : 0);
         result = 31 * result + (postponedList != null ? postponedList.hashCode() : 0);
+        result = 31 * result + (listUnlocks != null ? listUnlocks.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "MasterList{" +
-                "uniqueIdentifier=" + uniqueIdentifier +
-                ", immediateList=" + immediateList +
-                ", postponedList=" + postponedList +
-                '}';
+            "uniqueIdentifier=" + uniqueIdentifier +
+            ", immediateList=" + immediateList +
+            ", postponedList=" + postponedList +
+            ", listUnlocks=" + listUnlocks +
+            '}';
+    }
+
+    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+        return getTodos().stream()
+            .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
+            .findFirst()
+            .orElseThrow(TodoNotFoundException::new);
+    }
+
+    private Optional<Todo> getByTask(String task) {
+        return getTodos().stream().filter(todo ->
+            todo.getTask().equals(task))
+            .findFirst();
+    }
+
+    private Optional<Date> getLastViewedAt() {
+        return listUnlocks.stream()
+            .findFirst()
+            .map(ListUnlock::getCreatedAt);
+    }
+
+    private Date beginningOfToday() {
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 }
