@@ -41,15 +41,15 @@ public class ListsControllerTest {
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         listsController = new ListsController(new MockHateoasLinkGenerator(), mockListApiService);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(listsController)
-                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
-                .build();
+            .standaloneSetup(listsController)
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+            .build();
     }
 
     @Test
     public void unlock_mapping() throws Exception {
         mockMvc.perform(post("/v1/list/unlock"))
-                .andExpect(status().isAccepted());
+            .andExpect(status().isAccepted());
 
         verify(mockListApiService).unlock(authenticatedUser);
     }
@@ -61,8 +61,8 @@ public class ListsControllerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/list/unlockTodos").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/list/unlockTodos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class ListsControllerTest {
         when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", false));
 
         mockMvc.perform(get("/v1/list"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(mockListApiService).get(authenticatedUser);
     }
@@ -91,8 +91,8 @@ public class ListsControllerTest {
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
-        assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/list").withSelfRel());
+        assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/list").withSelfRel());
+        assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"));
     }
 
     @Test
@@ -112,8 +112,8 @@ public class ListsControllerTest {
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         Assertions.assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"),
-                new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
+            new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"),
+            new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
     }
 
     @Test

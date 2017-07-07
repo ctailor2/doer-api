@@ -39,8 +39,8 @@ class ListsController {
     @ResponseBody
     ResponseEntity<ListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            // TODO: Either add todo links here or separate it out to a todos index endpoint
             MasterListDTO masterListDTO = listApiService.get(authenticatedUser);
+            masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
             if (!masterListDTO.isFull()) {
                 masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
