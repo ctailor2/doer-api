@@ -55,7 +55,7 @@ public class TodosControllerTest {
 
     @Test
     public void todos_mapping_callsTodoService() throws Exception {
-        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO(todoDTOs, false));
 
         mockMvc.perform(get("/v1/list/todos")).andExpect(status().isOk());
 
@@ -73,7 +73,7 @@ public class TodosControllerTest {
 
     @Test
     public void todos_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -83,7 +83,7 @@ public class TodosControllerTest {
 
     @Test
     public void todos_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
-        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).contains(
@@ -102,7 +102,7 @@ public class TodosControllerTest {
 
     @Test
     public void todos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
-        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())
@@ -115,7 +115,7 @@ public class TodosControllerTest {
 
     @Test
     public void deferredTodos_mapping_callsTodoService() throws Exception {
-        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO(todoDTOs, false));
 
         mockMvc.perform(get("/v1/list/deferredTodos")).andExpect(status().isOk());
 
@@ -133,7 +133,7 @@ public class TodosControllerTest {
 
     @Test
     public void deferredTodos_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, false));
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO(todoDTOs, false));
         ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -143,7 +143,7 @@ public class TodosControllerTest {
 
     @Test
     public void deferredTodos_callsTodoService_byDefault_includesLinksForEachTodo() throws Exception {
-        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks()).contains(
@@ -162,7 +162,7 @@ public class TodosControllerTest {
 
     @Test
     public void deferredTodos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
-        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO("someName", todoDTOs, true));
+        when(mockTodoApiService.getDeferredTodos(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.deferredTodos(authenticatedUser);
 
         assertThat(responseEntity.getBody().getTodoDTOs().get(0).getLinks())

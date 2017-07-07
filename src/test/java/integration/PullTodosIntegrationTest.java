@@ -38,7 +38,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
     }
 
     @Test
-    public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
+    public void pull() throws Exception {
         todosService.create(user, "will get pulled", ScheduledFor.later);
         todosService.create(user, "will also get pulled", ScheduledFor.later);
         todosService.create(user, "keep for later", ScheduledFor.later);

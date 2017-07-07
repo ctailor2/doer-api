@@ -43,7 +43,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     }
 
     @Test
-    public void signup_whenUserWithEmailDoesNotExist_createsUser_storesCredentials_createsSessionToken_respondsWithSessionToken() throws Exception {
+    public void signup() throws Exception {
         doPost();
 
         String userIdentifier = "test@email.com";

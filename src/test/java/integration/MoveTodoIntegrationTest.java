@@ -38,7 +38,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     }
 
     @Test
-    public void move_movesTodos() throws Exception {
+    public void move() throws Exception {
         todosService.create(user, "some task", ScheduledFor.later);
         todosService.create(user, "some other task", ScheduledFor.later);
         MasterList masterList = todosService.get(user);

@@ -52,7 +52,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-                .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
+            .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -61,11 +61,12 @@ public class ListApiServiceImplTest {
 
     @Test
     public void get_callsListService_returnsMasterListDTO() throws Exception {
-        when(mockListService.get(any()))
-                .thenReturn(new MasterList(
-                        new UniqueIdentifier<>("someIdentifier"),
-                        new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterList.getName()).thenReturn("now");
+        when(mockMasterList.getDeferredName()).thenReturn("later");
+        when(mockMasterList.isFull()).thenReturn(false);
+        when(mockMasterList.isLocked()).thenReturn(true);
+        when(mockListService.get(any())).thenReturn(mockMasterList);
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -73,35 +74,8 @@ public class ListApiServiceImplTest {
         assertThat(masterListDTO).isNotNull();
         assertThat(masterListDTO.getName()).isEqualTo("now");
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
-    }
-
-    @Test
-    public void get_callsListService_returnsMasterListDTO_whenNowListIsNotFull() throws Exception {
-        when(mockListService.get(any()))
-                .thenReturn(new MasterList(
-                        new UniqueIdentifier<>("someIdentifier"),
-                        new TodoList(ScheduledFor.now, Collections.emptyList(), 2),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
-
-        MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
-        assertThat(masterListDTO).isNotNull();
         assertThat(masterListDTO.isFull()).isFalse();
-    }
-
-    @Test
-    public void get_callsListService_returnsMatchingTodoListDTO_whenNowListIsFull() throws Exception {
-        when(mockListService.get(any()))
-                .thenReturn(new MasterList(
-                        new UniqueIdentifier<>("someIdentifier"),
-                        new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-                        new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
-
-        MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(masterListDTO).isNotNull();
-        assertThat(masterListDTO.isFull()).isTrue();
+        assertThat(masterListDTO.isLocked()).isTrue();
     }
 
     @Test

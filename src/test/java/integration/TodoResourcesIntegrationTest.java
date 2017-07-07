@@ -19,7 +19,6 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     private HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
-    @SuppressWarnings("unused")
     private UserSessionsApiService userSessionsApiService;
 
     @Override
@@ -32,7 +31,7 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void todoResources_includesLinks() throws Exception {
+    public void todoResources() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();

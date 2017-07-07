@@ -46,7 +46,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     }
 
     @Test
-    public void todos_whenUserHasLaterTodos_returnsLaterTodos() throws Exception {
+    public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
 
         doGet();
@@ -59,6 +59,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, hasJsonPath("$.list.deferredName", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.todos.href", containsString("/v1/list/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/list/deferredTodos")));
         assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

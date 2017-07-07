@@ -194,7 +194,6 @@ public class TodoApiServiceImplTest {
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(true);
-        assertThat(todoListDTO.getName()).isEqualTo("now");
     }
 
     @Test
@@ -205,7 +204,6 @@ public class TodoApiServiceImplTest {
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(false);
-        assertThat(todoListDTO.getName()).isEqualTo("later");
     }
 
     @Test
@@ -226,7 +224,6 @@ public class TodoApiServiceImplTest {
         TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(true);
-        assertThat(todoListDTO.getName()).isEqualTo("now");
     }
 
     @Test
@@ -237,6 +234,5 @@ public class TodoApiServiceImplTest {
         TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(false);
-        assertThat(todoListDTO.getName()).isEqualTo("later");
     }
 }

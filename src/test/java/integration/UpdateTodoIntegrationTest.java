@@ -39,7 +39,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     }
 
     @Test
-    public void update_updatesTodo() throws Exception {
+    public void update() throws Exception {
         todosService.create(user, "some task", ScheduledFor.now);
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getTodos().get(0);

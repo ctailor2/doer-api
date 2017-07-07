@@ -31,7 +31,7 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void rootResources_includesLinksToOtherResources() throws Exception {
+    public void rootResources() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();

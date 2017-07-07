@@ -33,9 +33,10 @@ class ListApiServiceImpl implements ListApiService {
         try {
             MasterList masterList = listService.get(authenticatedUser.getUser());
             return new MasterListDTO(
-                    masterList.getImmediateList().getScheduling().toString(),
-                    masterList.getPostponedList().getScheduling().toString(),
-                    masterList.getImmediateList().isFull());
+                masterList.getName(),
+                masterList.getDeferredName(),
+                masterList.isFull(),
+                masterList.isLocked());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

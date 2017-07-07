@@ -44,7 +44,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     }
 
     @Test
-    public void unlockLaterList() throws Exception {
+    public void unlock() throws Exception {
         mvcResult = mockMvc.perform(post("/v1/list/unlock")
                 .headers(httpHeaders))
                 .andReturn();

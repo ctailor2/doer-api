@@ -23,7 +23,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.now);
             List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
+            return new TodoListDTO(todoDTOs, todoList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -34,7 +34,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.later);
             List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new TodoListDTO(todoList.getScheduling().toString(), todoDTOs, todoList.isFull());
+            return new TodoListDTO(todoDTOs, todoList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

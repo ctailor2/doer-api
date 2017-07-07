@@ -47,7 +47,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     }
 
     @Test
-    public void todos_whenUserHasNowTodos_returnsNowTodos() throws Exception {
+    public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that", ScheduledFor.now);
         MasterList masterList = todosService.get(user);

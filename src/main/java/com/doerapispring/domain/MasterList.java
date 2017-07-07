@@ -45,6 +45,24 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return getListByScheduling(scheduling).add(task);
     }
 
+    public boolean isLocked() {
+        return getLastViewedAt()
+            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(1800L).toEpochMilli())))
+            .orElse(true);
+    }
+
+    public String getName() {
+        return immediateList.getScheduling().toString();
+    }
+
+    public String getDeferredName() {
+        return postponedList.getScheduling().toString();
+    }
+
+    public boolean isFull() {
+        return immediateList.isFull();
+    }
+
     List<Todo> pull() throws NoSourceListConfiguredException {
         return immediateList.pull();
     }
@@ -98,12 +116,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
             throw new LockTimerNotExpiredException();
         }
         return new ListUnlock();
-    }
-
-    boolean isLocked() {
-        return getLastViewedAt()
-            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(1800L).toEpochMilli())))
-            .orElse(false);
     }
 
     @Override

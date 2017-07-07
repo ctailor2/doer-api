@@ -7,31 +7,23 @@ import org.springframework.hateoas.ResourceSupport;
 import java.util.List;
 
 public class TodoListDTO extends ResourceSupport {
-    @JsonProperty("name")
-    private final String name;
-
     @JsonProperty("todos")
     private final List<TodoDTO> todoDTOs;
 
     @JsonIgnore
     private final boolean full;
 
-    public TodoListDTO(String name, List<TodoDTO> todoDTOs, boolean full) {
-        this.name = name;
+    public TodoListDTO(List<TodoDTO> todoDTOs, boolean full) {
         this.todoDTOs = todoDTOs;
         this.full = full;
-    }
-
-    public List<TodoDTO> getTodoDTOs() {
-        return todoDTOs;
     }
 
     public boolean isFull() {
         return full;
     }
 
-    public String getName() {
-        return name;
+    List<TodoDTO> getTodoDTOs() {
+        return todoDTOs;
     }
 
     @Override
@@ -43,7 +35,6 @@ public class TodoListDTO extends ResourceSupport {
         TodoListDTO that = (TodoListDTO) o;
 
         if (full != that.full) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         return todoDTOs != null ? todoDTOs.equals(that.todoDTOs) : that.todoDTOs == null;
 
     }
@@ -51,7 +42,6 @@ public class TodoListDTO extends ResourceSupport {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (todoDTOs != null ? todoDTOs.hashCode() : 0);
         result = 31 * result + (full ? 1 : 0);
         return result;
@@ -60,9 +50,8 @@ public class TodoListDTO extends ResourceSupport {
     @Override
     public String toString() {
         return "TodoListDTO{" +
-                "name='" + name + '\'' +
-                ", todoDTOs=" + todoDTOs +
-                ", full=" + full +
-                '}';
+            "todoDTOs=" + todoDTOs +
+            ", full=" + full +
+            '}';
     }
 }

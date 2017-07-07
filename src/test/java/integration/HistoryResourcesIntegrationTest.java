@@ -31,7 +31,7 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
     }
 
     @Test
-    public void historyResources_includesLinksToOtherResources() throws Exception {
+    public void historyResources() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();

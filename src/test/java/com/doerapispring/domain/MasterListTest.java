@@ -220,8 +220,8 @@ public class MasterListTest {
     }
 
     @Test
-    public void isLocked_whenThereAreNoListUnlocks_returnsFalse() throws Exception {
-        assertThat(masterList.isLocked()).isFalse();
+    public void isLocked_whenThereAreNoListUnlocks_returnsTrue() throws Exception {
+        assertThat(masterList.isLocked()).isTrue();
     }
 
     @Test
