@@ -36,6 +36,10 @@ public class TodoList {
         return todos;
     }
 
+    int getMaxSize() {
+        return maxSize;
+    }
+
     public boolean isFull() {
         return maxSize >= 0 && todos.size() >= maxSize;
     }
@@ -50,14 +54,14 @@ public class TodoList {
         return todo;
     }
 
-    List<Todo> pull() throws NoSourceListConfiguredException {
-        if (sourceList == null) {
-            throw new NoSourceListConfiguredException();
+    Todo addExisting(String localIdentifier, String task) throws ListSizeExceededException {
+        if (isFull()) {
+            throw new ListSizeExceededException();
         }
-        List<Todo> sourceTodos = sourceList.pop(maxSize - getTodos().size());
-        return sourceTodos.stream()
-                .map(todo -> addExisting(todo.getLocalIdentifier(), todo.getTask()))
-                .collect(Collectors.toList());
+        int position = getNextPosition();
+        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
+        todos.add(newTodo);
+        return newTodo;
     }
 
     List<Todo> displace(Todo originalTodo, String task) throws NoSourceListConfiguredException {
@@ -89,19 +93,27 @@ public class TodoList {
         todos.add(targetIndex, originalTodo);
 
         return originalMapping.entrySet().stream()
-                .map(entry -> {
-                    Todo todo = this.todos.get(entry.getKey());
-                    todo.setPosition(entry.getValue());
-                    return todo;
-                })
-                .collect(Collectors.toList());
+            .map(entry -> {
+                Todo todo = this.todos.get(entry.getKey());
+                todo.setPosition(entry.getValue());
+                return todo;
+            })
+            .collect(Collectors.toList());
     }
 
     Todo getByIdentifier(String targetTodoIdentifier) throws TodoNotFoundException {
         return todos.stream()
-                .filter(todo -> targetTodoIdentifier.equals(todo.getLocalIdentifier()))
-                .findFirst()
-                .orElseThrow(TodoNotFoundException::new);
+            .filter(todo -> targetTodoIdentifier.equals(todo.getLocalIdentifier()))
+            .findFirst()
+            .orElseThrow(TodoNotFoundException::new);
+    }
+
+    List<Todo> pop(Integer count) {
+        List<Todo> todos = this.todos.stream()
+            .limit(count)
+            .collect(Collectors.toList());
+        todos.stream().forEach(this::remove);
+        return todos;
     }
 
     private Todo push(String task) {
@@ -141,25 +153,10 @@ public class TodoList {
     @Override
     public String toString() {
         return "TodoList{" +
-                "scheduling=" + scheduling +
-                ", todos=" + todos +
-                ", maxSize=" + maxSize +
-                '}';
-    }
-
-    private List<Todo> pop(Integer count) {
-        List<Todo> todos = this.todos.stream()
-                .limit(count)
-                .collect(Collectors.toList());
-        todos.stream().forEach(this::remove);
-        return todos;
-    }
-
-    private Todo addExisting(String localIdentifier, String task) {
-        int position = getNextPosition();
-        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
-        todos.add(newTodo);
-        return newTodo;
+            "scheduling=" + scheduling +
+            ", todos=" + todos +
+            ", maxSize=" + maxSize +
+            '}';
     }
 
     private Integer getNextPosition() {

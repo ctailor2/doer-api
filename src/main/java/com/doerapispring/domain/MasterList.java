@@ -63,8 +63,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return immediateList.isFull();
     }
 
-    List<Todo> pull() throws NoSourceListConfiguredException {
-        return immediateList.pull();
+    List<Todo> pull() throws ListSizeExceededException {
+        List<Todo> sourceTodos = postponedList.pop(immediateList.getMaxSize() - immediateList.getTodos().size());
+        ArrayList<Todo> pulledTodos = new ArrayList<>();
+        for (Todo todo : sourceTodos) {
+            Todo pulledTodo = immediateList.addExisting(todo.getLocalIdentifier(), todo.getTask());
+            pulledTodos.add(pulledTodo);
+        }
+        return pulledTodos;
     }
 
     Todo delete(String localIdentifier) throws TodoNotFoundException {
@@ -73,6 +79,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todoToDelete;
     }
 
+    // TODO: Move todolist behavior into master list
     List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException, NoSourceListConfiguredException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);

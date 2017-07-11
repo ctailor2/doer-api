@@ -102,7 +102,7 @@ public class TodoService {
             MasterList masterList = get(user);
             List<Todo> todos = masterList.pull();
             todoRepository.update(masterList, todos);
-        } catch (NoSourceListConfiguredException | AbnormalModelException e) {
+        } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

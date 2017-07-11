@@ -445,16 +445,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void pull_whenMasterListFound_whenThereIsNoSourceConfigured_refusesOperation() throws Exception {
-        MasterList mockMasterList = mock(MasterList.class);
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        doThrow(new NoSourceListConfiguredException()).when(mockMasterList).pull();
-
-        exception.expect(OperationRefusedException.class);
-        todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
-    }
-
-    @Test
     public void pull_whenMasterListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
@@ -463,6 +453,16 @@ public class TodoServiceTest {
                 new Todo("some other task", ScheduledFor.now, 2));
         when(mockMasterList.pull()).thenReturn(todos);
         doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
+
+        exception.expect(OperationRefusedException.class);
+        todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
+    }
+
+    @Test
+    public void pull_whenMasterListFound_whenListSizeExceeded_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        when(mockMasterList.pull()).thenThrow(new ListSizeExceededException());
 
         exception.expect(OperationRefusedException.class);
         todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));

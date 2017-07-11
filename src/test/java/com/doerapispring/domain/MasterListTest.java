@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -187,17 +188,6 @@ public class MasterListTest {
     }
 
     @Test
-    public void pull_pullsFromNowList_returnsResults() throws NoSourceListConfiguredException {
-        List<Todo> todos = Collections.singletonList(new Todo("someId", "someTask", ScheduledFor.now, 1));
-        when(mockNowList.pull()).thenReturn(todos);
-
-        List<Todo> effectedTodos = masterList.pull();
-
-        verify(mockNowList).pull();
-        assertThat(effectedTodos).isEqualTo(todos);
-    }
-
-    @Test
     public void recordView_whenThereAreNoListUnlocks_returnsAListUnlock() throws Exception {
         ListUnlock listUnlock = masterList.unlock();
         assertThat(listUnlock).isNotNull();
@@ -240,5 +230,74 @@ public class MasterListTest {
         listUnlocks.add(new ListUnlock(lastUnlockDate));
 
         assertThat(masterList.isLocked()).isFalse();
+    }
+
+    @Test
+    public void pull_whenThereAreNoImmediateTodos_fillsFromPostponedList() throws Exception {
+        List<Todo> todos = asList(
+            new Todo("A", "firstLater", ScheduledFor.later, 1),
+            new Todo("B", "secondLater", ScheduledFor.later, 2));
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
+        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+
+        List<Todo> effectedTodos = masterList.pull();
+
+        assertThat(effectedTodos).containsOnly(
+            new Todo("A", "firstLater", ScheduledFor.now, 1),
+            new Todo("B", "secondLater", ScheduledFor.now, 2));
+        assertThat(masterList.getImmediateList().getTodos()).isEqualTo(effectedTodos);
+    }
+
+    @Test
+    public void pull_whenThereAreLessImmediateTodosThanMaxSize_fillsFromPostponedList_withAsManyTodosAsTheDifference() throws Exception {
+        TodoList nowList = new TodoList(
+            ScheduledFor.now,
+            Collections.singletonList(new Todo("A", "firstNow", ScheduledFor.now, 1)),
+            3);
+        TodoList laterList = new TodoList(
+            ScheduledFor.later,
+            asList(
+                new Todo("B", "firstLater", ScheduledFor.later, 1),
+                new Todo("C", "secondLater", ScheduledFor.later, 2),
+                new Todo("D", "thirdLater", ScheduledFor.later, 3)),
+            -1);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+
+        List<Todo> effectedTodos = masterList.pull();
+
+        assertThat(effectedTodos).contains(new Todo("B", "firstLater", ScheduledFor.now, 2));
+        assertThat(masterList.getImmediateList().getTodos()).containsExactly(
+            new Todo("A", "firstNow", ScheduledFor.now, 1),
+            new Todo("B", "firstLater", ScheduledFor.now, 2),
+            new Todo("C", "secondLater", ScheduledFor.now, 3));
+    }
+
+    @Test
+    public void pull_whenThereAreAsManyImmediateTodosAsMaxSize_doesNotFillFromPostponedList() throws Exception {
+        TodoList laterList = new TodoList(
+            ScheduledFor.later,
+            Collections.singletonList(new Todo("B", "firstLater", ScheduledFor.later, 1)),
+            -1);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 0, laterList);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+
+        List<Todo> todos = masterList.pull();
+
+        assertThat(todos).isEmpty();
+        assertThat(nowList.getTodos()).isEmpty();
+    }
+
+    @Test
+    public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() throws Exception {
+        Todo nowTodo = new Todo("A", "onlyNow", ScheduledFor.now, 1);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+
+        List<Todo> todos = masterList.pull();
+
+        assertThat(todos).isEmpty();
+        assertThat(nowList.getTodos()).containsOnly(nowTodo);
     }
 }

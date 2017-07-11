@@ -75,6 +75,34 @@ public class TodoListTest {
     }
 
     @Test
+    public void addExisting_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
+        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        Todo firstTodo = todoList.addExisting("abc", "someTask");
+        assertThat(todoList.getTodos()).containsExactly(firstTodo);
+        assertThat(firstTodo.getPosition()).isEqualTo(1);
+    }
+
+    @Test
+    public void addExisting_toListWithTodos_addsTodoAfterLast() throws Exception {
+        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        Todo firstTodo = todoList.addExisting("abc", "someTask");
+        Todo secondTodo = todoList.addExisting("def", "someOtherTask");
+
+        assertThat(todoList.getTodos()).containsExactly(firstTodo, secondTodo);
+        assertThat(secondTodo.getPosition()).isEqualTo(2);
+    }
+
+    @Test
+    public void addExisting_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
+        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        todoList.addExisting("abc", "someTask");
+        todoList.addExisting("def", "someOtherTask");
+
+        exception.expect(ListSizeExceededException.class);
+        todoList.addExisting("ghi", "stillAnotherTask");
+    }
+
+    @Test
     public void remove_removesTodoFromList() throws ListSizeExceededException {
         TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
         Todo todo = todoList.add("someTask");
@@ -82,75 +110,6 @@ public class TodoListTest {
         todoList.remove(todo);
 
         assertThat(todoList.getTodos()).doesNotContain(todo);
-    }
-
-    @Test
-    public void pull_whenThereIsASourceList_whenThereAreNoTodos_fillsListFromSource() throws Exception {
-        List<Todo> todos = asList(
-                new Todo("A", "firstLater", ScheduledFor.later, 1),
-                new Todo("B", "secondLater", ScheduledFor.later, 2));
-        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2, laterList);
-
-        List<Todo> effectedTodos = nowList.pull();
-
-        assertThat(effectedTodos).contains(
-                new Todo("A", "firstLater", ScheduledFor.now, 1),
-                new Todo("B", "secondLater", ScheduledFor.now, 2));
-        assertThat(nowList.getTodos()).isEqualTo(effectedTodos);
-    }
-
-
-    @Test
-    public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_fillsListFromSource_withAsManyTodosAsTheDifference() throws Exception {
-        Todo nowTodo = new Todo("A", "onlyNow", ScheduledFor.now, 1);
-        List<Todo> todos = asList(
-                new Todo("B", "firstLater", ScheduledFor.later, 1),
-                new Todo("C", "secondLater", ScheduledFor.later, 2));
-        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
-
-        List<Todo> effectedTodos = nowList.pull();
-
-        assertThat(effectedTodos).contains(new Todo("B", "firstLater", ScheduledFor.now, 2));
-        assertThat(nowList.getTodos()).containsExactly(
-                new Todo("A", "onlyNow", ScheduledFor.now, 1),
-                new Todo("B", "firstLater", ScheduledFor.now, 2),
-                new Todo("C", "secondLater", ScheduledFor.now, 3));
-    }
-
-    @Test
-    public void pull_whenThereIsASourceList_whenThereAreAsManyTodosAsMaxSize_doesNotFillListFromSource() throws Exception {
-        TodoList laterList = new TodoList(
-                ScheduledFor.later,
-                Collections.singletonList(new Todo("B", "firstLater", ScheduledFor.later, 1)),
-                -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 0, laterList);
-
-        List<Todo> todos = nowList.pull();
-
-        assertThat(todos).isEmpty();
-        assertThat(nowList.getTodos()).isEmpty();
-    }
-
-    @Test
-    public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() throws Exception {
-        Todo nowTodo = new Todo("A", "onlyNow", ScheduledFor.now, 1);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
-
-        List<Todo> todos = nowList.pull();
-
-        assertThat(todos).isEmpty();
-        assertThat(nowList.getTodos()).containsOnly(nowTodo);
-    }
-
-    @Test
-    public void pull_whenThereIsNoSourceList_throwsNoSourceListConfiguredException() throws NoSourceListConfiguredException {
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
-
-        exception.expect(NoSourceListConfiguredException.class);
-        nowList.pull();
     }
 
     @Test
