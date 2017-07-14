@@ -11,13 +11,11 @@ import java.util.stream.Collectors;
 
 @Repository
 class MasterListRepository implements ObjectRepository<MasterList, String> {
-    private final UserDAO userDAO;
     private final TodoDao todoDao;
     private final ListUnlockDao listUnlockDao;
 
     @Autowired
-    MasterListRepository(UserDAO userDAO, TodoDao todoDao, ListUnlockDao listUnlockDao) {
-        this.userDAO = userDAO;
+    MasterListRepository(TodoDao todoDao, ListUnlockDao listUnlockDao) {
         this.todoDao = todoDao;
         this.listUnlockDao = listUnlockDao;
     }
@@ -34,8 +32,8 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
                         todoEntity.active ? ScheduledFor.now : ScheduledFor.later,
                         todoEntity.position))
                 .collect(Collectors.partitioningBy(todo -> ScheduledFor.now.equals(todo.getScheduling())));
+        TodoList nowList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), 2, laterList);
         List<ListUnlockEntity> listUnlockEntities = listUnlockDao.findAllUserListUnlocks(email);
                 List<ListUnlock> listUnlocks = listUnlockEntities.stream()
                 .map(listUnlockEntity -> new ListUnlock(listUnlockEntity.updatedAt))

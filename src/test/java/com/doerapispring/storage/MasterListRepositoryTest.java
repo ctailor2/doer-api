@@ -26,9 +26,6 @@ public class MasterListRepositoryTest {
     private ObjectRepository<MasterList, String> masterListRepository;
 
     @Mock
-    private UserDAO mockUserDAO;
-
-    @Mock
     private TodoDao mockTodoDAO;
 
     @Mock
@@ -44,7 +41,7 @@ public class MasterListRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        masterListRepository = new MasterListRepository(mockUserDAO, mockTodoDAO, mockListUnlockDao);
+        masterListRepository = new MasterListRepository(mockTodoDAO, mockListUnlockDao);
     }
 
     @Test
@@ -78,7 +75,7 @@ public class MasterListRepositoryTest {
         MasterList masterList = masterListOptional.get();
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
         assertThat(masterList.getPostponedList()).isEqualTo(laterList);
-        assertThat(masterList.getImmediateList()).isEqualTo(new TodoList(ScheduledFor.now, Collections.emptyList(), 2, laterList));
+        assertThat(masterList.getImmediateList()).isEqualTo(new TodoList(ScheduledFor.now, Collections.emptyList(), 2));
     }
 
     @Test

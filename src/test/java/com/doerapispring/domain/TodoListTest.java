@@ -183,45 +183,6 @@ public class TodoListTest {
     }
 
     @Test
-    public void displace_whenThereIsASourceList_whenSourceListIsEmpty_replacesTodo_andPushesItIntoSourceListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
-
-        List<Todo> todos = nowList.displace(nowTodo, "displace it");
-
-        // TODO: The local identifier behavior here seems weird. Why should the new todo
-        // get the id of the original todo that was displaced and that one get a newly assigned identifier?
-        Todo displacedTodo = new Todo("0", "someTask", ScheduledFor.later, 1);
-        Todo newTodo = new Todo("someId", "displace it", ScheduledFor.now, 4);
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(nowList.getTodos()).containsOnly(newTodo);
-    }
-
-    @Test
-    public void displace_whenThereIsASourceList_whenSourceListIsNotEmpty_replacesTodo_andPushesItIntoSourceListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("someOtherId", "someTask", ScheduledFor.later, 3)), -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
-
-        List<Todo> todos = nowList.displace(nowTodo, "displace it");
-
-        Todo displacedTodo = new Todo("0", "someTask", ScheduledFor.later, 2);
-        Todo newTodo = new Todo("someId", "displace it", ScheduledFor.now, 4);
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(nowList.getTodos()).containsOnly(newTodo);
-    }
-
-    @Test
-    public void displace_whenThereIsNoSourceList_throwsNoSourceListConfiguredException() throws NoSourceListConfiguredException {
-        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
-
-        exception.expect(NoSourceListConfiguredException.class);
-        nowList.displace(nowTodo, "displace it");
-    }
-
-    @Test
     public void getByIdentifier_givenIdentifierForExistingTodo_returnsTodo() throws TodoNotFoundException {
         Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);

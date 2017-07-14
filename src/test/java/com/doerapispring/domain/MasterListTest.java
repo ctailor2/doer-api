@@ -97,13 +97,35 @@ public class MasterListTest {
     }
 
     @Test
-    public void displace_whenTodoWithIdentifierExists_displacesTodoInMatchingList() throws TodoNotFoundException, DuplicateTodoException, NoSourceListConfiguredException {
-        Todo originalTodo = new Todo("someId", "someTask", ScheduledFor.now, 1);
-        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(originalTodo));
+    public void displace_whenTodoWithIdentifierExists_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
 
-        masterList.displace(originalTodo.getLocalIdentifier(), "coolNewTask");
+        List<Todo> todos = masterList.displace("someId", "displace it");
 
-        verify(mockNowList).displace(originalTodo, "coolNewTask");
+        // TODO: The local identifier behavior here seems weird. Why should the new todo
+        // get the id of the original todo that was displaced and that one get a newly assigned identifier?
+        Todo displacedTodo = new Todo("0", "someTask", ScheduledFor.later, 1);
+        Todo newTodo = new Todo("someId", "displace it", ScheduledFor.now, 4);
+        assertThat(todos).contains(displacedTodo, newTodo);
+        assertThat(nowList.getTodos()).containsOnly(newTodo);
+    }
+
+    @Test
+    public void displace_whenTodoWithIdentifierExists_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("someOtherId", "someTask", ScheduledFor.later, 3)), -1);
+        MasterList masterList = new MasterList(new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
+
+        List<Todo> todos = masterList.displace("someId", "displace it");
+
+        Todo displacedTodo = new Todo("0", "someTask", ScheduledFor.later, 2);
+        Todo newTodo = new Todo("someId", "displace it", ScheduledFor.now, 4);
+        assertThat(todos).contains(displacedTodo, newTodo);
+        assertThat(nowList.getTodos()).containsOnly(newTodo);
     }
 
     @Test
@@ -275,11 +297,9 @@ public class MasterListTest {
 
     @Test
     public void pull_whenThereAreAsManyImmediateTodosAsMaxSize_doesNotFillFromPostponedList() throws Exception {
-        TodoList laterList = new TodoList(
-            ScheduledFor.later,
-            Collections.singletonList(new Todo("B", "firstLater", ScheduledFor.later, 1)),
-            -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 0, laterList);
+        Todo todo = new Todo("B", "firstLater", ScheduledFor.later, 1);
+        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(todo), -1);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 0);
         MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.pull();
@@ -292,7 +312,7 @@ public class MasterListTest {
     public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() throws Exception {
         Todo nowTodo = new Todo("A", "onlyNow", ScheduledFor.now, 1);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3, laterList);
+        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
         MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.pull();

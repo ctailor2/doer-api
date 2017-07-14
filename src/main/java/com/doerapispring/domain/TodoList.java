@@ -6,26 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
-
 public class TodoList {
     private final ScheduledFor scheduling;
     private List<Todo> todos = new ArrayList<>();
     private final int maxSize;
-    private final TodoList sourceList;
 
     public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize) {
         this.scheduling = scheduling;
         this.maxSize = maxSize;
         this.todos.addAll(todos);
-        this.sourceList = null;
-    }
-
-    public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize, TodoList sourceList) {
-        this.scheduling = scheduling;
-        this.todos.addAll(todos);
-        this.maxSize = maxSize;
-        this.sourceList = sourceList;
     }
 
     public ScheduledFor getScheduling() {
@@ -62,16 +51,6 @@ public class TodoList {
         Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
         todos.add(newTodo);
         return newTodo;
-    }
-
-    List<Todo> displace(Todo originalTodo, String task) throws NoSourceListConfiguredException {
-        if (sourceList == null) {
-            throw new NoSourceListConfiguredException();
-        }
-        Todo replacementTodo = new Todo(originalTodo.getLocalIdentifier(), task, originalTodo.getScheduling(), originalTodo.getPosition());
-        replace(originalTodo, replacementTodo);
-        Todo displacedTodo = sourceList.push(originalTodo.getTask());
-        return asList(displacedTodo, replacementTodo);
     }
 
     void remove(Todo todo) {
@@ -116,14 +95,14 @@ public class TodoList {
         return todos;
     }
 
-    private Todo push(String task) {
+    Todo push(String task) {
         int position = getNextTopPosition();
         Todo todo = new Todo(task, scheduling, position);
         todos.add(0, todo);
         return todo;
     }
 
-    private void replace(Todo existingTodo, Todo replacementTodo) {
+    void replace(Todo existingTodo, Todo replacementTodo) {
         int indexOfExistingTodo = todos.indexOf(existingTodo);
         todos.set(indexOfExistingTodo, replacementTodo);
     }

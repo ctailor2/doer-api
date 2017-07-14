@@ -3,6 +3,8 @@ package com.doerapispring.domain;
 import java.time.Instant;
 import java.util.*;
 
+import static java.util.Arrays.asList;
+
 public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final TodoList immediateList;
@@ -79,12 +81,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todoToDelete;
     }
 
-    // TODO: Move todolist behavior into master list
-    List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException, NoSourceListConfiguredException {
+    List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        TodoList todoList = getListByScheduling(existingTodo.getScheduling());
-        return todoList.displace(existingTodo, task);
+        Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getScheduling(), existingTodo.getPosition());
+        // TODO: Replace behavior may not be necessary - see todo in tests for this
+        immediateList.replace(existingTodo, replacementTodo);
+        Todo displacedTodo = postponedList.push(existingTodo.getTask());
+        return asList(displacedTodo, replacementTodo);
     }
 
     Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {

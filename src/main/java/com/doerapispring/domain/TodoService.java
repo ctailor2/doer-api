@@ -52,12 +52,12 @@ public class TodoService {
         try {
             MasterList masterList = get(user);
             List<Todo> newAndExistingTodos = masterList.displace(localIdentifier, task);
-            // TODO: This stinks, fix it
             Todo newTodo = newAndExistingTodos.get(0);
             Todo existingTodo = newAndExistingTodos.get(1);
+            // TODO: Maybe this should do an add, get, update
             todoRepository.add(masterList, newTodo);
             todoRepository.update(masterList, existingTodo);
-        } catch (NoSourceListConfiguredException | TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

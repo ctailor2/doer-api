@@ -211,16 +211,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void displace_whenMasterListFound_whenThereIsNoSourceConfigured_refusesOperation() throws Exception {
-        MasterList mockMasterList = mock(MasterList.class);
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        doThrow(new NoSourceListConfiguredException()).when(mockMasterList).displace(any(), any());
-
-        exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(new UniqueIdentifier<>("one@two.com")), "someId", "someTask");
-    }
-
-    @Test
     public void displace_whenMasterListFound_whenTodoNotFound_refusesDisplace() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
