@@ -32,6 +32,9 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     @Autowired
     private TodoService todosService;
 
+    @Autowired
+    private ListService listService;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -55,6 +58,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         MasterList masterList = todosService.get(user);
         Todo secondTodo = masterList.getAllTodos().get(1);
         Todo thirdTodo = masterList.getAllTodos().get(2);
+        listService.unlock(user);
 
         doGet();
 

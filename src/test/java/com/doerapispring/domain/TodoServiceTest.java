@@ -61,41 +61,39 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void getSubList_whenMasterListFound_whenScheduledForNow_returnsImmediateListUsingRepository() throws Exception {
+    public void getDeferredTodos_whenMasterListFound_returnsDeferredTodos() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        List<Todo> deferredTodos = Collections.singletonList(new Todo("someIdentifier", "someTask", ScheduledFor.now, 1));
+        when(mockMasterList.getDeferredTodos()).thenReturn(deferredTodos);
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        Todo nowTodo = new Todo("taskOne", ScheduledFor.now, 1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("taskTwo", ScheduledFor.later, 1)), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
-        TodoList todoList = todoService.getSubList(user, ScheduledFor.now);
+        List<Todo> todos = todoService.getDeferredTodos(user);
 
-        assertThat(todoList.getTodos()).containsOnly(nowTodo);
+        verify(mockMasterListRepository).find(uniqueIdentifier);
+        verify(mockMasterList).getDeferredTodos();
+        assertThat(todos).isEqualTo(deferredTodos);
     }
 
     @Test
-    public void getSubList_whenMasterListFound_whenScheduledForLater_returnsPostponedListUsingRepository() throws Exception {
+    public void getDeferredTodos_whenMasterListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        when(mockMasterList.getDeferredTodos()).thenThrow(new LockTimerNotExpiredException());
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        Todo laterTodo = new Todo("taskTwo", ScheduledFor.later, 1);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("taskOne", ScheduledFor.now, 1)), 2);
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 
-        TodoList todoList = todoService.getSubList(user, ScheduledFor.later);
-
-        assertThat(todoList.getTodos()).containsOnly(laterTodo);
+        exception.expect(OperationRefusedException.class);
+        todoService.getDeferredTodos(user);
     }
 
     @Test
-    public void getSubList_whenMasterListNotFound_refusesGet() throws Exception {
+    public void getDeferredTodos_whenMasterListNotFound_refusesGet() throws Exception {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(OperationRefusedException.class);
-        todoService.getSubList(new User(new UniqueIdentifier<>("one@two.com")), ScheduledFor.now);
+        todoService.getDeferredTodos(new User(new UniqueIdentifier<>("one@two.com")));
     }
 
     @Test

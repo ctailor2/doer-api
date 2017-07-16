@@ -107,7 +107,12 @@ public class TodoService {
         }
     }
 
-    public TodoList getSubList(User user, ScheduledFor scheduling) throws OperationRefusedException {
-        return get(user).getListByScheduling(scheduling);
+    public List<Todo> getDeferredTodos(User user) throws OperationRefusedException {
+        try {
+            MasterList masterList = get(user);
+            return masterList.getDeferredTodos();
+        } catch (LockTimerNotExpiredException e) {
+            throw new OperationRefusedException();
+        }
     }
 }

@@ -329,7 +329,16 @@ public class MasterListTest {
     }
 
     @Test
-    public void getDeferredTodos_getsTodosFromLaterList() {
+    public void getDeferredTodos_whenListIsLocked_throwsListTimerNotExpiredException() throws Exception {
+        exception.expect(LockTimerNotExpiredException.class);
+        masterList.getDeferredTodos();
+    }
+
+    @Test
+    public void getDeferredTodos_whenListIsNotLocked_getsTodosFromPostponedList() throws Exception {
+        Instant now = Instant.now();
+        Date lastUnlockDate = new Date(now.minusSeconds(1799L).toEpochMilli());
+        listUnlocks.add(new ListUnlock(lastUnlockDate));
         masterList.getDeferredTodos();
 
         verify(mockLaterList).getTodos();

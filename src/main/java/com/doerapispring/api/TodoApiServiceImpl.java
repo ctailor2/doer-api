@@ -35,12 +35,12 @@ class TodoApiServiceImpl implements TodoApiService {
     @Override
     public TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
-            MasterList masterList = todoService.get(authenticatedUser.getUser());
-            List<TodoDTO> todoDTOs = masterList.getDeferredTodos()
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs, masterList.isFull());
+            List<TodoDTO> todoDTOs = todoService.getDeferredTodos(authenticatedUser.getUser())
+                    .stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+            // TODO: Returning a hardcoded value for this is weird - ideally shouldn't need this at all
+            return new TodoListDTO(todoDTOs, false);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -124,9 +124,9 @@ class TodoApiServiceImpl implements TodoApiService {
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
         return new TodoDTO(
-                todo.getLocalIdentifier(),
-                todo.getTask(),
-                todo.getScheduling().toString());
+            todo.getLocalIdentifier(),
+            todo.getTask(),
+            todo.getScheduling().toString());
     }
 
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort

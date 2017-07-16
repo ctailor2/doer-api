@@ -31,7 +31,10 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return immediateList.getTodos();
     }
 
-    public List<Todo> getDeferredTodos() {
+    public List<Todo> getDeferredTodos() throws LockTimerNotExpiredException {
+        if (isLocked()) {
+            throw new LockTimerNotExpiredException();
+        }
         return postponedList.getTodos();
     }
 
@@ -112,13 +115,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todoList.move(originalTodo, targetTodo);
     }
 
-    TodoList getListByScheduling(ScheduledFor scheduling) {
-        if (ScheduledFor.now.equals(scheduling)) {
-            return immediateList;
-        }
-        return postponedList;
-    }
-
     ListUnlock unlock() throws LockTimerNotExpiredException {
         Boolean viewNotAllowed = getLastViewedAt()
             .map(lastViewedAt -> lastViewedAt.after(beginningOfToday()))
@@ -163,6 +159,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
             ", postponedList=" + postponedList +
             ", listUnlocks=" + listUnlocks +
             '}';
+    }
+
+    private TodoList getListByScheduling(ScheduledFor scheduling) {
+        if (ScheduledFor.now.equals(scheduling)) {
+            return immediateList;
+        }
+        return postponedList;
     }
 
     private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
