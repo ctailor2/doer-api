@@ -23,19 +23,19 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    public TodoList getImmediateList() {
-        return immediateList;
-    }
-
-    public TodoList getPostponedList() {
-        return postponedList;
-    }
-
     public List<ListUnlock> getListUnlocks() {
         return listUnlocks;
     }
 
     public List<Todo> getTodos() {
+        return immediateList.getTodos();
+    }
+
+    public List<Todo> getDeferredTodos() {
+        return postponedList.getTodos();
+    }
+
+    public List<Todo> getAllTodos() {
         ArrayList<Todo> todos = new ArrayList<>();
         todos.addAll(immediateList.getTodos());
         todos.addAll(postponedList.getTodos());
@@ -166,14 +166,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        return getTodos().stream()
+        return getAllTodos().stream()
             .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
             .findFirst()
             .orElseThrow(TodoNotFoundException::new);
     }
 
     private Optional<Todo> getByTask(String task) {
-        return getTodos().stream().filter(todo ->
+        return getAllTodos().stream().filter(todo ->
             todo.getTask().equals(task))
             .findFirst();
     }

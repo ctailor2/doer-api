@@ -21,9 +21,12 @@ class TodoApiServiceImpl implements TodoApiService {
     @Override
     public TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
-            TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.now);
-            List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs, todoList.isFull());
+            MasterList masterList = todoService.get(authenticatedUser.getUser());
+            List<TodoDTO> todoDTOs = masterList.getTodos()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+            return new TodoListDTO(todoDTOs, masterList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -32,9 +35,12 @@ class TodoApiServiceImpl implements TodoApiService {
     @Override
     public TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
-            TodoList todoList = todoService.getSubList(authenticatedUser.getUser(), ScheduledFor.later);
-            List<TodoDTO> todoDTOs = todoList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs, todoList.isFull());
+            MasterList masterList = todoService.get(authenticatedUser.getUser());
+            List<TodoDTO> todoDTOs = masterList.getDeferredTodos()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+            return new TodoListDTO(todoDTOs, masterList.isFull());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

@@ -17,20 +17,20 @@ public class TodoList {
         this.todos.addAll(todos);
     }
 
-    public ScheduledFor getScheduling() {
+    boolean isFull() {
+        return maxSize >= 0 && todos.size() >= maxSize;
+    }
+
+    ScheduledFor getScheduling() {
         return scheduling;
     }
 
-    public List<Todo> getTodos() {
+    List<Todo> getTodos() {
         return todos;
     }
 
     int getMaxSize() {
         return maxSize;
-    }
-
-    public boolean isFull() {
-        return maxSize >= 0 && todos.size() >= maxSize;
     }
 
     Todo add(String task) throws ListSizeExceededException {

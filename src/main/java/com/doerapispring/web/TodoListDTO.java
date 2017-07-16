@@ -22,7 +22,7 @@ public class TodoListDTO extends ResourceSupport {
         return full;
     }
 
-    List<TodoDTO> getTodoDTOs() {
+    public List<TodoDTO> getTodoDTOs() {
         return todoDTOs;
     }
 

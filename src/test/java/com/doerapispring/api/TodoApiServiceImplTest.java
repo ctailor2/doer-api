@@ -177,19 +177,36 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void getTodos_callsTodoService_forNowTodos() throws Exception {
-        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
+    public void getTodos_callsTodoService() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+        when(mockTodoService.get(any())).thenReturn(mock(MasterList.class));
 
         todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
-        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.now);
+        verify(mockTodoService).get(new User(uniqueIdentifier));
     }
 
     @Test
-    public void getTodos_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+    public void getTodos_callsTodoService_returnsTodosFromImmediateList() throws Exception {
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+        Todo nowTodo = new Todo("someIdentifier", "someTask", ScheduledFor.now, 1);
+        Todo laterTodo = new Todo("someIdentifier", "someOtherTask", ScheduledFor.later, 1);
+        MasterList masterList = new MasterList(
+            uniqueIdentifier,
+            new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2),
+            new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1),
+            Collections.emptyList());
+        when(mockTodoService.get(any())).thenReturn(masterList);
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask", "now"));
+    }
+
+    @Test
+    public void getTodos_returnsTodoList_withFullIndicator() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockTodoService.get(any())).thenReturn(mockMasterList);
+        when(mockMasterList.isFull()).thenReturn(true);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
@@ -197,42 +214,37 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void getTodos_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO.isFull()).isEqualTo(false);
-    }
-
-    @Test
-    public void getDeferredTodos_callsTodoService_forLaterTodos() throws Exception {
-        when(mockTodoService.getSubList(any(), any())).thenReturn(new TodoList(ScheduledFor.now, Collections.emptyList(), 1));
+    public void getDeferredTodos_callsTodoService() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+        when(mockTodoService.get(any())).thenReturn(mock(MasterList.class));
 
         todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
-        verify(mockTodoService).getSubList(new User(uniqueIdentifier), ScheduledFor.later);
+        verify(mockTodoService).get(new User(uniqueIdentifier));
     }
 
     @Test
-    public void getDeferredTodos_whenListIsFull_returnsTodoList_whereDisplacementIsAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.now, Collections.singletonList(new Todo("someTask", ScheduledFor.now, 1)), 1));
+    public void getDeferredTodos_callsTodoService_returnsDeferredTodos() throws Exception {
+        Todo todo = new Todo("someIdentifier", "someTask", ScheduledFor.now, 1);
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockTodoService.get(any())).thenReturn(mockMasterList);
+        when(mockMasterList.getDeferredTodos()).thenReturn(Collections.singletonList(todo));
+
+        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
+
+        verify(mockMasterList).getDeferredTodos();
+        assertThat(todoListDTO).isNotNull();
+        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask", "now"));
+    }
+
+    @Test
+    public void getDeferredTodos_returnsTodoList_withFullIndicator() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockTodoService.get(any())).thenReturn(mockMasterList);
+        when(mockMasterList.isFull()).thenReturn(true);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO.isFull()).isEqualTo(true);
-    }
-
-    @Test
-    public void getDeferredTodos_whenListIsNotFull_returnsTodoList_whereDisplacementIsNotAllowed() throws Exception {
-        when(mockTodoService.getSubList(any(), any()))
-            .thenReturn(new TodoList(ScheduledFor.later, Collections.emptyList(), -1));
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO.isFull()).isEqualTo(false);
     }
 }

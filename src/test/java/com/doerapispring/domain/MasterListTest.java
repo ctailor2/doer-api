@@ -136,7 +136,7 @@ public class MasterListTest {
         Todo updatedTodo = masterList.update(todo.getLocalIdentifier(), "someOtherTask");
 
         assertThat(updatedTodo).isEqualTo(new Todo(todo.getLocalIdentifier(), "someOtherTask", todo.getScheduling(), todo.getPosition()));
-        assertThat(masterList.getTodos()).containsOnly(updatedTodo);
+        assertThat(masterList.getAllTodos()).containsOnly(updatedTodo);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class MasterListTest {
         assertThat(effectedTodos).containsOnly(
             new Todo("A", "firstLater", ScheduledFor.now, 1),
             new Todo("B", "secondLater", ScheduledFor.now, 2));
-        assertThat(masterList.getImmediateList().getTodos()).isEqualTo(effectedTodos);
+        assertThat(masterList.getTodos()).isEqualTo(effectedTodos);
     }
 
     @Test
@@ -289,7 +289,7 @@ public class MasterListTest {
         List<Todo> effectedTodos = masterList.pull();
 
         assertThat(effectedTodos).contains(new Todo("B", "firstLater", ScheduledFor.now, 2));
-        assertThat(masterList.getImmediateList().getTodos()).containsExactly(
+        assertThat(masterList.getTodos()).containsExactly(
             new Todo("A", "firstNow", ScheduledFor.now, 1),
             new Todo("B", "firstLater", ScheduledFor.now, 2),
             new Todo("C", "secondLater", ScheduledFor.now, 3));
@@ -319,5 +319,19 @@ public class MasterListTest {
 
         assertThat(todos).isEmpty();
         assertThat(nowList.getTodos()).containsOnly(nowTodo);
+    }
+
+    @Test
+    public void getTodos_getsTodosFromImmediateList() {
+        masterList.getTodos();
+
+        verify(mockNowList).getTodos();
+    }
+
+    @Test
+    public void getDeferredTodos_getsTodosFromLaterList() {
+        masterList.getDeferredTodos();
+
+        verify(mockLaterList).getTodos();
     }
 }

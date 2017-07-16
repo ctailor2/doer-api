@@ -42,8 +42,8 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         todosService.create(user, "some task", ScheduledFor.later);
         todosService.create(user, "some other task", ScheduledFor.later);
         MasterList masterList = todosService.get(user);
-        Todo firstTodo = masterList.getTodos().get(0);
-        Todo secondTodo = masterList.getTodos().get(1);
+        Todo firstTodo = masterList.getAllTodos().get(0);
+        Todo secondTodo = masterList.getAllTodos().get(1);
 
         mvcResult = mockMvc.perform(post("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())
                 .headers(httpHeaders))
@@ -52,12 +52,12 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getTodos().get(0), equalTo(
+        assertThat(newMasterList.getAllTodos().get(0), equalTo(
                 new Todo(secondTodo.getLocalIdentifier(),
                         secondTodo.getTask(),
                         secondTodo.getScheduling(),
                         firstTodo.getPosition())));
-        assertThat(newMasterList.getTodos().get(1), equalTo(
+        assertThat(newMasterList.getAllTodos().get(1), equalTo(
                 new Todo(firstTodo.getLocalIdentifier(),
                         firstTodo.getTask(),
                         firstTodo.getScheduling(),

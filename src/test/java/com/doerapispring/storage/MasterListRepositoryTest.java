@@ -62,20 +62,7 @@ public class MasterListRepositoryTest {
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getIdentifier()).isEqualTo(uniqueIdentifier);
-        assertThat(masterList.getTodos()).isEmpty();
-    }
-
-    @Test
-    public void find_returnsMasterList_withLaterListAsSourceList_forNowList() {
-        when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(Collections.emptyList());
-
-        Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier<>("somethingSecret"));
-
-        assertThat(masterListOptional.isPresent()).isTrue();
-        MasterList masterList = masterListOptional.get();
-        TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        assertThat(masterList.getPostponedList()).isEqualTo(laterList);
-        assertThat(masterList.getImmediateList()).isEqualTo(new TodoList(ScheduledFor.now, Collections.emptyList(), 2));
+        assertThat(masterList.getAllTodos()).isEmpty();
     }
 
     @Test
@@ -94,8 +81,8 @@ public class MasterListRepositoryTest {
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getTodos()).contains(new Todo("123", "do it now", ScheduledFor.now, 5));
+        assertThat(masterList.getAllTodos().size()).isEqualTo(1);
+        assertThat(masterList.getAllTodos()).contains(new Todo("123", "do it now", ScheduledFor.now, 5));
     }
 
     @Test
@@ -114,8 +101,8 @@ public class MasterListRepositoryTest {
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getTodos().size()).isEqualTo(1);
-        assertThat(masterList.getTodos()).containsExactly(
+        assertThat(masterList.getAllTodos().size()).isEqualTo(1);
+        assertThat(masterList.getAllTodos()).containsExactly(
                 new Todo("123", "do it later", ScheduledFor.later, 5));
     }
 

@@ -53,8 +53,8 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         todosService.create(user, "here and now", ScheduledFor.later);
         todosService.create(user, "near and far", ScheduledFor.later);
         MasterList masterList = todosService.get(user);
-        Todo secondTodo = masterList.getTodos().get(1);
-        Todo thirdTodo = masterList.getTodos().get(2);
+        Todo secondTodo = masterList.getAllTodos().get(1);
+        Todo thirdTodo = masterList.getAllTodos().get(2);
 
         doGet();
 

@@ -49,15 +49,15 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
+        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will get pulled")),
                 hasProperty("scheduling", equalTo(ScheduledFor.now)),
                 hasProperty("position", equalTo(1)))));
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
+        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will also get pulled")),
                 hasProperty("scheduling", equalTo(ScheduledFor.now)),
                 hasProperty("position", equalTo(2)))));
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
+        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("keep for later")),
                 hasProperty("scheduling", equalTo(ScheduledFor.later)),
                 hasProperty("position", equalTo(3)))));
