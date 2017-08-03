@@ -68,6 +68,10 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return immediateList.isFull();
     }
 
+    public boolean isAbleToBeReplenished() {
+        return !isFull() && postponedList.getTodos().size() > 0;
+    }
+
     List<Todo> pull() throws ListSizeExceededException {
         List<Todo> sourceTodos = postponedList.pop(immediateList.getMaxSize() - immediateList.getTodos().size());
         ArrayList<Todo> pulledTodos = new ArrayList<>();

@@ -66,6 +66,7 @@ public class ListApiServiceImplTest {
         when(mockMasterList.getDeferredName()).thenReturn("later");
         when(mockMasterList.isFull()).thenReturn(false);
         when(mockMasterList.isLocked()).thenReturn(true);
+        when(mockMasterList.isAbleToBeReplenished()).thenReturn(true);
         when(mockListService.get(any())).thenReturn(mockMasterList);
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
@@ -76,6 +77,7 @@ public class ListApiServiceImplTest {
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
         assertThat(masterListDTO.isFull()).isFalse();
         assertThat(masterListDTO.isLocked()).isTrue();
+        assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();
     }
 
     @Test

@@ -53,6 +53,8 @@ class ListsController {
             }
             if (!masterListDTO.isFull()) {
                 masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
+            }
+            if (masterListDTO.isAbleToBeReplenished()) {
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
             ListResponse listResponse = new ListResponse(masterListDTO);

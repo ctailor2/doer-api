@@ -8,12 +8,14 @@ public class MasterListDTO extends ResourceSupport {
     private final String deferredName;
     private final boolean full;
     private final boolean locked;
+    private final boolean ableToBeReplenished;
 
-    public MasterListDTO(String name, String deferredName, boolean full, boolean locked) {
+    public MasterListDTO(String name, String deferredName, boolean full, boolean locked, boolean ableToBeReplenished) {
         this.name = name;
         this.deferredName = deferredName;
         this.full = full;
         this.locked = locked;
+        this.ableToBeReplenished = ableToBeReplenished;
     }
 
     public String getName() {
@@ -32,6 +34,10 @@ public class MasterListDTO extends ResourceSupport {
     @JsonIgnore
     public boolean isLocked() {
         return locked;
+    }
+
+    public boolean isAbleToBeReplenished() {
+        return ableToBeReplenished;
     }
 
     @Override

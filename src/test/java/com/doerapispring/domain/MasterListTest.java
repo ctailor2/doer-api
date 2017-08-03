@@ -343,4 +343,31 @@ public class MasterListTest {
 
         verify(mockLaterList).getTodos();
     }
+
+    @Test
+    public void isFull() {
+        when(mockNowList.isFull()).thenReturn(true);
+
+        assertThat(masterList.isFull()).isTrue();
+    }
+
+    @Test
+    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsNotFull_returnsTrue() throws Exception {
+        when(mockNowList.isFull()).thenReturn(false);
+        when(mockLaterList.getTodos()).thenReturn(Collections.singletonList(new Todo("someTask", ScheduledFor.later, 1)));
+
+        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+
+        assertThat(hasDeferredTodosAvailable).isTrue();
+    }
+
+    @Test
+    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsFull_returnsFalse() {
+        when(mockNowList.isFull()).thenReturn(true);
+        when(mockLaterList.getTodos()).thenReturn(Collections.singletonList(new Todo("someTask", ScheduledFor.later, 1)));
+
+        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+
+        assertThat(hasDeferredTodosAvailable).isFalse();
+    }
 }

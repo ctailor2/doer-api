@@ -36,7 +36,8 @@ class ListApiServiceImpl implements ListApiService {
                 masterList.getName(),
                 masterList.getDeferredName(),
                 masterList.isFull(),
-                masterList.isLocked());
+                masterList.isLocked(),
+                masterList.isAbleToBeReplenished());
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
