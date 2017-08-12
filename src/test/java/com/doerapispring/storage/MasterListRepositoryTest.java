@@ -11,6 +11,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,9 +32,11 @@ public class MasterListRepositoryTest {
     @Mock
     private ListUnlockDao mockListUnlockDao;
 
+    @Mock
+    private Clock mockClock;
+
     @Captor
     ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor;
-
     @Captor
     ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
     @Rule
@@ -41,7 +44,7 @@ public class MasterListRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        masterListRepository = new MasterListRepository(mockTodoDAO, mockListUnlockDao);
+        masterListRepository = new MasterListRepository(mockClock, mockTodoDAO, mockListUnlockDao);
     }
 
     @Test

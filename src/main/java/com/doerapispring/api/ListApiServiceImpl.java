@@ -35,6 +35,7 @@ class ListApiServiceImpl implements ListApiService {
             return new MasterListDTO(
                 masterList.getName(),
                 masterList.getDeferredName(),
+                masterList.unlockDuration(),
                 masterList.isFull(),
                 masterList.isLocked(),
                 masterList.isAbleToBeReplenished());

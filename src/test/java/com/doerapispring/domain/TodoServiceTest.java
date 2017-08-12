@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class TodoServiceTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        MasterList masterListFromRepository = new MasterList(uniqueIdentifier, nowList, laterList, Collections.emptyList());
+        MasterList masterListFromRepository = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, nowList, laterList, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 

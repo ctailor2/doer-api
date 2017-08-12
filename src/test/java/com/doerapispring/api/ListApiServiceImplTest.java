@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +53,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-            .thenReturn(new MasterList(new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
+            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), new TodoList(ScheduledFor.now, Collections.emptyList(), 2), new TodoList(ScheduledFor.later, Collections.emptyList(), 2), Collections.emptyList()));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -64,6 +65,7 @@ public class ListApiServiceImplTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(mockMasterList.getName()).thenReturn("now");
         when(mockMasterList.getDeferredName()).thenReturn("later");
+        when(mockMasterList.unlockDuration()).thenReturn(1234L);
         when(mockMasterList.isFull()).thenReturn(false);
         when(mockMasterList.isLocked()).thenReturn(true);
         when(mockMasterList.isAbleToBeReplenished()).thenReturn(true);
@@ -75,6 +77,7 @@ public class ListApiServiceImplTest {
         assertThat(masterListDTO).isNotNull();
         assertThat(masterListDTO.getName()).isEqualTo("now");
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
+        assertThat(masterListDTO.getUnlockDuration()).isEqualTo(1234L);
         assertThat(masterListDTO.isFull()).isFalse();
         assertThat(masterListDTO.isLocked()).isTrue();
         assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();

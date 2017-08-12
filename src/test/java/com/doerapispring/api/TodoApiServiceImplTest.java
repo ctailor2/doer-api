@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.Date;
 
@@ -192,10 +193,10 @@ public class TodoApiServiceImplTest {
         Todo nowTodo = new Todo("someIdentifier", "someTask", ScheduledFor.now, 1);
         Todo laterTodo = new Todo("someIdentifier", "someOtherTask", ScheduledFor.later, 1);
         MasterList masterList = new MasterList(
+            Clock.systemDefaultZone(),
             uniqueIdentifier,
             new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2),
-            new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1),
-            Collections.emptyList());
+            new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1), Collections.emptyList());
         when(mockTodoService.get(any())).thenReturn(masterList);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));

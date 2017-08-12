@@ -1,17 +1,21 @@
 package com.doerapispring.domain;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.*;
 
 import static java.util.Arrays.asList;
 
 public class MasterList implements UniquelyIdentifiable<String> {
+    private static final long UNLOCK_DURATION_SECONDS = 1800L;
+    private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final TodoList immediateList;
     private final TodoList postponedList;
     private List<ListUnlock> listUnlocks;
 
-    public MasterList(UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList, List<ListUnlock> listUnlocks) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList, List<ListUnlock> listUnlocks) {
+        this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.immediateList = immediateList;
         this.postponedList = postponedList;
@@ -52,7 +56,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     public boolean isLocked() {
         return getLastViewedAt()
-            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(1800L).toEpochMilli())))
+            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(UNLOCK_DURATION_SECONDS).toEpochMilli())))
             .orElse(true);
     }
 
@@ -129,6 +133,17 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return new ListUnlock();
     }
 
+    public Long unlockDuration() {
+        return getLastViewedAt()
+            .map(lastViewedAt -> {
+                long unlockExpiration = lastViewedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
+                long now = clock.instant().toEpochMilli();
+                return unlockExpiration - now;
+            })
+            .filter(duration -> duration > 0L)
+            .orElse(0L);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -136,6 +151,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
         MasterList that = (MasterList) o;
 
+        if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
             return false;
         if (immediateList != null ? !immediateList.equals(that.immediateList) : that.immediateList != null)
@@ -148,7 +164,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     @Override
     public int hashCode() {
-        int result = uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
+        int result = clock != null ? clock.hashCode() : 0;
+        result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
         result = 31 * result + (immediateList != null ? immediateList.hashCode() : 0);
         result = 31 * result + (postponedList != null ? postponedList.hashCode() : 0);
         result = 31 * result + (listUnlocks != null ? listUnlocks.hashCode() : 0);
@@ -158,7 +175,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
     @Override
     public String toString() {
         return "MasterList{" +
-            "uniqueIdentifier=" + uniqueIdentifier +
+            "clock=" + clock +
+            ", uniqueIdentifier=" + uniqueIdentifier +
             ", immediateList=" + immediateList +
             ", postponedList=" + postponedList +
             ", listUnlocks=" + listUnlocks +

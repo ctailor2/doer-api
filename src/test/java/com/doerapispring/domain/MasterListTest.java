@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +31,9 @@ public class MasterListTest {
     @Mock
     private TodoList mockLaterList;
 
+    @Mock
+    private Clock mockClock;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -38,7 +42,7 @@ public class MasterListTest {
         when(mockNowList.getTodos()).thenReturn(Collections.emptyList());
         when(mockLaterList.getTodos()).thenReturn(Collections.emptyList());
         listUnlocks = new ArrayList<>();
-        masterList = new MasterList(new UniqueIdentifier<>("something"), mockNowList, mockLaterList, listUnlocks);
+        masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), mockNowList, mockLaterList, listUnlocks);
     }
 
     @Test
@@ -101,7 +105,7 @@ public class MasterListTest {
         Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.displace("someId", "displace it");
 
@@ -118,7 +122,7 @@ public class MasterListTest {
         Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(new Todo("someOtherId", "someTask", ScheduledFor.later, 3)), -1);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.displace("someId", "displace it");
 
@@ -255,13 +259,36 @@ public class MasterListTest {
     }
 
     @Test
+    public void unlockDuration_whenThereAreNoListUnlocks_returns0() {
+        assertThat(masterList.unlockDuration()).isEqualTo(0L);
+    }
+
+    @Test
+    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsNotExpired_returnsRemainingDurationRelativeToNow_inMs() {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
+        Date lastUnlockDate = new Date(4900000L);
+        listUnlocks.add(new ListUnlock(lastUnlockDate));
+
+        assertThat(masterList.unlockDuration()).isEqualTo(1700000L);
+    }
+
+    @Test
+    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsExpired_returns0() {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
+        Date lastUnlockDate = new Date(3000000L);
+        listUnlocks.add(new ListUnlock(lastUnlockDate));
+
+        assertThat(masterList.unlockDuration()).isEqualTo(0L);
+    }
+
+    @Test
     public void pull_whenThereAreNoImmediateTodos_fillsFromPostponedList() throws Exception {
         List<Todo> todos = asList(
             new Todo("A", "firstLater", ScheduledFor.later, 1),
             new Todo("B", "secondLater", ScheduledFor.later, 2));
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
         TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> effectedTodos = masterList.pull();
 
@@ -284,7 +311,7 @@ public class MasterListTest {
                 new Todo("C", "secondLater", ScheduledFor.later, 2),
                 new Todo("D", "thirdLater", ScheduledFor.later, 3)),
             -1);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> effectedTodos = masterList.pull();
 
@@ -300,7 +327,7 @@ public class MasterListTest {
         Todo todo = new Todo("B", "firstLater", ScheduledFor.later, 1);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.singletonList(todo), -1);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 0);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.pull();
 
@@ -313,7 +340,7 @@ public class MasterListTest {
         Todo nowTodo = new Todo("A", "onlyNow", ScheduledFor.now, 1);
         TodoList laterList = new TodoList(ScheduledFor.later, Collections.emptyList(), -1);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 3);
-        MasterList masterList = new MasterList(new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
+        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), nowList, laterList, Collections.emptyList());
 
         List<Todo> todos = masterList.pull();
 

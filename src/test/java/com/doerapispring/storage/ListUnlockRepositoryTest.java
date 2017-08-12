@@ -11,6 +11,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.Collections;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -45,10 +46,10 @@ public class ListUnlockRepositoryTest {
         when(mockUserDao.findByEmail(any())).thenReturn(userEntity);
 
         MasterList masterList = new MasterList(
+            Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
             new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-            new TodoList(ScheduledFor.later, Collections.emptyList(), 0),
-            Collections.emptyList());
+            new TodoList(ScheduledFor.later, Collections.emptyList(), 0), Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("listUserIdentifier");
@@ -66,10 +67,10 @@ public class ListUnlockRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         MasterList masterList = new MasterList(
+            Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
             new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-            new TodoList(ScheduledFor.later, Collections.emptyList(), 0),
-            Collections.emptyList());
+            new TodoList(ScheduledFor.later, Collections.emptyList(), 0), Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("nonExistentUser");
