@@ -8,15 +8,25 @@ public class MasterListDTO extends ResourceSupport {
     private final String deferredName;
     private final Long unlockDuration;
     private final boolean full;
-    private final boolean locked;
+    private final boolean ableToBeUnlocked;
     private final boolean ableToBeReplenished;
+    private final boolean locked;
 
-    public MasterListDTO(String name, String deferredName, Long unlockDuration, boolean full, boolean locked, boolean ableToBeReplenished) {
+    public MasterListDTO(
+        String name,
+        String deferredName,
+        Long unlockDuration,
+        boolean full,
+        boolean locked,
+        boolean ableToBeUnlocked,
+        boolean ableToBeReplenished
+    ) {
         this.name = name;
         this.deferredName = deferredName;
         this.unlockDuration = unlockDuration;
         this.full = full;
         this.locked = locked;
+        this.ableToBeUnlocked = ableToBeUnlocked;
         this.ableToBeReplenished = ableToBeReplenished;
     }
 
@@ -38,13 +48,18 @@ public class MasterListDTO extends ResourceSupport {
     }
 
     @JsonIgnore
-    public boolean isLocked() {
-        return locked;
+    public boolean isAbleToBeUnlocked() {
+        return ableToBeUnlocked;
     }
 
     @JsonIgnore
     public boolean isAbleToBeReplenished() {
         return ableToBeReplenished;
+    }
+
+    @JsonIgnore
+    public boolean isLocked() {
+        return locked;
     }
 
     @Override
@@ -56,8 +71,9 @@ public class MasterListDTO extends ResourceSupport {
         MasterListDTO that = (MasterListDTO) o;
 
         if (full != that.full) return false;
-        if (locked != that.locked) return false;
+        if (ableToBeUnlocked != that.ableToBeUnlocked) return false;
         if (ableToBeReplenished != that.ableToBeReplenished) return false;
+        if (locked != that.locked) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (deferredName != null ? !deferredName.equals(that.deferredName) : that.deferredName != null) return false;
         return unlockDuration != null ? unlockDuration.equals(that.unlockDuration) : that.unlockDuration == null;
@@ -71,8 +87,9 @@ public class MasterListDTO extends ResourceSupport {
         result = 31 * result + (deferredName != null ? deferredName.hashCode() : 0);
         result = 31 * result + (unlockDuration != null ? unlockDuration.hashCode() : 0);
         result = 31 * result + (full ? 1 : 0);
-        result = 31 * result + (locked ? 1 : 0);
+        result = 31 * result + (ableToBeUnlocked ? 1 : 0);
         result = 31 * result + (ableToBeReplenished ? 1 : 0);
+        result = 31 * result + (locked ? 1 : 0);
         return result;
     }
 
@@ -83,8 +100,9 @@ public class MasterListDTO extends ResourceSupport {
             ", deferredName='" + deferredName + '\'' +
             ", unlockDuration=" + unlockDuration +
             ", full=" + full +
-            ", locked=" + locked +
+            ", ableToBeUnlocked=" + ableToBeUnlocked +
             ", ableToBeReplenished=" + ableToBeReplenished +
+            ", locked=" + locked +
             '}';
     }
 }

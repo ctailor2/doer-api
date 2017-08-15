@@ -10,6 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -22,8 +23,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class MasterListTest {
     private MasterList masterList;
-
-    private ArrayList<ListUnlock> listUnlocks;
 
     @Mock
     private TodoList mockNowList;
@@ -39,10 +38,10 @@ public class MasterListTest {
 
     @Before
     public void setUp() throws Exception {
+        when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
         when(mockNowList.getTodos()).thenReturn(Collections.emptyList());
         when(mockLaterList.getTodos()).thenReturn(Collections.emptyList());
-        listUnlocks = new ArrayList<>();
-        masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), mockNowList, mockLaterList, listUnlocks);
+        masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), mockNowList, mockLaterList, new ArrayList<>());
     }
 
     @Test
@@ -214,25 +213,67 @@ public class MasterListTest {
     }
 
     @Test
-    public void recordView_whenThereAreNoListUnlocks_returnsAListUnlock() throws Exception {
-        ListUnlock listUnlock = masterList.unlock();
-        assertThat(listUnlock).isNotNull();
+    public void isAbleToBeUnlocked_whenThereAreNoListUnlocks_returnsTrue() throws Exception {
+        Instant currentInstant = Instant.ofEpochMilli(1234L);
+        when(mockClock.instant()).thenReturn(currentInstant);
+
+        Boolean ableToBeUnlocked = masterList.isAbleToBeUnlocked();
+
+        assertThat(ableToBeUnlocked).isTrue();
     }
 
     @Test
-    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_throwsLockTimerNotExpiredException() throws Exception {
-        listUnlocks.add(new ListUnlock());
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_returnsFalse() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(1234L));
+        masterList.unlock();
+
+        Boolean ableToBeUnlocked = masterList.isAbleToBeUnlocked();
+
+        assertThat(ableToBeUnlocked).isFalse();
+    }
+
+    @Test
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsTrue() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(0L));
+        masterList.unlock();
+
+        Instant currentInstant = Instant.ofEpochMilli(432143214321L);
+        when(mockClock.instant()).thenReturn(currentInstant);
+        Boolean ableToBeReplenished = masterList.isAbleToBeUnlocked();
+
+        assertThat(ableToBeReplenished).isTrue();
+    }
+
+    @Test
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_butListIsStillUnlocked_returnsFalse() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618536700000L)); // Monday, August 7, 1989 11:45:00 PM
+        masterList.unlock();
+
+        Instant currentInstant = Instant.ofEpochMilli(618537900000L); // Tuesday, August 8, 1989 12:05:00 AM
+        when(mockClock.instant()).thenReturn(currentInstant);
+        Boolean ableToBeReplenished = masterList.isAbleToBeUnlocked();
+
+        assertThat(ableToBeReplenished).isFalse();
+    }
+
+    @Test
+    public void unlock_whenListIsAbleToBeUnlockedreturnsAListUnlock_createdAtCurrentInstant() throws Exception {
+        Instant currentInstant = Instant.ofEpochMilli(1234L);
+        when(mockClock.instant()).thenReturn(currentInstant);
+
+        ListUnlock listUnlock = masterList.unlock();
+
+        assertThat(listUnlock).isNotNull();
+        assertThat(listUnlock.getCreatedAt()).isEqualTo(Date.from(currentInstant));
+    }
+
+    @Test
+    public void unlock_whenListIsUnableToBeUnlocked_throwsLockTimerNotExpiredException() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(1234L));
+        masterList.unlock();
 
         exception.expect(LockTimerNotExpiredException.class);
         masterList.unlock();
-    }
-
-    @Test
-    public void recordView_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsAListUnlock() throws Exception {
-        listUnlocks.add(new ListUnlock(new Date(0L)));
-
-        ListUnlock listUnlock = masterList.unlock();
-        assertThat(listUnlock).isNotNull();
     }
 
     @Test
@@ -242,19 +283,21 @@ public class MasterListTest {
 
     @Test
     public void isLocked_whenThereAreListUnlocks_whenItHasBeenMoreThan30MinutesSinceFirstUnlockCreated_returnsTrue() throws Exception {
-        Instant now = Instant.now();
-        Date lastUnlockDate = new Date(now.minusSeconds(1801L).toEpochMilli());
-        listUnlocks.add(new ListUnlock(lastUnlockDate));
+        Instant unlockInstant = Instant.ofEpochMilli(0L);
+        when(mockClock.instant()).thenReturn(unlockInstant);
+        masterList.unlock();
 
+        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1801L));
         assertThat(masterList.isLocked()).isTrue();
     }
 
     @Test
     public void isLocked_whenThereAreListUnlocks_whenItHasBeen30MinutesOrLessSinceFirstUnlockCreated_returnsFalse() throws Exception {
-        Instant now = Instant.now();
-        Date lastUnlockDate = new Date(now.minusSeconds(1799L).toEpochMilli());
-        listUnlocks.add(new ListUnlock(lastUnlockDate));
+        Instant unlockInstant = Instant.ofEpochMilli(0L);
+        when(mockClock.instant()).thenReturn(unlockInstant);
+        masterList.unlock();
 
+        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1799L));
         assertThat(masterList.isLocked()).isFalse();
     }
 
@@ -264,20 +307,20 @@ public class MasterListTest {
     }
 
     @Test
-    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsNotExpired_returnsRemainingDurationRelativeToNow_inMs() {
-        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
-        Date lastUnlockDate = new Date(4900000L);
-        listUnlocks.add(new ListUnlock(lastUnlockDate));
+    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsNotExpired_returnsRemainingDurationRelativeToNow_inMs() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(4900000));
+        masterList.unlock();
 
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
         assertThat(masterList.unlockDuration()).isEqualTo(1700000L);
     }
 
     @Test
-    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsExpired_returns0() {
-        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
-        Date lastUnlockDate = new Date(3000000L);
-        listUnlocks.add(new ListUnlock(lastUnlockDate));
+    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsExpired_returns0() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(3000000L));
+        masterList.unlock();
 
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L));
         assertThat(masterList.unlockDuration()).isEqualTo(0L);
     }
 
@@ -363,9 +406,11 @@ public class MasterListTest {
 
     @Test
     public void getDeferredTodos_whenListIsNotLocked_getsTodosFromPostponedList() throws Exception {
-        Instant now = Instant.now();
-        Date lastUnlockDate = new Date(now.minusSeconds(1799L).toEpochMilli());
-        listUnlocks.add(new ListUnlock(lastUnlockDate));
+        Instant unlockInstant = Instant.ofEpochMilli(0L);
+        when(mockClock.instant()).thenReturn(unlockInstant);
+        masterList.unlock();
+
+        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1799L));
         masterList.getDeferredTodos();
 
         verify(mockLaterList).getTodos();

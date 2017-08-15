@@ -1,7 +1,6 @@
 package com.doerapispring.domain;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.*;
 
 import static java.util.Arrays.asList;
@@ -54,12 +53,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return getListByScheduling(scheduling).add(task);
     }
 
-    public boolean isLocked() {
-        return getLastViewedAt()
-            .map(lastViewedAt -> lastViewedAt.before(new Date(Instant.now().minusSeconds(UNLOCK_DURATION_SECONDS).toEpochMilli())))
-            .orElse(true);
-    }
-
     public String getName() {
         return immediateList.getScheduling().toString();
     }
@@ -68,12 +61,24 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return postponedList.getScheduling().toString();
     }
 
+    public boolean isLocked() {
+        return getLastUnlockedAt()
+            .map(lastUnlockedAt -> lastUnlockedAt.before(new Date(clock.instant().minusSeconds(UNLOCK_DURATION_SECONDS).toEpochMilli())))
+            .orElse(true);
+    }
+
     public boolean isFull() {
         return immediateList.isFull();
     }
 
     public boolean isAbleToBeReplenished() {
         return !isFull() && postponedList.getTodos().size() > 0;
+    }
+
+    public Boolean isAbleToBeUnlocked() {
+        return isLocked() && getLastUnlockedAt()
+            .map(lastUnlockedAt -> lastUnlockedAt.before(beginningOfToday()))
+            .orElse(true);
     }
 
     List<Todo> pull() throws ListSizeExceededException {
@@ -124,19 +129,18 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     ListUnlock unlock() throws LockTimerNotExpiredException {
-        Boolean viewNotAllowed = getLastViewedAt()
-            .map(lastViewedAt -> lastViewedAt.after(beginningOfToday()))
-            .orElse(false);
-        if (viewNotAllowed) {
+        if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
-        return new ListUnlock();
+        ListUnlock listUnlock = new ListUnlock(Date.from(clock.instant()));
+        listUnlocks.add(listUnlock);
+        return listUnlock;
     }
 
     public Long unlockDuration() {
-        return getLastViewedAt()
-            .map(lastViewedAt -> {
-                long unlockExpiration = lastViewedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
+        return getLastUnlockedAt()
+            .map(lastUnlockedAt -> {
+                long unlockExpiration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
                 long now = clock.instant().toEpochMilli();
                 return unlockExpiration - now;
             })
@@ -203,15 +207,16 @@ public class MasterList implements UniquelyIdentifiable<String> {
             .findFirst();
     }
 
-    private Optional<Date> getLastViewedAt() {
+    private Optional<Date> getLastUnlockedAt() {
         return listUnlocks.stream()
             .findFirst()
             .map(ListUnlock::getCreatedAt);
     }
 
     private Date beginningOfToday() {
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone(clock.getZone()));
         calendar.setTime(now);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);

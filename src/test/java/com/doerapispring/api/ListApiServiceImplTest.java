@@ -66,8 +66,9 @@ public class ListApiServiceImplTest {
         when(mockMasterList.getName()).thenReturn("now");
         when(mockMasterList.getDeferredName()).thenReturn("later");
         when(mockMasterList.unlockDuration()).thenReturn(1234L);
-        when(mockMasterList.isFull()).thenReturn(false);
+        when(mockMasterList.isFull()).thenReturn(true);
         when(mockMasterList.isLocked()).thenReturn(true);
+        when(mockMasterList.isAbleToBeUnlocked()).thenReturn(true);
         when(mockMasterList.isAbleToBeReplenished()).thenReturn(true);
         when(mockListService.get(any())).thenReturn(mockMasterList);
 
@@ -78,8 +79,9 @@ public class ListApiServiceImplTest {
         assertThat(masterListDTO.getName()).isEqualTo("now");
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
         assertThat(masterListDTO.getUnlockDuration()).isEqualTo(1234L);
-        assertThat(masterListDTO.isFull()).isFalse();
+        assertThat(masterListDTO.isFull()).isTrue();
         assertThat(masterListDTO.isLocked()).isTrue();
+        assertThat(masterListDTO.isAbleToBeUnlocked()).isTrue();
         assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();
     }
 

@@ -46,9 +46,10 @@ class ListsController {
             MasterListDTO masterListDTO = listApiService.get(authenticatedUser);
             masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
             masterListDTO.add(hateoasLinkGenerator.todosLink().withRel("todos"));
-            if (masterListDTO.isLocked()) {
+            if (masterListDTO.isAbleToBeUnlocked()) {
                 masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
-            } else {
+            }
+            if (!masterListDTO.isLocked()){
                 masterListDTO.add(hateoasLinkGenerator.deferredTodosLink().withRel("deferredTodos"));
             }
             if (!masterListDTO.isFull()) {
