@@ -24,6 +24,7 @@ public class ListService {
     }
 
     public MasterList get(User user) throws OperationRefusedException {
-        return masterListRepository.find(user.getIdentifier()).orElseThrow(OperationRefusedException::new);
+        return masterListRepository.find(user.getIdentifier())
+            .orElseThrow(OperationRefusedException::new);
     }
 }

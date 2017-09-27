@@ -90,8 +90,4 @@ public class Todo {
     void setPosition(Integer position) {
         this.position = position;
     }
-
-    public void setScheduling(ScheduledFor scheduling) {
-        this.scheduling = scheduling;
-    }
 }
