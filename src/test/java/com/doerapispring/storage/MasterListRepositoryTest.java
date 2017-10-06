@@ -85,7 +85,7 @@ public class MasterListRepositoryTest {
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getAllTodos().size()).isEqualTo(1);
-        assertThat(masterList.getAllTodos()).contains(new Todo("123", "do it now", ScheduledFor.now, 5));
+        assertThat(masterList.getAllTodos()).contains(new Todo("123", "do it now", MasterList.NAME, 5));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class MasterListRepositoryTest {
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getAllTodos().size()).isEqualTo(1);
         assertThat(masterList.getAllTodos()).containsExactly(
-                new Todo("123", "do it later", ScheduledFor.later, 5));
+                new Todo("123", "do it later", MasterList.DEFERRED_NAME, 5));
     }
 
     @Test

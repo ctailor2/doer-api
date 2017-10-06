@@ -7,6 +7,9 @@ import static java.util.Arrays.asList;
 
 public class MasterList implements UniquelyIdentifiable<String> {
     private static final long UNLOCK_DURATION_SECONDS = 1800L;
+    public static final String NAME = "now";
+    public static final String DEFERRED_NAME = "later";
+
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final TodoList immediateList;
@@ -98,14 +101,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     Todo delete(String localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = getByLocalIdentifier(localIdentifier);
-        getListByScheduling(todoToDelete.getScheduling()).remove(todoToDelete);
+        getListByName(todoToDelete.getListName()).remove(todoToDelete);
         return todoToDelete;
     }
 
     List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getScheduling(), existingTodo.getPosition());
+        Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getListName(), existingTodo.getPosition());
         // TODO: Replace behavior may not be necessary - see todo in tests for this
         immediateList.replace(existingTodo, replacementTodo);
         Todo displacedTodo = postponedList.push(existingTodo.getTask());
@@ -121,14 +124,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     Todo complete(String localIdentifier) throws TodoNotFoundException {
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        getListByScheduling(existingTodo.getScheduling()).remove(existingTodo);
+        getListByName(existingTodo.getListName()).remove(existingTodo);
         existingTodo.complete();
         return existingTodo;
     }
 
     List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
         Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
-        TodoList todoList = getListByScheduling(originalTodo.getScheduling());
+        TodoList todoList = getListByName(originalTodo.getListName());
         Todo targetTodo = todoList.getByIdentifier(targetTodoIdentifier);
         return todoList.move(originalTodo, targetTodo);
     }
@@ -192,8 +195,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
             '}';
     }
 
-    private TodoList getListByScheduling(ScheduledFor scheduling) {
-        if (ScheduledFor.now.equals(scheduling)) {
+    private TodoList getListByName(String listName) {
+        if (NAME.equals(listName)) {
             return immediateList;
         }
         return postponedList;

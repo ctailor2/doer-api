@@ -60,7 +60,6 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.todos", hasSize(1)));
         assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("this and that")));
-        assertThat(responseContent, hasJsonPath("$.todos[0].scheduling", equalTo("now")));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));

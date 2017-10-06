@@ -38,7 +38,7 @@ public class TodoList {
             throw new ListSizeExceededException();
         }
         int position = getNextPosition();
-        Todo todo = new Todo(task, scheduling, position);
+        Todo todo = new Todo(task, scheduling.toString(), position);
         todos.add(todo);
         return todo;
     }
@@ -48,7 +48,7 @@ public class TodoList {
             throw new ListSizeExceededException();
         }
         int position = getNextPosition();
-        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
+        Todo newTodo = new Todo(localIdentifier, task, scheduling.toString(), position);
         todos.add(newTodo);
         return newTodo;
     }
@@ -97,7 +97,7 @@ public class TodoList {
 
     Todo push(String task) {
         int position = getNextTopPosition();
-        Todo todo = new Todo(task, scheduling, position);
+        Todo todo = new Todo(task, scheduling.toString(), position);
         todos.add(0, todo);
         return todo;
     }

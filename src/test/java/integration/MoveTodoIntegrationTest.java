@@ -55,12 +55,12 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(newMasterList.getAllTodos().get(0), equalTo(
                 new Todo(secondTodo.getLocalIdentifier(),
                         secondTodo.getTask(),
-                        secondTodo.getScheduling(),
+                        secondTodo.getListName(),
                         firstTodo.getPosition())));
         assertThat(newMasterList.getAllTodos().get(1), equalTo(
                 new Todo(firstTodo.getLocalIdentifier(),
                         firstTodo.getTask(),
-                        firstTodo.getScheduling(),
+                        firstTodo.getListName(),
                         secondTodo.getPosition())));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

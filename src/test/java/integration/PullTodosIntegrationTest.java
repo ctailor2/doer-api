@@ -1,6 +1,9 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.MasterList;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -51,15 +54,15 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
         assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will get pulled")),
-                hasProperty("scheduling", equalTo(ScheduledFor.now)),
+                hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(1)))));
         assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will also get pulled")),
-                hasProperty("scheduling", equalTo(ScheduledFor.now)),
+                hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(2)))));
         assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("keep for later")),
-                hasProperty("scheduling", equalTo(ScheduledFor.later)),
+                hasProperty("listName", equalTo(MasterList.DEFERRED_NAME)),
                 hasProperty("position", equalTo(3)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

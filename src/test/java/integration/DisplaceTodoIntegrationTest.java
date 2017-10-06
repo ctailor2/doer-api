@@ -55,11 +55,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
         assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("do the things")),
-                hasProperty("scheduling", equalTo(ScheduledFor.now)),
+                hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(1)))));
         assertThat(newMasterList.getAllTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("some task")),
-                hasProperty("scheduling", equalTo(ScheduledFor.later)),
+                hasProperty("listName", equalTo(MasterList.DEFERRED_NAME)),
                 hasProperty("position", equalTo(1)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

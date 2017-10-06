@@ -1,6 +1,9 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.AbnormalModelException;
+import com.doerapispring.domain.AggregateRootRepository;
+import com.doerapispring.domain.MasterList;
+import com.doerapispring.domain.Todo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +30,7 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
         todoDao.save(TodoEntity.builder()
                 .userEntity(userEntity)
                 .task(todo.getTask())
-                .active(ScheduledFor.now.equals(todo.getScheduling()))
+                .active(MasterList.NAME.equals(todo.getListName()))
                 .position(todo.getPosition())
                 .createdAt(new Date())
                 .updatedAt(new Date())
@@ -53,7 +56,7 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                 .id(todoEntity.id)
                 .userEntity(todoEntity.userEntity)
                 .task(todo.getTask())
-                .active(ScheduledFor.now.equals(todo.getScheduling()))
+                .active(MasterList.NAME.equals(todo.getListName()))
                 .position(todo.getPosition())
                 .completed(todo.isComplete())
                 .createdAt(todoEntity.createdAt)
@@ -74,7 +77,7 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                             .id(todoEntity.id)
                             .userEntity(todoEntity.userEntity)
                             .task(todo.getTask())
-                            .active(ScheduledFor.now.equals(todo.getScheduling()))
+                            .active(MasterList.NAME.equals(todo.getListName()))
                             .position(todo.getPosition())
                             .completed(todo.isComplete())
                             .createdAt(todoEntity.createdAt)

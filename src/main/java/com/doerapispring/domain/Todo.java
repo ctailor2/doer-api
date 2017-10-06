@@ -5,20 +5,20 @@ public class Todo {
     private boolean complete = false;
     private Integer position;
     private final String localIdentifier;
-    private ScheduledFor scheduling;
+    private String listName;
 
     // TODO: Remove this constructor
-    public Todo(String task, ScheduledFor scheduling, Integer position) {
+    public Todo(String task, String listName, Integer position) {
         this.localIdentifier = "0";
         this.task = task;
-        this.scheduling = scheduling;
+        this.listName = listName;
         this.position = position;
     }
 
-    public Todo(String localIdentifier, String task, ScheduledFor scheduling, Integer position) {
+    public Todo(String localIdentifier, String task, String listName, Integer position) {
         this.localIdentifier = localIdentifier;
         this.task = task;
-        this.scheduling = scheduling;
+        this.listName = listName;
         this.position = position;
     }
 
@@ -26,8 +26,8 @@ public class Todo {
         return task;
     }
 
-    public ScheduledFor getScheduling() {
-        return scheduling;
+    public String getListName() {
+        return listName;
     }
 
     public String getLocalIdentifier() {
@@ -50,7 +50,7 @@ public class Todo {
         if (position != null ? !position.equals(todo.position) : todo.position != null) return false;
         if (localIdentifier != null ? !localIdentifier.equals(todo.localIdentifier) : todo.localIdentifier != null)
             return false;
-        return scheduling == todo.scheduling;
+        return listName == todo.listName;
 
     }
 
@@ -60,7 +60,7 @@ public class Todo {
         result = 31 * result + (complete ? 1 : 0);
         result = 31 * result + (position != null ? position.hashCode() : 0);
         result = 31 * result + (localIdentifier != null ? localIdentifier.hashCode() : 0);
-        result = 31 * result + (scheduling != null ? scheduling.hashCode() : 0);
+        result = 31 * result + (listName != null ? listName.hashCode() : 0);
         return result;
     }
 
@@ -71,7 +71,7 @@ public class Todo {
                 ", complete=" + complete +
                 ", position=" + position +
                 ", localIdentifier='" + localIdentifier + '\'' +
-                ", scheduling=" + scheduling +
+                ", listName=" + listName +
                 '}';
     }
 

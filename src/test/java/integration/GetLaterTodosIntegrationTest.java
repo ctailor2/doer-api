@@ -67,12 +67,10 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.todos", hasSize(2)));
         assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("here and now")));
-        assertThat(responseContent, hasJsonPath("$.todos[0].scheduling", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.move", hasSize(2)));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[0].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[1].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[1].task", equalTo("near and far")));
-        assertThat(responseContent, hasJsonPath("$.todos[1].scheduling", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move", hasSize(2)));
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));

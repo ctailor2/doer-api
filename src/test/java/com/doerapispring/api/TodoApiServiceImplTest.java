@@ -197,8 +197,8 @@ public class TodoApiServiceImplTest {
     @Test
     public void getTodos_callsTodoService_returnsTodosFromImmediateList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        Todo nowTodo = new Todo("someIdentifier", "someTask", ScheduledFor.now, 1);
-        Todo laterTodo = new Todo("someIdentifier", "someOtherTask", ScheduledFor.later, 1);
+        Todo nowTodo = new Todo("someIdentifier", "someTask", MasterList.NAME, 1);
+        Todo laterTodo = new Todo("someIdentifier", "someOtherTask", MasterList.DEFERRED_NAME, 1);
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             uniqueIdentifier,
@@ -207,7 +207,7 @@ public class TodoApiServiceImplTest {
         when(mockTodoService.get(any())).thenReturn(masterList);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask", "now"));
+        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask"));
     }
 
     @Test
@@ -233,13 +233,13 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void getDeferredTodos_callsTodoService_returnsDeferredTodos() throws Exception {
-        Todo todo = new Todo("someIdentifier", "someTask", ScheduledFor.now, 1);
+        Todo todo = new Todo("someIdentifier", "someTask", MasterList.NAME, 1);
         when(mockTodoService.getDeferredTodos(any())).thenReturn(Collections.singletonList(todo));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         assertThat(todoListDTO).isNotNull();
-        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask", "now"));
+        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask"));
     }
 
     @Test

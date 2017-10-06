@@ -44,9 +44,9 @@ public class TodosControllerTest {
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
         todoDTOs = asList(
-            new TodoDTO("someId", "someTask", "now"),
-            new TodoDTO("oneLaterId", "procrastination", "later"),
-            new TodoDTO("twoLaterId", "station", "later"));
+            new TodoDTO("someId", "someTask"),
+            new TodoDTO("oneLaterId", "procrastination"),
+            new TodoDTO("twoLaterId", "station"));
         mockMvc = MockMvcBuilders
             .standaloneSetup(todosController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())

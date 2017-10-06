@@ -26,7 +26,7 @@ public class TodoListTest {
 
     @Test
     public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
-        todos.add(new Todo("someTask", ScheduledFor.now, 1));
+        todos.add(new Todo("someTask", MasterList.NAME, 1));
         TodoList todoList = new TodoList(ScheduledFor.now, todos, 0);
 
         assertThat(todoList.isFull()).isEqualTo(true);
@@ -114,12 +114,12 @@ public class TodoListTest {
 
     @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
-        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4);
-        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.later, 1);
-        Todo thirdTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 3);
+        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4);
+        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
+        Todo thirdTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3);
         List<Todo> todos = asList(
                 firstTodo,
-                new Todo("B", "anotherTask", ScheduledFor.later, 2),
+                new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
                 thirdTodo,
                 fourthTodo);
 
@@ -127,9 +127,9 @@ public class TodoListTest {
 
         List<Todo> effectedTodos = laterList.move(firstTodo, thirdTodo);
 
-        Todo expectedFirstTodo = new Todo("B", "anotherTask", ScheduledFor.later, 1);
-        Todo expectedSecondTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 2);
-        Todo expectedThirdTodo = new Todo("A", "someTask", ScheduledFor.later, 3);
+        Todo expectedFirstTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 1);
+        Todo expectedSecondTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 2);
+        Todo expectedThirdTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 3);
 
         assertThat(effectedTodos).contains(expectedFirstTodo, expectedSecondTodo, expectedThirdTodo);
         assertThat(laterList.getTodos()).containsExactly(
@@ -141,21 +141,21 @@ public class TodoListTest {
 
     @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.later, 1);
-        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4);
-        Todo secondTodo = new Todo("B", "anotherTask", ScheduledFor.later, 2);
+        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
+        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4);
+        Todo secondTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2);
         List<Todo> todos = asList(firstTodo,
                 secondTodo,
-                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
+                new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
                 fourthTodo);
 
         TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
 
         List<Todo> effectedTodos = laterList.move(fourthTodo, secondTodo);
 
-        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 2);
-        Todo expectedThirdTodo = new Todo("B", "anotherTask", ScheduledFor.later, 3);
-        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", ScheduledFor.later, 4);
+        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 2);
+        Todo expectedThirdTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 3);
+        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 4);
 
         assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
         assertThat(laterList.getTodos()).containsExactly(
@@ -167,12 +167,12 @@ public class TodoListTest {
 
     @Test
     public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", ScheduledFor.later, 1);
+        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
         List<Todo> todos = asList(
                 firstTodo,
-                new Todo("B", "anotherTask", ScheduledFor.later, 2),
-                new Todo("C", "yetAnotherTask", ScheduledFor.later, 3),
-                new Todo("D", "evenYetAnotherTask", ScheduledFor.later, 4));
+                new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
+                new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
+                new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4));
 
         TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
 
@@ -184,7 +184,7 @@ public class TodoListTest {
 
     @Test
     public void getByIdentifier_givenIdentifierForExistingTodo_returnsTodo() throws TodoNotFoundException {
-        Todo nowTodo = new Todo("someId", "someTask", ScheduledFor.now, 4);
+        Todo nowTodo = new Todo("someId", "someTask", MasterList.NAME, 4);
         TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);
 
         Todo retrievedTodo = nowList.getByIdentifier("someId");
