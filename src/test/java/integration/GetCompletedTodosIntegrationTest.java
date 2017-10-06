@@ -54,7 +54,7 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
     @Test
     public void todos_whenUserHasCompletedTodos_returnsCompletedTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that", ScheduledFor.later);
+        todosService.createDeferred(user, "this and that");
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getAllTodos().get(0);
         todosService.complete(user, todo.getLocalIdentifier());

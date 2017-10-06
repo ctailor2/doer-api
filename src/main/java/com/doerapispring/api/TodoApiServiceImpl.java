@@ -47,10 +47,18 @@ class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public void create(AuthenticatedUser authenticatedUser, String task, String scheduling) throws InvalidRequestException {
-        ScheduledFor scheduledFor = getScheduledFor(scheduling);
+    public void create(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException {
         try {
-            todoService.create(authenticatedUser.getUser(), task, scheduledFor);
+            todoService.create(authenticatedUser.getUser(), task);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
+    }
+
+    @Override
+    public void createDeferred(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException {
+        try {
+            todoService.createDeferred(authenticatedUser.getUser(), task);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -132,13 +140,5 @@ class TodoApiServiceImpl implements TodoApiService {
     // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(CompletedTodo completedTodo) {
         return new TodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt());
-    }
-
-    private ScheduledFor getScheduledFor(String scheduling) throws InvalidRequestException {
-        try {
-            return Enum.valueOf(ScheduledFor.class, scheduling);
-        } catch (IllegalArgumentException e) {
-            throw new InvalidRequestException();
-        }
     }
 }

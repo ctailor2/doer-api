@@ -39,9 +39,9 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     @Test
     public void pull() throws Exception {
-        todosService.create(user, "will get pulled", ScheduledFor.later);
-        todosService.create(user, "will also get pulled", ScheduledFor.later);
-        todosService.create(user, "keep for later", ScheduledFor.later);
+        todosService.createDeferred(user, "will get pulled");
+        todosService.createDeferred(user, "will also get pulled");
+        todosService.createDeferred(user, "keep for later");
 
         mvcResult = mockMvc.perform(post("/v1/list/pull")
                 .headers(httpHeaders))

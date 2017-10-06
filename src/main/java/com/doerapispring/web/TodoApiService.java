@@ -3,7 +3,9 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedUser;
 
 public interface TodoApiService {
-    void create(AuthenticatedUser authenticatedUser, String task, String scheduling) throws InvalidRequestException;
+    void create(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException;
+
+    void createDeferred(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException;
 
     void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;
 

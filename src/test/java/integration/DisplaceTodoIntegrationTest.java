@@ -40,7 +40,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
-        todosService.create(user, "some task", ScheduledFor.now);
+        todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getAllTodos().get(0);
 

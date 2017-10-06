@@ -39,7 +39,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Test
     public void delete_removesTodo() throws Exception {
-        todosService.create(user, "some task", ScheduledFor.now);
+        todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getAllTodos().get(0);
 

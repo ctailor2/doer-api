@@ -133,7 +133,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @RequestBody TodoForm todoForm) {
         try {
-            todoApiService.create(authenticatedUser, todoForm.getTask(), "now");
+            todoApiService.create(authenticatedUser, todoForm.getTask());
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.createTodoLink().withSelfRel(),
@@ -177,7 +177,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @RequestBody TodoForm todoForm) {
         try {
-            todoApiService.create(authenticatedUser, todoForm.getTask(), "later");
+            todoApiService.createDeferred(authenticatedUser, todoForm.getTask());
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),

@@ -41,7 +41,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void complete_completesTodo() throws Exception {
-        todosService.create(user, "some task", ScheduledFor.now);
+        todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getAllTodos().get(0);
 

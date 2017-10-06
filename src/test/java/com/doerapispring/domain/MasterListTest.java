@@ -45,17 +45,10 @@ public class MasterListTest {
     }
 
     @Test
-    public void add_whenScheduledForNow_addsToNowList() throws ListSizeExceededException, DuplicateTodoException {
-        masterList.add("someTask", ScheduledFor.now);
+    public void add_addsToNowList() throws ListSizeExceededException, DuplicateTodoException {
+        masterList.add("someTask");
 
         verify(mockNowList).add("someTask");
-    }
-
-    @Test
-    public void add_whenScheduledForLater_addsToLaterList() throws ListSizeExceededException, DuplicateTodoException {
-        masterList.add("someTask", ScheduledFor.later);
-
-        verify(mockLaterList).add("someTask");
     }
 
     @Test
@@ -64,7 +57,23 @@ public class MasterListTest {
         when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
 
         exception.expect(DuplicateTodoException.class);
-        masterList.add("sameTask", ScheduledFor.now);
+        masterList.add("sameTask");
+    }
+
+    @Test
+    public void addDeferred_addsToLaterList() throws ListSizeExceededException, DuplicateTodoException {
+        masterList.addDeferred("someTask");
+
+        verify(mockLaterList).add("someTask");
+    }
+
+    @Test
+    public void addDeferred_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() throws Exception {
+        Todo todo = new Todo("someId", "sameTask", ScheduledFor.now, 1);
+        when(mockNowList.getTodos()).thenReturn(Collections.singletonList(todo));
+
+        exception.expect(DuplicateTodoException.class);
+        masterList.addDeferred("sameTask");
     }
 
     @Test

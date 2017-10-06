@@ -48,9 +48,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todos;
     }
 
-    public Todo add(String task, ScheduledFor scheduling) throws ListSizeExceededException, DuplicateTodoException {
+    Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        return getListByScheduling(scheduling).add(task);
+        return immediateList.add(task);
+    }
+
+    Todo addDeferred(String task) throws ListSizeExceededException, DuplicateTodoException {
+        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
+        return postponedList.add(task);
     }
 
     public String getName() {

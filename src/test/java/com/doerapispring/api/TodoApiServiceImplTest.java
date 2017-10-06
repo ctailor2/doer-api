@@ -41,26 +41,33 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void create_whenSchedulingCanBeParsed_callsTodoService() throws Exception {
-        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "now");
+    public void create_callsTodoService() throws Exception {
+        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask");
 
-        verify(mockTodoService).create(new User(new UniqueIdentifier<>("someIdentifier")), "someTask", ScheduledFor.now);
-    }
-
-    @Test
-    public void create_whenSchedulingCannotBeParsed_throwsInvalidRequest() throws Exception {
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "bananas");
-
-        verifyZeroInteractions(mockTodoService);
+        verify(mockTodoService).create(new User(new UniqueIdentifier<>("someIdentifier")), "someTask");
     }
 
     @Test
     public void create_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockTodoService).create(any(), any(), any());
+        doThrow(new OperationRefusedException()).when(mockTodoService).create(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask", "now");
+        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask");
+    }
+
+    @Test
+    public void createDeferred_callsTodoService() throws Exception {
+        todoApiServiceImpl.createDeferred(new AuthenticatedUser("someIdentifier"), "someTask");
+
+        verify(mockTodoService).createDeferred(new User(new UniqueIdentifier<>("someIdentifier")), "someTask");
+    }
+
+    @Test
+    public void createDeferred_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
+        doThrow(new OperationRefusedException()).when(mockTodoService).createDeferred(any(), any());
+
+        exception.expect(InvalidRequestException.class);
+        todoApiServiceImpl.createDeferred(new AuthenticatedUser("someIdentifier"), "someTask");
     }
 
     @Test

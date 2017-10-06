@@ -52,9 +52,9 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     @Test
     public void deferredTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that", ScheduledFor.now);
-        todosService.create(user, "here and now", ScheduledFor.later);
-        todosService.create(user, "near and far", ScheduledFor.later);
+        todosService.create(user, "this and that");
+        todosService.createDeferred(user, "here and now");
+        todosService.createDeferred(user, "near and far");
         MasterList masterList = todosService.get(user);
         Todo secondTodo = masterList.getAllTodos().get(1);
         Todo thirdTodo = masterList.getAllTodos().get(2);

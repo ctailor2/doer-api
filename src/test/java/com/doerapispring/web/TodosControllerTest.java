@@ -396,12 +396,12 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void create_callsTokenService_returns201() throws Exception {
+    public void create_callsTodoService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
         ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, todoForm);
 
-        verify(mockTodoApiService).create(authenticatedUser, task, "now");
+        verify(mockTodoApiService).create(authenticatedUser, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -411,7 +411,7 @@ public class TodosControllerTest {
 
     @Test
     public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any());
 
         ResponseEntity responseEntity = todosController.create(authenticatedUser, new TodoForm("someTask"));
 
@@ -428,12 +428,12 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void createDeferred_callsTokenService_returns201() throws Exception {
+    public void createDeferred_callsTodoService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
         ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, todoForm);
 
-        verify(mockTodoApiService).create(authenticatedUser, task, "later");
+        verify(mockTodoApiService).createDeferred(authenticatedUser, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -443,7 +443,7 @@ public class TodosControllerTest {
 
     @Test
     public void createDeferred_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any(), any());
+        doThrow(new InvalidRequestException()).when(mockTodoApiService).createDeferred(any(), any());
 
         ResponseEntity responseEntity = todosController.createDeferred(authenticatedUser, new TodoForm("someTask"));
 

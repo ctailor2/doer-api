@@ -1,6 +1,5 @@
 package integration;
 
-import com.doerapispring.domain.ScheduledFor;
 import com.doerapispring.domain.TodoService;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
@@ -44,7 +43,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        todoService.create(user, "someTask", ScheduledFor.later);
+        todoService.createDeferred(user, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/list")

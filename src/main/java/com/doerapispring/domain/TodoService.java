@@ -22,11 +22,22 @@ public class TodoService {
         this.listService = listService;
     }
 
-    public void create(User user, String task, ScheduledFor scheduling) throws OperationRefusedException {
+    public void create(User user, String task) throws OperationRefusedException {
         MasterList masterList = listService.get(user);
         try {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
-            Todo todo = masterList.add(task, scheduling);
+            Todo todo = masterList.add(task);
+            todoRepository.add(masterList, todo);
+        } catch (ListSizeExceededException | DuplicateTodoException | AbnormalModelException e) {
+            throw new OperationRefusedException();
+        }
+    }
+
+    public void createDeferred(User user, String task) throws OperationRefusedException {
+        MasterList masterList = listService.get(user);
+        try {
+            // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
+            Todo todo = masterList.addDeferred(task);
             todoRepository.add(masterList, todo);
         } catch (ListSizeExceededException | DuplicateTodoException | AbnormalModelException e) {
             throw new OperationRefusedException();
@@ -71,7 +82,7 @@ public class TodoService {
         }
     }
 
-    public void complete(User user, String localIdentifier) throws OperationRefusedException{
+    public void complete(User user, String localIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
             Todo todo = masterList.complete(localIdentifier);
@@ -83,7 +94,7 @@ public class TodoService {
 
     public CompletedList getCompleted(User user) throws OperationRefusedException {
         return completedListRepository.find(user.getIdentifier())
-                .orElseThrow(OperationRefusedException::new);
+            .orElseThrow(OperationRefusedException::new);
     }
 
     public void move(User user, String localIdentifier, String targetLocalIdentifier) throws OperationRefusedException {

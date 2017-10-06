@@ -49,7 +49,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Test
     public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that", ScheduledFor.now);
+        todosService.create(user, "this and that");
         MasterList masterList = todosService.get(user);
         Todo firstTodo = masterList.getAllTodos().get(0);
 

@@ -106,11 +106,11 @@ public class TodoServiceTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
         Todo todo = new Todo("some things", ScheduledFor.now, 5);
-        when(mockMasterList.add(any(), any())).thenReturn(todo);
+        when(mockMasterList.add(any())).thenReturn(todo);
 
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
 
-        verify(mockMasterList).add("some things", ScheduledFor.now);
+        verify(mockMasterList).add("some things");
         verify(mockTodoRepository).add(mockMasterList, todo);
     }
 
@@ -118,20 +118,20 @@ public class TodoServiceTest {
     public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.add(any(), any())).thenThrow(new DuplicateTodoException());
+        when(mockMasterList.add(any())).thenThrow(new DuplicateTodoException());
 
         exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
     }
 
     @Test
     public void create_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.add(any(), any())).thenThrow(new ListSizeExceededException());
+        when(mockMasterList.add(any())).thenThrow(new ListSizeExceededException());
 
         exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class TodoServiceTest {
         when(listService.get(any())).thenThrow(new OperationRefusedException());
 
         exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
     }
 
     @Test
@@ -149,7 +149,58 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things", ScheduledFor.now);
+        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
+    }
+
+    @Test
+    public void createDeferred_whenMasterListFound_addsTodoToRepository() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(listService.get(any())).thenReturn(mockMasterList);
+        Todo todo = new Todo("some things", ScheduledFor.now, 5);
+        when(mockMasterList.addDeferred(any())).thenReturn(todo);
+
+        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
+
+        verify(mockMasterList).addDeferred("some things");
+        verify(mockTodoRepository).add(mockMasterList, todo);
+    }
+
+    @Test
+    public void createDeferred_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(listService.get(any())).thenReturn(mockMasterList);
+        when(mockMasterList.addDeferred(any())).thenThrow(new DuplicateTodoException());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
+    }
+
+    @Test
+    public void createDeferred_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(listService.get(any())).thenReturn(mockMasterList);
+        when(mockMasterList.addDeferred(any())).thenThrow(new ListSizeExceededException());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
+    }
+
+    @Test
+    public void createDeferred_whenMasterListNotFound_refusesCreate() throws Exception {
+        when(listService.get(any())).thenThrow(new OperationRefusedException());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
+    }
+
+    @Test
+    public void createDeferred_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
+        MasterList mockMasterList = mock(MasterList.class);
+        when(listService.get(any())).thenReturn(mockMasterList);
+        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
     }
 
     @Test
