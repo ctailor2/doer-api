@@ -27,28 +27,28 @@ public class TodoListTest {
     @Test
     public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
         todos.add(new Todo("someTask", MasterList.NAME, 1));
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 0);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 0);
 
         assertThat(todoList.isFull()).isEqualTo(true);
     }
 
     @Test
     public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 1);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 1);
 
         assertThat(todoList.isFull()).isEqualTo(false);
     }
 
     @Test
     public void isFull_whenMaxSizeIsNegative_alwaysReturnsFalse() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, -2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, -2);
 
         assertThat(todoList.isFull()).isEqualTo(false);
     }
 
     @Test
     public void add_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         Todo firstTodo = todoList.add("someTask");
         assertThat(todoList.getTodos()).containsExactly(firstTodo);
         assertThat(firstTodo.getPosition()).isEqualTo(1);
@@ -56,7 +56,7 @@ public class TodoListTest {
 
     @Test
     public void add_toListWithTodos_addsTodoAfterLast() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         Todo firstTodo = todoList.add("someTask");
         Todo secondTodo = todoList.add("someOtherTask");
 
@@ -66,7 +66,7 @@ public class TodoListTest {
 
     @Test
     public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         todoList.add("someTask");
         todoList.add("someOtherTask");
 
@@ -76,7 +76,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         Todo firstTodo = todoList.addExisting("abc", "someTask");
         assertThat(todoList.getTodos()).containsExactly(firstTodo);
         assertThat(firstTodo.getPosition()).isEqualTo(1);
@@ -84,7 +84,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_toListWithTodos_addsTodoAfterLast() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         Todo firstTodo = todoList.addExisting("abc", "someTask");
         Todo secondTodo = todoList.addExisting("def", "someOtherTask");
 
@@ -94,7 +94,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         todoList.addExisting("abc", "someTask");
         todoList.addExisting("def", "someOtherTask");
 
@@ -104,7 +104,7 @@ public class TodoListTest {
 
     @Test
     public void remove_removesTodoFromList() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(ScheduledFor.now, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
         Todo todo = todoList.add("someTask");
 
         todoList.remove(todo);
@@ -123,7 +123,7 @@ public class TodoListTest {
                 thirdTodo,
                 fourthTodo);
 
-        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 
         List<Todo> effectedTodos = laterList.move(firstTodo, thirdTodo);
 
@@ -149,7 +149,7 @@ public class TodoListTest {
                 new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
                 fourthTodo);
 
-        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 
         List<Todo> effectedTodos = laterList.move(fourthTodo, secondTodo);
 
@@ -174,7 +174,7 @@ public class TodoListTest {
                 new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
                 new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4));
 
-        TodoList laterList = new TodoList(ScheduledFor.later, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 
         List<Todo> effectedTodos = laterList.move(firstTodo, firstTodo);
 
@@ -185,7 +185,7 @@ public class TodoListTest {
     @Test
     public void getByIdentifier_givenIdentifierForExistingTodo_returnsTodo() throws TodoNotFoundException {
         Todo nowTodo = new Todo("someId", "someTask", MasterList.NAME, 4);
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2);
+        TodoList nowList = new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 2);
 
         Todo retrievedTodo = nowList.getByIdentifier("someId");
 
@@ -194,7 +194,7 @@ public class TodoListTest {
 
     @Test
     public void getByIdentifier_givenIdentifierForNonExistentTodo_throwsTodoNotFoundException() throws TodoNotFoundException {
-        TodoList nowList = new TodoList(ScheduledFor.now, Collections.emptyList(), 2);
+        TodoList nowList = new TodoList(MasterList.NAME, Collections.emptyList(), 2);
 
         exception.expect(TodoNotFoundException.class);
         nowList.getByIdentifier("nonExistentId");

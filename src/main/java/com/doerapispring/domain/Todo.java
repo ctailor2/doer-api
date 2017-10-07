@@ -50,7 +50,7 @@ public class Todo {
         if (position != null ? !position.equals(todo.position) : todo.position != null) return false;
         if (localIdentifier != null ? !localIdentifier.equals(todo.localIdentifier) : todo.localIdentifier != null)
             return false;
-        return listName == todo.listName;
+        return listName != null ? listName.equals(todo.listName) : todo.listName == null;
 
     }
 
@@ -67,12 +67,12 @@ public class Todo {
     @Override
     public String toString() {
         return "Todo{" +
-                "task='" + task + '\'' +
-                ", complete=" + complete +
-                ", position=" + position +
-                ", localIdentifier='" + localIdentifier + '\'' +
-                ", listName=" + listName +
-                '}';
+            "task='" + task + '\'' +
+            ", complete=" + complete +
+            ", position=" + position +
+            ", localIdentifier='" + localIdentifier + '\'' +
+            ", listName='" + listName + '\'' +
+            '}';
     }
 
     public void setTask(String task) {

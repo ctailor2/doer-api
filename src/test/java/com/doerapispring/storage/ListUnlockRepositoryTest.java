@@ -48,8 +48,8 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-            new TodoList(ScheduledFor.later, Collections.emptyList(), 0), Collections.emptyList());
+            new TodoList(MasterList.NAME, Collections.emptyList(), 0),
+            new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), 0), Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("listUserIdentifier");
@@ -69,8 +69,8 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            new TodoList(ScheduledFor.now, Collections.emptyList(), 0),
-            new TodoList(ScheduledFor.later, Collections.emptyList(), 0), Collections.emptyList());
+            new TodoList(MasterList.NAME, Collections.emptyList(), 0),
+            new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), 0), Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("nonExistentUser");

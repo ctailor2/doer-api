@@ -202,8 +202,8 @@ public class TodoApiServiceImplTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             uniqueIdentifier,
-            new TodoList(ScheduledFor.now, Collections.singletonList(nowTodo), 2),
-            new TodoList(ScheduledFor.later, Collections.singletonList(laterTodo), -1), Collections.emptyList());
+            new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 2),
+            new TodoList(MasterList.DEFERRED_NAME, Collections.singletonList(laterTodo), -1), Collections.emptyList());
         when(mockTodoService.get(any())).thenReturn(masterList);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));

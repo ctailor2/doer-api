@@ -35,8 +35,8 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
                         todoEntity.active ? MasterList.NAME : MasterList.DEFERRED_NAME,
                         todoEntity.position))
                 .collect(Collectors.partitioningBy(todo -> MasterList.NAME.equals(todo.getListName())));
-        TodoList nowList = new TodoList(ScheduledFor.now, partitionedTodos.get(true), 2);
-        TodoList laterList = new TodoList(ScheduledFor.later, partitionedTodos.get(false), -1);
+        TodoList nowList = new TodoList(MasterList.NAME, partitionedTodos.get(true), 2);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, partitionedTodos.get(false), -1);
         List<ListUnlockEntity> listUnlockEntities = listUnlockDao.findAllUserListUnlocks(email);
                 List<ListUnlock> listUnlocks = listUnlockEntities.stream()
                 .map(listUnlockEntity -> new ListUnlock(listUnlockEntity.updatedAt))

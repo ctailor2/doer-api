@@ -7,12 +7,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TodoList {
-    private final ScheduledFor scheduling;
+    private final String scheduling;
     private List<Todo> todos = new ArrayList<>();
     private final int maxSize;
 
-    public TodoList(ScheduledFor scheduling, List<Todo> todos, int maxSize) {
-        this.scheduling = scheduling;
+    public TodoList(String name, List<Todo> todos, int maxSize) {
+        this.scheduling = name;
         this.maxSize = maxSize;
         this.todos.addAll(todos);
     }
@@ -21,7 +21,7 @@ public class TodoList {
         return maxSize >= 0 && todos.size() >= maxSize;
     }
 
-    ScheduledFor getScheduling() {
+    String getScheduling() {
         return scheduling;
     }
 
@@ -38,7 +38,7 @@ public class TodoList {
             throw new ListSizeExceededException();
         }
         int position = getNextPosition();
-        Todo todo = new Todo(task, scheduling.toString(), position);
+        Todo todo = new Todo(task, scheduling, position);
         todos.add(todo);
         return todo;
     }
@@ -48,7 +48,7 @@ public class TodoList {
             throw new ListSizeExceededException();
         }
         int position = getNextPosition();
-        Todo newTodo = new Todo(localIdentifier, task, scheduling.toString(), position);
+        Todo newTodo = new Todo(localIdentifier, task, scheduling, position);
         todos.add(newTodo);
         return newTodo;
     }
@@ -97,7 +97,7 @@ public class TodoList {
 
     Todo push(String task) {
         int position = getNextTopPosition();
-        Todo todo = new Todo(task, scheduling.toString(), position);
+        Todo todo = new Todo(task, scheduling, position);
         todos.add(0, todo);
         return todo;
     }
@@ -115,10 +115,8 @@ public class TodoList {
         TodoList todoList = (TodoList) o;
 
         if (maxSize != todoList.maxSize) return false;
-        if (scheduling != todoList.scheduling) return false;
-        if (todos != null ? !todos.equals(todoList.todos) : todoList.todos != null) return false;
-
-        return true;
+        if (scheduling != null ? !scheduling.equals(todoList.scheduling) : todoList.scheduling != null) return false;
+        return todos != null ? todos.equals(todoList.todos) : todoList.todos == null;
     }
 
     @Override
@@ -132,7 +130,7 @@ public class TodoList {
     @Override
     public String toString() {
         return "TodoList{" +
-            "scheduling=" + scheduling +
+            "scheduling='" + scheduling + '\'' +
             ", todos=" + todos +
             ", maxSize=" + maxSize +
             '}';
