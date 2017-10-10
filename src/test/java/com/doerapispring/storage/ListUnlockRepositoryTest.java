@@ -1,6 +1,9 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.AbnormalModelException;
+import com.doerapispring.domain.ListUnlock;
+import com.doerapispring.domain.MasterList;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,8 +51,7 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            new TodoList(MasterList.NAME, Collections.emptyList(), 0),
-            new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), 0), Collections.emptyList());
+            Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("listUserIdentifier");
@@ -69,8 +71,7 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            new TodoList(MasterList.NAME, Collections.emptyList(), 0),
-            new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), 0), Collections.emptyList());
+            Collections.emptyList());
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("nonExistentUser");

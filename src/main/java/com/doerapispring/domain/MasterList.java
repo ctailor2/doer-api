@@ -24,6 +24,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
         this.listUnlocks = listUnlocks;
     }
 
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<ListUnlock> listUnlocks) {
+        this.clock = clock;
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.immediateList = new TodoList(NAME, Collections.emptyList(), 2);
+        this.postponedList = new TodoList(DEFERRED_NAME, Collections.emptyList(), -1);
+        this.listUnlocks = listUnlocks;
+    }
+
     @Override
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
@@ -51,22 +59,22 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todos;
     }
 
-    Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
+    public Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         return immediateList.add(task);
     }
 
-    Todo addDeferred(String task) throws ListSizeExceededException, DuplicateTodoException {
+    public Todo addDeferred(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         return postponedList.add(task);
     }
 
     public String getName() {
-        return immediateList.getScheduling().toString();
+        return immediateList.getScheduling();
     }
 
     public String getDeferredName() {
-        return postponedList.getScheduling().toString();
+        return postponedList.getScheduling();
     }
 
     public boolean isLocked() {
@@ -90,7 +98,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     List<Todo> pull() throws ListSizeExceededException {
-        List<Todo> sourceTodos = postponedList.pop(immediateList.getMaxSize() - immediateList.getTodos().size());
+        List<Todo> sourceTodos = postponedList.pop(immediateList.getMaxSize() - immediateList.size());
         ArrayList<Todo> pulledTodos = new ArrayList<>();
         for (Todo todo : sourceTodos) {
             Todo pulledTodo = immediateList.addExisting(todo.getLocalIdentifier(), todo.getTask());
@@ -109,8 +117,12 @@ public class MasterList implements UniquelyIdentifiable<String> {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
         Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getListName(), existingTodo.getPosition());
-        // TODO: Replace behavior may not be necessary - see todo in tests for this
         immediateList.replace(existingTodo, replacementTodo);
+        // TODO: Replace behavior may not be necessary - see alternate implementation below
+        // Todo displacedTodo = delete(localIdentifier);
+        // add(task);
+        // addDeferred(displacedTodo.getTask())
+        // ---- end of alternate implementation ----
         Todo displacedTodo = postponedList.push(existingTodo.getTask());
         return asList(displacedTodo, replacementTodo);
     }

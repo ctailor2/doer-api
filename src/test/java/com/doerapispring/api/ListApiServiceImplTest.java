@@ -53,7 +53,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), new TodoList(MasterList.NAME, Collections.emptyList(), 2), new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), 2), Collections.emptyList()));
+            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), Collections.emptyList()));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 

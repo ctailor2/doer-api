@@ -85,9 +85,7 @@ public class ListServiceTest {
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        TodoList nowList = new TodoList(MasterList.NAME, Collections.emptyList(), 2);
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), -1);
-        MasterList masterListFromRepository = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, nowList, laterList, Collections.emptyList());
+        MasterList masterListFromRepository = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, Collections.emptyList());
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterListFromRepository));
         User user = new User(uniqueIdentifier);
 

@@ -65,6 +65,8 @@ public class TodoService {
             Todo newTodo = newAndExistingTodos.get(0);
             Todo existingTodo = newAndExistingTodos.get(1);
             // TODO: Maybe this should do an add, get, update
+            // Or a remove, add (immediate), add (postponed)
+            // Or the repository should just have a save method that figures it out
             todoRepository.add(masterList, newTodo);
             todoRepository.update(masterList, existingTodo);
         } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {

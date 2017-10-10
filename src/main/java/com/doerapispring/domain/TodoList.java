@@ -17,10 +17,6 @@ public class TodoList {
         this.todos.addAll(todos);
     }
 
-    boolean isFull() {
-        return maxSize >= 0 && todos.size() >= maxSize;
-    }
-
     String getScheduling() {
         return scheduling;
     }
@@ -31,6 +27,10 @@ public class TodoList {
 
     int getMaxSize() {
         return maxSize;
+    }
+
+    boolean isFull() {
+        return maxSize >= 0 && todos.size() >= maxSize;
     }
 
     Todo add(String task) throws ListSizeExceededException {
@@ -107,6 +107,10 @@ public class TodoList {
         todos.set(indexOfExistingTodo, replacementTodo);
     }
 
+    Integer size() {
+        return todos.size();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -152,10 +156,6 @@ public class TodoList {
 
     private boolean isEmpty() {
         return size() == 0;
-    }
-
-    private Integer size() {
-        return todos.size();
     }
 
     private enum Direction {

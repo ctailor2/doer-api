@@ -197,17 +197,13 @@ public class TodoApiServiceImplTest {
     @Test
     public void getTodos_callsTodoService_returnsTodosFromImmediateList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        Todo nowTodo = new Todo("someIdentifier", "someTask", MasterList.NAME, 1);
-        Todo laterTodo = new Todo("someIdentifier", "someOtherTask", MasterList.DEFERRED_NAME, 1);
-        MasterList masterList = new MasterList(
-            Clock.systemDefaultZone(),
-            uniqueIdentifier,
-            new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 2),
-            new TodoList(MasterList.DEFERRED_NAME, Collections.singletonList(laterTodo), -1), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, Collections.emptyList());
+        Todo todo = masterList.add("someTask");
+        masterList.addDeferred("someOtherTask");
         when(mockTodoService.get(any())).thenReturn(masterList);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask"));
+        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
     }
 
     @Test
