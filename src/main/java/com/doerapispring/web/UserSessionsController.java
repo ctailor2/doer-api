@@ -4,7 +4,10 @@ import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
@@ -19,14 +22,20 @@ class UserSessionsController {
         this.userSessionsApiService = userSessionsApiService;
     }
 
+    @InitBinder("signupForm")
+    public void initBinder(WebDataBinder webDataBinder) {
+        webDataBinder.setValidator(new SignupFormValidator());
+    }
+
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<SessionResponse> signup(@RequestBody SignupForm signupForm) {
+    ResponseEntity<SessionResponse> signup(@Valid @RequestBody SignupForm signupForm) {
         try {
-            SessionResponse sessionResponse = new SessionResponse(
-                    userSessionsApiService.signup(signupForm.getIdentifier(),
-                            signupForm.getCredentials()));
+            SessionTokenDTO sessionTokenDTO = userSessionsApiService.signup(
+                signupForm.getIdentifier(),
+                signupForm.getCredentials());
+            SessionResponse sessionResponse = new SessionResponse(sessionTokenDTO);
             sessionResponse.add(hateoasLinkGenerator.signupLink().withSelfRel(),
                     hateoasLinkGenerator.rootResourcesLink().withRel("root"));
             return ResponseEntity.status(HttpStatus.CREATED)
