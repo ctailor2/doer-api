@@ -5,17 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.Errors;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Locale;
@@ -25,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ApiValidationExceptionHandlerTest {
+public class ApiExceptionHandlerTest {
 
     private MockMvc mockMvc;
 
@@ -38,7 +37,7 @@ public class ApiValidationExceptionHandlerTest {
         messageSource.addMessage("globalCodeB", Locale.getDefault(), "message with arguments {0} and {1} from source for global code B");
 
         mockMvc = MockMvcBuilders.standaloneSetup(new TestController())
-            .setControllerAdvice(new ApiValidationExceptionHandler(messageSource))
+            .setControllerAdvice(new ApiExceptionHandler(messageSource))
             .build();
     }
 
@@ -99,6 +98,19 @@ public class ApiValidationExceptionHandlerTest {
             .andExpect(jsonPath("$.globalErrors[2].message", equalTo("an error occurred")));
     }
 
+    @Test
+    public void includesGlobalErrors_forApiRuntimeExceptions() throws Exception {
+        mockMvc.perform(post("/testController")
+            .content("{\n" +
+                "  \"fieldA\": \"notEmpty\",\n" +
+                "  \"fieldB\": \"notEmpty\",\n" +
+                "  \"fieldC\": \"notEmpty\"\n" +
+                "}")
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isIAmATeapot())
+            .andExpect(jsonPath("$.globalErrors[0].message", equalTo("An api error occurred")));
+    }
+
     @RestController
     private static class TestController {
         @InitBinder
@@ -107,10 +119,16 @@ public class ApiValidationExceptionHandlerTest {
         }
 
         @PostMapping("/testController")
-        public ResponseEntity testEndpoint(@Valid @RequestBody TestRequest testRequest) {
-            return ResponseEntity.ok().body(null);
+        public ResponseEntity testEndpoint(@Valid @RequestBody TestRequest testRequest) throws ApiException {
+            throw new TestApiException("An api error occurred");
         }
+    }
 
+    @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
+    private static class TestApiException extends ApiException {
+        TestApiException(String message) {
+            super(message);
+        }
     }
 
     private static class TestRequest {
@@ -149,12 +167,14 @@ public class ApiValidationExceptionHandlerTest {
 
         @Override
         public void validate(Object target, Errors errors) {
-            errors.rejectValue("fieldA", "fieldCodeA");
-            errors.rejectValue("fieldB", "fieldCodeB", new Object[]{"arg1", "arg2"}, "unused default");
-            errors.rejectValue("fieldC", "fieldCodeC");
-            errors.reject("globalCodeA");
-            errors.reject("globalCodeB", new Object[]{"arg1", "arg2"}, "unused default");
-            errors.reject("globalCodeC");
+            ValidationUtils.rejectIfEmpty(errors, "fieldA", "fieldCodeA");
+            ValidationUtils.rejectIfEmpty(errors, "fieldB", "fieldCodeB", new Object[]{"arg1", "arg2"}, "unused default");
+            ValidationUtils.rejectIfEmpty(errors, "fieldC", "fieldCodeC");
+            if (errors.hasErrors()) {
+                errors.reject("globalCodeA");
+                errors.reject("globalCodeB", new Object[]{"arg1", "arg2"}, "unused default");
+                errors.reject("globalCodeC");
+            }
         }
     }
 }

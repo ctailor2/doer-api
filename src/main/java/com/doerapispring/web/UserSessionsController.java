@@ -30,35 +30,29 @@ class UserSessionsController {
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.CREATED)
     @ResponseBody
-    ResponseEntity<SessionResponse> signup(@Valid @RequestBody SignupForm signupForm) {
-        try {
-            SessionTokenDTO sessionTokenDTO = userSessionsApiService.signup(
-                signupForm.getIdentifier(),
-                signupForm.getCredentials());
-            SessionResponse sessionResponse = new SessionResponse(sessionTokenDTO);
-            sessionResponse.add(hateoasLinkGenerator.signupLink().withSelfRel(),
-                    hateoasLinkGenerator.rootResourcesLink().withRel("root"));
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(sessionResponse);
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    ResponseEntity<SessionResponse> signup(@Valid @RequestBody SignupForm signupForm) throws AccessDeniedException {
+        SessionTokenDTO sessionTokenDTO = userSessionsApiService.signup(
+            signupForm.getIdentifier(),
+            signupForm.getCredentials());
+        SessionResponse sessionResponse = new SessionResponse(sessionTokenDTO);
+        sessionResponse.add(
+            hateoasLinkGenerator.signupLink().withSelfRel(),
+            hateoasLinkGenerator.rootResourcesLink().withRel("root"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(sessionResponse);
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseStatus(code = HttpStatus.OK)
     @ResponseBody
-    ResponseEntity<SessionResponse> login(@RequestBody LoginForm loginForm) {
-        try {
-            SessionResponse sessionResponse = new SessionResponse(userSessionsApiService.login(loginForm.getIdentifier(),
-                    loginForm.getCredentials()));
-            sessionResponse.add(hateoasLinkGenerator.loginLink().withSelfRel(),
-                    hateoasLinkGenerator.rootResourcesLink().withRel("root"));
-            return ResponseEntity.ok()
-                    .body(sessionResponse);
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+    ResponseEntity<SessionResponse> login(@RequestBody LoginForm loginForm) throws AccessDeniedException {
+        SessionTokenDTO sessionTokenDTO = userSessionsApiService.login(
+            loginForm.getIdentifier(),
+            loginForm.getCredentials());
+        SessionResponse sessionResponse = new SessionResponse(sessionTokenDTO);
+        sessionResponse.add(
+            hateoasLinkGenerator.loginLink().withSelfRel(),
+            hateoasLinkGenerator.rootResourcesLink().withRel("root"));
+        return ResponseEntity.ok().body(sessionResponse);
     }
 
     // Logout doesn't really need to be an action taken against the server at all

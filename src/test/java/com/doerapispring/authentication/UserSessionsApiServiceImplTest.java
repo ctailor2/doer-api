@@ -5,15 +5,14 @@ import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Date;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -33,9 +32,6 @@ public class UserSessionsApiServiceImplTest {
 
     @Mock
     private TransientAccessToken mockTransientAccessToken;
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -63,10 +59,11 @@ public class UserSessionsApiServiceImplTest {
 
     @Test
     public void signup_whenUserCreationRefused_deniesAccess() throws Exception {
-        when(mockUserService.create(any())).thenThrow(OperationRefusedException.class);
+        when(mockUserService.create(any())).thenThrow(new OperationRefusedException());
 
-        exception.expect(AccessDeniedException.class);
-        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
+        assertThatThrownBy(() -> userSessionsApiServiceImpl.signup("soUnique", "soSecure"))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Access denied - null");
 
         verifyZeroInteractions(mockBasicAuthenticationService);
         verifyZeroInteractions(mockAuthenticationTokenService);
@@ -74,10 +71,11 @@ public class UserSessionsApiServiceImplTest {
 
     @Test
     public void signup_whenCredentialRegistrationFails_deniesAccess() throws Exception {
-        doThrow(CredentialsInvalidException.class).when(mockBasicAuthenticationService).registerCredentials(any(), any());
+        doThrow(new CredentialsInvalidException()).when(mockBasicAuthenticationService).registerCredentials(any(), any());
 
-        exception.expect(AccessDeniedException.class);
-        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
+        assertThatThrownBy(() -> userSessionsApiServiceImpl.signup("soUnique", "soSecure"))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Access denied - null");
 
         verifyZeroInteractions(mockAuthenticationTokenService);
     }
@@ -86,16 +84,18 @@ public class UserSessionsApiServiceImplTest {
     public void signup_whenTokenRefused_deniesAccess() throws Exception {
         when(mockAuthenticationTokenService.grant(any())).thenThrow(new TokenRefusedException());
 
-        exception.expect(AccessDeniedException.class);
-        userSessionsApiServiceImpl.signup("soUnique", "soSecure");
+        assertThatThrownBy(() -> userSessionsApiServiceImpl.signup("soUnique", "soSecure"))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Access denied - null");
     }
 
     @Test
     public void login_whenAuthenticationFails_deniesAccess() throws Exception {
         when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(false);
 
-        exception.expect(AccessDeniedException.class);
-        userSessionsApiServiceImpl.login("test@email.com", "password");
+        assertThatThrownBy(() -> userSessionsApiServiceImpl.login("test@email.com", "password"))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Access denied - unable to authenticate with the supplied credentials");
 
         verifyZeroInteractions(mockAuthenticationTokenService);
     }
@@ -122,7 +122,8 @@ public class UserSessionsApiServiceImplTest {
 
         String identifier = "test@email.com";
         String credentials = "password";
-        exception.expect(AccessDeniedException.class);
-        userSessionsApiServiceImpl.login(identifier, credentials);
+        assertThatThrownBy(() -> userSessionsApiServiceImpl.login(identifier, credentials))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Access denied - null");
     }
 }

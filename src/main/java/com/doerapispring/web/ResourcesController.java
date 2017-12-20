@@ -22,7 +22,8 @@ class ResourcesController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> base() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.baseResourcesLink().withSelfRel(),
+        resourcesResponse.add(
+            hateoasLinkGenerator.baseResourcesLink().withSelfRel(),
             hateoasLinkGenerator.loginLink().withRel("login"),
             hateoasLinkGenerator.signupLink().withRel("signup"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
@@ -32,7 +33,8 @@ class ResourcesController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> root() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
+        resourcesResponse.add(
+            hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
             hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"),
             hateoasLinkGenerator.historyResourcesLink().withRel("historyResources"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
@@ -42,8 +44,9 @@ class ResourcesController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.todoResourcesLink().withSelfRel());
-        resourcesResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
+        resourcesResponse.add(
+            hateoasLinkGenerator.todoResourcesLink().withSelfRel(),
+            hateoasLinkGenerator.listLink().withRel("list"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
@@ -51,7 +54,8 @@ class ResourcesController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> history() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
+        resourcesResponse.add(
+            hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
             hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }

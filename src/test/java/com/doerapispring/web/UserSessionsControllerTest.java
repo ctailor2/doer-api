@@ -1,6 +1,5 @@
 package com.doerapispring.web;
 
-import com.doerapispring.authentication.AccessDeniedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -11,8 +10,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,16 +56,6 @@ public class UserSessionsControllerTest {
     }
 
     @Test
-    public void signup_whenAccessDenied_returns400BadRequest() throws Exception {
-        when(mockUserSessionsApiService.signup(any(), any())).thenThrow(AccessDeniedException.class);
-        mockMvc.perform(post("/v1/signup")
-            .accept(MediaType.APPLICATION_JSON)
-            .content("{}")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
     public void signup_withInvalidRequest() throws Exception {
         mockMvc.perform(post("/v1/signup")
             .accept(MediaType.APPLICATION_JSON)
@@ -95,15 +84,5 @@ public class UserSessionsControllerTest {
         assertThat(responseEntity.getBody().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/login").withSelfRel(),
             new Link(MOCK_BASE_URL + "/rootResources").withRel("root"));
-    }
-
-    @Test
-    public void login_whenAccessDenied_returns401Unauthorized() throws Exception {
-        when(mockUserSessionsApiService.login(any(), any())).thenThrow(AccessDeniedException.class);
-        mockMvc.perform(post("/v1/login")
-            .accept(MediaType.APPLICATION_JSON)
-            .content("{\"user\":{\"email\":\"test@email.com\"}}")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
     }
 }

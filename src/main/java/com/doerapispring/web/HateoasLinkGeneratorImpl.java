@@ -1,5 +1,6 @@
 package com.doerapispring.web;
 
+import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +16,20 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link signupLink() {
-        return linkTo(methodOn(UserSessionsController.class).signup(null)).withSelfRel();
+        try {
+            return linkTo(methodOn(UserSessionsController.class).signup(null)).withSelfRel();
+        } catch (AccessDeniedException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
     public Link loginLink() {
-        return linkTo(methodOn(UserSessionsController.class).login(null)).withSelfRel();
+        try {
+            return linkTo(methodOn(UserSessionsController.class).login(null)).withSelfRel();
+        } catch (AccessDeniedException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override

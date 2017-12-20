@@ -1,28 +1,34 @@
 package com.doerapispring.config;
 
 import org.springframework.context.MessageSource;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Locale;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @RestControllerAdvice
-public class ApiValidationExceptionHandler extends ResponseEntityExceptionHandler {
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String DEFAULT_FIELD_ERROR_MESSAGE = "value was rejected";
     private static final String DEFAULT_GLOBAL_ERROR_MESSAGE = "an error occurred";
     private final MessageSource messageSource;
 
-    ApiValidationExceptionHandler(MessageSource messageSource) {
+    ApiExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 
@@ -46,6 +52,14 @@ public class ApiValidationExceptionHandler extends ResponseEntityExceptionHandle
             .collect(toList());
 
         return new ResponseEntity<>(new ErrorResponse(fieldErrors, globalErrors), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = {ApiException.class})
+    protected ResponseEntity<Object> handleApplicationError(Exception exception, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(emptyList(), singletonList(new GlobalError(exception.getMessage())));
+        Annotation annotation = AnnotationUtils.findAnnotation(exception.getClass(), ResponseStatus.class);
+        HttpStatus httpStatus = (HttpStatus) AnnotationUtils.getValue(annotation);
+        return handleExceptionInternal(exception, errorResponse, null, httpStatus, request);
     }
 
     private String buildMessageOrUseDefault(ObjectError objectError, String defaultMessage) {

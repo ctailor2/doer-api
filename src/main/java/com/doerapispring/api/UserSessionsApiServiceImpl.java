@@ -31,7 +31,7 @@ public class UserSessionsApiServiceImpl implements UserSessionsApiService {
             authenticationService.registerCredentials(identifier, credentials);
             transientAccessToken = authenticationTokenService.grant(identifier);
         } catch (OperationRefusedException | CredentialsInvalidException | TokenRefusedException e) {
-            throw new AccessDeniedException();
+            throw new AccessDeniedException(e.getMessage());
         }
         return new SessionTokenDTO(transientAccessToken.getAccessToken(),
                 transientAccessToken.getExpiresAt());
@@ -40,12 +40,12 @@ public class UserSessionsApiServiceImpl implements UserSessionsApiService {
     @Override
     public SessionTokenDTO login(String identifier, String credentials) throws AccessDeniedException {
         boolean authenticationResult = authenticationService.authenticate(identifier, credentials);
-        if (!authenticationResult) throw new AccessDeniedException();
+        if (!authenticationResult) throw new AccessDeniedException("unable to authenticate with the supplied credentials");
         TransientAccessToken transientAccessToken;
         try {
             transientAccessToken = authenticationTokenService.grant(identifier);
         } catch (TokenRefusedException e) {
-            throw new AccessDeniedException();
+            throw new AccessDeniedException(e.getMessage());
         }
         return new SessionTokenDTO(transientAccessToken.getAccessToken(),
                 transientAccessToken.getExpiresAt());
