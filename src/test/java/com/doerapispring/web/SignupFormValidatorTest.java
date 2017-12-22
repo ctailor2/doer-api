@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.springframework.validation.DirectFieldBindingResult;
 import org.springframework.validation.FieldError;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SignupFormValidatorTest {
@@ -14,6 +16,17 @@ public class SignupFormValidatorTest {
     @Before
     public void setUp() throws Exception {
         signupFormValidator = new SignupFormValidator();
+    }
+
+    @Test
+    public void hasNoErrorsForValidForm() {
+        SignupForm signupForm = new SignupForm("someIdentifier", "someCredentials");
+        DirectFieldBindingResult errors = new DirectFieldBindingResult(signupForm, "signupForm");
+
+        signupFormValidator.validate(signupForm, errors);
+
+        List<FieldError> fieldErrors = errors.getFieldErrors();
+        assertThat(fieldErrors).isEmpty();
     }
 
     @Test
