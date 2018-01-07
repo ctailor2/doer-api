@@ -51,7 +51,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             todoService.create(authenticatedUser.getUser(), task);
         } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
@@ -60,7 +60,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             todoService.createDeferred(authenticatedUser.getUser(), task);
         } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
@@ -78,7 +78,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             todoService.displace(authenticatedUser.getUser(), localId, task);
         } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
@@ -87,7 +87,7 @@ class TodoApiServiceImpl implements TodoApiService {
         try {
             todoService.update(authenticatedUser.getUser(), localId, task);
         } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 

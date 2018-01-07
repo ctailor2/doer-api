@@ -226,16 +226,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void displace_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).displace(any(), any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.displace(authenticatedUser, "someId", new TodoForm("do it to it"));
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void update_mapping() throws Exception {
         mockMvc.perform(put("/v1/todos/123")
             .contentType(MediaType.APPLICATION_JSON)
@@ -256,16 +246,6 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
             new Link(MOCK_BASE_URL + "/list").withRel("list"));
-    }
-
-    @Test
-    public void update_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).update(any(), any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.update(authenticatedUser, "someId", new TodoForm("do it to it"));
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -410,16 +390,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void create_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).create(any(), any());
-
-        ResponseEntity responseEntity = todosController.create(authenticatedUser, new TodoForm("someTask"));
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void createDeferred_mapping() throws Exception {
         mockMvc.perform(post("/v1/list/deferredTodos")
             .contentType(MediaType.APPLICATION_JSON)
@@ -439,15 +409,5 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
             new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withSelfRel(),
             new Link(MOCK_BASE_URL + "/list").withRel("list"));
-    }
-
-    @Test
-    public void createDeferred_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).createDeferred(any(), any());
-
-        ResponseEntity responseEntity = todosController.createDeferred(authenticatedUser, new TodoForm("someTask"));
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

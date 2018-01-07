@@ -28,8 +28,10 @@ public class TodoService {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
             Todo todo = masterList.add(task);
             todoRepository.add(masterList, todo);
-        } catch (ListSizeExceededException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new OperationRefusedException();
+        } catch (DuplicateTodoException e) {
+            throw new OperationRefusedException(e.getMessage());
         }
     }
 
@@ -39,8 +41,10 @@ public class TodoService {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
             Todo todo = masterList.addDeferred(task);
             todoRepository.add(masterList, todo);
-        } catch (ListSizeExceededException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new OperationRefusedException();
+        } catch (DuplicateTodoException e) {
+            throw new OperationRefusedException(e.getMessage());
         }
     }
 
@@ -69,8 +73,10 @@ public class TodoService {
             // Or the repository should just have a save method that figures it out
             todoRepository.add(masterList, newTodo);
             todoRepository.update(masterList, existingTodo);
-        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
+        } catch (DuplicateTodoException e) {
+            throw new OperationRefusedException(e.getMessage());
         }
     }
 
@@ -79,8 +85,10 @@ public class TodoService {
             MasterList masterList = listService.get(user);
             Todo todo = masterList.update(localIdentifier, task);
             todoRepository.update(masterList, todo);
-        } catch (TodoNotFoundException | DuplicateTodoException | AbnormalModelException e) {
+        } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
+        } catch (DuplicateTodoException e) {
+            throw new OperationRefusedException(e.getMessage());
         }
     }
 

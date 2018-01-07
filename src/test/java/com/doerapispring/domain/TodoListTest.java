@@ -118,10 +118,10 @@ public class TodoListTest {
         Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
         Todo thirdTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3);
         List<Todo> todos = asList(
-                firstTodo,
-                new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
-                thirdTodo,
-                fourthTodo);
+            firstTodo,
+            new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
+            thirdTodo,
+            fourthTodo);
 
         TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 
@@ -133,10 +133,10 @@ public class TodoListTest {
 
         assertThat(effectedTodos).contains(expectedFirstTodo, expectedSecondTodo, expectedThirdTodo);
         assertThat(laterList.getTodos()).containsExactly(
-                expectedFirstTodo,
-                expectedSecondTodo,
-                expectedThirdTodo,
-                fourthTodo);
+            expectedFirstTodo,
+            expectedSecondTodo,
+            expectedThirdTodo,
+            fourthTodo);
     }
 
     @Test
@@ -145,9 +145,9 @@ public class TodoListTest {
         Todo fourthTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4);
         Todo secondTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2);
         List<Todo> todos = asList(firstTodo,
-                secondTodo,
-                new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
-                fourthTodo);
+            secondTodo,
+            new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
+            fourthTodo);
 
         TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 
@@ -159,20 +159,20 @@ public class TodoListTest {
 
         assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
         assertThat(laterList.getTodos()).containsExactly(
-                firstTodo,
-                expectedSecondTodo,
-                expectedThirdTodo,
-                expectedFourthTodo);
+            firstTodo,
+            expectedSecondTodo,
+            expectedThirdTodo,
+            expectedFourthTodo);
     }
 
     @Test
     public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
         Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
         List<Todo> todos = asList(
-                firstTodo,
-                new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
-                new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
-                new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4));
+            firstTodo,
+            new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
+            new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
+            new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4));
 
         TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
 

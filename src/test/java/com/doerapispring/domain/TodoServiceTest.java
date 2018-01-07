@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -116,10 +117,13 @@ public class TodoServiceTest {
     public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.add(any())).thenThrow(new DuplicateTodoException());
+        String message = "todo already exists!";
+        when(mockMasterList.add(any())).thenThrow(new DuplicateTodoException(message));
 
-        exception.expect(OperationRefusedException.class);
-        todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things");
+        assertThatThrownBy(() ->
+            todoService.create(new User(new UniqueIdentifier<>("testItUp")), "some things"))
+            .isInstanceOf(OperationRefusedException.class)
+            .hasMessage(message);
     }
 
     @Test
@@ -167,10 +171,13 @@ public class TodoServiceTest {
     public void createDeferred_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.addDeferred(any())).thenThrow(new DuplicateTodoException());
+        String message = "todo already exists!";
+        when(mockMasterList.addDeferred(any())).thenThrow(new DuplicateTodoException(message));
 
-        exception.expect(OperationRefusedException.class);
-        todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things");
+        assertThatThrownBy(() ->
+            todoService.createDeferred(new User(new UniqueIdentifier<>("testItUp")), "some things"))
+            .isInstanceOf(OperationRefusedException.class)
+            .hasMessage(message);
     }
 
     @Test
@@ -276,10 +283,13 @@ public class TodoServiceTest {
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.displace(any(), any())).thenThrow(DuplicateTodoException.class);
+        String message = "todo already exists!";
+        when(mockMasterList.displace(any(), any())).thenThrow(new DuplicateTodoException(message));
 
-        exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
+        assertThatThrownBy(() ->
+            todoService.displace(new User(new UniqueIdentifier<>("userId")), "someId", "someTask"))
+            .isInstanceOf(OperationRefusedException.class)
+            .hasMessage(message);
     }
 
     @Test
@@ -339,13 +349,16 @@ public class TodoServiceTest {
     public void update_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesUpdate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.update(any(), any())).thenThrow(new DuplicateTodoException());
+        String message = "todo already exists!";
+        when(mockMasterList.update(any(), any())).thenThrow(new DuplicateTodoException(message));
 
-        exception.expect(OperationRefusedException.class);
-        todoService.update(new User(new UniqueIdentifier<>("userId")), "someId", "someTask");
+        assertThatThrownBy(() ->
+            todoService.update(new User(new UniqueIdentifier<>("userId")), "someId", "someTask"))
+            .isInstanceOf(OperationRefusedException.class)
+            .hasMessage(message);
     }
 
-        @Test
+    @Test
     public void update_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
@@ -432,8 +445,8 @@ public class TodoServiceTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
         List<Todo> todos = asList(
-                new Todo("some task", MasterList.DEFERRED_NAME, 2),
-                new Todo("some other task", MasterList.DEFERRED_NAME, 3));
+            new Todo("some task", MasterList.DEFERRED_NAME, 2),
+            new Todo("some other task", MasterList.DEFERRED_NAME, 3));
         when(mockMasterList.move(any(), any())).thenReturn(todos);
 
         todoService.move(new User(new UniqueIdentifier<>("one@two.com")), "idOne", "idTwo");
@@ -476,8 +489,8 @@ public class TodoServiceTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
         List<Todo> todos = asList(
-                new Todo("some task", MasterList.NAME, 1),
-                new Todo("some other task", MasterList.NAME, 2));
+            new Todo("some task", MasterList.NAME, 1),
+            new Todo("some other task", MasterList.NAME, 2));
         when(mockMasterList.pull()).thenReturn(todos);
 
         todoService.pull(new User(new UniqueIdentifier<>("one@two.com")));
@@ -491,8 +504,8 @@ public class TodoServiceTest {
         MasterList mockMasterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(mockMasterList);
         List<Todo> todos = asList(
-                new Todo("some task", MasterList.NAME, 1),
-                new Todo("some other task", MasterList.NAME, 2));
+            new Todo("some task", MasterList.NAME, 1),
+            new Todo("some other task", MasterList.NAME, 2));
         when(mockMasterList.pull()).thenReturn(todos);
         doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
 

@@ -7,9 +7,7 @@ import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.TodoListDTO;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -18,6 +16,7 @@ import java.time.Clock;
 import java.util.Collections;
 import java.util.Date;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -28,12 +27,6 @@ public class TodoApiServiceImplTest {
 
     @Mock
     private TodoService mockTodoService;
-
-    @Mock
-    private ListService mockListService;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -49,10 +42,13 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void create_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockTodoService).create(any(), any());
+        String exceptionMessage = "some exception message";
+        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).create(any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.create(new AuthenticatedUser("someIdentifier"), "someTask"))
+            .isInstanceOf(InvalidRequestException.class)
+            .hasMessage(exceptionMessage);
     }
 
     @Test
@@ -64,10 +60,13 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void createDeferred_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockTodoService).createDeferred(any(), any());
+        String exceptionMessage = "some exception message";
+        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).createDeferred(any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.createDeferred(new AuthenticatedUser("someIdentifier"), "someTask");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.createDeferred(new AuthenticatedUser("someIdentifier"), "someTask"))
+            .isInstanceOf(InvalidRequestException.class)
+            .hasMessage(exceptionMessage);
     }
 
     @Test
@@ -81,8 +80,9 @@ public class TodoApiServiceImplTest {
     public void delete_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
         doThrow(new OperationRefusedException()).when(mockTodoService).delete(any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.delete(new AuthenticatedUser("someIdentifier"), "someId"))
+            .isInstanceOf(InvalidRequestException.class);
     }
 
     @Test
@@ -94,10 +94,13 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void displace_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockTodoService).displace(any(), any(), any());
+        String exceptionMessage = "some exception message";
+        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).displace(any(), any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask"))
+            .isInstanceOf(InvalidRequestException.class)
+            .hasMessage(exceptionMessage);
     }
 
     @Test
@@ -109,10 +112,13 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void update_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        doThrow(new OperationRefusedException()).when(mockTodoService).update(any(), any(), any());
+        String exceptionMessage = "some exception message";
+        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).update(any(), any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.update(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.update(new AuthenticatedUser("someIdentifier"), "someId", "someTask"))
+            .isInstanceOf(InvalidRequestException.class)
+            .hasMessage(exceptionMessage);
     }
 
     @Test
@@ -126,8 +132,9 @@ public class TodoApiServiceImplTest {
     public void complete_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
         doThrow(new OperationRefusedException()).when(mockTodoService).complete(any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.complete(new AuthenticatedUser("someIdentifier"), "someId");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.complete(new AuthenticatedUser("someIdentifier"), "someId"))
+            .isInstanceOf(InvalidRequestException.class);
     }
 
     @Test
@@ -149,8 +156,9 @@ public class TodoApiServiceImplTest {
     public void getCompleted_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
         when(mockTodoService.getCompleted(any())).thenThrow(new OperationRefusedException());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier"));
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier")))
+            .isInstanceOf(InvalidRequestException.class);
     }
 
     @Test
@@ -164,8 +172,9 @@ public class TodoApiServiceImplTest {
     public void move_whenOperationRefused_throwsInvalidRequest() throws Exception {
         doThrow(new OperationRefusedException()).when(mockTodoService).move(any(), any(), any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.move(new AuthenticatedUser("someIdentifier"), "someId", "someOtherId");
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.move(new AuthenticatedUser("someIdentifier"), "someId", "someOtherId"))
+            .isInstanceOf(InvalidRequestException.class);
     }
 
     @Test
@@ -180,8 +189,9 @@ public class TodoApiServiceImplTest {
     public void pull_whenOperationRefused_throwsInvalidRequest() throws Exception {
         doThrow(new OperationRefusedException()).when(mockTodoService).pull(any());
 
-        exception.expect(InvalidRequestException.class);
-        todoApiServiceImpl.pull(new AuthenticatedUser("someIdentifier"));
+        assertThatThrownBy(() ->
+            todoApiServiceImpl.pull(new AuthenticatedUser("someIdentifier")))
+            .isInstanceOf(InvalidRequestException.class);
     }
 
     @Test

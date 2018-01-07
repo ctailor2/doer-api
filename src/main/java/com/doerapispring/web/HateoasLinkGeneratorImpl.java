@@ -44,12 +44,20 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link displaceTodoLink(String localId) {
-        return linkTo(methodOn(TodosController.class).displace(null, localId, null)).withSelfRel();
+        try {
+            return linkTo(methodOn(TodosController.class).displace(null, localId, null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
     public Link updateTodoLink(String localId) {
-        return linkTo(methodOn(TodosController.class).update(null, localId, null)).withSelfRel();
+        try {
+            return linkTo(methodOn(TodosController.class).update(null, localId, null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
@@ -94,12 +102,20 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link createTodoLink() {
-        return linkTo(methodOn(TodosController.class).create(null, null)).withSelfRel();
+        try {
+            return linkTo(methodOn(TodosController.class).create(null, null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
     public Link createDeferredTodoLink() {
-        return linkTo(methodOn(TodosController.class).createDeferred(null, null)).withSelfRel();
+        try {
+            return linkTo(methodOn(TodosController.class).createDeferred(null, null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
