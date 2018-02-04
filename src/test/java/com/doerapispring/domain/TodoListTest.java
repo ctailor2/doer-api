@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -26,29 +26,28 @@ public class TodoListTest {
 
     @Test
     public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
-        todos.add(new Todo("someTask", MasterList.NAME, 1));
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 0);
+        TodoList todoList = new TodoList(MasterList.NAME, 0);
 
         assertThat(todoList.isFull()).isEqualTo(true);
     }
 
     @Test
     public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 1);
+        TodoList todoList = new TodoList(MasterList.NAME, 1);
 
         assertThat(todoList.isFull()).isEqualTo(false);
     }
 
     @Test
     public void isFull_whenMaxSizeIsNegative_alwaysReturnsFalse() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, -2);
+        TodoList todoList = new TodoList(MasterList.NAME, -2);
 
         assertThat(todoList.isFull()).isEqualTo(false);
     }
 
     @Test
     public void add_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo firstTodo = todoList.add("someTask");
         assertThat(todoList.getTodos()).containsExactly(firstTodo);
         assertThat(firstTodo.getPosition()).isEqualTo(1);
@@ -56,7 +55,7 @@ public class TodoListTest {
 
     @Test
     public void add_toListWithTodos_addsTodoAfterLast() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo firstTodo = todoList.add("someTask");
         Todo secondTodo = todoList.add("someOtherTask");
 
@@ -66,7 +65,7 @@ public class TodoListTest {
 
     @Test
     public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         todoList.add("someTask");
         todoList.add("someOtherTask");
 
@@ -76,7 +75,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo firstTodo = todoList.addExisting("abc", "someTask");
         assertThat(todoList.getTodos()).containsExactly(firstTodo);
         assertThat(firstTodo.getPosition()).isEqualTo(1);
@@ -84,7 +83,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_toListWithTodos_addsTodoAfterLast() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo firstTodo = todoList.addExisting("abc", "someTask");
         Todo secondTodo = todoList.addExisting("def", "someOtherTask");
 
@@ -94,7 +93,7 @@ public class TodoListTest {
 
     @Test
     public void addExisting_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         todoList.addExisting("abc", "someTask");
         todoList.addExisting("def", "someOtherTask");
 
@@ -104,7 +103,7 @@ public class TodoListTest {
 
     @Test
     public void remove_removesTodoFromList() throws ListSizeExceededException {
-        TodoList todoList = new TodoList(MasterList.NAME, todos, 2);
+        TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo todo = todoList.add("someTask");
 
         todoList.remove(todo);
@@ -114,67 +113,78 @@ public class TodoListTest {
 
     @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
-        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4);
-        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
-        Todo thirdTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3);
-        List<Todo> todos = asList(
-            firstTodo,
-            new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
-            thirdTodo,
-            fourthTodo);
+        List<String> tasks = Arrays.asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask");
 
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, -1);
+
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(laterList.add(task));
+        }
+        Todo firstTodo = todos.get(0);
+        Todo secondTodo = todos.get(1);
+        Todo thirdTodo = todos.get(2);
 
         List<Todo> effectedTodos = laterList.move(firstTodo, thirdTodo);
 
-        Todo expectedFirstTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 1);
-        Todo expectedSecondTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 2);
-        Todo expectedThirdTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 3);
-
-        assertThat(effectedTodos).contains(expectedFirstTodo, expectedSecondTodo, expectedThirdTodo);
+        assertThat(effectedTodos).containsExactly(secondTodo, thirdTodo, firstTodo);
         assertThat(laterList.getTodos()).containsExactly(
-            expectedFirstTodo,
-            expectedSecondTodo,
-            expectedThirdTodo,
-            fourthTodo);
+            secondTodo,
+            thirdTodo,
+            firstTodo,
+            todos.get(3));
     }
 
     @Test
     public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
-        Todo fourthTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4);
-        Todo secondTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2);
-        List<Todo> todos = asList(firstTodo,
-            secondTodo,
-            new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
-            fourthTodo);
+        List<String> tasks = asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask");
 
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, -1);
+
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(laterList.add(task));
+        }
+
+        Todo secondTodo = todos.get(1);
+        Todo thirdTodo = todos.get(2);
+        Todo fourthTodo = todos.get(3);
 
         List<Todo> effectedTodos = laterList.move(fourthTodo, secondTodo);
 
-        Todo expectedSecondTodo = new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 2);
-        Todo expectedThirdTodo = new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 3);
-        Todo expectedFourthTodo = new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 4);
-
-        assertThat(effectedTodos).contains(expectedSecondTodo, expectedThirdTodo, expectedFourthTodo);
+        assertThat(effectedTodos).containsExactly(fourthTodo, secondTodo, thirdTodo);
         assertThat(laterList.getTodos()).containsExactly(
-            firstTodo,
-            expectedSecondTodo,
-            expectedThirdTodo,
-            expectedFourthTodo);
+            todos.get(0),
+            fourthTodo,
+            secondTodo,
+            thirdTodo);
     }
 
     @Test
     public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
-        Todo firstTodo = new Todo("A", "someTask", MasterList.DEFERRED_NAME, 1);
-        List<Todo> todos = asList(
-            firstTodo,
-            new Todo("B", "anotherTask", MasterList.DEFERRED_NAME, 2),
-            new Todo("C", "yetAnotherTask", MasterList.DEFERRED_NAME, 3),
-            new Todo("D", "evenYetAnotherTask", MasterList.DEFERRED_NAME, 4));
+        List<String> tasks = asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask"
+        );
 
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, todos, -1);
+        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, -1);
+
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(laterList.add(task));
+        }
+
+        Todo firstTodo = todos.get(0);
 
         List<Todo> effectedTodos = laterList.move(firstTodo, firstTodo);
 
@@ -183,18 +193,18 @@ public class TodoListTest {
     }
 
     @Test
-    public void getByIdentifier_givenIdentifierForExistingTodo_returnsTodo() throws TodoNotFoundException {
-        Todo nowTodo = new Todo("someId", "someTask", MasterList.NAME, 4);
-        TodoList nowList = new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 2);
+    public void getByIdentifier_givenIdentifierForExistingTodo_returnsTodo() throws Exception {
+        TodoList nowList = new TodoList(MasterList.NAME, 2);
+        Todo todo = nowList.add("someTask");
 
-        Todo retrievedTodo = nowList.getByIdentifier("someId");
+        Todo retrievedTodo = nowList.getByIdentifier(todo.getLocalIdentifier());
 
-        assertThat(retrievedTodo).isEqualTo(nowTodo);
+        assertThat(retrievedTodo).isEqualTo(todo);
     }
 
     @Test
     public void getByIdentifier_givenIdentifierForNonExistentTodo_throwsTodoNotFoundException() throws TodoNotFoundException {
-        TodoList nowList = new TodoList(MasterList.NAME, Collections.emptyList(), 2);
+        TodoList nowList = new TodoList(MasterList.NAME, 2);
 
         exception.expect(TodoNotFoundException.class);
         nowList.getByIdentifier("nonExistentId");

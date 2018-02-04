@@ -27,8 +27,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<ListUnlock> listUnlocks) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.immediateList = new TodoList(NAME, Collections.emptyList(), 2);
-        this.postponedList = new TodoList(DEFERRED_NAME, Collections.emptyList(), -1);
+        this.immediateList = new TodoList(NAME, 2);
+        this.postponedList = new TodoList(DEFERRED_NAME, -1);
         this.listUnlocks = listUnlocks;
     }
 
@@ -70,11 +70,11 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public String getName() {
-        return immediateList.getScheduling();
+        return immediateList.getName();
     }
 
     public String getDeferredName() {
-        return postponedList.getScheduling();
+        return postponedList.getName();
     }
 
     public boolean isLocked() {
