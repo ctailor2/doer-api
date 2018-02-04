@@ -23,14 +23,13 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
         this.listUnlockDao = listUnlockDao;
     }
 
-    // TODO: Move away from using db primary key for identifier
     @Override
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         String email = uniqueIdentifier.get();
         List<TodoEntity> todoEntities = todoDao.findUnfinishedByUserEmail(email);
         Map<Boolean, List<Todo>> partitionedTodos = todoEntities.stream()
                 .map(todoEntity -> new Todo(
-                        todoEntity.id.toString(),
+                        todoEntity.uuid,
                         todoEntity.task,
                         todoEntity.active ? MasterList.NAME : MasterList.DEFERRED_NAME,
                         todoEntity.position))

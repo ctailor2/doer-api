@@ -14,8 +14,8 @@ interface TodoDao extends JpaRepository<TodoEntity, Long> {
 
     @Query("SELECT t FROM TodoEntity t " +
             "INNER JOIN t.userEntity u " +
-            "WHERE u.email = ?1 AND t.id = ?2")
-    TodoEntity findUserTodo(String userEmail, Long id);
+            "WHERE u.email = ?1 AND t.uuid = ?2")
+    TodoEntity findUserTodo(String userEmail, String uuid);
 
     @Query("SELECT t FROM TodoEntity t " +
             "INNER JOIN t.userEntity u " +

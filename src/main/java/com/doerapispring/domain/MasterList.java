@@ -116,6 +116,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
     List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
+        // TODO: The local identifier behavior here seems weird. Why should the new todo
+        // get the id of the original todo that was displaced and that one get a newly assigned identifier?
         Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getListName(), existingTodo.getPosition());
         immediateList.replace(existingTodo, replacementTodo);
         // TODO: Replace behavior may not be necessary - see alternate implementation below

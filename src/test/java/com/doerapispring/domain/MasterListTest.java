@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,34 +115,35 @@ public class MasterListTest {
 
     @Test
     public void displace_whenTodoWithIdentifierExists_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = new Todo("someId", "someTask", MasterList.NAME, 4);
-        TodoList nowList = new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 3);
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, Collections.emptyList(), -1);
-        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
+        Clock clock = Clock.systemDefaultZone();
+        MasterList masterList = new MasterList(clock, new UniqueIdentifier<>("someIdentifier"), singletonList(new ListUnlock(Date.from(clock.instant().minusSeconds(1799L)))));
+        Todo nowTodo = masterList.add("someTask");
 
-        List<Todo> todos = masterList.displace("someId", "displace it");
+        List<Todo> todos = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
 
-        // TODO: The local identifier behavior here seems weird. Why should the new todo
-        // get the id of the original todo that was displaced and that one get a newly assigned identifier?
-        Todo displacedTodo = new Todo("0", "someTask", MasterList.DEFERRED_NAME, 1);
-        Todo newTodo = new Todo("someId", "displace it", MasterList.NAME, 4);
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(nowList.getTodos()).containsOnly(newTodo);
+//        TODO: Is the extracting style of assertion a smell?
+        assertThat(todos).extracting("task", "listName").contains(
+            Tuple.tuple("someTask", MasterList.DEFERRED_NAME),
+            Tuple.tuple("displace it", MasterList.NAME));
+        assertThat(masterList.getTodos()).extracting("task").containsOnly("displace it");
+        assertThat(masterList.getDeferredTodos()).extracting("task").containsOnly("someTask");
     }
 
     @Test
     public void displace_whenTodoWithIdentifierExists_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = new Todo("someId", "someTask", MasterList.NAME, 4);
-        TodoList nowList = new TodoList(MasterList.NAME, Collections.singletonList(nowTodo), 3);
-        TodoList laterList = new TodoList(MasterList.DEFERRED_NAME, Collections.singletonList(new Todo("someOtherId", "someTask", MasterList.DEFERRED_NAME, 3)), -1);
-        MasterList masterList = new MasterList(mockClock, new UniqueIdentifier<>("someIdentifier"), nowList, laterList, Collections.emptyList());
+        Clock clock = Clock.systemDefaultZone();
+        MasterList masterList = new MasterList(clock, new UniqueIdentifier<>("someIdentifier"), singletonList(new ListUnlock(Date.from(clock.instant().minusSeconds(1799L)))));
+        Todo nowTodo = masterList.add("someNowTask");
+        Todo laterTodo = masterList.addDeferred("someLaterTask");
 
-        List<Todo> todos = masterList.displace("someId", "displace it");
+        List<Todo> todos = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
 
-        Todo displacedTodo = new Todo("0", "someTask", MasterList.DEFERRED_NAME, 2);
-        Todo newTodo = new Todo("someId", "displace it", MasterList.NAME, 4);
-        assertThat(todos).contains(displacedTodo, newTodo);
-        assertThat(nowList.getTodos()).containsOnly(newTodo);
+//        TODO: Is the extracting style of assertion a smell?
+        assertThat(todos).extracting("task", "listName", "position").contains(
+            Tuple.tuple("displace it", MasterList.NAME, nowTodo.getPosition()),
+            Tuple.tuple("someNowTask", MasterList.DEFERRED_NAME, laterTodo.getPosition() - 1));
+        assertThat(masterList.getTodos()).extracting("task").containsOnly("displace it");
+        assertThat(masterList.getDeferredTodos()).extracting("task").containsOnly("someNowTask", "someLaterTask");
     }
 
     @Test

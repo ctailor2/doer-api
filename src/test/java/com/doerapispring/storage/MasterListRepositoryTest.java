@@ -73,6 +73,7 @@ public class MasterListRepositoryTest {
         String userEmail = "thisUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
                 .id(123L)
+                .uuid("someUuid")
                 .userEntity(UserEntity.builder().email(userEmail).build())
                 .task("do it now")
                 .active(true)
@@ -85,7 +86,7 @@ public class MasterListRepositoryTest {
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getAllTodos().size()).isEqualTo(1);
-        assertThat(masterList.getAllTodos()).contains(new Todo("123", "do it now", MasterList.NAME, 5));
+        assertThat(masterList.getAllTodos()).contains(new Todo("someUuid", "do it now", MasterList.NAME, 5));
     }
 
     @Test
@@ -93,6 +94,7 @@ public class MasterListRepositoryTest {
         String userEmail = "thatUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
                 .id(123L)
+                .uuid("someUuid")
                 .userEntity(UserEntity.builder().email(userEmail).build())
                 .task("do it later")
                 .active(false)
@@ -106,12 +108,12 @@ public class MasterListRepositoryTest {
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getAllTodos().size()).isEqualTo(1);
         assertThat(masterList.getAllTodos()).containsExactly(
-                new Todo("123", "do it later", MasterList.DEFERRED_NAME, 5));
+                new Todo("someUuid", "do it later", MasterList.DEFERRED_NAME, 5));
     }
 
     @Test
     public void find_whenThereAreNoListUnlocks_returnsMasterListWithNoListUnlocks() throws Exception {
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("soUnique");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
 
         assertThat(masterListOptional.isPresent()).isTrue();
@@ -127,7 +129,7 @@ public class MasterListRepositoryTest {
                 .build());
         when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(listUnlockEntities);
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("soUnique");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
 
         assertThat(masterListOptional.isPresent()).isTrue();

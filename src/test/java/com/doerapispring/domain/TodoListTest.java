@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -13,16 +12,8 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TodoListTest {
-
-    private ArrayList<Todo> todos;
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
-        todos = new ArrayList<>();
-    }
 
     @Test
     public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
@@ -46,11 +37,12 @@ public class TodoListTest {
     }
 
     @Test
-    public void add_toEmptyList_addsToList_returnsTodoWithCorrectPosition() throws ListSizeExceededException {
+    public void add_toEmptyList_addsToList_returnsTodoWithUuidStyleIdentifier_andCorrectPosition() throws ListSizeExceededException {
         TodoList todoList = new TodoList(MasterList.NAME, 2);
         Todo firstTodo = todoList.add("someTask");
         assertThat(todoList.getTodos()).containsExactly(firstTodo);
         assertThat(firstTodo.getPosition()).isEqualTo(1);
+        assertThat(firstTodo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
     }
 
     @Test

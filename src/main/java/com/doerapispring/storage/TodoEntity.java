@@ -18,6 +18,9 @@ class TodoEntity {
     @Column(name = "id")
     public Long id;
 
+    @Column(name = "uuid")
+    public String uuid;
+
     @Column(name = "task")
     public String task;
 

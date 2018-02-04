@@ -33,10 +33,10 @@ public class TodoRepositoryTest {
     private TodoDao mockTodoDAO;
 
     @Captor
-    ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor;
+    private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor;
 
     @Captor
-    ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
+    private ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -51,13 +51,14 @@ public class TodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("bingo", MasterList.DEFERRED_NAME, 3);
+        Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 3);
         todoRepository.add(masterList, todo);
 
         verify(mockUserDAO).findByEmail("listUserIdentifier");
         verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
         TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
         assertThat(todoEntity).isNotNull();
+        assertThat(todoEntity.uuid).isEqualTo("someId");
         assertThat(todoEntity.userEntity).isEqualTo(userEntity);
         assertThat(todoEntity.task).isEqualTo("bingo");
         assertThat(todoEntity.position).isEqualTo(3);
@@ -112,42 +113,44 @@ public class TodoRepositoryTest {
         TodoEntity todoEntity = TodoEntity.builder().build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(todoEntity);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("123", "bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.remove(masterList, todo);
 
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", 123L);
+        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
         verify(mockTodoDAO).delete(todoEntity);
     }
 
     @Test
     public void remove_findsTodo_whenNotFound_throwsAbnormalModelException() throws Exception {
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("123", "bingo", MasterList.NAME, 5);
+        Todo todo = new Todo("someUuid", "bingo", MasterList.NAME, 5);
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(null);
 
         exception.expect(AbnormalModelException.class);
         todoRepository.remove(masterList, todo);
 
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", 123L);
+        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
     }
 
     @Test
     public void update_findsTodo_whenFound_updatesTodo() throws Exception {
         TodoEntity existingTodoEntity = TodoEntity.builder()
-                .id(123L)
-                .userEntity(UserEntity.builder().build())
-                .createdAt(new Date())
-                .build();
+            .id(123L)
+            .uuid("someUuid")
+            .userEntity(UserEntity.builder().build())
+            .createdAt(new Date())
+            .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("123", "bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.update(masterList, todo);
 
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", 123L);
+        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
         verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
         TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
         assertThat(todoEntity.id).isEqualTo(existingTodoEntity.id);
+        assertThat(todoEntity.uuid).isEqualTo(existingTodoEntity.uuid);
         assertThat(todoEntity.userEntity).isEqualTo(existingTodoEntity.userEntity);
         assertThat(todoEntity.task).isEqualTo("bingo");
         assertThat(todoEntity.active).isFalse();
@@ -159,17 +162,18 @@ public class TodoRepositoryTest {
     @Test
     public void update_findsTodo_whenFound_whenTodoIsComplete_updatesTodo() throws Exception {
         TodoEntity existingTodoEntity = TodoEntity.builder()
-                .id(123L)
-                .completed(false)
-                .build();
+            .id(123L)
+            .uuid("someUuid")
+            .completed(false)
+            .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("123", "bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todo.complete();
         todoRepository.update(masterList, todo);
 
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", 123L);
+        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
         verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
         TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
         assertThat(todoEntity.completed).isEqualTo(true);
@@ -180,25 +184,26 @@ public class TodoRepositoryTest {
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(null);
 
         exception.expect(AbnormalModelException.class);
-        Todo todo = new Todo("bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
         todoRepository.update(masterList, todo);
 
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", 5L);
+        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
     }
 
     @Test
     public void update_multipleTodos_findsEachTodo_andUpdatesIt() throws Exception {
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(TodoEntity.builder().build());
-        List<Todo> todos = asList(new Todo("123", "bingo", MasterList.DEFERRED_NAME, 5),
-                new Todo("456", "bango", MasterList.DEFERRED_NAME, 2));
+        List<Todo> todos = asList(
+            new Todo("uuid1", "bingo", MasterList.DEFERRED_NAME, 5),
+            new Todo("uuid2", "bango", MasterList.DEFERRED_NAME, 2));
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
 
         todoRepository.update(masterList, todos);
 
-        ArgumentCaptor<Long> idArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> idArgumentCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockTodoDAO, times(2)).findUserTodo(eq("listUserIdentifier"), idArgumentCaptor.capture());
-        assertThat(idArgumentCaptor.getAllValues()).isEqualTo(asList(123L, 456L));
+        assertThat(idArgumentCaptor.getAllValues()).isEqualTo(asList("uuid1", "uuid2"));
 
         verify(mockTodoDAO).save(todoEntityListArgumentCaptor.capture());
         List<TodoEntity> savedTodos = todoEntityListArgumentCaptor.getValue();
@@ -214,9 +219,10 @@ public class TodoRepositoryTest {
     @Test
     public void update_multipleTodos_whenAnyTodoIsNotFound_throwsAbnormalModelException_doesNotUpdate() throws Exception {
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(TodoEntity.builder().build());
-        when(mockTodoDAO.findUserTodo(any(), eq(456L))).thenReturn(null);
-        List<Todo> todos = asList(new Todo("123", "bingo", MasterList.DEFERRED_NAME, 5),
-                new Todo("456", "bango", MasterList.DEFERRED_NAME, 2));
+        when(mockTodoDAO.findUserTodo(any(), eq("uuid2"))).thenReturn(null);
+        List<Todo> todos = asList(
+            new Todo("uuid1", "bingo", MasterList.DEFERRED_NAME, 5),
+            new Todo("uuid2", "bango", MasterList.DEFERRED_NAME, 2));
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
 
         exception.expect(AbnormalModelException.class);

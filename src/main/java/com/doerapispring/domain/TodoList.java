@@ -1,9 +1,6 @@
 package com.doerapispring.domain;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TodoList {
@@ -42,8 +39,11 @@ public class TodoList {
         if (isFull()) {
             throw new ListSizeExceededException();
         }
-        int position = getNextPosition();
-        Todo todo = new Todo(task, name, position);
+        Todo todo = new Todo(
+            generateIdentifier(),
+            task,
+            name,
+            getNextPosition());
         todos.add(todo);
         return todo;
     }
@@ -102,9 +102,13 @@ public class TodoList {
 
     Todo push(String task) {
         int position = getNextTopPosition();
-        Todo todo = new Todo(task, name, position);
+        Todo todo = new Todo(generateIdentifier(), task, name, position);
         todos.add(0, todo);
         return todo;
+    }
+
+    private String generateIdentifier() {
+        return UUID.randomUUID().toString();
     }
 
     void replace(Todo existingTodo, Todo replacementTodo) {

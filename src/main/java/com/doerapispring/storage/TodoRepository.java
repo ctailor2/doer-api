@@ -28,6 +28,7 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
         UserEntity userEntity = userDAO.findByEmail(masterList.getIdentifier().get());
         if (userEntity == null) throw new AbnormalModelException();
         todoDao.save(TodoEntity.builder()
+                .uuid(todo.getLocalIdentifier())
                 .userEntity(userEntity)
                 .task(todo.getTask())
                 .active(MasterList.NAME.equals(todo.getListName()))
@@ -41,7 +42,7 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
     public void remove(MasterList masterList, Todo todo) throws AbnormalModelException {
         TodoEntity todoEntity = todoDao.findUserTodo(
                 masterList.getIdentifier().get(),
-                Long.valueOf(todo.getLocalIdentifier()));
+                todo.getLocalIdentifier());
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.delete(todoEntity);
     }
@@ -50,10 +51,11 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
     public void update(MasterList masterList, Todo todo) throws AbnormalModelException {
         TodoEntity todoEntity = todoDao.findUserTodo(
                 masterList.getIdentifier().get(),
-                Long.valueOf(todo.getLocalIdentifier()));
+                todo.getLocalIdentifier());
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.save(TodoEntity.builder()
                 .id(todoEntity.id)
+                .uuid(todoEntity.uuid)
                 .userEntity(todoEntity.userEntity)
                 .task(todo.getTask())
                 .active(MasterList.NAME.equals(todo.getListName()))
@@ -71,10 +73,11 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                 .map(todo -> {
                     TodoEntity todoEntity = todoDao.findUserTodo(
                             masterList.getIdentifier().get(),
-                            Long.valueOf(todo.getLocalIdentifier()));
+                            todo.getLocalIdentifier());
                     if (todoEntity == null) return null;
                     return TodoEntity.builder()
                             .id(todoEntity.id)
+                            .uuid(todoEntity.uuid)
                             .userEntity(todoEntity.userEntity)
                             .task(todo.getTask())
                             .active(MasterList.NAME.equals(todo.getListName()))
