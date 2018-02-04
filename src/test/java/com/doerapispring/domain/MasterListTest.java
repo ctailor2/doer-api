@@ -428,7 +428,7 @@ public class MasterListTest {
     @Test
     public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsNotFull_returnsTrue() throws Exception {
         when(mockNowList.isFull()).thenReturn(false);
-        when(mockLaterList.getTodos()).thenReturn(singletonList(new Todo("someTask", MasterList.DEFERRED_NAME, 1)));
+        when(mockLaterList.getTodos()).thenReturn(singletonList(new Todo("someId", "someTask", MasterList.DEFERRED_NAME, 1)));
 
         boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
 
@@ -438,7 +438,7 @@ public class MasterListTest {
     @Test
     public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsFull_returnsFalse() {
         when(mockNowList.isFull()).thenReturn(true);
-        when(mockLaterList.getTodos()).thenReturn(singletonList(new Todo("someTask", MasterList.DEFERRED_NAME, 1)));
+        when(mockLaterList.getTodos()).thenReturn(singletonList(new Todo("someId", "someTask", MasterList.DEFERRED_NAME, 1)));
 
         boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
 

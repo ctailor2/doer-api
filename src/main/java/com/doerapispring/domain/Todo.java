@@ -1,19 +1,12 @@
 package com.doerapispring.domain;
 
 public class Todo {
-    private String task;
-    private boolean complete = false;
-    private Integer position;
     private final String localIdentifier;
-    private String listName;
+    private final String listName;
 
-    // TODO: Remove this constructor
-    public Todo(String task, String listName, Integer position) {
-        this.localIdentifier = "0";
-        this.task = task;
-        this.listName = listName;
-        this.position = position;
-    }
+    private String task;
+    private Integer position;
+    private boolean complete = false;
 
     public Todo(String localIdentifier, String task, String listName, Integer position) {
         this.localIdentifier = localIdentifier;

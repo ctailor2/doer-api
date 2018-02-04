@@ -71,7 +71,7 @@ public class TodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("bingo", MasterList.NAME, 5);
+        Todo todo = new Todo("someId", "bingo", MasterList.NAME, 5);
         todoRepository.add(masterList, todo);
 
         verify(mockUserDAO).findByEmail("listUserIdentifier");
@@ -86,7 +86,7 @@ public class TodoRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
-        Todo todo = new Todo("bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.add(masterList, todo);
 
         verify(mockUserDAO).findByEmail("listUserIdentifier");
@@ -101,7 +101,7 @@ public class TodoRepositoryTest {
         when(mockUserDAO.findByEmail(any())).thenReturn(null);
 
         exception.expect(AbnormalModelException.class);
-        Todo todo = new Todo("bingo", MasterList.DEFERRED_NAME, 5);
+        Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 5);
         MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
         todoRepository.add(masterList, todo);
 
