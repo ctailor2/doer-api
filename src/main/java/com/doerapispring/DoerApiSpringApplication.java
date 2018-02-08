@@ -12,9 +12,8 @@ public class DoerApiSpringApplication {
         SpringApplication.run(DoerApiSpringApplication.class, args);
 	}
 
-    // TODO: This is too global. Move closer to the database.
 	@PostConstruct
-	void started() {
+	void setDefaultTimeZone() {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	}
 }
