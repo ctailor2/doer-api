@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
@@ -27,10 +28,15 @@ public class TodoApiServiceImplTest {
 
     @Mock
     private TodoService mockTodoService;
+    private UniqueIdentifier<String> uniqueIdentifier;
+    private MasterList masterList;
 
     @Before
     public void setUp() throws Exception {
         todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
+        uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, new ArrayList<>());
+        when(mockTodoService.get(any())).thenReturn(masterList);
     }
 
     @Test
@@ -196,8 +202,6 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void getTodos_callsTodoService() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(mock(MasterList.class));
 
         todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
@@ -206,21 +210,18 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void getTodos_callsTodoService_returnsTodosFromImmediateList() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, Collections.emptyList());
         Todo todo = masterList.add("someTask");
         masterList.addDeferred("someOtherTask");
-        when(mockTodoService.get(any())).thenReturn(masterList);
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
+
         assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
     }
 
     @Test
     public void getTodos_returnsTodoList_withFullIndicator() throws Exception {
-        MasterList mockMasterList = mock(MasterList.class);
-        when(mockTodoService.get(any())).thenReturn(mockMasterList);
-        when(mockMasterList.isFull()).thenReturn(true);
+        masterList.add("someTask");
+        masterList.add("someOtherTask");
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
 
@@ -229,9 +230,6 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void getDeferredTodos_callsTodoService() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        when(mockTodoService.get(any())).thenReturn(mock(MasterList.class));
-
         todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).getDeferredTodos(new User(uniqueIdentifier));
