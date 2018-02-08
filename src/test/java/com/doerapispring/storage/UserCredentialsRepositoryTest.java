@@ -4,32 +4,25 @@ import com.doerapispring.authentication.Credentials;
 import com.doerapispring.authentication.CredentialsStore;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Date;
 import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class UserCredentialsRepositoryTest {
     private CredentialsStore userCredentialsRepository;
 
-    @Mock
     private UserDAO userDAO;
 
-    @Captor
-    private ArgumentCaptor<UserEntity> userEntityArgumentCaptor;
+    private ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     @Before
     public void setUp() throws Exception {
+        userDAO = mock(UserDAO.class);
         userCredentialsRepository = new UserCredentialsRepository(userDAO);
     }
 

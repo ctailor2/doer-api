@@ -2,12 +2,9 @@ package com.doerapispring.session;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TokenGeneratorTest {
     private TokenGenerator tokenGenerator;
 

@@ -5,31 +5,24 @@ import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class UserRepositoryTest {
     private ObjectRepository<User, String> userRepository;
 
-    @Mock
     private UserDAO userDAO;
 
-    @Captor
-    ArgumentCaptor<UserEntity> userEntityArgumentCaptor;
+    private ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     @Before
     public void setUp() throws Exception {
+        userDAO = mock(UserDAO.class);
         userRepository = new UserRepository(userDAO);
     }
 
@@ -52,7 +45,7 @@ public class UserRepositoryTest {
         UserEntity userEntity = UserEntity.builder().build();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>("soUnique");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("soUnique");
         Optional<User> userOptional = userRepository.find(uniqueIdentifier);
 
         verify(userDAO).findByEmail("soUnique");

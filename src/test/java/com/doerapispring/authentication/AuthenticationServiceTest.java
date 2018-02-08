@@ -2,11 +2,7 @@ package com.doerapispring.authentication;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Date;
@@ -16,23 +12,22 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
-    @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
     private CredentialsStore credentialsStore;
 
-    @Captor
-    private ArgumentCaptor<Credentials> credentialsArgumentCaptor;
+    private ArgumentCaptor<Credentials> credentialsArgumentCaptor = ArgumentCaptor.forClass(Credentials.class);
 
     @Before
     public void setUp() throws Exception {
-        authenticationService = new AuthenticationService(passwordEncoder,
-                credentialsStore);
+        passwordEncoder = mock(PasswordEncoder.class);
+        credentialsStore = mock(CredentialsStore.class);
+        authenticationService = new AuthenticationService(
+            passwordEncoder,
+            credentialsStore);
     }
 
     @Test

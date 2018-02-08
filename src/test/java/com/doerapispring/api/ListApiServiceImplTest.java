@@ -8,9 +8,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Date;
 import java.time.Clock;
@@ -23,11 +20,9 @@ import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ListApiServiceImplTest {
     private ListApiServiceImpl listApiServiceImpl;
 
-    @Mock
     private ListService mockListService;
 
     @Rule
@@ -35,6 +30,7 @@ public class ListApiServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
+        mockListService = mock(ListService.class);
         listApiServiceImpl = new ListApiServiceImpl(mockListService);
     }
 

@@ -25,7 +25,6 @@ import static org.mockito.Mockito.*;
 public class TodoServiceTest {
     private TodoService todoService;
 
-    @Mock
     private ListService listService;
 
     @Mock
@@ -39,13 +38,14 @@ public class TodoServiceTest {
     private UniqueIdentifier<String> uniqueIdentifier;
     private MasterList masterList;
 
-    private ArgumentCaptor<Todo> todoArgumentCaptor;
+    private ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
 
     @Captor
     private ArgumentCaptor<List<Todo>> todoListArgumentCaptor;
 
     @Before
     public void setUp() throws Exception {
+        listService = mock(ListService.class);
         todoService = new TodoService(
             listService,
             mockTodoRepository,
@@ -54,7 +54,6 @@ public class TodoServiceTest {
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, new ArrayList<>());
         when(listService.get(any())).thenReturn(masterList);
-        todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
     }
 
     @Test

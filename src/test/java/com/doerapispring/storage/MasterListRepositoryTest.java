@@ -8,7 +8,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
@@ -19,31 +18,31 @@ import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MasterListRepositoryTest {
     private ObjectRepository<MasterList, String> masterListRepository;
 
-    @Mock
     private TodoDao mockTodoDAO;
 
-    @Mock
     private ListUnlockDao mockListUnlockDao;
 
-    @Mock
     private Clock mockClock;
 
+    private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
+
     @Captor
-    ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor;
-    @Captor
-    ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
+    private ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
+        mockClock = mock(Clock.class);
+        mockTodoDAO = mock(TodoDao.class);
+        mockListUnlockDao = mock(ListUnlockDao.class);
         masterListRepository = new MasterListRepository(mockClock, mockTodoDAO, mockListUnlockDao);
     }
 

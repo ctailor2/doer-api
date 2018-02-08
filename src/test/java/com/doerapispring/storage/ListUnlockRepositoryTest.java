@@ -8,38 +8,31 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
 import java.util.Collections;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ListUnlockRepositoryTest {
     private ListUnlockRepository listUnlockRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Mock
-    ListUnlockDao mockListUnlockDao;
+    private ListUnlockDao mockListUnlockDao;
 
-    @Mock
-    UserDAO mockUserDao;
+    private UserDAO mockUserDao;
 
-    @Captor
-    ArgumentCaptor<ListUnlockEntity> listUnlockEntityArgumentCaptor;
+    private ArgumentCaptor<ListUnlockEntity> listUnlockEntityArgumentCaptor = ArgumentCaptor.forClass(ListUnlockEntity.class);
 
     @Before
     public void setUp() throws Exception {
+        mockListUnlockDao = mock(ListUnlockDao.class);
+        mockUserDao = mock(UserDAO.class);
         listUnlockRepository = new ListUnlockRepository(mockListUnlockDao, mockUserDao);
     }
 

@@ -8,9 +8,6 @@ import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.TodoListDTO;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
 import java.util.ArrayList;
@@ -22,17 +19,16 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TodoApiServiceImplTest {
     private TodoApiServiceImpl todoApiServiceImpl;
 
-    @Mock
     private TodoService mockTodoService;
     private UniqueIdentifier<String> uniqueIdentifier;
     private MasterList masterList;
 
     @Before
     public void setUp() throws Exception {
+        mockTodoService = mock(TodoService.class);
         todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
         uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, new ArrayList<>());

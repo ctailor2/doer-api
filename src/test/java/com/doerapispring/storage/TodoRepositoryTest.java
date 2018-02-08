@@ -8,7 +8,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
@@ -26,14 +25,11 @@ import static org.mockito.Mockito.*;
 public class TodoRepositoryTest {
     private AggregateRootRepository<MasterList, Todo> todoRepository;
 
-    @Mock
     private UserDAO mockUserDAO;
 
-    @Mock
     private TodoDao mockTodoDAO;
 
-    @Captor
-    private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor;
+    private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
 
     @Captor
     private ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;
@@ -43,6 +39,8 @@ public class TodoRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
+        mockUserDAO = mock(UserDAO.class);
+        mockTodoDAO = mock(TodoDao.class);
         todoRepository = new TodoRepository(mockUserDAO, mockTodoDAO);
     }
 

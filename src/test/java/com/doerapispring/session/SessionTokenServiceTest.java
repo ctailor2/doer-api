@@ -6,35 +6,30 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class SessionTokenServiceTest {
     private SessionTokenService sessionTokenService;
 
-    @Mock
     private TokenGenerator tokenGenerator;
 
-    @Mock
     private TokenStore sessionTokenRepository;
 
-    @Captor
-    private ArgumentCaptor<TransientAccessToken> tokenArgumentCaptor;
+    private ArgumentCaptor<TransientAccessToken> tokenArgumentCaptor = ArgumentCaptor.forClass(TransientAccessToken.class);
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        sessionTokenService = new SessionTokenService(tokenGenerator,
-                sessionTokenRepository);
+        tokenGenerator = mock(TokenGenerator.class);
+        sessionTokenRepository = mock(TokenStore.class);
+        sessionTokenService = new SessionTokenService(
+            tokenGenerator,
+            sessionTokenRepository);
     }
 
     @Test

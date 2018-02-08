@@ -4,9 +4,6 @@ import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,11 +23,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TodosControllerTest {
     private TodosController todosController;
 
-    @Mock
     private TodoApiService mockTodoApiService;
 
     private MockMvc mockMvc;
@@ -39,6 +34,7 @@ public class TodosControllerTest {
 
     @Before
     public void setUp() throws Exception {
+        mockTodoApiService = mock(TodoApiService.class);
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
