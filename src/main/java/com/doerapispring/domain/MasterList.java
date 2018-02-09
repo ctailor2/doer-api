@@ -52,13 +52,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return postponedList.getTodos();
     }
 
-    public List<Todo> getAllTodos() {
-        ArrayList<Todo> todos = new ArrayList<>();
-        todos.addAll(immediateList.getTodos());
-        todos.addAll(postponedList.getTodos());
-        return todos;
-    }
-
     public Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         return immediateList.add(task);
@@ -95,6 +88,17 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return isLocked() && getLastUnlockedAt()
             .map(lastUnlockedAt -> lastUnlockedAt.before(beginningOfToday()))
             .orElse(true);
+    }
+
+    public Long unlockDuration() {
+        return getLastUnlockedAt()
+            .map(lastUnlockedAt -> {
+                long unlockExpiration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
+                long now = clock.instant().toEpochMilli();
+                return unlockExpiration - now;
+            })
+            .filter(duration -> duration > 0L)
+            .orElse(0L);
     }
 
     List<Todo> pull() throws ListSizeExceededException {
@@ -159,17 +163,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return listUnlock;
     }
 
-    public Long unlockDuration() {
-        return getLastUnlockedAt()
-            .map(lastUnlockedAt -> {
-                long unlockExpiration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
-                long now = clock.instant().toEpochMilli();
-                return unlockExpiration - now;
-            })
-            .filter(duration -> duration > 0L)
-            .orElse(0L);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -207,6 +200,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
             ", postponedList=" + postponedList +
             ", listUnlocks=" + listUnlocks +
             '}';
+    }
+
+    private List<Todo> getAllTodos() {
+        ArrayList<Todo> todos = new ArrayList<>();
+        todos.addAll(immediateList.getTodos());
+        todos.addAll(postponedList.getTodos());
+        return todos;
     }
 
     private TodoList getListByName(String listName) {

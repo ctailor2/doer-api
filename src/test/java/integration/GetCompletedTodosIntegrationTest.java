@@ -37,6 +37,9 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
     @Autowired
     private TodoService todosService;
 
+    @Autowired
+    private ListService listService;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -55,8 +58,9 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
     public void todos_whenUserHasCompletedTodos_returnsCompletedTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.createDeferred(user, "this and that");
+        listService.unlock(user);
         MasterList masterList = todosService.get(user);
-        Todo todo = masterList.getAllTodos().get(0);
+        Todo todo = masterList.getDeferredTodos().get(0);
         todosService.complete(user, todo.getLocalIdentifier());
 
         doGet();

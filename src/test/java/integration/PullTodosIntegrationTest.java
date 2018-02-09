@@ -1,9 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.MasterList;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -26,8 +23,12 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
+
     @Autowired
     private TodoService todosService;
+
+    @Autowired
+    private ListService listService;
 
     @Override
     @Before
@@ -50,17 +51,19 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
                 .headers(httpHeaders))
                 .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        User user = new User(new UniqueIdentifier<>("test@email.com"));
+        listService.unlock(user);
+        MasterList newMasterList = todosService.get(user);
 
-        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
+        assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will get pulled")),
                 hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(1)))));
-        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
+        assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will also get pulled")),
                 hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(2)))));
-        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
+        assertThat(newMasterList.getDeferredTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("keep for later")),
                 hasProperty("listName", equalTo(MasterList.DEFERRED_NAME)),
                 hasProperty("position", equalTo(3)))));

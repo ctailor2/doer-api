@@ -41,7 +41,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void delete_removesTodo() throws Exception {
         todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
-        Todo todo = masterList.getAllTodos().get(0);
+        Todo todo = masterList.getTodos().get(0);
 
         mvcResult = mockMvc.perform(delete("/v1/todos/" + todo.getLocalIdentifier())
                 .headers(httpHeaders))
@@ -50,7 +50,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getAllTodos(), hasSize(0));
+        assertThat(newMasterList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier())));

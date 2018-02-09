@@ -11,11 +11,13 @@ import org.mockito.Captor;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Collections.singletonList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -43,6 +45,9 @@ public class MasterListRepositoryTest {
         mockClock = mock(Clock.class);
         mockTodoDAO = mock(TodoDao.class);
         mockListUnlockDao = mock(ListUnlockDao.class);
+
+        when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
+
         masterListRepository = new MasterListRepository(mockClock, mockTodoDAO, mockListUnlockDao);
     }
 
@@ -57,6 +62,10 @@ public class MasterListRepositoryTest {
     @Test
     public void find_whenThereAreNoTodos_returnsMasterListWithNoTodos() throws Exception {
         when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(Collections.emptyList());
+        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(singletonList(
+            ListUnlockEntity.builder()
+                .updatedAt(Date.from(Instant.now().minusSeconds(30)))
+                .build()));
 
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("userIdentifier");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
@@ -64,50 +73,55 @@ public class MasterListRepositoryTest {
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getIdentifier()).isEqualTo(uniqueIdentifier);
-        assertThat(masterList.getAllTodos()).isEmpty();
+        assertThat(masterList.getTodos()).isEmpty();
+        assertThat(masterList.getDeferredTodos()).isEmpty();
     }
 
     @Test
     public void find_whenThereAreImmediateTodos_returnsMasterListWithTodos() throws Exception {
         String userEmail = "thisUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
-                .id(123L)
-                .uuid("someUuid")
-                .userEntity(UserEntity.builder().email(userEmail).build())
-                .task("do it now")
-                .active(true)
-                .position(5)
-                .build();
-        when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
+            .id(123L)
+            .uuid("someUuid")
+            .userEntity(UserEntity.builder().email(userEmail).build())
+            .task("do it now")
+            .active(true)
+            .position(5)
+            .build();
+        when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(singletonList(todoEntity));
 
         Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier<>("somethingSecret"));
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getAllTodos().size()).isEqualTo(1);
-        assertThat(masterList.getAllTodos()).contains(new Todo("someUuid", "do it now", MasterList.NAME, 5));
+        assertThat(masterList.getTodos().size()).isEqualTo(1);
+        assertThat(masterList.getTodos()).contains(new Todo("someUuid", "do it now", MasterList.NAME, 5));
     }
 
     @Test
     public void find_whenThereArePostponedTodos_returnsMasterListWithTodos() throws Exception {
         String userEmail = "thatUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
-                .id(123L)
-                .uuid("someUuid")
-                .userEntity(UserEntity.builder().email(userEmail).build())
-                .task("do it later")
-                .active(false)
-                .position(5)
-                .build();
-        when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
+            .id(123L)
+            .uuid("someUuid")
+            .userEntity(UserEntity.builder().email(userEmail).build())
+            .task("do it later")
+            .active(false)
+            .position(5)
+            .build();
+        when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(singletonList(todoEntity));
+        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(singletonList(
+            ListUnlockEntity.builder()
+                .updatedAt(Date.from(Instant.now().minusSeconds(30)))
+                .build()));
 
         Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier<>("somethingSecret"));
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getAllTodos().size()).isEqualTo(1);
-        assertThat(masterList.getAllTodos()).containsExactly(
-                new Todo("someUuid", "do it later", MasterList.DEFERRED_NAME, 5));
+        assertThat(masterList.getDeferredTodos().size()).isEqualTo(1);
+        assertThat(masterList.getDeferredTodos()).containsExactly(
+            new Todo("someUuid", "do it later", MasterList.DEFERRED_NAME, 5));
     }
 
     @Test
@@ -122,7 +136,7 @@ public class MasterListRepositoryTest {
 
     @Test
     public void find_whenThereAreListUnlocks_returnsMasterListWithListUnlocks() throws Exception {
-        List<ListUnlockEntity> listUnlockEntities = Collections.singletonList(
+        List<ListUnlockEntity> listUnlockEntities = singletonList(
             ListUnlockEntity.builder()
                 .updatedAt(new Date(0L))
                 .build());

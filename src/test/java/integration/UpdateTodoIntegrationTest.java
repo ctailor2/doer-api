@@ -42,7 +42,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void update() throws Exception {
         todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
-        Todo todo = masterList.getAllTodos().get(0);
+        Todo todo = masterList.getTodos().get(0);
 
         mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getLocalIdentifier())
                 .content("{\"task\":\"do the things\"}")
@@ -53,7 +53,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getAllTodos(), hasItem(allOf(
+        assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("do the things")),
                 hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(1)))));
