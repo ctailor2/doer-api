@@ -3,8 +3,6 @@ package com.doerapispring.domain;
 import java.time.Clock;
 import java.util.*;
 
-import static java.util.Arrays.asList;
-
 public class MasterList implements UniquelyIdentifiable<String> {
     private static final long UNLOCK_DURATION_SECONDS = 1800L;
     public static final String NAME = "now";
@@ -117,20 +115,18 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return todoToDelete;
     }
 
-    List<Todo> displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        // TODO: The local identifier behavior here seems weird. Why should the new todo
-        // get the id of the original todo that was displaced and that one get a newly assigned identifier?
-        Todo replacementTodo = new Todo(existingTodo.getLocalIdentifier(), task, existingTodo.getListName(), existingTodo.getPosition());
-        immediateList.replace(existingTodo, replacementTodo);
-        // TODO: Replace behavior may not be necessary - see alternate implementation below
-        // Todo displacedTodo = delete(localIdentifier);
-        // add(task);
-        // addDeferred(displacedTodo.getTask())
-        // ---- end of alternate implementation ----
-        Todo displacedTodo = postponedList.push(existingTodo.getTask());
-        return asList(displacedTodo, replacementTodo);
+        Todo existingTodo = delete(localIdentifier);
+        Todo displacingTodo = null;
+        try {
+            displacingTodo = immediateList.add(task, existingTodo.getPosition());
+        } catch (ListSizeExceededException e) {
+//            TODO: This should never happen - another smell that the TodoList abstraction
+//            doesn't really make sense
+        }
+        postponedList.pushExisting(existingTodo.getLocalIdentifier(), existingTodo.getTask());
+        return displacingTodo;
     }
 
     Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
@@ -161,6 +157,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
         ListUnlock listUnlock = new ListUnlock(Date.from(clock.instant()));
         listUnlocks.add(listUnlock);
         return listUnlock;
+    }
+
+    Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+        return getAllTodos().stream()
+            .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
+            .findFirst()
+            .orElseThrow(TodoNotFoundException::new);
     }
 
     @Override
@@ -214,13 +217,6 @@ public class MasterList implements UniquelyIdentifiable<String> {
             return immediateList;
         }
         return postponedList;
-    }
-
-    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        return getAllTodos().stream()
-            .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
-            .findFirst()
-            .orElseThrow(TodoNotFoundException::new);
     }
 
     private Optional<Todo> getByTask(String task) {

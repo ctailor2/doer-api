@@ -234,21 +234,24 @@ public class TodoServiceTest {
     @Test
     public void displace_whenMasterListFound_whenTodoFound_addsAndUpdatesUsingRepository() throws Exception {
         Todo existingTodo = masterList.add("someTask");
+        masterList.add("someOtherTask");
+        Todo firstDeferredTask = masterList.addDeferred("someDeferredTask");
 
-        String displacingTask = "someOtherTask";
+        String displacingTask = "displacingTask";
         todoService.displace(new User(uniqueIdentifier), existingTodo.getLocalIdentifier(), displacingTask);
 
-        // TODO: The working behavior seems very backwards
-        verify(mockTodoRepository).add(eq(masterList), todoArgumentCaptor.capture());
-        Todo addedTodo = todoArgumentCaptor.getValue();
-        assertThat(addedTodo.getTask()).isEqualTo(existingTodo.getTask());
-        assertThat(addedTodo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
-
         verify(mockTodoRepository).update(eq(masterList), todoArgumentCaptor.capture());
-        Todo displacedTodo = todoArgumentCaptor.getValue();
-        assertThat(displacedTodo.getLocalIdentifier()).isEqualTo(existingTodo.getLocalIdentifier());
-        assertThat(displacedTodo.getTask()).isEqualTo(displacingTask);
-        assertThat(displacedTodo.getListName()).isEqualTo(MasterList.NAME);
+        verify(mockTodoRepository).add(eq(masterList), todoArgumentCaptor.capture());
+        List<Todo> allCapturedTodos = todoArgumentCaptor.getAllValues();
+        Todo updatedTodo = allCapturedTodos.get(0);
+        assertThat(updatedTodo.getTask()).isEqualTo(existingTodo.getTask());
+        assertThat(updatedTodo.getPosition()).isEqualTo(firstDeferredTask.getPosition() - 1);
+        assertThat(updatedTodo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
+
+        Todo addedTodo = allCapturedTodos.get(1);
+        assertThat(addedTodo.getTask()).isEqualTo(displacingTask);
+        assertThat(addedTodo.getPosition()).isEqualTo(existingTodo.getPosition());
+        assertThat(addedTodo.getListName()).isEqualTo(MasterList.NAME);
     }
 
     @Test

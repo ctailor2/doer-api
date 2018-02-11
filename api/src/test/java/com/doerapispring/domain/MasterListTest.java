@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,33 +96,43 @@ public class MasterListTest {
 
     @Test
     public void displace_whenTodoWithIdentifierExists_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = masterList.add("someTask");
+        Todo nowTodo = masterList.add("someNowTask");
         masterList.unlock();
 
-        List<Todo> todos = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
+        Todo todo = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
 
-//        TODO: Is the extracting style of assertion a smell?
-        assertThat(todos).extracting("task", "listName").contains(
-            Tuple.tuple("someTask", MasterList.DEFERRED_NAME),
-            Tuple.tuple("displace it", MasterList.NAME));
-        assertThat(masterList.getTodos()).extracting("task").containsOnly("displace it");
-        assertThat(masterList.getDeferredTodos()).extracting("task").containsOnly("someTask");
+        assertThat(todo.getTask()).isEqualTo("displace it");
+        assertThat(todo.getPosition()).isEqualTo(nowTodo.getPosition());
+        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
+        assertThat(masterList.getTodos()).containsExactly(todo);
+        assertThat(masterList.getDeferredTodos()).containsExactly(
+            new Todo(
+                nowTodo.getLocalIdentifier(),
+                nowTodo.getTask(),
+                MasterList.DEFERRED_NAME,
+                1));
     }
 
     @Test
     public void displace_whenTodoWithIdentifierExists_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = masterList.add("someNowTask");
+        Todo nowTodo1 = masterList.add("someNowTask");
+        Todo nowTodo2 = masterList.add("someOtherNowTask");
         Todo laterTodo = masterList.addDeferred("someLaterTask");
-
-        List<Todo> todos = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
-
-//        TODO: Is the extracting style of assertion a smell?
-        assertThat(todos).extracting("task", "listName", "position").contains(
-            Tuple.tuple("displace it", MasterList.NAME, nowTodo.getPosition()),
-            Tuple.tuple("someNowTask", MasterList.DEFERRED_NAME, laterTodo.getPosition() - 1));
-        assertThat(masterList.getTodos()).extracting("task").containsOnly("displace it");
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).extracting("task").containsOnly("someNowTask", "someLaterTask");
+
+        Todo todo = masterList.displace(nowTodo1.getLocalIdentifier(), "displace it");
+
+        assertThat(todo.getTask()).isEqualTo("displace it");
+        assertThat(todo.getPosition()).isEqualTo(nowTodo1.getPosition());
+        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
+        assertThat(masterList.getTodos()).containsExactly(todo, nowTodo2);
+        assertThat(masterList.getDeferredTodos()).containsExactly(
+            new Todo(
+                nowTodo1.getLocalIdentifier(),
+                nowTodo1.getTask(),
+                MasterList.DEFERRED_NAME,
+                laterTodo.getPosition() - 1),
+            laterTodo);
     }
 
     @Test

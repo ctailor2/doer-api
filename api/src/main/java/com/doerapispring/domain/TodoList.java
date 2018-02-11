@@ -3,6 +3,8 @@ package com.doerapispring.domain;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparingInt;
+
 public class TodoList {
     private final String name;
     private final List<Todo> todos = new ArrayList<>();
@@ -45,6 +47,20 @@ public class TodoList {
             name,
             getNextPosition());
         todos.add(todo);
+        return todo;
+    }
+
+    Todo add(String task, Integer position) throws ListSizeExceededException {
+        if (isFull()) {
+            throw new ListSizeExceededException();
+        }
+        Todo todo = new Todo(
+            generateIdentifier(),
+            task,
+            name,
+            position);
+        todos.add(todo);
+        todos.sort(comparingInt(Todo::getPosition) );
         return todo;
     }
 
@@ -100,20 +116,14 @@ public class TodoList {
         return todos;
     }
 
-    Todo push(String task) {
+    void pushExisting(String localIdentifier, String task) {
         int position = getNextTopPosition();
-        Todo todo = new Todo(generateIdentifier(), task, name, position);
+        Todo todo = new Todo(localIdentifier, task, name, position);
         todos.add(0, todo);
-        return todo;
     }
 
     private String generateIdentifier() {
         return UUID.randomUUID().toString();
-    }
-
-    void replace(Todo existingTodo, Todo replacementTodo) {
-        int indexOfExistingTodo = todos.indexOf(existingTodo);
-        todos.set(indexOfExistingTodo, replacementTodo);
     }
 
     Integer size() {

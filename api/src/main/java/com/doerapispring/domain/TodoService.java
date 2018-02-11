@@ -65,14 +65,10 @@ public class TodoService {
     public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            List<Todo> newAndExistingTodos = masterList.displace(localIdentifier, task);
-            Todo newTodo = newAndExistingTodos.get(0);
-            Todo existingTodo = newAndExistingTodos.get(1);
-            // TODO: Maybe this should do an add, get, update
-            // Or a remove, add (immediate), add (postponed)
-            // Or the repository should just have a save method that figures it out
-            todoRepository.add(masterList, newTodo);
-            todoRepository.update(masterList, existingTodo);
+            Todo displacingTodo = masterList.displace(localIdentifier, task);
+            Todo updatedTodo = masterList.getByLocalIdentifier(localIdentifier);
+            todoRepository.update(masterList, updatedTodo);
+            todoRepository.add(masterList, displacingTodo);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         } catch (DuplicateTodoException e) {
