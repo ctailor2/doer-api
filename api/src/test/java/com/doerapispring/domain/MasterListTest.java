@@ -9,9 +9,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ public class MasterListTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
     public void setUp() throws Exception {
@@ -31,14 +34,26 @@ public class MasterListTest {
         when(mockClock.getZone()).thenReturn(ZoneId.systemDefault());
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
-        masterList = new MasterList(mockClock, new UniqueIdentifier<>("something"), new ArrayList<>());
+        uniqueIdentifier = new UniqueIdentifier<>("something");
+        masterList = new MasterList(mockClock, uniqueIdentifier, new ArrayList<>());
     }
 
     @Test
     public void add_addsToNowList() throws Exception {
         Todo todo = masterList.add("someTask");
 
-        assertThat(masterList.getTodos()).contains(todo);
+        assertThat(masterList.getTodos()).containsExactly(todo);
+        assertThat(todo.getPosition()).isEqualTo(1);
+        assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
+    }
+
+    @Test
+    public void add_addsToNowList_afterLastTodo() throws Exception {
+        Todo firstTodo = masterList.add("someTask");
+        Todo secondTodo = masterList.add("someOtherTask");
+
+        assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
+        assertThat(secondTodo.getPosition()).isEqualTo(2);
     }
 
     @Test
@@ -50,11 +65,32 @@ public class MasterListTest {
     }
 
     @Test
+    public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
+        masterList.add("someTask");
+        masterList.add("someOtherTask");
+
+        exception.expect(ListSizeExceededException.class);
+        masterList.add("stillAnotherTask");
+    }
+
+    @Test
     public void addDeferred_addsToLaterList() throws Exception {
         Todo todo = masterList.addDeferred("someTask");
 
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).contains(todo);
+        assertThat(todo.getPosition()).isEqualTo(1);
+        assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
+    }
+
+    @Test
+    public void addDeferred_addsToLaterList_afterLastTodo() throws Exception {
+        Todo firstTodo = masterList.addDeferred("someTask");
+        Todo secondTodo = masterList.addDeferred("someOtherTask");
+
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).containsExactly(firstTodo, secondTodo);
+        assertThat(secondTodo.getPosition()).isEqualTo(2);
     }
 
     @Test
@@ -66,12 +102,23 @@ public class MasterListTest {
     }
 
     @Test
-    public void delete_whenTodoWithIdentifierExists_removesTodoFromMatchingList() throws Exception {
+    public void delete_whenTodoWithIdentifierExists_removesDeferredTodo() throws Exception {
         Todo todo = masterList.addDeferred("someTask");
 
-        Todo deletedTodo = masterList.delete(todo.getLocalIdentifier());
+        masterList.delete(todo.getLocalIdentifier());
 
-        assertThat(deletedTodo).isEqualTo(todo);
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).isEmpty();
+    }
+
+    @Test
+    public void delete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
+        Todo todo = masterList.add("someTask");
+
+        masterList.delete(todo.getLocalIdentifier());
+
+        masterList.unlock();
+        assertThat(masterList.getTodos()).isEmpty();
     }
 
     @Test
@@ -181,13 +228,81 @@ public class MasterListTest {
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetFoundInList_movesTodoInMatchingList() throws Exception {
-        Todo originalTodo = masterList.add("someTask");
-        Todo targetTodo = masterList.add("someOtherTask");
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
+        List<String> tasks = Arrays.asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask");
 
-        masterList.move(originalTodo.getLocalIdentifier(), targetTodo.getLocalIdentifier());
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(masterList.addDeferred(task));
+        }
+        Todo firstTodo = todos.get(0);
+        Todo secondTodo = todos.get(1);
+        Todo thirdTodo = todos.get(2);
 
-        assertThat(masterList.getTodos()).containsExactly(targetTodo, originalTodo);
+        List<Todo> effectedTodos = masterList.move(firstTodo.getLocalIdentifier(), thirdTodo.getLocalIdentifier());
+
+        assertThat(effectedTodos).containsExactly(secondTodo, thirdTodo, firstTodo);
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).containsExactly(
+            secondTodo,
+            thirdTodo,
+            firstTodo,
+            todos.get(3));
+    }
+
+    @Test
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
+        List<String> tasks = asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask");
+
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(masterList.addDeferred(task));
+        }
+
+        Todo secondTodo = todos.get(1);
+        Todo thirdTodo = todos.get(2);
+        Todo fourthTodo = todos.get(3);
+
+        List<Todo> effectedTodos = masterList.move(fourthTodo.getLocalIdentifier(), secondTodo.getLocalIdentifier());
+
+        assertThat(effectedTodos).containsExactly(fourthTodo, secondTodo, thirdTodo);
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).containsExactly(
+            todos.get(0),
+            fourthTodo,
+            secondTodo,
+            thirdTodo);
+    }
+
+    @Test
+    public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
+        List<String> tasks = asList(
+            "someTask",
+            "anotherTask",
+            "yetAnotherTask",
+            "evenYetAnotherTask"
+        );
+
+        List<Todo> todos = new ArrayList<>();
+        for (String task : tasks) {
+            todos.add(masterList.addDeferred(task));
+        }
+
+        Todo firstTodo = todos.get(0);
+
+        List<Todo> effectedTodos = masterList.move(firstTodo.getLocalIdentifier(), firstTodo.getLocalIdentifier());
+
+        assertThat(effectedTodos).isEmpty();
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).isEqualTo(todos);
     }
 
     @Test
@@ -351,8 +466,6 @@ public class MasterListTest {
     public void getTodos_getsTodosFromImmediateList() throws Exception {
         Todo todo = masterList.add("someTask");
 
-        masterList.getTodos();
-
         assertThat(masterList.getTodos()).contains(todo);
     }
 
@@ -375,11 +488,16 @@ public class MasterListTest {
     }
 
     @Test
-    public void isFull() throws Exception {
+    public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
         masterList.add("todo1");
         masterList.add("todo2");
 
         assertThat(masterList.isFull()).isTrue();
+    }
+
+    @Test
+    public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() throws Exception {
+        assertThat(masterList.isFull()).isEqualTo(false);
     }
 
     @Test
