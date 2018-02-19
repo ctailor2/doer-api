@@ -1,7 +1,6 @@
 package com.doerapispring.domain;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -468,19 +467,6 @@ public class TodoServiceTest {
     @Test
     public void pull_whenMasterListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
-
-        exception.expect(OperationRefusedException.class);
-        todoService.pull(new User(uniqueIdentifier));
-    }
-
-    @Test
-    @Ignore("This scenario cannot happen using the current implementation and was only being tested because of the declared checked exception")
-    public void pull_whenMasterListFound_whenListSizeExceeded_refusesOperation() throws Exception {
-        // TODO: It turns out the pull method on masterList doesn't ever throw the declared exception because of the logic
-        // around how many deferred todos to pop
-        masterList.add("todo1");
-        masterList.add("todo2");
-        masterList.addDeferred("todo3");
 
         exception.expect(OperationRefusedException.class);
         todoService.pull(new User(uniqueIdentifier));

@@ -118,7 +118,7 @@ public class TodoService {
             MasterList masterList = listService.get(user);
             List<Todo> todos = masterList.pull();
             todoRepository.update(masterList, todos);
-        } catch (ListSizeExceededException | AbnormalModelException e) {
+        } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         }
     }

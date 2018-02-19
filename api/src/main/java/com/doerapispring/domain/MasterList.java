@@ -2,8 +2,8 @@ package com.doerapispring.domain;
 
 import java.time.Clock;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingInt;
 
 public class MasterList implements UniquelyIdentifiable<String> {
@@ -13,25 +13,24 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
-    private final TodoList immediateList;
-    private final TodoList postponedList;
     private final List<ListUnlock> listUnlocks;
-
-    private List<Todo> todos = new ArrayList<>();
-
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList, List<ListUnlock> listUnlocks) {
-        this.clock = clock;
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.immediateList = immediateList;
-        this.postponedList = postponedList;
-        this.listUnlocks = listUnlocks;
-    }
+    private final List<Todo> todos;
+    private final List<Todo> deferredTodos;
 
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<ListUnlock> listUnlocks) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.immediateList = new TodoList(NAME, 2);
-        this.postponedList = new TodoList(DEFERRED_NAME, -1);
+        this.listUnlocks = listUnlocks;
+
+        todos = new ArrayList<>();
+        deferredTodos = new ArrayList<>();
+    }
+
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, List<ListUnlock> listUnlocks) {
+        this.clock = clock;
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.todos = todos;
+        this.deferredTodos = deferredTodos;
         this.listUnlocks = listUnlocks;
     }
 
@@ -49,10 +48,8 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public List<Todo> getDeferredTodos() throws LockTimerNotExpiredException {
-        if (isLocked()) {
-            throw new LockTimerNotExpiredException();
-        }
-        return postponedList.getTodos();
+        if (isLocked()) throw new LockTimerNotExpiredException();
+        return deferredTodos;
     }
 
     public Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
@@ -64,13 +61,14 @@ public class MasterList implements UniquelyIdentifiable<String> {
             generateIdentifier(),
             task,
             getName(),
-            getNextPosition());
+            getNextPosition(NAME));
         todos.add(todo);
         return todo;
     }
 
-    private Integer getNextPosition() {
+    private Integer getNextPosition(String listName) {
         Integer nextPosition;
+        List<Todo> todos = getTodosByListName(listName);
         if (todos.isEmpty()) {
             nextPosition = 1;
         } else {
@@ -85,7 +83,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     public Todo addDeferred(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        return postponedList.add(task);
+        Todo todo = new Todo(
+            generateIdentifier(),
+            task,
+            DEFERRED_NAME,
+            getNextPosition(DEFERRED_NAME));
+        deferredTodos.add(todo);
+        return todo;
     }
 
     public String getName() {
@@ -93,7 +97,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public String getDeferredName() {
-        return postponedList.getName();
+        return DEFERRED_NAME;
     }
 
     public boolean isLocked() {
@@ -111,7 +115,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
     public boolean isAbleToBeReplenished() {
-        return !isFull() && postponedList.getTodos().size() > 0;
+        return !isFull() && deferredTodos.size() > 0;
     }
 
     public Boolean isAbleToBeUnlocked() {
@@ -131,15 +135,19 @@ public class MasterList implements UniquelyIdentifiable<String> {
             .orElse(0L);
     }
 
-    List<Todo> pull() throws ListSizeExceededException {
-        List<Todo> sourceTodos = postponedList.pop(getMaxSize() - todos.size());
+    List<Todo> pull() {
+        int countOfTodosToPull = getMaxSize() - todos.size();
+        List<Todo> sourceTodos = deferredTodos.stream()
+            .limit(countOfTodosToPull)
+            .collect(Collectors.toList());
+        deferredTodos.removeAll(sourceTodos);
         ArrayList<Todo> pulledTodos = new ArrayList<>();
         for (Todo todo : sourceTodos) {
             Todo newTodo = new Todo(
                 todo.getLocalIdentifier(),
                 todo.getTask(),
                 getName(),
-                getNextPosition());
+                getNextPosition(NAME));
             todos.add(newTodo);
             pulledTodos.add(newTodo);
         }
@@ -162,9 +170,19 @@ public class MasterList implements UniquelyIdentifiable<String> {
             existingTodo.getPosition());
         todos.add(displacingTodo);
         todos.sort(comparingInt(Todo::getPosition));
-        postponedList.pushExisting(existingTodo.getLocalIdentifier(), existingTodo.getTask());
+        Todo todo = new Todo(existingTodo.getLocalIdentifier(), existingTodo.getTask(), DEFERRED_NAME, getNextTopPosition(DEFERRED_NAME));
+        deferredTodos.add(0, todo);
         return displacingTodo;
     }
+
+    private int getNextTopPosition(String listName) {
+        List<Todo> todos = getTodosByListName(listName);
+        if (todos.isEmpty()) {
+            return 1;
+        }
+        return todos.get(0).getPosition() - 1;
+    }
+
 
     Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
@@ -175,16 +193,39 @@ public class MasterList implements UniquelyIdentifiable<String> {
 
     Todo complete(String localIdentifier) throws TodoNotFoundException {
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        getListByName(existingTodo.getListName()).remove(existingTodo);
+        getTodosByListName(existingTodo.getListName()).remove(existingTodo);
         existingTodo.complete();
         return existingTodo;
     }
 
     List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
         Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
-        TodoList todoList = getListByName(originalTodo.getListName());
-        Todo targetTodo = todoList.getByIdentifier(targetTodoIdentifier);
-        return todoList.move(originalTodo, targetTodo);
+        List<Todo> todos = getTodosByListName(originalTodo.getListName());
+        Todo targetTodo = todos.stream()
+            .filter(todo -> todo.getLocalIdentifier().equals(targetTodoIdentifier))
+            .findFirst()
+            .orElseThrow(TodoNotFoundException::new);
+
+        Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), originalTodo.getPosition()));
+
+        int originalIndex = todos.indexOf(originalTodo);
+        int targetIndex = todos.indexOf(targetTodo);
+
+        Map<Integer, Integer> originalMapping = new HashMap<>();
+        for (int index = originalIndex; direction.targetNotExceeded(index, targetIndex); index += direction.getValue()) {
+            originalMapping.put(index, todos.get(index).getPosition());
+        }
+
+        todos.remove(originalTodo);
+        todos.add(targetIndex, originalTodo);
+
+        return originalMapping.entrySet().stream()
+            .map(entry -> {
+                Todo todo = todos.get(entry.getKey());
+                todo.setPosition(entry.getValue());
+                return todo;
+            })
+            .collect(Collectors.toList());
     }
 
     ListUnlock unlock() throws LockTimerNotExpiredException {
@@ -213,21 +254,18 @@ public class MasterList implements UniquelyIdentifiable<String> {
         if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
             return false;
-        if (immediateList != null ? !immediateList.equals(that.immediateList) : that.immediateList != null)
-            return false;
-        if (postponedList != null ? !postponedList.equals(that.postponedList) : that.postponedList != null)
-            return false;
-        return listUnlocks != null ? listUnlocks.equals(that.listUnlocks) : that.listUnlocks == null;
-
+        if (listUnlocks != null ? !listUnlocks.equals(that.listUnlocks) : that.listUnlocks != null) return false;
+        if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
+        return deferredTodos != null ? deferredTodos.equals(that.deferredTodos) : that.deferredTodos == null;
     }
 
     @Override
     public int hashCode() {
         int result = clock != null ? clock.hashCode() : 0;
         result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
-        result = 31 * result + (immediateList != null ? immediateList.hashCode() : 0);
-        result = 31 * result + (postponedList != null ? postponedList.hashCode() : 0);
         result = 31 * result + (listUnlocks != null ? listUnlocks.hashCode() : 0);
+        result = 31 * result + (todos != null ? todos.hashCode() : 0);
+        result = 31 * result + (deferredTodos != null ? deferredTodos.hashCode() : 0);
         return result;
     }
 
@@ -236,24 +274,18 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return "MasterList{" +
             "clock=" + clock +
             ", uniqueIdentifier=" + uniqueIdentifier +
-            ", immediateList=" + immediateList +
-            ", postponedList=" + postponedList +
             ", listUnlocks=" + listUnlocks +
+            ", todos=" + todos +
+            ", deferredTodos=" + deferredTodos +
             '}';
-    }
-
-    private TodoList getListByName(String listName) {
-        if (NAME.equals(listName)) {
-            return immediateList;
-        }
-        return postponedList;
     }
 
     private List<Todo> getTodosByListName(String listName) {
         if (NAME.equals(listName)) {
             return todos;
+        } else {
+            return deferredTodos;
         }
-        return emptyList();
     }
 
     private Optional<Todo> getByTask(String task) {
@@ -265,7 +297,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     private List<Todo> getAllTodos() {
         ArrayList<Todo> allTodos = new ArrayList<>();
         allTodos.addAll(todos);
-        allTodos.addAll(postponedList.getTodos());
+        allTodos.addAll(deferredTodos);
         return allTodos;
     }
 
