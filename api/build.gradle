@@ -48,3 +48,11 @@ test {
 task integrationTest(type: Test) {
     include 'integration/**'
 }
+
+integrationTest.dependsOn test
+check.dependsOn integrationTest
+
+task stage {
+    dependsOn = ['clean', 'build']
+    build.mustRunAfter clean
+}
