@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1")
 class TodosController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
-    private TodoApiService todoApiService;
+    private final TodoApiService todoApiService;
 
     @Autowired
     TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {

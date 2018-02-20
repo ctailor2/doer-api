@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @Transactional
 abstract class AbstractWebAppJUnit4SpringContextTests extends AbstractTransactionalJUnit4SpringContextTests {
     @Autowired
-    protected WebApplicationContext webApplicationContext;
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     protected JdbcTemplate jdbcTemplate; // For asserting against rows/cols I think?

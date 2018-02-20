@@ -27,7 +27,7 @@ public class ListUnlockRepositoryTest {
 
     private UserDAO mockUserDao;
 
-    private ArgumentCaptor<ListUnlockEntity> listUnlockEntityArgumentCaptor = ArgumentCaptor.forClass(ListUnlockEntity.class);
+    private final ArgumentCaptor<ListUnlockEntity> listUnlockEntityArgumentCaptor = ArgumentCaptor.forClass(ListUnlockEntity.class);
 
     @Before
     public void setUp() throws Exception {

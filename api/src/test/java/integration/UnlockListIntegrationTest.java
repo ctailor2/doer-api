@@ -22,9 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
-    private MvcResult mvcResult;
 
-    private HttpHeaders httpHeaders = new HttpHeaders();
+    private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
@@ -37,7 +36,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
@@ -45,9 +44,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Test
     public void unlock() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/list/unlock")
-                .headers(httpHeaders))
-                .andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/v1/list/unlock")
+            .headers(httpHeaders))
+            .andReturn();
 
         List<ListUnlock> listUnlocks = listService.get(user).getListUnlocks();
 

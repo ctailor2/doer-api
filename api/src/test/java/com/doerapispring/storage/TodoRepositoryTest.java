@@ -29,7 +29,7 @@ public class TodoRepositoryTest {
 
     private TodoDao mockTodoDAO;
 
-    private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
+    private final ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
 
     @Captor
     private ArgumentCaptor<List<TodoEntity>> todoEntityListArgumentCaptor;

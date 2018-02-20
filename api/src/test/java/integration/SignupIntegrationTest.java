@@ -27,15 +27,13 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
     @SuppressWarnings("unused")
     private CredentialsStore userCredentialsRepository;
 
-    private String content =
-            "{\n" +
-                    "  \"email\": \"test@email.com\",\n" +
-                    "  \"password\": \"password\"\n" +
-                    "}";
-
     private MvcResult mvcResult;
 
     private void doPost() throws Exception {
+        String content = "{\n" +
+            "  \"email\": \"test@email.com\",\n" +
+            "  \"password\": \"password\"\n" +
+            "}";
         mvcResult = mockMvc.perform(post("/v1/signup")
                 .content(content)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -47,7 +45,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         doPost();
 
         String userIdentifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(userIdentifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(userIdentifier);
         Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
         Optional<Credentials> storedCredentialsOptional = userCredentialsRepository.findLatest(userIdentifier);
 

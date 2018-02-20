@@ -43,7 +43,7 @@ public class UserServiceTest {
 
         User createdUser = userService.create(identifier);
 
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
         verify(userRepository).find(uniqueIdentifier);
         verify(userRepository).add(userArgumentCaptor.capture());
         User addedUser = userArgumentCaptor.getValue();
@@ -54,7 +54,7 @@ public class UserServiceTest {
     @Test
     public void create_whenIdentifierTaken_refusesCreation() throws Exception {
         String identifier = "soUnique";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
 
         when(userRepository.find(any())).thenReturn(Optional.of(new User(uniqueIdentifier)));
 

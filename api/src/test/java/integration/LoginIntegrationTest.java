@@ -15,17 +15,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class LoginIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
 
     private MvcResult mvcResult;
-    private final String content =
-            "{\n" +
-                    "  \"email\": \"test@email.com\",\n" +
-                    "  \"password\": \"password\"\n" +
-                    "}";
 
     @Autowired
     @SuppressWarnings("unused")
     private UserSessionsApiService userSessionsApiService;
 
     private void doPost() throws Exception {
+        String content = "{\n" +
+            "  \"email\": \"test@email.com\",\n" +
+            "  \"password\": \"password\"\n" +
+            "}";
         mvcResult = mockMvc.perform(post("/v1/login")
                 .content(content)
                 .contentType(MediaType.APPLICATION_JSON))

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1")
 class ListsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
-    private ListApiService listApiService;
+    private final ListApiService listApiService;
 
     @Autowired
     ListsController(HateoasLinkGenerator hateoasLinkGenerator, ListApiService listApiService) {

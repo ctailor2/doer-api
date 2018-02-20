@@ -17,9 +17,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
-    private MvcResult mvcResult;
 
-    private HttpHeaders httpHeaders = new HttpHeaders();
+    private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
@@ -35,7 +34,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
@@ -47,9 +46,9 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         todosService.createDeferred(user, "will also get pulled");
         todosService.createDeferred(user, "keep for later");
 
-        mvcResult = mockMvc.perform(post("/v1/list/pull")
-                .headers(httpHeaders))
-                .andReturn();
+        MvcResult mvcResult = mockMvc.perform(post("/v1/list/pull")
+            .headers(httpHeaders))
+            .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);

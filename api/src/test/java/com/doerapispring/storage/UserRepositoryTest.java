@@ -18,7 +18,7 @@ public class UserRepositoryTest {
 
     private UserDAO userDAO;
 
-    private ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
+    private final ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     @Before
     public void setUp() throws Exception {

@@ -18,9 +18,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
-    private MvcResult mvcResult;
 
-    private HttpHeaders httpHeaders = new HttpHeaders();
+    private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
@@ -32,7 +31,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
@@ -44,11 +43,11 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getTodos().get(0);
 
-        mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getLocalIdentifier())
-                .content("{\"task\":\"do the things\"}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(httpHeaders))
-                .andReturn();
+        MvcResult mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getLocalIdentifier())
+            .content("{\"task\":\"do the things\"}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(httpHeaders))
+            .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));

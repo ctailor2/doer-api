@@ -20,7 +20,7 @@ import java.io.IOException;
 
 public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     @Autowired
-    protected TokenAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
+    TokenAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
         super(requiresAuthenticationRequestMatcher);
     }
 

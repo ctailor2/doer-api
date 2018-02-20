@@ -23,7 +23,7 @@ public class SessionTokenRepositoryTest {
 
     private SessionTokenDAO sessionTokenDAO;
 
-    private ArgumentCaptor<SessionTokenEntity> sessionTokenEntityArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
+    private final ArgumentCaptor<SessionTokenEntity> sessionTokenEntityArgumentCaptor = ArgumentCaptor.forClass(SessionTokenEntity.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();

@@ -26,7 +26,7 @@ import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
 public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private MvcResult mvcResult;
-    private HttpHeaders httpHeaders = new HttpHeaders();
+    private final HttpHeaders httpHeaders = new HttpHeaders();
     private MockHttpServletRequestBuilder baseMockRequestBuilder;
     private MockHttpServletRequestBuilder mockRequestBuilder;
     private User user;
@@ -45,7 +45,7 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier uniqueIdentifier = new UniqueIdentifier<>(identifier);
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
         user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());

@@ -3,7 +3,6 @@ package com.doerapispring.session;
 import com.doerapispring.authentication.AuthenticationTokenService;
 import com.doerapispring.authentication.TokenRefusedException;
 import com.doerapispring.authentication.TransientAccessToken;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +15,11 @@ import static java.util.Calendar.DATE;
 @Service
 @Transactional
 public class SessionTokenService implements AuthenticationTokenService {
-    private TokenGenerator tokenGenerator;
-    private TokenStore tokenStore;
+    private final TokenGenerator tokenGenerator;
+    private final TokenStore tokenStore;
 
-    @Autowired
-    public SessionTokenService(TokenGenerator tokenGenerator,
-                               TokenStore tokenStore) {
+    SessionTokenService(TokenGenerator tokenGenerator,
+                        TokenStore tokenStore) {
         this.tokenGenerator = tokenGenerator;
         this.tokenStore = tokenStore;
     }

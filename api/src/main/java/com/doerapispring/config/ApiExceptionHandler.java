@@ -23,7 +23,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @RestControllerAdvice
-public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String DEFAULT_FIELD_ERROR_MESSAGE = "value was rejected";
     private static final String DEFAULT_GLOBAL_ERROR_MESSAGE = "an error occurred";
     private final MessageSource messageSource;

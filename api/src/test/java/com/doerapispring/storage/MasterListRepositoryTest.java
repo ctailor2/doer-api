@@ -30,8 +30,6 @@ public class MasterListRepositoryTest {
 
     private ListUnlockDao mockListUnlockDao;
 
-    private Clock mockClock;
-
     private ArgumentCaptor<TodoEntity> todoEntityArgumentCaptor = ArgumentCaptor.forClass(TodoEntity.class);
 
     @Captor
@@ -42,7 +40,7 @@ public class MasterListRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        mockClock = mock(Clock.class);
+        Clock mockClock = mock(Clock.class);
         mockTodoDAO = mock(TodoDao.class);
         mockListUnlockDao = mock(ListUnlockDao.class);
 

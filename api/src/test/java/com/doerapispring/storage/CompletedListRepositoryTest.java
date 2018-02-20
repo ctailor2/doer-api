@@ -18,14 +18,11 @@ import static org.mockito.Mockito.*;
 public class CompletedListRepositoryTest {
     private ObjectRepository<CompletedList, String> completedListRepository;
 
-    private UserDAO mockUserDAO;
-
     private TodoDao mockTodoDAO;
 
     @Before
     public void setUp() throws Exception {
         mockTodoDAO = mock(TodoDao.class);
-        mockUserDAO = mock(UserDAO.class);
         completedListRepository = new CompletedListRepository(mockTodoDAO);
     }
 

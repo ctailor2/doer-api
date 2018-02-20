@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class TodoList {
     private final String name;
-    private List<Todo> todos = new ArrayList<>();
+    private final List<Todo> todos = new ArrayList<>();
     private final int maxSize;
 
     public TodoList(String name, List<Todo> todos, int maxSize) {
@@ -172,7 +172,7 @@ public class TodoList {
         DOWN(1),
         NONE(0);
 
-        private static Map<Integer, Direction> valueMapping = new HashMap<>();
+        private static final Map<Integer, Direction> valueMapping = new HashMap<>();
 
         static {
             for (Direction direction : Direction.values()) {
@@ -186,11 +186,11 @@ public class TodoList {
             this.value = value;
         }
 
-        public static Direction valueOf(int directionValue) {
+        static Direction valueOf(int directionValue) {
             return valueMapping.get(directionValue);
         }
 
-        public boolean targetNotExceeded(int currentIndex, int targetIndex) {
+        boolean targetNotExceeded(int currentIndex, int targetIndex) {
             switch (this) {
                 case UP:
                     return currentIndex >= targetIndex;
@@ -203,7 +203,7 @@ public class TodoList {
             }
         }
 
-        public int getValue() {
+        int getValue() {
             return value;
         }
     }

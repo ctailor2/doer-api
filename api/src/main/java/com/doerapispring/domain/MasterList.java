@@ -14,7 +14,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final TodoList immediateList;
     private final TodoList postponedList;
-    private List<ListUnlock> listUnlocks;
+    private final List<ListUnlock> listUnlocks;
 
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, TodoList immediateList, TodoList postponedList, List<ListUnlock> listUnlocks) {
         this.clock = clock;

@@ -38,7 +38,7 @@ public class TodoServiceTest {
     private UniqueIdentifier<String> uniqueIdentifier;
     private MasterList masterList;
 
-    private ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
+    private final ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
 
     @Captor
     private ArgumentCaptor<List<Todo>> todoListArgumentCaptor;

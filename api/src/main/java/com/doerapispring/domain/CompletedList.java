@@ -6,7 +6,7 @@ public class CompletedList implements UniquelyIdentifiable<String> {
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final List<CompletedTodo> todos;
 
-    public CompletedList(UniqueIdentifier uniqueIdentifier, List<CompletedTodo> todos) {
+    public CompletedList(UniqueIdentifier<String> uniqueIdentifier, List<CompletedTodo> todos) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.todos = todos;
     }

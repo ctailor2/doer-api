@@ -3,7 +3,7 @@ package com.doerapispring.domain;
 import java.util.Date;
 
 public class ListUnlock {
-    private Date createdAt;
+    private final Date createdAt;
 
     public ListUnlock() {
         this.createdAt = new Date();

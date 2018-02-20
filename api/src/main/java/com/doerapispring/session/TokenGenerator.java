@@ -7,8 +7,8 @@ import java.util.Base64;
 
 @Component
 class TokenGenerator {
-    private SecureRandom random = new SecureRandom();
-    private Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+    private final SecureRandom random = new SecureRandom();
+    private final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
 
     String generate() {
         byte bytes[] = new byte[24];

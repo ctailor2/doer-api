@@ -18,7 +18,7 @@ public class SessionTokenServiceTest {
 
     private TokenStore sessionTokenRepository;
 
-    private ArgumentCaptor<TransientAccessToken> tokenArgumentCaptor = ArgumentCaptor.forClass(TransientAccessToken.class);
+    private final ArgumentCaptor<TransientAccessToken> tokenArgumentCaptor = ArgumentCaptor.forClass(TransientAccessToken.class);
 
     @Rule
     public ExpectedException exception = ExpectedException.none();

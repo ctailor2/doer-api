@@ -3,9 +3,9 @@ package com.doerapispring.authentication;
 import java.util.Date;
 
 public class Credentials {
-    private String userIdentifier;
-    private String secret;
-    private Date effectiveAt;
+    private final String userIdentifier;
+    private final String secret;
+    private final Date effectiveAt;
 
     public Credentials(String userIdentifier,
                        String secret,

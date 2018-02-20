@@ -4,7 +4,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -14,9 +13,8 @@ public class SkipAuthenticationPathRequestMatcher implements RequestMatcher {
     private final OrRequestMatcher matchers;
     private final AntPathRequestMatcher processingMatcher;
 
-    public SkipAuthenticationPathRequestMatcher(List<String> pathsToSkip, String processingPath) {
-        Assert.notNull(pathsToSkip);
-        List<RequestMatcher> requestMatchers = pathsToSkip.stream().map(path -> new AntPathRequestMatcher(path)).collect(Collectors.toList());
+    SkipAuthenticationPathRequestMatcher(List<String> pathsToSkip, String processingPath) {
+        List<RequestMatcher> requestMatchers = pathsToSkip.stream().map(AntPathRequestMatcher::new).collect(Collectors.toList());
         requestMatchers.add(new AntPathRequestMatcher(processingPath, HttpMethod.OPTIONS.toString()));
         matchers = new OrRequestMatcher(requestMatchers);
         processingMatcher = new AntPathRequestMatcher(processingPath);
@@ -24,9 +22,6 @@ public class SkipAuthenticationPathRequestMatcher implements RequestMatcher {
 
     @Override
     public boolean matches(HttpServletRequest request) {
-        if(matchers.matches(request)) {
-            return false;
-        }
-        return processingMatcher.matches(request);
+        return !matchers.matches(request) && processingMatcher.matches(request);
     }
 }

@@ -64,7 +64,7 @@ class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() throws Exception {
+    TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() {
         List<String> pathsToSkip = Arrays.asList(BASE_RESOURCES_ENDPOINT, SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
         SkipAuthenticationPathRequestMatcher matcher = new SkipAuthenticationPathRequestMatcher(pathsToSkip, TOKEN_AUTH_ENDPOINT);
         TokenAuthenticationFilter filter = new TokenAuthenticationFilter(matcher);

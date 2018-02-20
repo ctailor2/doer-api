@@ -19,7 +19,7 @@ public class AuthenticationServiceTest {
 
     private CredentialsStore credentialsStore;
 
-    private ArgumentCaptor<Credentials> credentialsArgumentCaptor = ArgumentCaptor.forClass(Credentials.class);
+    private final ArgumentCaptor<Credentials> credentialsArgumentCaptor = ArgumentCaptor.forClass(Credentials.class);
 
     @Before
     public void setUp() throws Exception {

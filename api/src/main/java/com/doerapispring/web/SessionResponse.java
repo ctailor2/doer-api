@@ -7,7 +7,7 @@ public class SessionResponse extends ResourceSupport {
     @JsonProperty("session")
     private final SessionTokenDTO sessionTokenDTO;
 
-    public SessionResponse(SessionTokenDTO sessionTokenDTO) {
+    SessionResponse(SessionTokenDTO sessionTokenDTO) {
         this.sessionTokenDTO = sessionTokenDTO;
     }
 

@@ -6,8 +6,8 @@ public class LoginForm {
     private final String identifier;
     private final String credentials;
 
-    public LoginForm(@JsonProperty("email") String identifier,
-                     @JsonProperty("password") String credentials) {
+    LoginForm(@JsonProperty("email") String identifier,
+              @JsonProperty("password") String credentials) {
         this.identifier = identifier;
         this.credentials = credentials;
     }
