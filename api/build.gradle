@@ -33,7 +33,7 @@ dependencies {
 
 flyway {
     def database
-    if(!project.hasProperty('testdb')) {
+    if (!project.hasProperty('testdb')) {
         database = "doer_api"
     } else {
         database = "doer_api_test"
@@ -49,8 +49,8 @@ task integrationTest(type: Test) {
     include 'integration/**'
 }
 
-integrationTest.dependsOn test
 check.dependsOn integrationTest
+integrationTest.mustRunAfter test
 
 task stage {
     dependsOn = ['clean', 'build']
