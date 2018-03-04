@@ -81,7 +81,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return UUID.randomUUID().toString();
     }
 
-    public Todo addDeferred(String task) throws ListSizeExceededException, DuplicateTodoException {
+    public Todo addDeferred(String task) throws DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo todo = new Todo(
             generateIdentifier(),

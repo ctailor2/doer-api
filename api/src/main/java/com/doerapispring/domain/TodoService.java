@@ -41,7 +41,7 @@ public class TodoService {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
             Todo todo = masterList.addDeferred(task);
             todoRepository.add(masterList, todo);
-        } catch (ListSizeExceededException | AbnormalModelException e) {
+        } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         } catch (DuplicateTodoException e) {
             throw new OperationRefusedException(e.getMessage());
