@@ -51,3 +51,12 @@ task integrationTest(type: Test) {
 
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
+
+task stage(dependsOn: build) {
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(stage)) {
+            test.enabled = false
+            integrationTest.enabled = false
+        }
+    }
+}
