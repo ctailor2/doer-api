@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingInt;
 
-public class MasterList implements UniquelyIdentifiable<String> {
+public class MasterList implements UniquelyIdentifiable<String>, IMasterList {
     private static final long UNLOCK_DURATION_SECONDS = 1800L;
     public static final String NAME = "now";
     public static final String DEFERRED_NAME = "later";
@@ -118,7 +118,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return !isFull() && deferredTodos.size() > 0;
     }
 
-    public Boolean isAbleToBeUnlocked() {
+    public boolean isAbleToBeUnlocked() {
         return isLocked() && getLastUnlockedAt()
             .map(lastUnlockedAt -> lastUnlockedAt.before(beginningOfToday()))
             .orElse(true);
@@ -135,7 +135,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
             .orElse(0L);
     }
 
-    List<Todo> pull() {
+    public List<Todo> pull() {
         int countOfTodosToPull = getMaxSize() - todos.size();
         List<Todo> sourceTodos = deferredTodos.stream()
             .limit(countOfTodosToPull)
@@ -154,13 +154,13 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return pulledTodos;
     }
 
-    Todo delete(String localIdentifier) throws TodoNotFoundException {
+    public Todo delete(String localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = getByLocalIdentifier(localIdentifier);
         getTodosByListName(todoToDelete.getListName()).remove(todoToDelete);
         return todoToDelete;
     }
 
-    Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = delete(localIdentifier);
         Todo displacingTodo = new Todo(
@@ -184,25 +184,25 @@ public class MasterList implements UniquelyIdentifiable<String> {
     }
 
 
-    Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (getByTask(task).isPresent()) throw new DuplicateTodoException();
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
         existingTodo.setTask(task);
         return existingTodo;
     }
 
-    Todo complete(String localIdentifier) throws TodoNotFoundException {
+    public Todo complete(String localIdentifier) throws TodoNotFoundException {
         Todo existingTodo = getByLocalIdentifier(localIdentifier);
         getTodosByListName(existingTodo.getListName()).remove(existingTodo);
         existingTodo.complete();
         return existingTodo;
     }
 
-    List<Todo> move(String originalTodoIdentifier, String targetTodoIdentifier) throws TodoNotFoundException {
+    public List<Todo> move(String originalTodoIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
         Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
         List<Todo> todos = getTodosByListName(originalTodo.getListName());
         Todo targetTodo = todos.stream()
-            .filter(todo -> todo.getLocalIdentifier().equals(targetTodoIdentifier))
+            .filter(todo -> todo.getLocalIdentifier().equals(targetLocalIdentifier))
             .findFirst()
             .orElseThrow(TodoNotFoundException::new);
 
@@ -228,7 +228,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
             .collect(Collectors.toList());
     }
 
-    ListUnlock unlock() throws LockTimerNotExpiredException {
+    public ListUnlock unlock() throws LockTimerNotExpiredException {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }

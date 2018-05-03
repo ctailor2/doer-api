@@ -2,7 +2,7 @@ package com.doerapispring.domain;
 
 public class Todo {
     private final String localIdentifier;
-    private final String listName;
+    private String listName;
 
     private String task;
     private Integer position;
@@ -82,5 +82,9 @@ public class Todo {
 
     void setPosition(Integer position) {
         this.position = position;
+    }
+
+    void setListName(String listName) {
+        this.listName = listName;
     }
 }

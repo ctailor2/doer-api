@@ -18,33 +18,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MasterListTest {
-    private IMasterList masterList;
-
-    private Clock mockClock;
-
+public class AlternateMasterListTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    private IMasterList masterList;
+    private Clock mockClock;
     private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
     public void setUp() throws Exception {
         mockClock = mock(Clock.class);
 
-        when(mockClock.getZone()).thenReturn(ZoneId.systemDefault());
+        when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
         uniqueIdentifier = new UniqueIdentifier<>("something");
-        masterList = new MasterList(mockClock, uniqueIdentifier, new ArrayList<>());
+        masterList = new AlternateMasterList(mockClock, uniqueIdentifier, new ArrayList<>());
     }
 
     @Test
     public void add_addsToNowList() throws Exception {
         Todo todo = masterList.add("someTask");
 
-        assertThat(masterList.getTodos()).containsExactly(todo);
         assertThat(todo.getPosition()).isEqualTo(1);
         assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
+        assertThat(todo.getTask()).isEqualTo("someTask");
+        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
+        assertThat(masterList.getTodos()).containsExactly(todo);
     }
 
     @Test
@@ -52,8 +52,8 @@ public class MasterListTest {
         Todo firstTodo = masterList.add("someTask");
         Todo secondTodo = masterList.add("someOtherTask");
 
-        assertThat(masterList.getTodos()).containsExactly(firstTodo, secondTodo);
-        assertThat(secondTodo.getPosition()).isEqualTo(2);
+        assertThat(masterList.getTodos()).containsExactly(secondTodo, firstTodo);
+        assertThat(secondTodo.getPosition()).isEqualTo(0);
     }
 
     @Test
@@ -77,10 +77,12 @@ public class MasterListTest {
     public void addDeferred_addsToLaterList() throws Exception {
         Todo todo = masterList.addDeferred("someTask");
 
-        masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).contains(todo);
         assertThat(todo.getPosition()).isEqualTo(1);
         assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
+        assertThat(todo.getTask()).isEqualTo("someTask");
+        assertThat(todo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).contains(todo);
     }
 
     @Test
@@ -149,7 +151,7 @@ public class MasterListTest {
         Todo todo = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
 
         assertThat(todo.getTask()).isEqualTo("displace it");
-        assertThat(todo.getPosition()).isEqualTo(nowTodo.getPosition());
+        assertThat(todo.getPosition()).isEqualTo(nowTodo.getPosition() - 1);
         assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(todo);
         assertThat(masterList.getDeferredTodos()).containsExactly(
@@ -170,7 +172,7 @@ public class MasterListTest {
         Todo todo = masterList.displace(nowTodo1.getLocalIdentifier(), "displace it");
 
         assertThat(todo.getTask()).isEqualTo("displace it");
-        assertThat(todo.getPosition()).isEqualTo(nowTodo1.getPosition());
+        assertThat(todo.getPosition()).isEqualTo(nowTodo2.getPosition() - 1);
         assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(todo, nowTodo2);
         assertThat(masterList.getDeferredTodos()).containsExactly(
@@ -178,7 +180,7 @@ public class MasterListTest {
                 nowTodo1.getLocalIdentifier(),
                 nowTodo1.getTask(),
                 MasterList.DEFERRED_NAME,
-                laterTodo.getPosition() - 1),
+                nowTodo1.getPosition()),
             laterTodo);
     }
 
@@ -212,6 +214,7 @@ public class MasterListTest {
 
         Todo completedTodo = masterList.complete(todo.getLocalIdentifier());
 
+        assertThat(masterList.getTodos()).isEmpty();
         assertThat(completedTodo.isComplete()).isEqualTo(true);
     }
 
@@ -314,8 +317,10 @@ public class MasterListTest {
 
     @Test
     public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_returnsFalse() throws Exception {
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618537600000L)); // Tuesday, August 8, 1989 12:00:00 AM
         masterList.unlock();
 
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618623999999L)); // Tuesday, August 8, 1989 11:59:59 PM
         Boolean ableToBeUnlocked = masterList.isAbleToBeUnlocked();
 
         assertThat(ableToBeUnlocked).isFalse();
@@ -323,11 +328,10 @@ public class MasterListTest {
 
     @Test
     public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsTrue() throws Exception {
-        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(0L));
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618429599999L)); // Monday, August 7, 1989 11:29:59 PM
         masterList.unlock();
 
-        Instant currentInstant = Instant.ofEpochMilli(432143214321L);
-        when(mockClock.instant()).thenReturn(currentInstant);
+        when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618537600000L)); // Tuesday, August 8, 1989 12:00:00 AM
         Boolean ableToBeReplenished = masterList.isAbleToBeUnlocked();
 
         assertThat(ableToBeReplenished).isTrue();
@@ -386,7 +390,7 @@ public class MasterListTest {
         when(mockClock.instant()).thenReturn(unlockInstant);
         masterList.unlock();
 
-        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1799L));
+        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1800L));
         assertThat(masterList.isLocked()).isFalse();
     }
 
@@ -423,9 +427,24 @@ public class MasterListTest {
         assertThat(effectedTodos).hasSize(2);
         Todo pulledTodo1 = effectedTodos.get(0);
         assertThat(pulledTodo1.getTask()).isEqualTo(firstLater.getTask());
+        assertThat(pulledTodo1.getListName()).isEqualTo(AlternateMasterList.NAME);
         Todo pulledTodo2 = effectedTodos.get(1);
         assertThat(pulledTodo2.getTask()).isEqualTo(secondLater.getTask());
+        assertThat(pulledTodo2.getListName()).isEqualTo(AlternateMasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(pulledTodo1, pulledTodo2);
+    }
+
+    @Test
+    public void pull_whenThereAreNoImmediateTodos_andOneDeferredTodo_fillsFromPostponedList() throws Exception {
+        Todo firstLater = masterList.addDeferred("firstLater");
+
+        List<Todo> effectedTodos = masterList.pull();
+
+        assertThat(effectedTodos).hasSize(1);
+        Todo pulledTodo = effectedTodos.get(0);
+        assertThat(pulledTodo.getTask()).isEqualTo(firstLater.getTask());
+        assertThat(pulledTodo.getListName()).isEqualTo(AlternateMasterList.NAME);
+        assertThat(masterList.getTodos()).containsExactly(pulledTodo);
     }
 
     @Test
@@ -440,6 +459,7 @@ public class MasterListTest {
         assertThat(effectedTodos).hasSize(1);
         Todo pulledTodo = effectedTodos.get(0);
         assertThat(pulledTodo.getTask()).isEqualTo(firstLater.getTask());
+        assertThat(pulledTodo.getListName()).isEqualTo(AlternateMasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(firstNow, pulledTodo);
     }
 
@@ -467,6 +487,29 @@ public class MasterListTest {
         Todo todo = masterList.add("someTask");
 
         assertThat(masterList.getTodos()).contains(todo);
+    }
+
+    @Test
+    public void getTodos_doesNotGetTodosFromPostponedList() throws Exception {
+        Todo todo = masterList.addDeferred("someTask");
+
+        assertThat(masterList.getTodos()).doesNotContain(todo);
+    }
+
+    @Test
+    public void getDeferredTodos_getsTodosFromPostponedList() throws Exception {
+        Todo todo = masterList.addDeferred("someTask");
+
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).contains(todo);
+    }
+
+    @Test
+    public void getDeferredTodos_doesNotGetTodosFromImmediateList() throws Exception {
+        Todo todo = masterList.add("someTask");
+
+        masterList.unlock();
+        assertThat(masterList.getDeferredTodos()).doesNotContain(todo);
     }
 
     @Test
@@ -514,6 +557,15 @@ public class MasterListTest {
         masterList.add("todo1");
         masterList.add("todo2");
         masterList.addDeferred("someTask");
+
+        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+
+        assertThat(hasDeferredTodosAvailable).isFalse();
+    }
+
+    @Test
+    public void isAbleToBeReplenished_whenThereAreNoDeferredTodos_andTheListIsNotFull_returnsFalse() throws Exception {
+        masterList.add("todo1");
 
         boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
 
