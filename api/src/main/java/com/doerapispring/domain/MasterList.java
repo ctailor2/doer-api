@@ -4,230 +4,69 @@ import java.time.Clock;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Comparator.comparingInt;
-
-public class MasterList implements UniquelyIdentifiable<String>, IMasterList {
-    private static final long UNLOCK_DURATION_SECONDS = 1800L;
+public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public static final String NAME = "now";
     public static final String DEFERRED_NAME = "later";
-
+    private List<Todo> todos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final List<ListUnlock> listUnlocks;
-    private final List<Todo> todos;
-    private final List<Todo> deferredTodos;
+    private int listDemarcationIndex = 0;
 
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<ListUnlock> listUnlocks) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.listUnlocks = listUnlocks;
-
-        todos = new ArrayList<>();
-        deferredTodos = new ArrayList<>();
     }
 
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, List<ListUnlock> listUnlocks) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.todos = todos;
-        this.deferredTodos = deferredTodos;
+        List<Todo> allTodos = new ArrayList<>();
+        allTodos.addAll(todos);
+//        TODO: Unit test this behavior
+        todos.forEach(ignored -> listDemarcationIndex++);
+        allTodos.addAll(deferredTodos);
+        this.todos = allTodos;
         this.listUnlocks = listUnlocks;
     }
 
     @Override
-    public UniqueIdentifier<String> getIdentifier() {
-        return uniqueIdentifier;
-    }
-
-    public List<ListUnlock> getListUnlocks() {
-        return listUnlocks;
-    }
-
-    public List<Todo> getTodos() {
-        return todos;
-    }
-
-    public List<Todo> getDeferredTodos() throws LockTimerNotExpiredException {
-        if (isLocked()) throw new LockTimerNotExpiredException();
-        return deferredTodos;
-    }
-
     public Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
-        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        if (isFull()) {
+        if (alreadyExists(task)) {
+            throw new DuplicateTodoException();
+        }
+        if (getTodos().size() >= maxSize()) {
             throw new ListSizeExceededException();
         }
-        Todo todo = new Todo(
-            generateIdentifier(),
-            task,
-            getName(),
-            getNextPosition(NAME));
+        int position;
+        if (todos.isEmpty()) {
+            position = 1;
+        } else {
+            position = todos.get(0).getPosition() - 1;
+        }
+        Todo todo = new Todo(generateIdentifier(), task, MasterList.NAME, position);
+        todos.add(0, todo);
+        listDemarcationIndex++;
+        return todo;
+    }
+
+    @Override
+    public List<Todo> getTodos() {
+        return todos.subList(0, listDemarcationIndex);
+    }
+
+    @Override
+    public Todo addDeferred(String task) throws DuplicateTodoException {
+        if (alreadyExists(task)) {
+            throw new DuplicateTodoException();
+        }
+        Todo todo = new Todo(generateIdentifier(), task, MasterList.DEFERRED_NAME, getNextDeferredPosition());
         todos.add(todo);
         return todo;
     }
 
-    private Integer getNextPosition(String listName) {
-        Integer nextPosition;
-        List<Todo> todos = getTodosByListName(listName);
-        if (todos.isEmpty()) {
-            nextPosition = 1;
-        } else {
-            nextPosition = todos.get(todos.size() - 1).getPosition() + 1;
-        }
-        return nextPosition;
-    }
-
-    private String generateIdentifier() {
-        return UUID.randomUUID().toString();
-    }
-
-    public Todo addDeferred(String task) throws DuplicateTodoException {
-        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        Todo todo = new Todo(
-            generateIdentifier(),
-            task,
-            DEFERRED_NAME,
-            getNextPosition(DEFERRED_NAME));
-        deferredTodos.add(todo);
-        return todo;
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    public String getDeferredName() {
-        return DEFERRED_NAME;
-    }
-
-    public boolean isLocked() {
-        return getLastUnlockedAt()
-            .map(lastUnlockedAt -> lastUnlockedAt.before(new Date(clock.instant().minusSeconds(UNLOCK_DURATION_SECONDS).toEpochMilli())))
-            .orElse(true);
-    }
-
-    public boolean isFull() {
-        return todos.size() >= getMaxSize();
-    }
-
-    private int getMaxSize() {
-        return 2;
-    }
-
-    public boolean isAbleToBeReplenished() {
-        return !isFull() && deferredTodos.size() > 0;
-    }
-
-    public boolean isAbleToBeUnlocked() {
-        return isLocked() && getLastUnlockedAt()
-            .map(lastUnlockedAt -> lastUnlockedAt.before(beginningOfToday()))
-            .orElse(true);
-    }
-
-    public Long unlockDuration() {
-        return getLastUnlockedAt()
-            .map(lastUnlockedAt -> {
-                long unlockExpiration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION_SECONDS * 1000;
-                long now = clock.instant().toEpochMilli();
-                return unlockExpiration - now;
-            })
-            .filter(duration -> duration > 0L)
-            .orElse(0L);
-    }
-
-    public List<Todo> pull() {
-        int countOfTodosToPull = getMaxSize() - todos.size();
-        List<Todo> sourceTodos = deferredTodos.stream()
-            .limit(countOfTodosToPull)
-            .collect(Collectors.toList());
-        deferredTodos.removeAll(sourceTodos);
-        ArrayList<Todo> pulledTodos = new ArrayList<>();
-        for (Todo todo : sourceTodos) {
-            Todo newTodo = new Todo(
-                todo.getLocalIdentifier(),
-                todo.getTask(),
-                getName(),
-                getNextPosition(NAME));
-            todos.add(newTodo);
-            pulledTodos.add(newTodo);
-        }
-        return pulledTodos;
-    }
-
-    public Todo delete(String localIdentifier) throws TodoNotFoundException {
-        Todo todoToDelete = getByLocalIdentifier(localIdentifier);
-        getTodosByListName(todoToDelete.getListName()).remove(todoToDelete);
-        return todoToDelete;
-    }
-
-    public Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
-        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        Todo existingTodo = delete(localIdentifier);
-        Todo displacingTodo = new Todo(
-            generateIdentifier(),
-            task,
-            NAME,
-            existingTodo.getPosition());
-        todos.add(displacingTodo);
-        todos.sort(comparingInt(Todo::getPosition));
-        Todo todo = new Todo(existingTodo.getLocalIdentifier(), existingTodo.getTask(), DEFERRED_NAME, getNextTopPosition(DEFERRED_NAME));
-        deferredTodos.add(0, todo);
-        return displacingTodo;
-    }
-
-    private int getNextTopPosition(String listName) {
-        List<Todo> todos = getTodosByListName(listName);
-        if (todos.isEmpty()) {
-            return 1;
-        }
-        return todos.get(0).getPosition() - 1;
-    }
-
-
-    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
-        if (getByTask(task).isPresent()) throw new DuplicateTodoException();
-        Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        existingTodo.setTask(task);
-        return existingTodo;
-    }
-
-    public Todo complete(String localIdentifier) throws TodoNotFoundException {
-        Todo existingTodo = getByLocalIdentifier(localIdentifier);
-        getTodosByListName(existingTodo.getListName()).remove(existingTodo);
-        existingTodo.complete();
-        return existingTodo;
-    }
-
-    public List<Todo> move(String originalTodoIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
-        Todo originalTodo = getByLocalIdentifier(originalTodoIdentifier);
-        List<Todo> todos = getTodosByListName(originalTodo.getListName());
-        Todo targetTodo = todos.stream()
-            .filter(todo -> todo.getLocalIdentifier().equals(targetLocalIdentifier))
-            .findFirst()
-            .orElseThrow(TodoNotFoundException::new);
-
-        Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), originalTodo.getPosition()));
-
-        int originalIndex = todos.indexOf(originalTodo);
-        int targetIndex = todos.indexOf(targetTodo);
-
-        Map<Integer, Integer> originalMapping = new HashMap<>();
-        for (int index = originalIndex; direction.targetNotExceeded(index, targetIndex); index += direction.getValue()) {
-            originalMapping.put(index, todos.get(index).getPosition());
-        }
-
-        todos.remove(originalTodo);
-        todos.add(targetIndex, originalTodo);
-
-        return originalMapping.entrySet().stream()
-            .map(entry -> {
-                Todo todo = todos.get(entry.getKey());
-                todo.setPosition(entry.getValue());
-                return todo;
-            })
-            .collect(Collectors.toList());
-    }
-
+    @Override
     public ListUnlock unlock() throws LockTimerNotExpiredException {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
@@ -237,74 +76,159 @@ public class MasterList implements UniquelyIdentifiable<String>, IMasterList {
         return listUnlock;
     }
 
+    @Override
+    public List<Todo> getDeferredTodos() throws LockTimerNotExpiredException {
+        if (isLocked()) {
+            throw new LockTimerNotExpiredException();
+        }
+        return deferredTodos();
+    }
+
+    @Override
+    public Todo delete(String localIdentifier) throws TodoNotFoundException {
+        Todo todoToDelete = getByLocalIdentifier(localIdentifier);
+        if (todos.indexOf(todoToDelete) < listDemarcationIndex) {
+            listDemarcationIndex--;
+        }
+        todos.remove(todoToDelete);
+        return todoToDelete;
+    }
+
+    @Override
+    public Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+        if (alreadyExists(task)) throw new DuplicateTodoException();
+//        TODO: Forget about getting this working and just remove the displace link for now
+//        Bring this back once the master list model is persisted
+//        and names / positions are no longer managed externally from the masterlist
+        Todo existingTodo = delete(localIdentifier);
+        Todo displacingTodo = new Todo(
+            generateIdentifier(),
+            task,
+            NAME,
+            existingTodo.getPosition());
+        todos.add(0, displacingTodo);
+        listDemarcationIndex++;
+        Todo todo = new Todo(existingTodo.getLocalIdentifier(), existingTodo.getTask(), DEFERRED_NAME, 1321321);
+        todos.add(listDemarcationIndex, todo);
+        return displacingTodo;
+    }
+
+    @Override
+    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+        if (alreadyExists(task)) {
+            throw new DuplicateTodoException();
+        }
+        Todo todo = getByLocalIdentifier(localIdentifier);
+        todo.setTask(task);
+        return todo;
+    }
+
+    @Override
+    public Todo complete(String localIdentifier) throws TodoNotFoundException {
+        Todo todo = delete(localIdentifier);
+        todo.complete();
+        return todo;
+    }
+
+    @Override
+    public List<Todo> move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
+        Todo todo = getByLocalIdentifier(localIdentifier);
+        int index = todos.indexOf(todo);
+        Todo targetTodo = getByLocalIdentifier(targetLocalIdentifier);
+        int originalIndex;
+        int targetIndex;
+        List<Todo> subList;
+        if (index < listDemarcationIndex) {
+            subList = getTodos();
+        } else {
+            subList = deferredTodos();
+        }
+        originalIndex = subList.indexOf(todo);
+        targetIndex = subList.indexOf(targetTodo);
+
+        Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), todo.getPosition()));
+        Map<Integer, Integer> originalMapping = new HashMap<>();
+        for (int i = originalIndex; direction.targetNotExceeded(i, targetIndex); i += direction.getValue()) {
+            originalMapping.put(i, subList.get(i).getPosition());
+        }
+
+        subList.remove(todo);
+        subList.add(targetIndex, todo);
+
+        return originalMapping.entrySet().stream()
+            .map(entry -> {
+                Todo effectedTodo = subList.get(entry.getKey());
+                effectedTodo.setPosition(entry.getValue());
+                return effectedTodo;
+            })
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isAbleToBeUnlocked() {
+        return isLocked() && mostRecentListUnlock()
+            .map(listUnlock -> listUnlock.before(beginningOfToday()))
+            .orElse(true);
+    }
+
+    @Override
+    public boolean isLocked() {
+        return mostRecentListUnlock()
+            .map(listUnlock -> listUnlock.before(Date.from(clock.instant().minusSeconds(1800L))))
+            .orElse(true);
+    }
+
+    @Override
+    public Long unlockDuration() {
+        return mostRecentListUnlock()
+            .map(listUnlock -> listUnlock.toInstant().toEpochMilli() + 1800000L - clock.instant().toEpochMilli())
+            .filter(duration -> duration > 0L)
+            .orElse(0L);
+    }
+
+    @Override
+    public List<Todo> pull() {
+        List<Todo> pulledTodos = new ArrayList<>();
+        while (listDemarcationIndex < todos.size() && getTodos().size() < maxSize()) {
+            Todo pulledTodo = todos.get(listDemarcationIndex);
+            pulledTodo.setListName(MasterList.NAME);
+            pulledTodos.add(pulledTodo);
+            listDemarcationIndex++;
+        }
+        return pulledTodos;
+    }
+
+    @Override
+    public boolean isFull() {
+        return getTodos().size() >= maxSize();
+    }
+
+    @Override
+    public boolean isAbleToBeReplenished() {
+        return !isFull() && deferredTodos().size() > 0;
+    }
+
     Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        return getAllTodos().stream()
+        return todos.stream()
             .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
             .findFirst()
             .orElseThrow(TodoNotFoundException::new);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        MasterList that = (MasterList) o;
-
-        if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
-        if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
-            return false;
-        if (listUnlocks != null ? !listUnlocks.equals(that.listUnlocks) : that.listUnlocks != null) return false;
-        if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
-        return deferredTodos != null ? deferredTodos.equals(that.deferredTodos) : that.deferredTodos == null;
+    private boolean alreadyExists(String task) {
+        return todos.stream().anyMatch(todo -> todo.getTask().equals(task));
     }
 
-    @Override
-    public int hashCode() {
-        int result = clock != null ? clock.hashCode() : 0;
-        result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
-        result = 31 * result + (listUnlocks != null ? listUnlocks.hashCode() : 0);
-        result = 31 * result + (todos != null ? todos.hashCode() : 0);
-        result = 31 * result + (deferredTodos != null ? deferredTodos.hashCode() : 0);
-        return result;
+    private List<Todo> deferredTodos() {
+        return todos.subList(listDemarcationIndex, todos.size());
     }
 
-    @Override
-    public String toString() {
-        return "MasterList{" +
-            "clock=" + clock +
-            ", uniqueIdentifier=" + uniqueIdentifier +
-            ", listUnlocks=" + listUnlocks +
-            ", todos=" + todos +
-            ", deferredTodos=" + deferredTodos +
-            '}';
+    private String generateIdentifier() {
+        return UUID.randomUUID().toString();
     }
 
-    private List<Todo> getTodosByListName(String listName) {
-        if (NAME.equals(listName)) {
-            return todos;
-        } else {
-            return deferredTodos;
-        }
-    }
-
-    private Optional<Todo> getByTask(String task) {
-        return getAllTodos().stream().filter(todo ->
-            todo.getTask().equals(task))
-            .findFirst();
-    }
-
-    private List<Todo> getAllTodos() {
-        ArrayList<Todo> allTodos = new ArrayList<>();
-        allTodos.addAll(todos);
-        allTodos.addAll(deferredTodos);
-        return allTodos;
-    }
-
-    private Optional<Date> getLastUnlockedAt() {
-        return listUnlocks.stream()
-            .findFirst()
-            .map(ListUnlock::getCreatedAt);
+    private int maxSize() {
+        return 2;
     }
 
     private Date beginningOfToday() {
@@ -317,5 +241,38 @@ public class MasterList implements UniquelyIdentifiable<String>, IMasterList {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
+    }
+
+    private int getNextDeferredPosition() {
+        int position;
+        if (todos.isEmpty()) {
+            position = 1;
+        } else {
+            position = todos.get(todos.size() - 1).getPosition() + 1;
+        }
+        return position;
+    }
+
+    private Optional<Date> mostRecentListUnlock() {
+        return listUnlocks.stream()
+            .findFirst()
+            .map(ListUnlock::getCreatedAt);
+    }
+
+    @Override
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
+    }
+
+    public String getName() {
+        return NAME;
+    }
+
+    public String getDeferredName() {
+        return DEFERRED_NAME;
+    }
+
+    public List<ListUnlock> getListUnlocks() {
+        return listUnlocks;
     }
 }

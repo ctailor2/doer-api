@@ -1,6 +1,7 @@
 package com.doerapispring.domain;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -217,6 +218,7 @@ public class TodoServiceTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_addsAndUpdatesUsingRepository() throws Exception {
         Todo existingTodo = masterList.add("someTask");
         masterList.add("someOtherTask");
@@ -240,6 +242,7 @@ public class TodoServiceTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListNotFound_refusesDisplace() throws Exception {
         when(listService.get(any())).thenThrow(new OperationRefusedException());
 
@@ -248,12 +251,14 @@ public class TodoServiceTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoNotFound_refusesDisplace() throws Exception {
         exception.expect(OperationRefusedException.class);
         todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
         Todo todo = masterList.add("someTask");
 
@@ -265,6 +270,7 @@ public class TodoServiceTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_onAdd_refusesDisplace() throws Exception {
         doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
 
@@ -273,6 +279,7 @@ public class TodoServiceTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_onUpdate_refusesDisplace() throws Exception {
         doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
 
@@ -395,11 +402,11 @@ public class TodoServiceTest {
         List<Todo> updatedTodos = todoListArgumentCaptor.getValue();
         assertThat(updatedTodos).hasSize(2);
         Todo updatedTodo1 = updatedTodos.get(0);
-        assertThat(updatedTodo1.getTask()).isEqualTo(todo2.getTask());
-        assertThat(updatedTodo1.getPosition()).isEqualTo(todo2.getPosition());
+        assertThat(updatedTodo1.getTask()).isEqualTo(todo1.getTask());
+        assertThat(updatedTodo1.getPosition()).isEqualTo(todo1.getPosition());
         Todo updatedTodo2 = updatedTodos.get(1);
-        assertThat(updatedTodo2.getTask()).isEqualTo(todo1.getTask());
-        assertThat(updatedTodo2.getPosition()).isEqualTo(todo1.getPosition());
+        assertThat(updatedTodo2.getTask()).isEqualTo(todo2.getTask());
+        assertThat(updatedTodo2.getPosition()).isEqualTo(todo2.getPosition());
     }
 
     @Test

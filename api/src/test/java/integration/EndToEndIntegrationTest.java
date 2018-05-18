@@ -4,6 +4,7 @@ import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -62,14 +63,14 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             get(getTodosHref)
                 .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(2)))
-            .andExpect(jsonPath("$.todos[0].task", equalTo("original task")))
-            .andExpect(jsonPath("$.todos[1].task", equalTo("some other task")))
+            .andExpect(jsonPath("$.todos[0].task", equalTo("some other task")))
+            .andExpect(jsonPath("$.todos[1].task", equalTo("original task")))
             .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(
             put(
                 JsonPath.parse(jsonResponse)
-                    .read("$.todos[0]._links.update.href", String.class))
+                    .read("$.todos[1]._links.update.href", String.class))
                 .content("{\"task\":\"updated task\"}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(httpHeaders));
@@ -77,7 +78,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         jsonResponse = mockMvc.perform(
             get(getTodosHref)
                 .headers(httpHeaders))
-            .andExpect(jsonPath("$.todos[0].task", equalTo("updated task")))
+            .andExpect(jsonPath("$.todos[1].task", equalTo("updated task")))
             .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(
@@ -90,14 +91,14 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             get(getTodosHref)
                 .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(2)))
-            .andExpect(jsonPath("$.todos[0].task", equalTo("some other task")))
-            .andExpect(jsonPath("$.todos[1].task", equalTo("updated task")))
+            .andExpect(jsonPath("$.todos[0].task", equalTo("updated task")))
+            .andExpect(jsonPath("$.todos[1].task", equalTo("some other task")))
             .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(
             delete(
                 JsonPath.parse(jsonResponse)
-                    .read("$.todos[0]._links.delete.href", String.class))
+                    .read("$.todos[1]._links.delete.href", String.class))
                 .headers(httpHeaders));
 
         mockMvc.perform(
@@ -269,6 +270,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displacingTodos_defersTodos() throws Exception {
         String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
             .headers(httpHeaders))

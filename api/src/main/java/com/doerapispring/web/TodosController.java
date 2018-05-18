@@ -146,10 +146,6 @@ class TodosController {
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                         todoDTO.getLocalIdentifier(),
                         targetTodoDTO.getLocalIdentifier()).withRel("move")));
-
-                if (todoListDTO.isFull()) {
-                    todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
-                }
             });
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel());

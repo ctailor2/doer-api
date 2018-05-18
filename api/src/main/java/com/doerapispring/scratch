@@ -81,3 +81,10 @@ such that the web layer can inspect them and include/exclude links to other endp
 // Notes 4/17
 - Want to make it so later todos can only be requested once per day
 - Also want to be able to request later todos multiple times within a short interval of time after requesting them for the first time that day
+
+// Notes 5/17/18
+- The new MasterList todos model makes it more compelling for the MasterList to be persisted
+- The MasterList itself could keep track of its demarcationIndex
+- The todos would be saved (added or updated) whenever the MasterList is saved
+- Todos positions can just be their indexes in the MasterList
+- Todos would no longer need to know their list name

@@ -3,6 +3,7 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
@@ -97,6 +98,7 @@ public class TodosControllerTest {
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void todos_callsTodoService_whenListAllowsDisplacement_includesDisplaceLink_forEachNowTodo() throws Exception {
         when(mockTodoApiService.getTodos(any())).thenReturn(new TodoListDTO(todoDTOs, true));
         ResponseEntity<TodosResponse> responseEntity = todosController.todos(authenticatedUser);

@@ -4,6 +4,7 @@ import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -42,6 +43,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     }
 
     @Test
+    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
         todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
