@@ -133,7 +133,6 @@ public class TodoRepositoryTest {
     @Test
     public void update_findsTodo_whenFound_updatesTodo() throws Exception {
         TodoEntity existingTodoEntity = TodoEntity.builder()
-            .id(123L)
             .uuid("someUuid")
             .userEntity(UserEntity.builder().build())
             .createdAt(new Date())
@@ -147,7 +146,6 @@ public class TodoRepositoryTest {
         verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
         verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
         TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
-        assertThat(todoEntity.id).isEqualTo(existingTodoEntity.id);
         assertThat(todoEntity.uuid).isEqualTo(existingTodoEntity.uuid);
         assertThat(todoEntity.userEntity).isEqualTo(existingTodoEntity.userEntity);
         assertThat(todoEntity.task).isEqualTo("bingo");
@@ -160,7 +158,6 @@ public class TodoRepositoryTest {
     @Test
     public void update_findsTodo_whenFound_whenTodoIsComplete_updatesTodo() throws Exception {
         TodoEntity existingTodoEntity = TodoEntity.builder()
-            .id(123L)
             .uuid("someUuid")
             .completed(false)
             .build();

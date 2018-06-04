@@ -79,7 +79,6 @@ public class MasterListRepositoryTest {
     public void find_whenThereAreImmediateTodos_returnsMasterListWithTodos() throws Exception {
         String userEmail = "thisUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
-            .id(123L)
             .uuid("someUuid")
             .userEntity(UserEntity.builder().email(userEmail).build())
             .task("do it now")
@@ -100,7 +99,6 @@ public class MasterListRepositoryTest {
     public void find_whenThereArePostponedTodos_returnsMasterListWithTodos() throws Exception {
         String userEmail = "thatUserEmail";
         TodoEntity todoEntity = TodoEntity.builder()
-            .id(123L)
             .uuid("someUuid")
             .userEntity(UserEntity.builder().email(userEmail).build())
             .task("do it later")

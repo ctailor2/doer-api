@@ -1,0 +1,5 @@
+ALTER TABLE todos
+DROP COLUMN id;
+
+ALTER TABLE ONLY todos
+ADD CONSTRAINT todos_pkey PRIMARY KEY (uuid);

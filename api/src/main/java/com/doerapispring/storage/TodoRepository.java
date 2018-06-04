@@ -54,7 +54,6 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                 todo.getLocalIdentifier());
         if (todoEntity == null) throw new AbnormalModelException();
         todoDao.save(TodoEntity.builder()
-                .id(todoEntity.id)
                 .uuid(todoEntity.uuid)
                 .userEntity(todoEntity.userEntity)
                 .task(todo.getTask())
@@ -76,7 +75,6 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                             todo.getLocalIdentifier());
                     if (todoEntity == null) return null;
                     return TodoEntity.builder()
-                            .id(todoEntity.id)
                             .uuid(todoEntity.uuid)
                             .userEntity(todoEntity.userEntity)
                             .task(todo.getTask())
