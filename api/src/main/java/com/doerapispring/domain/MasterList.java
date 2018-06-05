@@ -7,19 +7,19 @@ import java.util.stream.Collectors;
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public static final String NAME = "now";
     public static final String DEFERRED_NAME = "later";
+    private Date lastUnlocked;
     private List<Todo> todos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
-    private final List<ListUnlock> listUnlocks;
     private int listDemarcationIndex = 0;
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<ListUnlock> listUnlocks) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlocked) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.listUnlocks = listUnlocks;
+        this.lastUnlocked = lastUnlocked;
     }
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, List<ListUnlock> listUnlocks) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, Date lastUnlocked) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         List<Todo> allTodos = new ArrayList<>();
@@ -28,7 +28,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todos.forEach(ignored -> listDemarcationIndex++);
         allTodos.addAll(deferredTodos);
         this.todos = allTodos;
-        this.listUnlocks = listUnlocks;
+        this.lastUnlocked = lastUnlocked;
     }
 
     @Override
@@ -71,9 +71,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
-        ListUnlock listUnlock = new ListUnlock(Date.from(clock.instant()));
-        listUnlocks.add(listUnlock);
-        return listUnlock;
+        lastUnlocked = Date.from(clock.instant());
+        return new ListUnlock(lastUnlocked);
     }
 
     @Override
@@ -254,9 +253,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     private Optional<Date> mostRecentListUnlock() {
-        return listUnlocks.stream()
-            .findFirst()
-            .map(ListUnlock::getCreatedAt);
+        return Optional.ofNullable(lastUnlocked);
     }
 
     @Override
@@ -272,7 +269,46 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return DEFERRED_NAME;
     }
 
-    public List<ListUnlock> getListUnlocks() {
-        return listUnlocks;
+    public List<Todo> getAllTodos() {
+        return todos;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MasterList that = (MasterList) o;
+
+        if (listDemarcationIndex != that.listDemarcationIndex) return false;
+        if (lastUnlocked != null ? !lastUnlocked.equals(that.lastUnlocked) : that.lastUnlocked != null) return false;
+        if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
+        if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
+        return uniqueIdentifier != null ? uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = lastUnlocked != null ? lastUnlocked.hashCode() : 0;
+        result = 31 * result + (todos != null ? todos.hashCode() : 0);
+        result = 31 * result + (clock != null ? clock.hashCode() : 0);
+        result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
+        result = 31 * result + listDemarcationIndex;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MasterList{" +
+            "lastUnlocked=" + lastUnlocked +
+            ", todos=" + todos +
+            ", clock=" + clock +
+            ", uniqueIdentifier=" + uniqueIdentifier +
+            ", listDemarcationIndex=" + listDemarcationIndex +
+            '}';
+    }
+
+    Date getLastUnlocked() {
+        return lastUnlocked;
     }
 }

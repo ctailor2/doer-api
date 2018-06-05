@@ -11,7 +11,6 @@ import org.mockito.Captor;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class TodoRepositoryTest {
     public void add_findsUser_whenFound_savesRelationship_setsFields_setsAuditingData() throws Exception {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 3);
         todoRepository.add(masterList, todo);
 
@@ -68,7 +67,7 @@ public class TodoRepositoryTest {
     public void add_findsUser_whenFound_whenScheduledForNow_correctlyTranslatesScheduling() throws Exception {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someId", "bingo", MasterList.NAME, 5);
         todoRepository.add(masterList, todo);
 
@@ -83,7 +82,7 @@ public class TodoRepositoryTest {
     public void add_findsUser_whenFound_whenScheduledForLater_correctlyTranslatesScheduling() throws Exception {
         UserEntity userEntity = UserEntity.builder().build();
         when(mockUserDAO.findByEmail(any())).thenReturn(userEntity);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.add(masterList, todo);
 
@@ -100,7 +99,7 @@ public class TodoRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         Todo todo = new Todo("someId", "bingo", MasterList.DEFERRED_NAME, 5);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         todoRepository.add(masterList, todo);
 
         verify(mockUserDAO).findByEmail("listUserIdentifier");
@@ -110,7 +109,7 @@ public class TodoRepositoryTest {
     public void remove_findsTodo_whenFound_deletesIt() throws Exception {
         TodoEntity todoEntity = TodoEntity.builder().build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(todoEntity);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.remove(masterList, todo);
 
@@ -120,7 +119,7 @@ public class TodoRepositoryTest {
 
     @Test
     public void remove_findsTodo_whenNotFound_throwsAbnormalModelException() throws Exception {
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someUuid", "bingo", MasterList.NAME, 5);
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(null);
 
@@ -139,7 +138,7 @@ public class TodoRepositoryTest {
             .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todoRepository.update(masterList, todo);
 
@@ -163,7 +162,7 @@ public class TodoRepositoryTest {
             .build();
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
 
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
         todo.complete();
         todoRepository.update(masterList, todo);
@@ -180,7 +179,7 @@ public class TodoRepositoryTest {
 
         exception.expect(AbnormalModelException.class);
         Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
         todoRepository.update(masterList, todo);
 
         verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
@@ -192,7 +191,7 @@ public class TodoRepositoryTest {
         List<Todo> todos = asList(
             new Todo("uuid1", "bingo", MasterList.DEFERRED_NAME, 5),
             new Todo("uuid2", "bango", MasterList.DEFERRED_NAME, 2));
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
 
         todoRepository.update(masterList, todos);
 
@@ -218,7 +217,7 @@ public class TodoRepositoryTest {
         List<Todo> todos = asList(
             new Todo("uuid1", "bingo", MasterList.DEFERRED_NAME, 5),
             new Todo("uuid2", "bango", MasterList.DEFERRED_NAME, 2));
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), Collections.emptyList());
+        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
 
         exception.expect(AbnormalModelException.class);
         todoRepository.update(masterList, todos);

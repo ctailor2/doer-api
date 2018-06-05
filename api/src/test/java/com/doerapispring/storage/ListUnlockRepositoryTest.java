@@ -11,7 +11,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import java.time.Clock;
-import java.util.Collections;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -44,7 +43,8 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            Collections.emptyList());
+            null
+        );
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("listUserIdentifier");
@@ -64,7 +64,8 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            Collections.emptyList());
+            null
+        );
         listUnlockRepository.add(masterList, new ListUnlock());
 
         verify(mockUserDao).findByEmail("nonExistentUser");

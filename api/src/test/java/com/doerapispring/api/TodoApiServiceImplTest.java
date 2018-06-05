@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
@@ -31,7 +30,7 @@ public class TodoApiServiceImplTest {
         mockTodoService = mock(TodoService.class);
         todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
         uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, new ArrayList<>());
+        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null);
         when(mockTodoService.get(any())).thenReturn(masterList);
     }
 

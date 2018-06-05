@@ -1,6 +1,9 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.MasterList;
+import com.doerapispring.domain.ObjectRepository;
+import com.doerapispring.domain.Todo;
+import com.doerapispring.domain.UniqueIdentifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,16 +57,12 @@ public class MasterListRepositoryTest {
         masterListRepository.find(new UniqueIdentifier<>("somethingSecret"));
 
         verify(mockTodoDAO).findUnfinishedByUserEmail("somethingSecret");
-        verify(mockListUnlockDao).findAllUserListUnlocks("somethingSecret");
+        verify(mockListUnlockDao).findFirstUserListUnlock("somethingSecret");
     }
 
     @Test
     public void find_whenThereAreNoTodos_returnsMasterListWithNoTodos() throws Exception {
         when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(Collections.emptyList());
-        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(singletonList(
-            ListUnlockEntity.builder()
-                .updatedAt(Date.from(Instant.now().minusSeconds(30)))
-                .build()));
 
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("userIdentifier");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
@@ -72,6 +71,7 @@ public class MasterListRepositoryTest {
         MasterList masterList = masterListOptional.get();
         assertThat(masterList.getIdentifier()).isEqualTo(uniqueIdentifier);
         assertThat(masterList.getTodos()).isEmpty();
+        masterList.unlock();
         assertThat(masterList.getDeferredTodos()).isEmpty();
     }
 
@@ -106,15 +106,12 @@ public class MasterListRepositoryTest {
             .position(5)
             .build();
         when(mockTodoDAO.findUnfinishedByUserEmail(any())).thenReturn(singletonList(todoEntity));
-        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(singletonList(
-            ListUnlockEntity.builder()
-                .updatedAt(Date.from(Instant.now().minusSeconds(30)))
-                .build()));
 
         Optional<MasterList> masterListOptional = masterListRepository.find(new UniqueIdentifier<>("somethingSecret"));
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
+        masterList.unlock();
         assertThat(masterList.getDeferredTodos().size()).isEqualTo(1);
         assertThat(masterList.getDeferredTodos()).containsExactly(
             new Todo("someUuid", "do it later", MasterList.DEFERRED_NAME, 5));
@@ -127,22 +124,21 @@ public class MasterListRepositoryTest {
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getListUnlocks()).isEmpty();
+        assertThat(masterList.isLocked()).isTrue();
     }
 
     @Test
-    public void find_whenThereAreListUnlocks_returnsMasterListWithListUnlocks() throws Exception {
-        List<ListUnlockEntity> listUnlockEntities = singletonList(
-            ListUnlockEntity.builder()
-                .updatedAt(new Date(0L))
-                .build());
-        when(mockListUnlockDao.findAllUserListUnlocks(any())).thenReturn(listUnlockEntities);
+    public void find_whenThereIsARecentListUnlock_returnsAnUnlockedMasterList() throws Exception {
+        ListUnlockEntity listUnlockEntity = ListUnlockEntity.builder()
+            .updatedAt(Date.from(Instant.now().minusSeconds(500)))
+            .build();
+        when(mockListUnlockDao.findFirstUserListUnlock(any())).thenReturn(listUnlockEntity);
 
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("soUnique");
         Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
 
         assertThat(masterListOptional.isPresent()).isTrue();
         MasterList masterList = masterListOptional.get();
-        assertThat(masterList.getListUnlocks()).contains(new ListUnlock(new Date(0)));
+        assertThat(masterList.isLocked()).isFalse();
     }
 }

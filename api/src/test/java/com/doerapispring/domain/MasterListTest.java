@@ -34,7 +34,7 @@ public class MasterListTest {
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
         uniqueIdentifier = new UniqueIdentifier<>("something");
-        masterList = new MasterList(mockClock, uniqueIdentifier, new ArrayList<>());
+        masterList = new MasterList(mockClock, uniqueIdentifier, null);
     }
 
     @Test
@@ -381,12 +381,12 @@ public class MasterListTest {
     }
 
     @Test
-    public void isLocked_whenThereAreNoListUnlocks_returnsTrue() throws Exception {
+    public void isLocked_returnsTrueByDefault() throws Exception {
         assertThat(masterList.isLocked()).isTrue();
     }
 
     @Test
-    public void isLocked_whenThereAreListUnlocks_whenItHasBeenMoreThan30MinutesSinceFirstUnlockCreated_returnsTrue() throws Exception {
+    public void isLocked_whenItHasBeenMoreThan30MinutesSinceLastUnlock_returnsTrue() throws Exception {
         Instant unlockInstant = Instant.ofEpochMilli(0L);
         when(mockClock.instant()).thenReturn(unlockInstant);
         masterList.unlock();
@@ -396,7 +396,7 @@ public class MasterListTest {
     }
 
     @Test
-    public void isLocked_whenThereAreListUnlocks_whenItHasBeen30MinutesOrLessSinceFirstUnlockCreated_returnsFalse() throws Exception {
+    public void isLocked_whenItHasBeen30MinutesOrLessSinceLastUnlock_returnsFalse() throws Exception {
         Instant unlockInstant = Instant.ofEpochMilli(0L);
         when(mockClock.instant()).thenReturn(unlockInstant);
         masterList.unlock();
@@ -406,12 +406,12 @@ public class MasterListTest {
     }
 
     @Test
-    public void unlockDuration_whenThereAreNoListUnlocks_returns0() {
+    public void unlockDuration_whenListHasNeverBeenUnlocked_returns0() {
         assertThat(masterList.unlockDuration()).isEqualTo(0L);
     }
 
     @Test
-    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsNotExpired_returnsRemainingDurationRelativeToNow_inMs() throws Exception {
+    public void unlockDuration_whenListIsCurrentlyUnlocked_returnsRemainingDurationRelativeToNow_inMs() throws Exception {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(4900000));
         masterList.unlock();
 
@@ -420,7 +420,7 @@ public class MasterListTest {
     }
 
     @Test
-    public void unlockDuration_whenThereAreListUnlocks_whenFirstUnlockIsExpired_returns0() throws Exception {
+    public void unlockDuration_whenListIsCurrentlyLocked_returns0() throws Exception {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(3000000L));
         masterList.unlock();
 

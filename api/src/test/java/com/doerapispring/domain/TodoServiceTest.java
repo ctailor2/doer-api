@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +51,7 @@ public class TodoServiceTest {
             mockCompletedListRepository
         );
         uniqueIdentifier = new UniqueIdentifier<>("userId");
-        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, new ArrayList<>());
+        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null);
         when(listService.get(any())).thenReturn(masterList);
     }
 

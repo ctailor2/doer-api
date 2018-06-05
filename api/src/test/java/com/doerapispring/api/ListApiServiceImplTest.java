@@ -9,11 +9,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.sql.Date;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -53,7 +51,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), Collections.emptyList()));
+            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), null));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -62,13 +60,12 @@ public class ListApiServiceImplTest {
 
     @Test
     public void get_callsListService_returnsMasterListDTO() throws Exception {
-        ArrayList<ListUnlock> listUnlocks = new ArrayList<>();
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("someIdentifier"),
-            listUnlocks);
+            Date.from(Instant.now().minusMillis(1798766))
+        );
         masterList.addDeferred("someTask");
-        listUnlocks.add(new ListUnlock(Date.from(Instant.now().minusMillis(1798766))));
         when(mockListService.get(any())).thenReturn(masterList);
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
