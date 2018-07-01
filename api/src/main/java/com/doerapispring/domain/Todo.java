@@ -74,6 +74,8 @@ public class Todo {
 
     public void complete() {
         this.complete = true;
+        this.position = null;
+        this.listName = null;
     }
 
     public boolean isComplete() {

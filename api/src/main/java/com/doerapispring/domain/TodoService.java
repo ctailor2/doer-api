@@ -12,22 +12,25 @@ public class TodoService {
     private final AggregateRootRepository<MasterList, Todo> todoRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
     private final ListService listService;
+    private final ObjectRepository<MasterList, String> masterListRepository;
 
     @Autowired
     TodoService(ListService listService,
                 AggregateRootRepository<MasterList, Todo> todoRepository,
-                ObjectRepository<CompletedList, String> completedListRepository) {
+                ObjectRepository<CompletedList, String> completedListRepository,
+                ObjectRepository<MasterList, String> masterListRepository) {
         this.todoRepository = todoRepository;
         this.completedListRepository = completedListRepository;
         this.listService = listService;
+        this.masterListRepository = masterListRepository;
     }
 
     public void create(User user, String task) throws OperationRefusedException {
         MasterList masterList = listService.get(user);
         try {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
-            Todo todo = masterList.add(task);
-            todoRepository.add(masterList, todo);
+            masterList.add(task);
+            masterListRepository.save(masterList);
         } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new OperationRefusedException();
         } catch (DuplicateTodoException e) {
@@ -39,8 +42,8 @@ public class TodoService {
         MasterList masterList = listService.get(user);
         try {
             // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
-            Todo todo = masterList.addDeferred(task);
-            todoRepository.add(masterList, todo);
+            masterList.addDeferred(task);
+            masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         } catch (DuplicateTodoException e) {
@@ -55,8 +58,8 @@ public class TodoService {
     public void delete(User user, String localIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            Todo todo = masterList.delete(localIdentifier);
-            todoRepository.remove(masterList, todo);
+            masterList.delete(localIdentifier);
+            masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
@@ -79,8 +82,8 @@ public class TodoService {
     public void update(User user, String localIdentifier, String task) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            Todo todo = masterList.update(localIdentifier, task);
-            todoRepository.update(masterList, todo);
+            masterList.update(localIdentifier, task);
+            masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         } catch (DuplicateTodoException e) {
@@ -91,8 +94,8 @@ public class TodoService {
     public void complete(User user, String localIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            Todo todo = masterList.complete(localIdentifier);
-            todoRepository.update(masterList, todo);
+            masterList.complete(localIdentifier);
+            masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
@@ -106,8 +109,8 @@ public class TodoService {
     public void move(User user, String localIdentifier, String targetLocalIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            List<Todo> todos = masterList.move(localIdentifier, targetLocalIdentifier);
-            todoRepository.update(masterList, todos);
+            masterList.move(localIdentifier, targetLocalIdentifier);
+            masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }
@@ -116,8 +119,8 @@ public class TodoService {
     public void pull(User user) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            List<Todo> todos = masterList.pull();
-            todoRepository.update(masterList, todos);
+            masterList.pull();
+            masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         }

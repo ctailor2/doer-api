@@ -7,19 +7,23 @@ import java.util.stream.Collectors;
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public static final String NAME = "now";
     public static final String DEFERRED_NAME = "later";
-    private Date lastUnlocked;
     private List<Todo> todos = new ArrayList<>();
+    private List<Todo> completedTodos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private int listDemarcationIndex = 0;
+    private Date lastUnlockedAt;
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlocked) {
+    public MasterList(
+        Clock clock,
+        UniqueIdentifier<String> uniqueIdentifier,
+        Date lastUnlockedAt) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.lastUnlocked = lastUnlocked;
+        this.lastUnlockedAt = lastUnlockedAt;
     }
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, Date lastUnlocked) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, Date lastUnlockedAt) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         List<Todo> allTodos = new ArrayList<>();
@@ -28,7 +32,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todos.forEach(ignored -> listDemarcationIndex++);
         allTodos.addAll(deferredTodos);
         this.todos = allTodos;
-        this.lastUnlocked = lastUnlocked;
+        this.lastUnlockedAt = lastUnlockedAt;
     }
 
     @Override
@@ -71,8 +75,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
-        lastUnlocked = Date.from(clock.instant());
-        return new ListUnlock(lastUnlocked);
+        lastUnlockedAt = Date.from(clock.instant());
+        return new ListUnlock(lastUnlockedAt);
     }
 
     @Override
@@ -123,10 +127,10 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo complete(String localIdentifier) throws TodoNotFoundException {
+    public void complete(String localIdentifier) throws TodoNotFoundException {
         Todo todo = delete(localIdentifier);
         todo.complete();
-        return todo;
+        completedTodos.add(todo);
     }
 
     @Override
@@ -207,6 +211,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return !isFull() && deferredTodos().size() > 0;
     }
 
+    @Override
+    public List<Todo> getCompletedTodos() {
+        return completedTodos;
+    }
+
     Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
         return todos.stream()
             .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
@@ -253,7 +262,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     private Optional<Date> mostRecentListUnlock() {
-        return Optional.ofNullable(lastUnlocked);
+        return Optional.ofNullable(lastUnlockedAt);
     }
 
     @Override
@@ -273,6 +282,10 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return todos;
     }
 
+    public Date getLastUnlockedAt() {
+        return lastUnlockedAt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -281,34 +294,35 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         MasterList that = (MasterList) o;
 
         if (listDemarcationIndex != that.listDemarcationIndex) return false;
-        if (lastUnlocked != null ? !lastUnlocked.equals(that.lastUnlocked) : that.lastUnlocked != null) return false;
         if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
+        if (completedTodos != null ? !completedTodos.equals(that.completedTodos) : that.completedTodos != null)
+            return false;
         if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
-        return uniqueIdentifier != null ? uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier == null;
+        if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
+            return false;
+        return lastUnlockedAt != null ? lastUnlockedAt.equals(that.lastUnlockedAt) : that.lastUnlockedAt == null;
     }
 
     @Override
     public int hashCode() {
-        int result = lastUnlocked != null ? lastUnlocked.hashCode() : 0;
-        result = 31 * result + (todos != null ? todos.hashCode() : 0);
+        int result = todos != null ? todos.hashCode() : 0;
+        result = 31 * result + (completedTodos != null ? completedTodos.hashCode() : 0);
         result = 31 * result + (clock != null ? clock.hashCode() : 0);
         result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
         result = 31 * result + listDemarcationIndex;
+        result = 31 * result + (lastUnlockedAt != null ? lastUnlockedAt.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "MasterList{" +
-            "lastUnlocked=" + lastUnlocked +
-            ", todos=" + todos +
+            "todos=" + todos +
+            ", completedTodos=" + completedTodos +
             ", clock=" + clock +
             ", uniqueIdentifier=" + uniqueIdentifier +
             ", listDemarcationIndex=" + listDemarcationIndex +
+            ", lastUnlockedAt=" + lastUnlockedAt +
             '}';
-    }
-
-    Date getLastUnlocked() {
-        return lastUnlocked;
     }
 }

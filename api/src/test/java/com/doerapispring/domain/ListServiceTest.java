@@ -32,7 +32,7 @@ public class ListServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockMasterListRepository, mockListUnlockRepository);
+        listService = new ListService(mockMasterListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
@@ -46,12 +46,12 @@ public class ListServiceTest {
         listService.unlock(new User(uniqueIdentifier));
 
         verify(masterList).unlock();
-        verify(mockListUnlockRepository).add(masterList, listUnlock);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void unlock_whenMasterListFound_whenRepositoryRejectsModels_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockListUnlockRepository).add(any(), any());
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
         listService.unlock(new User(uniqueIdentifier));

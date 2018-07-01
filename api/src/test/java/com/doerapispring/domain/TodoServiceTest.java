@@ -11,11 +11,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -31,6 +31,9 @@ public class TodoServiceTest {
 
     @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
+
+    @Mock
+    private ObjectRepository<MasterList, String> mockMasterListRepository;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -48,10 +51,11 @@ public class TodoServiceTest {
         todoService = new TodoService(
             listService,
             mockTodoRepository,
-            mockCompletedListRepository
+            mockCompletedListRepository,
+            mockMasterListRepository
         );
         uniqueIdentifier = new UniqueIdentifier<>("userId");
-        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null);
+        masterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(masterList);
     }
 
@@ -76,18 +80,20 @@ public class TodoServiceTest {
 
     @Test
     public void getDeferredTodos_whenMasterListFound_returnsDeferredTodos() throws Exception {
-        Todo todo = masterList.addDeferred("someTask");
-        masterList.unlock();
+        List<Todo> expectedTodos = singletonList(new Todo("someIdentifier", "someTask", MasterList.DEFERRED_NAME, 1));
+        when(masterList.getDeferredTodos()).thenReturn(expectedTodos);
 
         User user = new User(uniqueIdentifier);
-        List<Todo> todos = todoService.getDeferredTodos(user);
+        List<Todo> actualTodos = todoService.getDeferredTodos(user);
 
         verify(listService).get(user);
-        assertThat(todos).containsOnly(todo);
+        assertThat(actualTodos).isEqualTo(expectedTodos);
     }
 
     @Test
     public void getDeferredTodos_whenMasterListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
+        when(masterList.getDeferredTodos()).thenThrow(new LockTimerNotExpiredException());
+
         exception.expect(OperationRefusedException.class);
         User user = new User(uniqueIdentifier);
         todoService.getDeferredTodos(user);
@@ -106,15 +112,13 @@ public class TodoServiceTest {
         String task = "some things";
         todoService.create(new User(uniqueIdentifier), task);
 
-        verify(mockTodoRepository).add(eq(masterList), todoArgumentCaptor.capture());
-        Todo todo = todoArgumentCaptor.getValue();
-        assertThat(todo.getTask()).isEqualTo(task);
-        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
+        verify(masterList).add(task);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        masterList.add("some things");
+        when(masterList.add(any())).thenThrow(new DuplicateTodoException());
 
         assertThatThrownBy(() ->
             todoService.create(new User(uniqueIdentifier), "some things"))
@@ -125,8 +129,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
-        masterList.add("task1");
-        masterList.add("task2");
+        when(masterList.add(any())).thenThrow(new ListSizeExceededException());
 
         exception.expect(OperationRefusedException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
@@ -142,7 +145,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
@@ -153,18 +156,16 @@ public class TodoServiceTest {
         String task = "some things";
         todoService.createDeferred(new User(uniqueIdentifier), task);
 
-        verify(mockTodoRepository).add(eq(masterList), todoArgumentCaptor.capture());
-        Todo todo = todoArgumentCaptor.getValue();
-        assertThat(todo.getTask()).isEqualTo(task);
-        assertThat(todo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
+        verify(masterList).addDeferred(task);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void createDeferred_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        masterList.addDeferred("some things");
+        when(masterList.addDeferred(any())).thenThrow(new DuplicateTodoException());
 
         assertThatThrownBy(() ->
-            todoService.create(new User(uniqueIdentifier), "some things"))
+            todoService.createDeferred(new User(uniqueIdentifier), "some things"))
             .isInstanceOf(OperationRefusedException.class)
             .hasMessageContaining("already exists");
 
@@ -180,7 +181,7 @@ public class TodoServiceTest {
 
     @Test
     public void createDeferred_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
         todoService.createDeferred(new User(uniqueIdentifier), "some things");
@@ -188,21 +189,16 @@ public class TodoServiceTest {
 
     @Test
     public void delete_whenMasterListFound_whenTodoFound_deletesTodoUsingRepository() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
+        String localIdentifier = "someIdentifier";
+        todoService.delete(new User(uniqueIdentifier), localIdentifier);
 
-        todoService.delete(new User(uniqueIdentifier), existingTodo.getLocalIdentifier());
-
-        verify(mockTodoRepository).remove(eq(masterList), todoArgumentCaptor.capture());
-        Todo todo = todoArgumentCaptor.getValue();
-        assertThat(todo.getLocalIdentifier()).isEqualTo(existingTodo.getLocalIdentifier());
-        assertThat(todo.getTask()).isEqualTo(existingTodo.getTask());
-        assertThat(todo.getListName()).isEqualTo(existingTodo.getListName());
-        assertThat(todo.getPosition()).isEqualTo(existingTodo.getPosition());
+        verify(masterList).delete(localIdentifier);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void delete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModels_refusesDelete() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).remove(any(), any());
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
@@ -210,6 +206,8 @@ public class TodoServiceTest {
 
     @Test
     public void delete_whenMasterListFound_whenTodoNotFound_refusesDelete() throws Exception {
+        when(masterList.delete(any())).thenThrow(new TodoNotFoundException());
+
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
 
@@ -288,41 +286,36 @@ public class TodoServiceTest {
 
     @Test
     public void update_whenMasterListFound_whenTodoFound_updatesUsingRepository() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
-
         String updatedTask = "someOtherTask";
-        todoService.update(new User(uniqueIdentifier), existingTodo.getLocalIdentifier(), updatedTask);
+        String localIdentifier = "someIdentifier";
+        todoService.update(new User(uniqueIdentifier), localIdentifier, updatedTask);
 
-        verify(mockTodoRepository).update(eq(masterList), todoArgumentCaptor.capture());
-
-        Todo updatedTodo = todoArgumentCaptor.getValue();
-        assertThat(updatedTodo.getTask()).isEqualTo(updatedTask);
-        assertThat(updatedTodo.getLocalIdentifier()).isEqualTo(existingTodo.getLocalIdentifier());
-        assertThat(updatedTodo.getPosition()).isEqualTo(existingTodo.getPosition());
-        assertThat(updatedTodo.getListName()).isEqualTo(existingTodo.getListName());
+        verify(masterList).update(localIdentifier, updatedTask);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void update_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.update(new User(uniqueIdentifier), existingTodo.getLocalIdentifier(), "someOtherTask");
+        todoService.update(new User(uniqueIdentifier), "someIdentifier", "someOtherTask");
     }
 
     @Test
     public void update_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesUpdate() throws Exception {
-        Todo todo = masterList.add("someTask");
+        when(masterList.update(any(), any())).thenThrow(new DuplicateTodoException());
 
         assertThatThrownBy(() ->
-            todoService.update(new User(uniqueIdentifier), todo.getLocalIdentifier(), "someTask"))
+            todoService.update(new User(uniqueIdentifier), "someIdentifier", "someTask"))
             .isInstanceOf(OperationRefusedException.class)
             .hasMessageContaining("already exists");
     }
 
     @Test
     public void update_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
+        when(masterList.update(any(), any())).thenThrow(new TodoNotFoundException());
+
         exception.expect(OperationRefusedException.class);
         todoService.update(new User(uniqueIdentifier), "someId", "someTask");
     }
@@ -337,26 +330,25 @@ public class TodoServiceTest {
 
     @Test
     public void complete_whenMasterListFound_whenTodoFound_completesUsingRepository() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
+        String localIdentifier = "someIdentifier";
+        todoService.complete(new User(uniqueIdentifier), localIdentifier);
 
-        todoService.complete(new User(uniqueIdentifier), existingTodo.getLocalIdentifier());
-
-        verify(mockTodoRepository).update(eq(masterList), todoArgumentCaptor.capture());
-        Todo updatedTodo = todoArgumentCaptor.getValue();
-        assertThat(updatedTodo.isComplete()).isEqualTo(true);
+        verify(masterList).complete(localIdentifier);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void complete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.complete(new User(uniqueIdentifier), existingTodo.getLocalIdentifier());
+        todoService.complete(new User(uniqueIdentifier), "someIdentifier");
     }
 
     @Test
     public void complete_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
+        doThrow(new TodoNotFoundException()).when(masterList).complete(any());
+
         exception.expect(OperationRefusedException.class);
         todoService.complete(new User(uniqueIdentifier), "someId");
     }
@@ -395,32 +387,26 @@ public class TodoServiceTest {
         Todo todo1 = masterList.add("task1");
         Todo todo2 = masterList.add("task2");
 
-        todoService.move(new User(uniqueIdentifier), todo1.getLocalIdentifier(), todo2.getLocalIdentifier());
+        String sourceIdentifier = "sourceIdentifier";
+        String destinationIdentifier = "destinationIdentifier";
+        todoService.move(new User(uniqueIdentifier), sourceIdentifier, destinationIdentifier);
 
-        verify(mockTodoRepository).update(eq(masterList), todoListArgumentCaptor.capture());
-        List<Todo> updatedTodos = todoListArgumentCaptor.getValue();
-        assertThat(updatedTodos).hasSize(2);
-        Todo updatedTodo1 = updatedTodos.get(0);
-        assertThat(updatedTodo1.getTask()).isEqualTo(todo1.getTask());
-        assertThat(updatedTodo1.getPosition()).isEqualTo(todo1.getPosition());
-        Todo updatedTodo2 = updatedTodos.get(1);
-        assertThat(updatedTodo2.getTask()).isEqualTo(todo2.getTask());
-        assertThat(updatedTodo2.getPosition()).isEqualTo(todo2.getPosition());
+        verify(masterList).move(sourceIdentifier, destinationIdentifier);
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void move_whenMasterListFound_whenTodosFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        Todo todo1 = masterList.add("task1");
-        Todo todo2 = masterList.add("task2");
-
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
-        todoService.move(new User(uniqueIdentifier), todo1.getLocalIdentifier(), todo2.getLocalIdentifier());
+        todoService.move(new User(uniqueIdentifier), "sourceIdentifier", "destinationIdentifier");
     }
 
     @Test
     public void move_whenMasterListFound_whenTodosNotFound_refusesOperation() throws Exception {
+        when(masterList.move(any(), any())).thenThrow(new TodoNotFoundException());
+
         exception.expect(OperationRefusedException.class);
         todoService.move(new User(uniqueIdentifier), "idOne", "idTwo");
     }
@@ -435,25 +421,15 @@ public class TodoServiceTest {
 
     @Test
     public void pull_whenMasterListFound_whenTodosPulled_updatesPulledTodosUsingRepository() throws Exception {
-        Todo todo1 = masterList.addDeferred("someTask");
-        Todo todo2 = masterList.addDeferred("someOtherTask");
-
         todoService.pull(new User(uniqueIdentifier));
 
-        verify(mockTodoRepository).update(eq(masterList), todoListArgumentCaptor.capture());
-        List<Todo> pulledTodos = todoListArgumentCaptor.getValue();
-        assertThat(pulledTodos).hasSize(2);
-        Todo pulledTodo1 = pulledTodos.get(0);
-        assertThat(pulledTodo1.getTask()).isEqualTo(todo1.getTask());
-        assertThat(pulledTodo1.getListName()).isEqualTo(MasterList.NAME);
-        Todo pulledTodo2 = pulledTodos.get(1);
-        assertThat(pulledTodo2.getTask()).isEqualTo(todo2.getTask());
-        assertThat(pulledTodo2.getListName()).isEqualTo(MasterList.NAME);
+        verify(masterList).pull();
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void pull_whenMasterListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), anyListOf(Todo.class));
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
         exception.expect(OperationRefusedException.class);
         todoService.pull(new User(uniqueIdentifier));

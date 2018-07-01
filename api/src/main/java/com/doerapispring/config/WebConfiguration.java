@@ -7,7 +7,7 @@ import org.springframework.hateoas.config.EnableHypermediaSupport;
 import java.time.Clock;
 
 @Configuration
-@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL )
+@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class WebConfiguration {
     @Bean
     public Clock clock() {

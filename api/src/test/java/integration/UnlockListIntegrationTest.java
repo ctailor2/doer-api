@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.ListUnlock;
+import com.doerapispring.domain.MasterList;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
@@ -11,8 +11,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.util.List;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -48,9 +46,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        List<ListUnlock> listUnlocks = listService.get(user).getListUnlocks();
+        MasterList masterList = listService.get(user);
 
-        assertThat(listUnlocks.size(), equalTo(1));
+        assertThat(masterList.isLocked(), equalTo(false));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());

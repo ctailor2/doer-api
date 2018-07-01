@@ -34,7 +34,10 @@ public class MasterListTest {
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
         uniqueIdentifier = new UniqueIdentifier<>("something");
-        masterList = new MasterList(mockClock, uniqueIdentifier, null);
+        masterList = new MasterList(
+            mockClock,
+            uniqueIdentifier,
+            null);
     }
 
     @Test
@@ -217,10 +220,16 @@ public class MasterListTest {
     public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() throws Exception {
         Todo todo = masterList.add("someTask");
 
-        Todo completedTodo = masterList.complete(todo.getLocalIdentifier());
+        masterList.complete(todo.getLocalIdentifier());
 
         assertThat(masterList.getTodos()).isEmpty();
-        assertThat(completedTodo.isComplete()).isEqualTo(true);
+        assertThat(masterList.getCompletedTodos()).hasSize(1);
+        Todo completedTodo = masterList.getCompletedTodos().get(0);
+        assertThat(completedTodo.getLocalIdentifier()).isEqualTo(todo.getLocalIdentifier());
+        assertThat(completedTodo.getTask()).isEqualTo(todo.getTask());
+        assertThat(completedTodo.getPosition()).isNull();
+        assertThat(completedTodo.getListName()).isNull();
+        assertThat(completedTodo.isComplete()).isTrue();
     }
 
     @Test
