@@ -1,67 +1,57 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.CompletedList;
-import com.doerapispring.domain.CompletedTodo;
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collections;
+import java.time.Clock;
 import java.util.Date;
 import java.util.Optional;
 
+import static java.util.Collections.singletonList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = NONE)
+@RunWith(SpringRunner.class)
+@ActiveProfiles(value = "test")
 public class CompletedListRepositoryTest {
     private ObjectRepository<CompletedList, String> completedListRepository;
+    private UserRepository userRepository;
 
-    private TodoDao mockTodoDAO;
+    @Autowired
+    private UserDAO userDAO;
+
+    @Autowired
+    private CompletedListDAO completedListDAO;
+
+    private Clock mockClock;
 
     @Before
     public void setUp() throws Exception {
-        mockTodoDAO = mock(TodoDao.class);
-        completedListRepository = new CompletedListRepository(mockTodoDAO);
+        mockClock = mock(Clock.class);
+        completedListRepository = new CompletedListRepository(mockClock, completedListDAO, userDAO);
+        userRepository = new UserRepository(userDAO);
     }
 
     @Test
-    public void find_callsTodoDao() throws Exception {
-        completedListRepository.find(new UniqueIdentifier<>("somethingSecret"));
+    public void savesCompletedList() throws Exception {
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
+        userRepository.add(new User(uniqueIdentifier));
+        CompletedList completedList = new CompletedList(mockClock, uniqueIdentifier, singletonList(
+            new CompletedTodo("someTask", new Date())));
 
-        verify(mockTodoDAO).findFinishedByUserEmail("somethingSecret");
-    }
+        completedListRepository.save(completedList);
 
-    @Test
-    public void find_whenThereAreNoTodos_returnsCompletedListWithNoTodos() throws Exception {
-        when(mockTodoDAO.findFinishedByUserEmail(any())).thenReturn(Collections.emptyList());
-
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("userIdentifier");
         Optional<CompletedList> completedListOptional = completedListRepository.find(uniqueIdentifier);
-
-        assertThat(completedListOptional.isPresent()).isTrue();
-        CompletedList completedList = completedListOptional.get();
-        assertThat(completedList.getIdentifier()).isEqualTo(uniqueIdentifier);
-        assertThat(completedList.getTodos()).isEmpty();
-    }
-
-    @Test
-    public void find_whenThereAreTodos_returnsCompletedListWithTodos() throws Exception {
-        String userEmail = "thisUserEmail";
-        Date completedAt = new Date();
-        TodoEntity todoEntity = TodoEntity.builder()
-            .userEntity(UserEntity.builder().email(userEmail).build())
-            .task("do it now")
-            .updatedAt(completedAt)
-            .build();
-        when(mockTodoDAO.findFinishedByUserEmail(any())).thenReturn(Collections.singletonList(todoEntity));
-
-        Optional<CompletedList> completedListOptional = completedListRepository.find(new UniqueIdentifier<>("somethingSecret"));
-
-        assertThat(completedListOptional.isPresent()).isTrue();
-        CompletedList completedList = completedListOptional.get();
-        assertThat(completedList.getTodos().size()).isEqualTo(1);
-        assertThat(completedList.getTodos()).contains(new CompletedTodo("do it now", completedAt));
+        assertThat(completedListOptional.get()).isEqualTo(completedList);
     }
 }

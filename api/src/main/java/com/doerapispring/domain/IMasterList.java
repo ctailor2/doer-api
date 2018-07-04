@@ -19,7 +19,7 @@ public interface IMasterList {
 
     Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
 
-    void complete(String localIdentifier) throws TodoNotFoundException;
+    String complete(String localIdentifier) throws TodoNotFoundException;
 
     List<Todo> move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException;
 
@@ -35,5 +35,5 @@ public interface IMasterList {
 
     boolean isAbleToBeReplenished();
 
-    List<Todo> getCompletedTodos();
+    String getTask(String localIdentifier);
 }

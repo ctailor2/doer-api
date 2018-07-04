@@ -59,7 +59,6 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                 .task(todo.getTask())
                 .active(MasterList.NAME.equals(todo.getListName()))
                 .position(todo.getPosition())
-                .completed(todo.isComplete())
                 .createdAt(todoEntity.createdAt)
                 .updatedAt(new Date())
                 .build());
@@ -80,7 +79,6 @@ class TodoRepository implements AggregateRootRepository<MasterList, Todo> {
                             .task(todo.getTask())
                             .active(MasterList.NAME.equals(todo.getListName()))
                             .position(todo.getPosition())
-                            .completed(todo.isComplete())
                             .createdAt(todoEntity.createdAt)
                             .updatedAt(new Date())
                             .build();

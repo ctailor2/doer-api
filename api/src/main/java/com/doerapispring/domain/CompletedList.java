@@ -1,12 +1,16 @@
 package com.doerapispring.domain;
 
+import java.sql.Date;
+import java.time.Clock;
 import java.util.List;
 
 public class CompletedList implements UniquelyIdentifiable<String> {
+    private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final List<CompletedTodo> todos;
 
-    public CompletedList(UniqueIdentifier<String> uniqueIdentifier, List<CompletedTodo> todos) {
+    public CompletedList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<CompletedTodo> todos) {
+        this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.todos = todos;
     }
@@ -46,5 +50,9 @@ public class CompletedList implements UniquelyIdentifiable<String> {
                 "uniqueIdentifier=" + uniqueIdentifier +
                 ", todos=" + todos +
                 '}';
+    }
+
+    public void add(String task) {
+        todos.add(new CompletedTodo(task, Date.from(clock.instant())));
     }
 }

@@ -35,9 +35,6 @@ class TodoEntity {
     @LastModifiedDate
     public Date updatedAt;
 
-    @Column(name = "completed")
-    public boolean completed;
-
     @Column(name = "position")
     public Integer position;
 

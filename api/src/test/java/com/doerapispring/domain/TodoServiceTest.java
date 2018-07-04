@@ -7,10 +7,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,8 +42,7 @@ public class TodoServiceTest {
 
     private final ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
 
-    @Captor
-    private ArgumentCaptor<List<Todo>> todoListArgumentCaptor;
+    private CompletedList completedList;
 
     @Before
     public void setUp() throws Exception {
@@ -57,6 +56,8 @@ public class TodoServiceTest {
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
         when(listService.get(any())).thenReturn(masterList);
+        completedList = mock(CompletedList.class);
+        when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
     }
 
     @Test
@@ -338,6 +339,30 @@ public class TodoServiceTest {
     }
 
     @Test
+    public void complete_addsCompletedTaskToCompletedList_savesUsingRepository() throws Exception {
+        String completedTask = "completedTask";
+        when(masterList.complete(anyString())).thenReturn(completedTask);
+
+        String localIdentifier = "someIdentifier";
+        todoService.complete(new User(uniqueIdentifier), localIdentifier);
+
+        verify(mockCompletedListRepository).find(uniqueIdentifier);
+        verify(completedList).add(completedTask);
+        verify(mockCompletedListRepository).save(completedList);
+    }
+
+    @Test
+    public void complete_whenCompletedListRepositoryRejectsModel_refusesOperation() throws Exception {
+        String completedTask = "completedTask";
+        when(masterList.complete(anyString())).thenReturn(completedTask);
+        doThrow(new AbnormalModelException()).when(mockCompletedListRepository).save(any(CompletedList.class));
+
+        String localIdentifier = "someIdentifier";
+        exception.expect(OperationRefusedException.class);
+        todoService.complete(new User(uniqueIdentifier), localIdentifier);
+    }
+
+    @Test
     public void complete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
@@ -364,7 +389,7 @@ public class TodoServiceTest {
     @Test
     public void getCompleted_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        CompletedList completedListFromRepository = new CompletedList(uniqueIdentifier, emptyList());
+        CompletedList completedListFromRepository = new CompletedList(mock(Clock.class), uniqueIdentifier, emptyList());
         when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedListFromRepository));
         User user = new User(uniqueIdentifier);
 

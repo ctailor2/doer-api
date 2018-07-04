@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -94,8 +95,18 @@ public class TodoService {
     public void complete(User user, String localIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
-            masterList.complete(localIdentifier);
+            String task = masterList.complete(localIdentifier);
             masterListRepository.save(masterList);
+            Optional<CompletedList> completedListOptional = completedListRepository.find(user.getIdentifier());
+            if (completedListOptional.isPresent()) {
+                CompletedList completedList = completedListOptional.get();
+                completedList.add(task);
+                try {
+                    completedListRepository.save(completedList);
+                } catch (AbnormalModelException e) {
+                    throw new OperationRefusedException();
+                }
+            }
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new OperationRefusedException();
         }

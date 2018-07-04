@@ -155,25 +155,6 @@ public class TodoRepositoryTest {
     }
 
     @Test
-    public void update_findsTodo_whenFound_whenTodoIsComplete_updatesTodo() throws Exception {
-        TodoEntity existingTodoEntity = TodoEntity.builder()
-            .uuid("someUuid")
-            .completed(false)
-            .build();
-        when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(existingTodoEntity);
-
-        MasterList masterList = new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("listUserIdentifier"), null);
-        Todo todo = new Todo("someUuid", "bingo", MasterList.DEFERRED_NAME, 5);
-        todo.complete();
-        todoRepository.update(masterList, todo);
-
-        verify(mockTodoDAO).findUserTodo("listUserIdentifier", "someUuid");
-        verify(mockTodoDAO).save(todoEntityArgumentCaptor.capture());
-        TodoEntity todoEntity = todoEntityArgumentCaptor.getValue();
-        assertThat(todoEntity.completed).isEqualTo(true);
-    }
-
-    @Test
     public void update_findsTodo_whenNotFound_throwsAbnormalModelException() throws Exception {
         when(mockTodoDAO.findUserTodo(any(), any())).thenReturn(null);
 

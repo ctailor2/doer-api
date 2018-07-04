@@ -217,19 +217,13 @@ public class MasterListTest {
     }
 
     @Test
-    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() throws Exception {
+    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTask() throws Exception {
         Todo todo = masterList.add("someTask");
 
-        masterList.complete(todo.getLocalIdentifier());
+        String completedTask = masterList.complete(todo.getLocalIdentifier());
 
         assertThat(masterList.getTodos()).isEmpty();
-        assertThat(masterList.getCompletedTodos()).hasSize(1);
-        Todo completedTodo = masterList.getCompletedTodos().get(0);
-        assertThat(completedTodo.getLocalIdentifier()).isEqualTo(todo.getLocalIdentifier());
-        assertThat(completedTodo.getTask()).isEqualTo(todo.getTask());
-        assertThat(completedTodo.getPosition()).isNull();
-        assertThat(completedTodo.getListName()).isNull();
-        assertThat(completedTodo.isComplete()).isTrue();
+        assertThat(completedTask).isEqualTo("someTask");
     }
 
     @Test

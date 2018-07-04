@@ -8,7 +8,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public static final String NAME = "now";
     public static final String DEFERRED_NAME = "later";
     private List<Todo> todos = new ArrayList<>();
-    private List<Todo> completedTodos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private int listDemarcationIndex = 0;
@@ -127,10 +126,9 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void complete(String localIdentifier) throws TodoNotFoundException {
+    public String complete(String localIdentifier) throws TodoNotFoundException {
         Todo todo = delete(localIdentifier);
-        todo.complete();
-        completedTodos.add(todo);
+        return todo.getTask();
     }
 
     @Override
@@ -190,6 +188,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
+    public String getTask(String localIdentifier) {
+        return null;
+    }
+
+    @Override
     public List<Todo> pull() {
         List<Todo> pulledTodos = new ArrayList<>();
         while (listDemarcationIndex < todos.size() && getTodos().size() < maxSize()) {
@@ -209,11 +212,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     @Override
     public boolean isAbleToBeReplenished() {
         return !isFull() && deferredTodos().size() > 0;
-    }
-
-    @Override
-    public List<Todo> getCompletedTodos() {
-        return completedTodos;
     }
 
     Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
@@ -295,8 +293,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
         if (listDemarcationIndex != that.listDemarcationIndex) return false;
         if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
-        if (completedTodos != null ? !completedTodos.equals(that.completedTodos) : that.completedTodos != null)
-            return false;
         if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
             return false;
@@ -306,7 +302,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     @Override
     public int hashCode() {
         int result = todos != null ? todos.hashCode() : 0;
-        result = 31 * result + (completedTodos != null ? completedTodos.hashCode() : 0);
         result = 31 * result + (clock != null ? clock.hashCode() : 0);
         result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
         result = 31 * result + listDemarcationIndex;
@@ -318,7 +313,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public String toString() {
         return "MasterList{" +
             "todos=" + todos +
-            ", completedTodos=" + completedTodos +
             ", clock=" + clock +
             ", uniqueIdentifier=" + uniqueIdentifier +
             ", listDemarcationIndex=" + listDemarcationIndex +

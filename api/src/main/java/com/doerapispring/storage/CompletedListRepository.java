@@ -1,33 +1,54 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.CompletedList;
-import com.doerapispring.domain.CompletedTodo;
-import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.*;
 import org.springframework.stereotype.Repository;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Repository
 class CompletedListRepository implements ObjectRepository<CompletedList, String> {
-    private final TodoDao todoDAO;
+    private final Clock clock;
+    private final CompletedListDAO completedListDAO;
+    private final UserDAO userDAO;
 
-    CompletedListRepository(TodoDao todoDAO) {
-        this.todoDAO = todoDAO;
+    CompletedListRepository(Clock clock, CompletedListDAO completedListDAO, UserDAO userDAO) {
+        this.clock = clock;
+        this.completedListDAO = completedListDAO;
+        this.userDAO = userDAO;
     }
 
     @Override
     public Optional<CompletedList> find(UniqueIdentifier<String> uniqueIdentifier) {
-        String email = uniqueIdentifier.get();
-        List<TodoEntity> todoEntities = todoDAO.findFinishedByUserEmail(email);
-        List<CompletedTodo> todos = todoEntities.stream()
-                .map(todoEntity -> new CompletedTodo(
-                        todoEntity.task,
-                        todoEntity.updatedAt))
-                .collect(Collectors.toList());
-        CompletedList completedList = new CompletedList(uniqueIdentifier, todos);
+        CompletedListEntity completedListEntity = completedListDAO.findByEmail(uniqueIdentifier.get());
+        List<CompletedTodo> todos = completedListEntity.completedTodoEntities.stream()
+            .map(todoEntity -> new CompletedTodo(
+                todoEntity.task,
+                todoEntity.completedAt))
+            .collect(toList());
+        CompletedList completedList = new CompletedList(clock, uniqueIdentifier, todos);
         return Optional.of(completedList);
+    }
+
+    @Override
+    public void save(CompletedList completedList) throws AbnormalModelException {
+        String email = completedList.getIdentifier().get();
+        UserEntity userEntity = userDAO.findByEmail(email);
+
+        List<CompletedTodoEntity> completedTodoEntities = completedList.getTodos().stream()
+            .map(completedTodo -> CompletedTodoEntity.builder()
+                .task(completedTodo.getTask())
+                .completedAt(completedTodo.getCompletedAt())
+                .build())
+            .collect(toList());
+
+        CompletedListEntity completedListEntity = new CompletedListEntity();
+        completedListEntity.id = userEntity.id;
+        completedListEntity.email = email;
+        completedListEntity.completedTodoEntities.addAll(completedTodoEntities);
+        completedListDAO.save(completedListEntity);
     }
 }

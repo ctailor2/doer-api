@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,12 +139,9 @@ public class NewMasterListRepositoryTest {
         Date lastUnlockedAt = new Date();
         MasterList masterList = new MasterList(Clock.systemDefaultZone(),
             uniqueIdentifier,
-            asList(
-                new Todo("uuid1", "task1", "now", 1),
-                new Todo("uuid2", "completedTask", null, 2)),
-            singletonList(new Todo("uuid3", "task2", "later", 3)),
+            singletonList(new Todo("uuid1", "task1", "now", 1)),
+            singletonList(new Todo("uuid2", "task2", "later", 2)),
             lastUnlockedAt);
-        masterList.complete("uuid2");
 
         masterListRepository.save(masterList);
 
@@ -166,17 +162,9 @@ public class NewMasterListRepositoryTest {
             TodoEntity.builder()
                 .userEntity(userEntity)
                 .uuid("uuid2")
-                .task("completedTask")
-                .active(false)
-                .completed(true)
-                .position(null)
-                .build(),
-            TodoEntity.builder()
-                .userEntity(userEntity)
-                .uuid("uuid3")
                 .task("task2")
                 .active(false)
-                .position(3)
+                .position(2)
                 .build());
         assertThat(masterListEntity.lastUnlockedAt).isEqualTo(lastUnlockedAt);
     }

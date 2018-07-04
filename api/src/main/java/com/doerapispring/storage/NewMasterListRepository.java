@@ -49,7 +49,6 @@ class NewMasterListRepository implements ObjectRepository<MasterList, String> {
         masterListEntity.email = masterList.getIdentifier().get();
         List<Todo> allTodos = new ArrayList<>();
         allTodos.addAll(masterList.getAllTodos());
-        allTodos.addAll(masterList.getCompletedTodos());
         masterListEntity.todoEntities.addAll(allTodos
             .stream()
             .map(todo -> TodoEntity.builder()
@@ -57,7 +56,6 @@ class NewMasterListRepository implements ObjectRepository<MasterList, String> {
                 .uuid(todo.getLocalIdentifier())
                 .task(todo.getTask())
                 .active(MasterList.NAME.equals(todo.getListName()))
-                .completed(todo.isComplete())
                 .position(todo.getPosition())
                 .build())
             .collect(toList()));
