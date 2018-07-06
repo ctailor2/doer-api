@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-class NewMasterListRepository implements ObjectRepository<MasterList, String> {
+class MasterListRepository implements ObjectRepository<MasterList, String> {
     private final UserDAO userDAO;
     private final MasterListDao masterListDao;
     private final Clock clock;
 
-    NewMasterListRepository(
+    MasterListRepository(
         UserDAO userDAO,
         MasterListDao masterListDao,
         Clock clock) {

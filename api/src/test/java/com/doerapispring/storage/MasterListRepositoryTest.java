@@ -22,7 +22,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class NewMasterListRepositoryTest {
+public class MasterListRepositoryTest {
     private ObjectRepository<MasterList, String> masterListRepository;
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -33,7 +33,7 @@ public class NewMasterListRepositoryTest {
     public void setUp() throws Exception {
         masterListDao = mock(MasterListDao.class);
         userDao = mock(UserDAO.class);
-        masterListRepository = new NewMasterListRepository(userDao, masterListDao, Clock.systemDefaultZone());
+        masterListRepository = new MasterListRepository(userDao, masterListDao, Clock.systemDefaultZone());
 
         when(masterListDao.findByEmail(anyString())).thenReturn(new MasterListEntity());
     }
