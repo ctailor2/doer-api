@@ -27,9 +27,6 @@ public class TodoServiceTest {
     private ListService listService;
 
     @Mock
-    private AggregateRootRepository<MasterList, Todo> mockTodoRepository;
-
-    @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
 
     @Mock
@@ -49,7 +46,6 @@ public class TodoServiceTest {
         listService = mock(ListService.class);
         todoService = new TodoService(
             listService,
-            mockTodoRepository,
             mockCompletedListRepository,
             mockMasterListRepository
         );
@@ -211,32 +207,11 @@ public class TodoServiceTest {
 
         exception.expect(OperationRefusedException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
-
-        verifyZeroInteractions(mockTodoRepository);
     }
 
     @Test
     @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_addsAndUpdatesUsingRepository() throws Exception {
-        Todo existingTodo = masterList.add("someTask");
-        masterList.add("someOtherTask");
-        Todo firstDeferredTask = masterList.addDeferred("someDeferredTask");
-
-        String displacingTask = "displacingTask";
-        todoService.displace(new User(uniqueIdentifier), existingTodo.getLocalIdentifier(), displacingTask);
-
-        verify(mockTodoRepository).update(eq(masterList), todoArgumentCaptor.capture());
-        verify(mockTodoRepository).add(eq(masterList), todoArgumentCaptor.capture());
-        List<Todo> allCapturedTodos = todoArgumentCaptor.getAllValues();
-        Todo updatedTodo = allCapturedTodos.get(0);
-        assertThat(updatedTodo.getTask()).isEqualTo(existingTodo.getTask());
-        assertThat(updatedTodo.getPosition()).isEqualTo(firstDeferredTask.getPosition() - 1);
-        assertThat(updatedTodo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
-
-        Todo addedTodo = allCapturedTodos.get(1);
-        assertThat(addedTodo.getTask()).isEqualTo(displacingTask);
-        assertThat(addedTodo.getPosition()).isEqualTo(existingTodo.getPosition());
-        assertThat(addedTodo.getListName()).isEqualTo(MasterList.NAME);
     }
 
     @Test
@@ -269,18 +244,7 @@ public class TodoServiceTest {
 
     @Test
     @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_onAdd_refusesDisplace() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).add(any(), any());
-
-        exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
-    }
-
-    @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_onUpdate_refusesDisplace() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoRepository).update(any(), any(Todo.class));
-
+    public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesDisplace() throws Exception {
         exception.expect(OperationRefusedException.class);
         todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
     }
@@ -409,8 +373,8 @@ public class TodoServiceTest {
 
     @Test
     public void move_whenMasterListFound_whenTodosFound_updatesMovedTodosUsingRepository() throws Exception {
-        Todo todo1 = masterList.add("task1");
-        Todo todo2 = masterList.add("task2");
+        masterList.add("task1");
+        masterList.add("task2");
 
         String sourceIdentifier = "sourceIdentifier";
         String destinationIdentifier = "destinationIdentifier";

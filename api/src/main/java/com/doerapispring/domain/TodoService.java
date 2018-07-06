@@ -10,17 +10,14 @@ import java.util.Optional;
 @Service
 @Transactional
 public class TodoService {
-    private final AggregateRootRepository<MasterList, Todo> todoRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
     private final ListService listService;
     private final ObjectRepository<MasterList, String> masterListRepository;
 
     @Autowired
     TodoService(ListService listService,
-                AggregateRootRepository<MasterList, Todo> todoRepository,
                 ObjectRepository<CompletedList, String> completedListRepository,
                 ObjectRepository<MasterList, String> masterListRepository) {
-        this.todoRepository = todoRepository;
         this.completedListRepository = completedListRepository;
         this.listService = listService;
         this.masterListRepository = masterListRepository;
@@ -67,17 +64,6 @@ public class TodoService {
     }
 
     public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
-        try {
-            MasterList masterList = listService.get(user);
-            Todo displacingTodo = masterList.displace(localIdentifier, task);
-            Todo updatedTodo = masterList.getByLocalIdentifier(localIdentifier);
-            todoRepository.update(masterList, updatedTodo);
-            todoRepository.add(masterList, displacingTodo);
-        } catch (TodoNotFoundException | AbnormalModelException e) {
-            throw new OperationRefusedException();
-        } catch (DuplicateTodoException e) {
-            throw new OperationRefusedException(e.getMessage());
-        }
     }
 
     public void update(User user, String localIdentifier, String task) throws OperationRefusedException {
