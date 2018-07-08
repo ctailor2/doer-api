@@ -36,4 +36,6 @@ public interface IMasterList {
     boolean isAbleToBeReplenished();
 
     String getTask(String localIdentifier);
+
+    Integer getDemarcationIndex();
 }

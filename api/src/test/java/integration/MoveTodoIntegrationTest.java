@@ -1,19 +1,29 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.net.URI;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -42,33 +52,40 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void move() throws Exception {
-        todosService.createDeferred(user, "some task");
-        todosService.createDeferred(user, "some other task");
-        listService.unlock(user);
-        MasterList masterList = todosService.get(user);
-        Todo firstTodo = masterList.getDeferredTodos().get(0);
-        Todo secondTodo = masterList.getDeferredTodos().get(1);
+        mockMvc.perform(post("/v1/list/todos")
+            .headers(httpHeaders)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"some task\"}"))
+            .andExpect(status().isCreated());
+        mockMvc.perform(post("/v1/list/todos")
+            .headers(httpHeaders)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"task\": \"some other task\"}"))
+            .andExpect(status().isCreated());
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())
+        String todosResponse = mockMvc.perform(get("/v1/list/todos")
+            .headers(httpHeaders))
+            .andExpect(jsonPath("$.todos", hasSize(2)))
+            .andExpect(jsonPath("$.todos[0].task", equalTo("some other task")))
+            .andExpect(jsonPath("$.todos[1].task", equalTo("some task")))
+            .andReturn().getResponse().getContentAsString();
+        String moveLink = JsonPath.parse(todosResponse).read("$.todos[0]._links.move[1].href", String.class);
+        String movePath = URI.create(moveLink).getPath();
+
+        MvcResult mvcResult = mockMvc.perform(post(movePath)
             .headers(httpHeaders))
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
-
-        assertThat(newMasterList.getDeferredTodos().get(0), equalTo(
-                new Todo(secondTodo.getLocalIdentifier(),
-                        secondTodo.getTask(),
-                        secondTodo.getListName(),
-                        firstTodo.getPosition())));
-        assertThat(newMasterList.getDeferredTodos().get(1), equalTo(
-                new Todo(firstTodo.getLocalIdentifier(),
-                        firstTodo.getTask(),
-                        firstTodo.getListName(),
-                        secondTodo.getPosition())));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString(movePath)));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+
+        mockMvc.perform(get("/v1/list/todos")
+            .headers(httpHeaders))
+            .andExpect(jsonPath("$.todos", hasSize(2)))
+            .andExpect(jsonPath("$.todos[0].task", equalTo("some task")))
+            .andExpect(jsonPath("$.todos[1].task", equalTo("some other task")));
     }
 }

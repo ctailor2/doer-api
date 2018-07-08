@@ -22,7 +22,11 @@ class CompletedListEntity implements Serializable {
     @Column(name = "email", unique = true)
     public String email;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     public List<CompletedTodoEntity> completedTodoEntities = new ArrayList<>();
+
+    public List<CompletedTodoEntity> getCompletedTodoEntities() {
+        return completedTodoEntities;
+    }
 }

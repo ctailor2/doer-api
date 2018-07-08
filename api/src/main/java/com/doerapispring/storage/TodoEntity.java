@@ -37,8 +37,4 @@ class TodoEntity {
 
     @Column(name = "position")
     public Integer position;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    public UserEntity userEntity;
 }

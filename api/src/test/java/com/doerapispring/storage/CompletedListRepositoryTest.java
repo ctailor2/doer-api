@@ -5,9 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Clock;
@@ -17,10 +17,10 @@ import java.util.Optional;
 import static java.util.Collections.singletonList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = NONE)
+@SpringBootTest
+@Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "test")
 public class CompletedListRepositoryTest {

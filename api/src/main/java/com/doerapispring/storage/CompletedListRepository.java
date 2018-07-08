@@ -24,7 +24,7 @@ class CompletedListRepository implements ObjectRepository<CompletedList, String>
     @Override
     public Optional<CompletedList> find(UniqueIdentifier<String> uniqueIdentifier) {
         CompletedListEntity completedListEntity = completedListDAO.findByEmail(uniqueIdentifier.get());
-        List<CompletedTodo> todos = completedListEntity.completedTodoEntities.stream()
+        List<CompletedTodo> todos = completedListEntity.getCompletedTodoEntities().stream()
             .map(todoEntity -> new CompletedTodo(
                 todoEntity.task,
                 todoEntity.completedAt))
@@ -48,7 +48,7 @@ class CompletedListRepository implements ObjectRepository<CompletedList, String>
         CompletedListEntity completedListEntity = new CompletedListEntity();
         completedListEntity.id = userEntity.id;
         completedListEntity.email = email;
-        completedListEntity.completedTodoEntities.addAll(completedTodoEntities);
+        completedListEntity.getCompletedTodoEntities().addAll(completedTodoEntities);
         completedListDAO.save(completedListEntity);
     }
 }

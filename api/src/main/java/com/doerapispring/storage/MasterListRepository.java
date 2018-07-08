@@ -6,9 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -30,14 +28,14 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
     @Override
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         MasterListEntity masterListEntity = masterListDao.findByEmail(uniqueIdentifier.get());
-        Map<Boolean, List<Todo>> partitionedTodos = masterListEntity.todoEntities.stream()
+        List<Todo> todos = masterListEntity.todoEntities.stream()
             .map(todoEntity -> new Todo(
                 todoEntity.uuid,
                 todoEntity.task,
                 todoEntity.active ? MasterList.NAME : MasterList.DEFERRED_NAME,
                 todoEntity.position))
-            .collect(Collectors.partitioningBy(todo -> MasterList.NAME.equals(todo.getListName())));
-        return Optional.of(new MasterList(clock, uniqueIdentifier, partitionedTodos.get(true), partitionedTodos.get(false), masterListEntity.lastUnlockedAt));
+            .collect(toList());
+        return Optional.of(new MasterList(clock, uniqueIdentifier, todos, masterListEntity.lastUnlockedAt, masterListEntity.demarcationIndex));
     }
 
     @Override
@@ -47,12 +45,12 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
         MasterListEntity masterListEntity = new MasterListEntity();
         masterListEntity.id = userEntity.id;
         masterListEntity.email = masterList.getIdentifier().get();
+        masterListEntity.demarcationIndex = masterList.getDemarcationIndex();
         List<Todo> allTodos = new ArrayList<>();
         allTodos.addAll(masterList.getAllTodos());
         masterListEntity.todoEntities.addAll(allTodos
             .stream()
             .map(todo -> TodoEntity.builder()
-                .userEntity(userEntity)
                 .uuid(todo.getLocalIdentifier())
                 .task(todo.getTask())
                 .active(MasterList.NAME.equals(todo.getListName()))

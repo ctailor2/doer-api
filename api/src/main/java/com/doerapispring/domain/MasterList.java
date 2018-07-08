@@ -10,7 +10,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     private List<Todo> todos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
-    private int listDemarcationIndex = 0;
+    private Integer demarcationIndex = 0;
     private Date lastUnlockedAt;
 
     public MasterList(
@@ -22,16 +22,12 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         this.lastUnlockedAt = lastUnlockedAt;
     }
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, List<Todo> deferredTodos, Date lastUnlockedAt) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, Date lastUnlockedAt, Integer demarcationIndex) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        List<Todo> allTodos = new ArrayList<>();
-        allTodos.addAll(todos);
-//        TODO: Unit test this behavior
-        todos.forEach(ignored -> listDemarcationIndex++);
-        allTodos.addAll(deferredTodos);
-        this.todos = allTodos;
+        this.todos = todos;
         this.lastUnlockedAt = lastUnlockedAt;
+        this.demarcationIndex = demarcationIndex;
     }
 
     @Override
@@ -50,13 +46,13 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         }
         Todo todo = new Todo(generateIdentifier(), task, MasterList.NAME, position);
         todos.add(0, todo);
-        listDemarcationIndex++;
+        demarcationIndex++;
         return todo;
     }
 
     @Override
     public List<Todo> getTodos() {
-        return todos.subList(0, listDemarcationIndex);
+        return todos.subList(0, demarcationIndex);
     }
 
     @Override
@@ -89,8 +85,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     @Override
     public Todo delete(String localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = getByLocalIdentifier(localIdentifier);
-        if (todos.indexOf(todoToDelete) < listDemarcationIndex) {
-            listDemarcationIndex--;
+        if (todos.indexOf(todoToDelete) < demarcationIndex) {
+            demarcationIndex--;
         }
         todos.remove(todoToDelete);
         return todoToDelete;
@@ -109,9 +105,9 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
             NAME,
             existingTodo.getPosition());
         todos.add(0, displacingTodo);
-        listDemarcationIndex++;
+        demarcationIndex++;
         Todo todo = new Todo(existingTodo.getLocalIdentifier(), existingTodo.getTask(), DEFERRED_NAME, 1321321);
-        todos.add(listDemarcationIndex, todo);
+        todos.add(demarcationIndex, todo);
         return displacingTodo;
     }
 
@@ -139,7 +135,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         int originalIndex;
         int targetIndex;
         List<Todo> subList;
-        if (index < listDemarcationIndex) {
+        if (index < demarcationIndex) {
             subList = getTodos();
         } else {
             subList = deferredTodos();
@@ -193,13 +189,18 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
+    public Integer getDemarcationIndex() {
+        return demarcationIndex;
+    }
+
+    @Override
     public List<Todo> pull() {
         List<Todo> pulledTodos = new ArrayList<>();
-        while (listDemarcationIndex < todos.size() && getTodos().size() < maxSize()) {
-            Todo pulledTodo = todos.get(listDemarcationIndex);
+        while (demarcationIndex < todos.size() && getTodos().size() < maxSize()) {
+            Todo pulledTodo = todos.get(demarcationIndex);
             pulledTodo.setListName(MasterList.NAME);
             pulledTodos.add(pulledTodo);
-            listDemarcationIndex++;
+            demarcationIndex++;
         }
         return pulledTodos;
     }
@@ -226,7 +227,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     private List<Todo> deferredTodos() {
-        return todos.subList(listDemarcationIndex, todos.size());
+        return todos.subList(demarcationIndex, todos.size());
     }
 
     private String generateIdentifier() {
@@ -291,7 +292,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
         MasterList that = (MasterList) o;
 
-        if (listDemarcationIndex != that.listDemarcationIndex) return false;
+        if (demarcationIndex != that.demarcationIndex) return false;
         if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
         if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
@@ -304,7 +305,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         int result = todos != null ? todos.hashCode() : 0;
         result = 31 * result + (clock != null ? clock.hashCode() : 0);
         result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
-        result = 31 * result + listDemarcationIndex;
+        result = 31 * result + demarcationIndex;
         result = 31 * result + (lastUnlockedAt != null ? lastUnlockedAt.hashCode() : 0);
         return result;
     }
@@ -315,7 +316,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
             "todos=" + todos +
             ", clock=" + clock +
             ", uniqueIdentifier=" + uniqueIdentifier +
-            ", listDemarcationIndex=" + listDemarcationIndex +
+            ", demarcationIndex=" + demarcationIndex +
             ", lastUnlockedAt=" + lastUnlockedAt +
             '}';
     }
