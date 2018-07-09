@@ -24,6 +24,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
+
     @Autowired
     private TodoService todosService;
 
@@ -40,25 +41,31 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void complete_completesTodo() throws Exception {
+        todosService.create(user, "some other task");
         todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
-        Todo todo = masterList.getTodos().get(0);
+        Todo todo1 = masterList.getTodos().get(0);
+        Todo todo2 = masterList.getTodos().get(1);
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo.getLocalIdentifier() + "/complete")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")
+            .headers(httpHeaders))
+            .andReturn();
+        mockMvc.perform(post("/v1/todos/" + todo2.getLocalIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
 
-        String responseContent = mvcResult.getResponse().getContentAsString();
         MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
         CompletedList newCompletedList = todosService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = newCompletedList.getTodos();
-        assertThat(completedTodos, hasSize(1));
+        assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some task"));
+        assertThat(completedTodos.get(1).getTask(), equalTo("some other task"));
+        String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 }

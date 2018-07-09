@@ -3,6 +3,7 @@ package com.doerapispring.domain;
 import java.sql.Date;
 import java.time.Clock;
 import java.util.List;
+import java.util.UUID;
 
 public class CompletedList implements UniquelyIdentifiable<String> {
     private final Clock clock;
@@ -53,6 +54,6 @@ public class CompletedList implements UniquelyIdentifiable<String> {
     }
 
     public void add(String task) {
-        todos.add(new CompletedTodo(task, Date.from(clock.instant())));
+        todos.add(new CompletedTodo(UUID.randomUUID().toString(), task, Date.from(clock.instant())));
     }
 }

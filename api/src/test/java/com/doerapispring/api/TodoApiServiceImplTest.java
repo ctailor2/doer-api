@@ -142,7 +142,7 @@ public class TodoApiServiceImplTest {
     public void getCompleted_callsTodoService_returnsCompletedTodoListDTO_containingAllTodos() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         Date completedAt = new Date();
-        CompletedTodo completedTodo = new CompletedTodo("some task", completedAt);
+        CompletedTodo completedTodo = new CompletedTodo("someUuid", "some task", completedAt);
         CompletedList completedList = new CompletedList(mock(Clock.class), uniqueIdentifier, Collections.singletonList(completedTodo));
         when(mockTodoService.getCompleted(any())).thenReturn(completedList);
 

@@ -47,7 +47,7 @@ public class CompletedListRepositoryTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         userRepository.add(new User(uniqueIdentifier));
         CompletedList completedList = new CompletedList(mockClock, uniqueIdentifier, singletonList(
-            new CompletedTodo("someTask", new Date())));
+            new CompletedTodo("someUuid", "someTask", new Date())));
 
         completedListRepository.save(completedList);
 

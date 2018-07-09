@@ -2,7 +2,10 @@ package com.doerapispring.storage;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 
 @Builder
@@ -14,8 +17,8 @@ import java.util.Date;
 @Table(name = "completed_todos")
 class CompletedTodoEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    @Column(name = "uuid")
+    public String uuid;
 
     @Column(name = "task")
     public String task;

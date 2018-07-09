@@ -25,9 +25,11 @@ class CompletedListRepository implements ObjectRepository<CompletedList, String>
     public Optional<CompletedList> find(UniqueIdentifier<String> uniqueIdentifier) {
         CompletedListEntity completedListEntity = completedListDAO.findByEmail(uniqueIdentifier.get());
         List<CompletedTodo> todos = completedListEntity.getCompletedTodoEntities().stream()
-            .map(todoEntity -> new CompletedTodo(
-                todoEntity.task,
-                todoEntity.completedAt))
+            .map(completedTodoEntity ->
+                new CompletedTodo(
+                    completedTodoEntity.uuid,
+                    completedTodoEntity.task,
+                    completedTodoEntity.completedAt))
             .collect(toList());
         CompletedList completedList = new CompletedList(clock, uniqueIdentifier, todos);
         return Optional.of(completedList);
@@ -40,6 +42,7 @@ class CompletedListRepository implements ObjectRepository<CompletedList, String>
 
         List<CompletedTodoEntity> completedTodoEntities = completedList.getTodos().stream()
             .map(completedTodo -> CompletedTodoEntity.builder()
+                .uuid(completedTodo.getLocalIdentifier())
                 .task(completedTodo.getTask())
                 .completedAt(completedTodo.getCompletedAt())
                 .build())
