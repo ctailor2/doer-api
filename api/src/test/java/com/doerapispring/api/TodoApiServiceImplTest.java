@@ -88,18 +88,18 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void displace_callsTodoService() throws Exception {
-        todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask");
+        todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someTask");
 
-        verify(mockTodoService).displace(new User(new UniqueIdentifier<>("someIdentifier")), "someId", "someTask");
+        verify(mockTodoService).displace(new User(new UniqueIdentifier<>("someIdentifier")), "someTask");
     }
 
     @Test
     public void displace_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
         String exceptionMessage = "some exception message";
-        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).displace(any(), any(), any());
+        doThrow(new OperationRefusedException(exceptionMessage)).when(mockTodoService).displace(any(), any());
 
         assertThatThrownBy(() ->
-            todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someId", "someTask"))
+            todoApiServiceImpl.displace(new AuthenticatedUser("someIdentifier"), "someTask"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessage(exceptionMessage);
     }
@@ -214,16 +214,6 @@ public class TodoApiServiceImplTest {
     }
 
     @Test
-    public void getTodos_returnsTodoList_withFullIndicator() throws Exception {
-        masterList.add("someTask");
-        masterList.add("someOtherTask");
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO.isFull()).isEqualTo(true);
-    }
-
-    @Test
     public void getDeferredTodos_callsTodoService() throws Exception {
         todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
 
@@ -239,12 +229,5 @@ public class TodoApiServiceImplTest {
 
         assertThat(todoListDTO).isNotNull();
         assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask"));
-    }
-
-    @Test
-    public void getDeferredTodos_returnsTodoList_withFullIndicator_setToFalse() throws Exception {
-        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO.isFull()).isEqualTo(false);
     }
 }

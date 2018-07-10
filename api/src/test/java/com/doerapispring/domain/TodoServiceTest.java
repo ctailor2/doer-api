@@ -1,7 +1,6 @@
 package com.doerapispring.domain;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -210,43 +209,38 @@ public class TodoServiceTest {
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenMasterListFound_whenTodoFound_addsAndUpdatesUsingRepository() throws Exception {
+    public void displace_whenMasterListFound_whenTodoFound_savesUsingRepository() throws Exception {
+        todoService.displace(new User(uniqueIdentifier), "someTask");
+
+        verify(masterList).displace("someTask");
+        verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListNotFound_refusesDisplace() throws Exception {
         when(listService.get(any())).thenThrow(new OperationRefusedException());
 
         exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
+        todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenMasterListFound_whenTodoNotFound_refusesDisplace() throws Exception {
-        exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
-    }
-
-    @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
-        Todo todo = masterList.add("someTask");
+        when(masterList.displace(any())).thenThrow(new DuplicateTodoException());
 
         assertThatThrownBy(() ->
-            todoService.displace(new User(uniqueIdentifier), todo.getLocalIdentifier(), "someTask"))
+            todoService.displace(new User(uniqueIdentifier), "someTask"))
             .isInstanceOf(OperationRefusedException.class)
             .hasMessageContaining("already exists");
 
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesDisplace() throws Exception {
+        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
+
         exception.expect(OperationRefusedException.class);
-        todoService.displace(new User(uniqueIdentifier), "someId", "someTask");
+        todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
     @Test

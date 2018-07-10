@@ -17,7 +17,7 @@ interface HateoasLinkGenerator {
 
     Link deleteTodoLink(String localId);
 
-    Link displaceTodoLink(String localId);
+    Link displaceTodoLink();
 
     Link updateTodoLink(String localId);
 

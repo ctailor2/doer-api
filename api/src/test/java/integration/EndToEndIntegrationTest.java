@@ -4,7 +4,6 @@ import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -270,7 +269,6 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displacingTodos_defersTodos() throws Exception {
         String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
             .headers(httpHeaders))
@@ -281,6 +279,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         jsonResponse = mockMvc.perform(get(listHref)
             .headers(httpHeaders))
             .andExpect(jsonPath("$.list._links", hasKey("create")))
+            .andExpect(jsonPath("$.list._links", not(hasKey("displace"))))
             .andReturn().getResponse().getContentAsString();
 
         String createTodoHref = JsonPath.parse(jsonResponse).read("$.list._links.create.href", String.class);
@@ -297,8 +296,12 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         mockMvc.perform(
             get(getTodosHref)
                 .headers(httpHeaders))
-            .andExpect(jsonPath("$.todos", hasSize(1)))
-            .andExpect(jsonPath("$.todos[0]._links", not(hasKey("displace"))));
+            .andExpect(jsonPath("$.todos", hasSize(1)));
+
+        mockMvc.perform(get(listHref)
+            .headers(httpHeaders))
+            .andExpect(jsonPath("$.list._links", hasKey("create")))
+            .andExpect(jsonPath("$.list._links", not(hasKey("displace"))));
 
         mockMvc.perform(
             post(createTodoHref)
@@ -312,22 +315,22 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
                 .contentType(MediaType.APPLICATION_JSON)
                 .headers(httpHeaders));
 
-        mockMvc.perform(get(listHref)
-            .headers(httpHeaders))
-            .andExpect(jsonPath("$.list._links", not(hasKey("create"))));
-
-        jsonResponse = mockMvc.perform(
+        mockMvc.perform(
             get(getTodosHref)
                 .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(2)))
-            .andExpect(jsonPath("$.todos[0]._links", hasKey("displace")))
-            .andExpect(jsonPath("$.todos[1]._links", hasKey("displace")))
+            .andReturn().getResponse().getContentAsString();
+
+        jsonResponse = mockMvc.perform(get(listHref)
+            .headers(httpHeaders))
+            .andExpect(jsonPath("$.list._links", not(hasKey("create"))))
+            .andExpect(jsonPath("$.list._links", hasKey("displace")))
             .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(
             post(
                 JsonPath.parse(jsonResponse)
-                    .read("$.todos[0]._links.displace.href", String.class))
+                    .read("$.list._links.displace.href", String.class))
                 .content("{\"task\":\"displacing task\"}")
                 .headers(httpHeaders));
 

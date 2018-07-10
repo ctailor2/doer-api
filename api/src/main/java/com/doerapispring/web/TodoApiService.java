@@ -9,7 +9,7 @@ public interface TodoApiService {
 
     void delete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;
 
-    void displace(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException;
+    void displace(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException;
 
     void update(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException;
 

@@ -95,23 +95,27 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void show_whenListIsNotFull_includesCreateLink() throws Exception {
+    public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() throws Exception {
         when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", 0L, false, false, false, false));
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"));
+        assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).doesNotContain(
+            new Link(MOCK_BASE_URL + "/list/displaceTodo").withRel("displace"));
     }
 
     @Test
-    public void show_whenListIsFull_doesNotIncludeCreateLink() throws Exception {
+    public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() throws Exception {
         when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", 0L, true, false, false, false));
 
         ResponseEntity<ListResponse> responseEntity = listsController.show(authenticatedUser);
 
         assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/list/createTodo").withRel("create"));
+        assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/list/displaceTodo").withRel("displace"));
     }
 
     @Test

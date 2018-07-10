@@ -63,7 +63,14 @@ public class TodoService {
         }
     }
 
-    public void displace(User user, String localIdentifier, String task) throws OperationRefusedException {
+    public void displace(User user, String task) throws OperationRefusedException {
+        MasterList masterList = listService.get(user);
+        try {
+            masterList.displace(task);
+            masterListRepository.save(masterList);
+        } catch (AbnormalModelException | DuplicateTodoException e) {
+            throw new OperationRefusedException(e.getMessage());
+        }
     }
 
     public void update(User user, String localIdentifier, String task) throws OperationRefusedException {

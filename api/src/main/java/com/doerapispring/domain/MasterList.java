@@ -93,22 +93,17 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo displace(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public Todo displace(String task) throws DuplicateTodoException {
         if (alreadyExists(task)) throw new DuplicateTodoException();
-//        TODO: Forget about getting this working and just remove the displace link for now
-//        Bring this back once the master list model is persisted
-//        and names / positions are no longer managed externally from the masterlist
-        Todo existingTodo = delete(localIdentifier);
-        Todo displacingTodo = new Todo(
-            generateIdentifier(),
-            task,
-            NAME,
-            existingTodo.getPosition());
-        todos.add(0, displacingTodo);
-        demarcationIndex++;
-        Todo todo = new Todo(existingTodo.getLocalIdentifier(), existingTodo.getTask(), DEFERRED_NAME, 1321321);
-        todos.add(demarcationIndex, todo);
-        return displacingTodo;
+        int position;
+        if (todos.isEmpty()) {
+            position = 1;
+        } else {
+            position = todos.get(0).getPosition() - 1;
+        }
+        Todo todo = new Todo(generateIdentifier(), task, MasterList.NAME, position);
+        todos.add(0, todo);
+        return todo;
     }
 
     @Override

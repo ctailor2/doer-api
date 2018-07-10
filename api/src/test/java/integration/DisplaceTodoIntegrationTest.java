@@ -4,7 +4,6 @@ import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -43,13 +42,12 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
         todosService.create(user, "some task");
         MasterList masterList = todosService.get(user);
         Todo todo = masterList.getTodos().get(0);
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo.getLocalIdentifier() + "/displace")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/list/displace")
             .content("{\"task\":\"do the things\"}")
             .contentType(MediaType.APPLICATION_JSON)
             .headers(httpHeaders))
@@ -62,15 +60,13 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("do the things")),
-                hasProperty("listName", equalTo(MasterList.NAME)),
-                hasProperty("position", equalTo(1)))));
+                hasProperty("position", equalTo(0)))));
         assertThat(newMasterList.getDeferredTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("some task")),
-                hasProperty("listName", equalTo(MasterList.DEFERRED_NAME)),
                 hasProperty("position", equalTo(1)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier() + "/displace")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/displace")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 }

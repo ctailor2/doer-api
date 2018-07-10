@@ -35,14 +35,13 @@ class TodosController {
         }
     }
 
-    @RequestMapping(value = "/todos/{localId}/displace", method = RequestMethod.POST)
+    @RequestMapping(value = "/list/displace", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                               @PathVariable(value = "localId") String localId,
                                                @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApiService.displace(authenticatedUser, localId, todoForm.getTask());
+        todoApiService.displace(authenticatedUser, todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink(localId).withSelfRel(),
+        resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink().withSelfRel(),
             hateoasLinkGenerator.listLink().withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
@@ -182,10 +181,6 @@ class TodosController {
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                         todoDTO.getLocalIdentifier(),
                         targetTodoDTO.getLocalIdentifier()).withRel("move")));
-
-                if (todoListDTO.isFull()) {
-                    todoDTO.add(hateoasLinkGenerator.displaceTodoLink(todoDTO.getLocalIdentifier()).withRel("displace"));
-                }
             });
             TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.deferredTodosLink().withSelfRel());

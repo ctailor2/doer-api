@@ -26,7 +26,7 @@ class TodoApiServiceImpl implements TodoApiService {
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs, masterList.isFull());
+            return new TodoListDTO(todoDTOs);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -40,7 +40,7 @@ class TodoApiServiceImpl implements TodoApiService {
                     .map(this::mapToDTO)
                     .collect(Collectors.toList());
             // TODO: Returning a hardcoded value for this is weird - ideally shouldn't need this at all
-            return new TodoListDTO(todoDTOs, false);
+            return new TodoListDTO(todoDTOs);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -74,9 +74,9 @@ class TodoApiServiceImpl implements TodoApiService {
     }
 
     @Override
-    public void displace(AuthenticatedUser authenticatedUser, String localId, String task) throws InvalidRequestException {
+    public void displace(AuthenticatedUser authenticatedUser, String task) throws InvalidRequestException {
         try {
-            todoService.displace(authenticatedUser.getUser(), localId, task);
+            todoService.displace(authenticatedUser.getUser(), task);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException(e.getMessage());
         }

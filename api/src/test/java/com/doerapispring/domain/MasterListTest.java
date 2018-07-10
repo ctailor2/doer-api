@@ -1,7 +1,6 @@
 package com.doerapispring.domain;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -134,62 +133,46 @@ public class MasterListTest {
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
-        exception.expect(TodoNotFoundException.class);
-        masterList.displace("someId", "displace it");
-    }
-
-    @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
     public void displace_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
         Todo todo = masterList.add("sameTask");
 
         exception.expect(DuplicateTodoException.class);
-        masterList.displace(todo.getLocalIdentifier(), "sameTask");
+        masterList.displace("sameTask");
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenTodoWithIdentifierExists_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo = masterList.add("someNowTask");
+    public void displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+        masterList.add("someNowTask");
+        Todo firstTodo = masterList.getTodos().get(0);
+
+        masterList.displace("displace it");
+
+        assertThat(masterList.getTodos()).hasSize(1);
+        assertThat(masterList.getTodos().get(0).getTask()).isEqualTo("displace it");
+        assertThat(masterList.getTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition() - 1);
         masterList.unlock();
-
-        Todo todo = masterList.displace(nowTodo.getLocalIdentifier(), "displace it");
-
-        assertThat(todo.getTask()).isEqualTo("displace it");
-        assertThat(todo.getPosition()).isEqualTo(nowTodo.getPosition());
-        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
-        assertThat(masterList.getTodos()).containsExactly(todo);
-        assertThat(masterList.getDeferredTodos()).containsExactly(
-            new Todo(
-                nowTodo.getLocalIdentifier(),
-                nowTodo.getTask(),
-                MasterList.DEFERRED_NAME,
-                1));
+        assertThat(masterList.getDeferredTodos()).hasSize(1);
+        assertThat(masterList.getDeferredTodos().get(0).getTask()).isEqualTo("someNowTask");
+        assertThat(masterList.getDeferredTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition());
     }
 
     @Test
-    @Ignore("Displace functionality temporarily disabled until further refactoring permits a reasonable implementation")
-    public void displace_whenTodoWithIdentifierExists_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
-        Todo nowTodo1 = masterList.add("someNowTask");
-        Todo nowTodo2 = masterList.add("someOtherNowTask");
-        Todo laterTodo = masterList.addDeferred("someLaterTask");
+    public void displace_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+        masterList.add("someNowTask");
+        masterList.add("someOtherNowTask");
+        Todo firstTodo = masterList.getTodos().get(0);
+        masterList.addDeferred("someLaterTask");
+
+        masterList.displace("displace it");
+
+        assertThat(masterList.getTodos()).hasSize(2);
+        assertThat(masterList.getTodos().get(0).getTask()).isEqualTo("displace it");
+        assertThat(masterList.getTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition() - 1);
+        assertThat(masterList.getTodos().get(1).getTask()).isEqualTo(firstTodo.getTask());
         masterList.unlock();
-
-        Todo todo = masterList.displace(nowTodo1.getLocalIdentifier(), "displace it");
-
-        assertThat(todo.getTask()).isEqualTo("displace it");
-        assertThat(todo.getPosition()).isEqualTo(nowTodo1.getPosition());
-        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
-        assertThat(masterList.getTodos()).containsExactly(todo, nowTodo2);
-        assertThat(masterList.getDeferredTodos()).containsExactly(
-            new Todo(
-                nowTodo1.getLocalIdentifier(),
-                nowTodo1.getTask(),
-                MasterList.DEFERRED_NAME,
-                laterTodo.getPosition() - 1),
-            laterTodo);
+        assertThat(masterList.getDeferredTodos()).hasSize(2);
+        assertThat(masterList.getDeferredTodos().get(0).getTask()).isEqualTo("someNowTask");
+        assertThat(masterList.getDeferredTodos().get(1).getTask()).isEqualTo("someLaterTask");
     }
 
     @Test

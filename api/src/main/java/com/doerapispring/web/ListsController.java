@@ -48,7 +48,9 @@ class ListsController {
             if (!masterListDTO.isLocked()){
                 masterListDTO.add(hateoasLinkGenerator.deferredTodosLink().withRel("deferredTodos"));
             }
-            if (!masterListDTO.isFull()) {
+            if (masterListDTO.isFull()) {
+                masterListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
+            } else {
                 masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
             }
             if (masterListDTO.isAbleToBeReplenished()) {
