@@ -76,7 +76,7 @@ public class TodoServiceTest {
 
     @Test
     public void getDeferredTodos_whenMasterListFound_returnsDeferredTodos() throws Exception {
-        List<Todo> expectedTodos = singletonList(new Todo("someIdentifier", "someTask", MasterList.DEFERRED_NAME, 1));
+        List<Todo> expectedTodos = singletonList(new Todo("someIdentifier", "someTask", 1));
         when(masterList.getDeferredTodos()).thenReturn(expectedTodos);
 
         User user = new User(uniqueIdentifier);

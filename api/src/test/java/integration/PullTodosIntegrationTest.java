@@ -56,15 +56,12 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will get pulled")),
-                hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(1)))));
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will also get pulled")),
-                hasProperty("listName", equalTo(MasterList.NAME)),
                 hasProperty("position", equalTo(2)))));
         assertThat(newMasterList.getDeferredTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("keep for later")),
-                hasProperty("listName", equalTo(MasterList.DEFERRED_NAME)),
                 hasProperty("position", equalTo(3)))));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

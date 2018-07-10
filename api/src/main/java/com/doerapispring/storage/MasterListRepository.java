@@ -32,7 +32,6 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
             .map(todoEntity -> new Todo(
                 todoEntity.uuid,
                 todoEntity.task,
-                todoEntity.active ? MasterList.NAME : MasterList.DEFERRED_NAME,
                 todoEntity.position))
             .collect(toList());
         return Optional.of(new MasterList(clock, uniqueIdentifier, todos, masterListEntity.lastUnlockedAt, masterListEntity.demarcationIndex));
@@ -53,7 +52,6 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
             .map(todo -> TodoEntity.builder()
                 .uuid(todo.getLocalIdentifier())
                 .task(todo.getTask())
-                .active(MasterList.NAME.equals(todo.getListName()))
                 .position(todo.getPosition())
                 .build())
             .collect(toList()));

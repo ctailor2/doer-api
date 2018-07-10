@@ -222,7 +222,7 @@ public class TodoApiServiceImplTest {
 
     @Test
     public void getDeferredTodos_callsTodoService_returnsDeferredTodos() throws Exception {
-        Todo todo = new Todo("someIdentifier", "someTask", MasterList.NAME, 1);
+        Todo todo = new Todo("someIdentifier", "someTask", 1);
         when(mockTodoService.getDeferredTodos(any())).thenReturn(Collections.singletonList(todo));
 
         TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));

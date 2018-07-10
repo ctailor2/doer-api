@@ -5,8 +5,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
-    public static final String NAME = "now";
-    public static final String DEFERRED_NAME = "later";
+    private static final String NAME = "now";
+    private static final String DEFERRED_NAME = "later";
     private List<Todo> todos = new ArrayList<>();
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
@@ -44,7 +44,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         } else {
             position = todos.get(0).getPosition() - 1;
         }
-        Todo todo = new Todo(generateIdentifier(), task, MasterList.NAME, position);
+        Todo todo = new Todo(generateIdentifier(), task, position);
         todos.add(0, todo);
         demarcationIndex++;
         return todo;
@@ -60,7 +60,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        Todo todo = new Todo(generateIdentifier(), task, MasterList.DEFERRED_NAME, getNextDeferredPosition());
+        Todo todo = new Todo(generateIdentifier(), task, getNextDeferredPosition());
         todos.add(todo);
         return todo;
     }
@@ -101,7 +101,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         } else {
             position = todos.get(0).getPosition() - 1;
         }
-        Todo todo = new Todo(generateIdentifier(), task, MasterList.NAME, position);
+        Todo todo = new Todo(generateIdentifier(), task, position);
         todos.add(0, todo);
         return todo;
     }
@@ -193,7 +193,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         List<Todo> pulledTodos = new ArrayList<>();
         while (demarcationIndex < todos.size() && getTodos().size() < maxSize()) {
             Todo pulledTodo = todos.get(demarcationIndex);
-            pulledTodo.setListName(MasterList.NAME);
             pulledTodos.add(pulledTodo);
             demarcationIndex++;
         }

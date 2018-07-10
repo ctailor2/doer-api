@@ -39,11 +39,11 @@ public class MasterListDaoTest {
     @Test
     public void findsMasterList_withTodosOrderedByPosition() {
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, active, completed, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid2', 'task2', 2, true, false, now(), now())");
+            "todos (user_id, uuid, task, position, completed, created_at, updated_at) " +
+            "VALUES (" + userId + ", 'uuid2', 'task2', 2, false, now(), now())");
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, active, completed, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid1', 'task1', 1, true, false, now(), now())");
+            "todos (user_id, uuid, task, position, completed, created_at, updated_at) " +
+            "VALUES (" + userId + ", 'uuid1', 'task1', 1, false, now(), now())");
 
         List<TodoEntity> todoEntities = masterListDao.findByEmail("someEmail").getTodoEntities();
         assertThat(todoEntities).hasSize(2);

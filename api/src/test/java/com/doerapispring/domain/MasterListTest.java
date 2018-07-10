@@ -46,7 +46,6 @@ public class MasterListTest {
         assertThat(todo.getPosition()).isEqualTo(1);
         assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
         assertThat(todo.getTask()).isEqualTo("someTask");
-        assertThat(todo.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(todo);
     }
 
@@ -83,7 +82,6 @@ public class MasterListTest {
         assertThat(todo.getPosition()).isEqualTo(1);
         assertThat(todo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
         assertThat(todo.getTask()).isEqualTo("someTask");
-        assertThat(todo.getListName()).isEqualTo(MasterList.DEFERRED_NAME);
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).contains(todo);
     }
@@ -181,7 +179,7 @@ public class MasterListTest {
 
         Todo updatedTodo = masterList.update(todo.getLocalIdentifier(), "someOtherTask");
 
-        assertThat(updatedTodo).isEqualTo(new Todo(todo.getLocalIdentifier(), "someOtherTask", todo.getListName(), todo.getPosition()));
+        assertThat(updatedTodo).isEqualTo(new Todo(todo.getLocalIdentifier(), "someOtherTask", todo.getPosition()));
         assertThat(masterList.getTodos()).containsOnly(updatedTodo);
     }
 
@@ -424,10 +422,8 @@ public class MasterListTest {
         assertThat(effectedTodos).hasSize(2);
         Todo pulledTodo1 = effectedTodos.get(0);
         assertThat(pulledTodo1.getTask()).isEqualTo(firstLater.getTask());
-        assertThat(pulledTodo1.getListName()).isEqualTo(MasterList.NAME);
         Todo pulledTodo2 = effectedTodos.get(1);
         assertThat(pulledTodo2.getTask()).isEqualTo(secondLater.getTask());
-        assertThat(pulledTodo2.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(pulledTodo1, pulledTodo2);
     }
 
@@ -440,7 +436,6 @@ public class MasterListTest {
         assertThat(effectedTodos).hasSize(1);
         Todo pulledTodo = effectedTodos.get(0);
         assertThat(pulledTodo.getTask()).isEqualTo(firstLater.getTask());
-        assertThat(pulledTodo.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(pulledTodo);
     }
 
@@ -456,7 +451,6 @@ public class MasterListTest {
         assertThat(effectedTodos).hasSize(1);
         Todo pulledTodo = effectedTodos.get(0);
         assertThat(pulledTodo.getTask()).isEqualTo(firstLater.getTask());
-        assertThat(pulledTodo.getListName()).isEqualTo(MasterList.NAME);
         assertThat(masterList.getTodos()).containsExactly(firstNow, pulledTodo);
     }
 
