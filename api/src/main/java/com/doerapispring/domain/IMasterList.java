@@ -15,7 +15,7 @@ public interface IMasterList {
 
     Todo delete(String localIdentifier) throws TodoNotFoundException;
 
-    Todo displace(String task) throws TodoNotFoundException, DuplicateTodoException;
+    Todo displace(String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
 
     Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
 

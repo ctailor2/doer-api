@@ -68,7 +68,7 @@ public class TodoService {
         try {
             masterList.displace(task);
             masterListRepository.save(masterList);
-        } catch (AbnormalModelException | DuplicateTodoException e) {
+        } catch (AbnormalModelException | DuplicateTodoException | ListNotFullException e) {
             throw new OperationRefusedException(e.getMessage());
         }
     }

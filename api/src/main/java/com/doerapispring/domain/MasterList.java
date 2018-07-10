@@ -93,7 +93,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo displace(String task) throws DuplicateTodoException {
+    public Todo displace(String task) throws DuplicateTodoException, ListNotFullException {
+        if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
         int position;
         if (todos.isEmpty()) {
@@ -209,7 +210,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return !isFull() && deferredTodos().size() > 0;
     }
 
-    Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
         return todos.stream()
             .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
             .findFirst()

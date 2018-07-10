@@ -131,8 +131,15 @@ public class MasterListTest {
     }
 
     @Test
-    public void displace_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
-        Todo todo = masterList.add("sameTask");
+    public void displace_whenListIsNotFull_throwsListNotFullException() throws Exception {
+        exception.expect(ListNotFullException.class);
+        masterList.displace("someTask");
+    }
+
+    @Test
+    public void displace_whenListIsFull_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
+        masterList.add("task");
+        masterList.add("sameTask");
 
         exception.expect(DuplicateTodoException.class);
         masterList.displace("sameTask");
@@ -141,17 +148,18 @@ public class MasterListTest {
     @Test
     public void displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
         masterList.add("someNowTask");
+        masterList.add("someOtherNowTask");
         Todo firstTodo = masterList.getTodos().get(0);
 
         masterList.displace("displace it");
 
-        assertThat(masterList.getTodos()).hasSize(1);
+        assertThat(masterList.getTodos()).hasSize(2);
         assertThat(masterList.getTodos().get(0).getTask()).isEqualTo("displace it");
         assertThat(masterList.getTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition() - 1);
+        assertThat(masterList.getTodos().get(1).getTask()).isEqualTo("someOtherNowTask");
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).hasSize(1);
         assertThat(masterList.getDeferredTodos().get(0).getTask()).isEqualTo("someNowTask");
-        assertThat(masterList.getDeferredTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition());
     }
 
     @Test

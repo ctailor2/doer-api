@@ -232,7 +232,14 @@ public class TodoServiceTest {
             todoService.displace(new User(uniqueIdentifier), "someTask"))
             .isInstanceOf(OperationRefusedException.class)
             .hasMessageContaining("already exists");
+    }
 
+    @Test
+    public void displace_whenMasterListFound_whenTodoFound_whenListIsNotFull_refusesDisplace() throws Exception {
+        when(masterList.displace(any())).thenThrow(new ListNotFullException());
+
+        exception.expect(OperationRefusedException.class);
+        todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
     @Test
