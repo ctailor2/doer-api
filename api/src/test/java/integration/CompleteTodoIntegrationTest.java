@@ -60,8 +60,8 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         assertThat(newMasterList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = newCompletedList.getTodos();
         assertThat(completedTodos, hasSize(2));
-        assertThat(completedTodos.get(0).getTask(), equalTo("some task"));
-        assertThat(completedTodos.get(1).getTask(), equalTo("some other task"));
+        assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
+        assertThat(completedTodos.get(1).getTask(), equalTo("some task"));
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
