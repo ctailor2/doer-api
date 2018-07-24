@@ -36,7 +36,9 @@ public class MasterListTest {
         masterList = new MasterList(
             mockClock,
             uniqueIdentifier,
-            null);
+            null,
+            new ArrayList<>(),
+            0);
     }
 
     @Test

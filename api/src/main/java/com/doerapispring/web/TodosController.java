@@ -92,10 +92,10 @@ class TodosController {
 
     @RequestMapping(value = "/completedTodos", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<TodosResponse> completedTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<CompletedTodosResponse> completedTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             CompletedTodoListDTO completedTodoListDTO = todoApiService.getCompleted(authenticatedUser);
-            TodosResponse todosResponse = new TodosResponse(completedTodoListDTO.getTodoDTOs());
+            CompletedTodosResponse todosResponse = new CompletedTodosResponse(completedTodoListDTO.getCompletedTodoDTOs());
             todosResponse.add(hateoasLinkGenerator.completedTodosLink().withSelfRel());
             todosResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
             return ResponseEntity.status(HttpStatus.OK).body(todosResponse);

@@ -5,7 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -35,8 +34,6 @@ public class TodoServiceTest {
     public final ExpectedException exception = ExpectedException.none();
     private UniqueIdentifier<String> uniqueIdentifier;
     private MasterList masterList;
-
-    private final ArgumentCaptor<Todo> todoArgumentCaptor = ArgumentCaptor.forClass(Todo.class);
 
     private CompletedList completedList;
 

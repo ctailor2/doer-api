@@ -39,7 +39,6 @@ class TodoApiServiceImpl implements TodoApiService {
                     .stream()
                     .map(this::mapToDTO)
                     .collect(Collectors.toList());
-            // TODO: Returning a hardcoded value for this is weird - ideally shouldn't need this at all
             return new TodoListDTO(todoDTOs);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
@@ -104,8 +103,10 @@ class TodoApiServiceImpl implements TodoApiService {
     public CompletedTodoListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         try {
             CompletedList completedList = todoService.getCompleted(authenticatedUser.getUser());
-            List<TodoDTO> todoDTOs = completedList.getTodos().stream().map(this::mapToDTO).collect(Collectors.toList());
-            return new CompletedTodoListDTO(todoDTOs);
+            List<CompletedTodoDTO> completedTodoDTOs = completedList.getTodos().stream()
+                .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+                .collect(Collectors.toList());
+            return new CompletedTodoListDTO(completedTodoDTOs);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
@@ -129,13 +130,7 @@ class TodoApiServiceImpl implements TodoApiService {
         }
     }
 
-    // TODO: Maybe these behaviors should exist in a mapping layer of some sort
     private TodoDTO mapToDTO(Todo todo) {
         return new TodoDTO(todo.getLocalIdentifier(), todo.getTask());
-    }
-
-    // TODO: Maybe these behaviors should exist in a mapping layer of some sort
-    private TodoDTO mapToDTO(CompletedTodo completedTodo) {
-        return new TodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt());
     }
 }

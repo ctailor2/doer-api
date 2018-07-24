@@ -34,7 +34,7 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
                 todoEntity.task,
                 todoEntity.position))
             .collect(toList());
-        return Optional.of(new MasterList(clock, uniqueIdentifier, todos, masterListEntity.lastUnlockedAt, masterListEntity.demarcationIndex));
+        return Optional.of(new MasterList(clock, uniqueIdentifier, masterListEntity.lastUnlockedAt, todos, masterListEntity.demarcationIndex));
     }
 
     @Override

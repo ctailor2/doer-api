@@ -2,14 +2,12 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.CompletedTodoListDTO;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.TodoDTO;
-import com.doerapispring.web.TodoListDTO;
+import com.doerapispring.web.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
@@ -30,7 +28,7 @@ public class TodoApiServiceImplTest {
         mockTodoService = mock(TodoService.class);
         todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
         uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null);
+        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null, new ArrayList<>(), 0);
         when(mockTodoService.get(any())).thenReturn(masterList);
     }
 
@@ -149,8 +147,8 @@ public class TodoApiServiceImplTest {
         CompletedTodoListDTO completedTodoListDTO = todoApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier"));
 
         verify(mockTodoService).getCompleted(new User(uniqueIdentifier));
-        assertThat(completedTodoListDTO.getTodoDTOs()).contains(
-            new TodoDTO("some task", completedAt));
+        assertThat(completedTodoListDTO.getCompletedTodoDTOs()).contains(
+            new CompletedTodoDTO("some task", completedAt));
     }
 
     @Test

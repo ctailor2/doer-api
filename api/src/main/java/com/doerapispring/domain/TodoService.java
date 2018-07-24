@@ -26,7 +26,6 @@ public class TodoService {
     public void create(User user, String task) throws OperationRefusedException {
         MasterList masterList = listService.get(user);
         try {
-            // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
             masterList.add(task);
             masterListRepository.save(masterList);
         } catch (ListSizeExceededException | AbnormalModelException e) {
@@ -39,7 +38,6 @@ public class TodoService {
     public void createDeferred(User user, String task) throws OperationRefusedException {
         MasterList masterList = listService.get(user);
         try {
-            // TODO: This should probably just return the localIdentifier, so the Todo has to be retrieved using a get to add it to the repo
             masterList.addDeferred(task);
             masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {

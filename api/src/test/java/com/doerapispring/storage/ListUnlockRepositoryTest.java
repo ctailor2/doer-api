@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import java.time.Clock;
+import java.util.ArrayList;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -43,7 +44,9 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            null
+            null,
+            new ArrayList<>(),
+            0
         );
         listUnlockRepository.add(masterList, new ListUnlock());
 
@@ -64,7 +67,9 @@ public class ListUnlockRepositoryTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("listUserIdentifier"),
-            null
+            null,
+            new ArrayList<>(),
+            0
         );
         listUnlockRepository.add(masterList, new ListUnlock());
 

@@ -7,22 +7,14 @@ import java.util.stream.Collectors;
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
-    private List<Todo> todos = new ArrayList<>();
+    private final List<Todo> todos;
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
+
     private Integer demarcationIndex = 0;
     private Date lastUnlockedAt;
 
-    public MasterList(
-        Clock clock,
-        UniqueIdentifier<String> uniqueIdentifier,
-        Date lastUnlockedAt) {
-        this.clock = clock;
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.lastUnlockedAt = lastUnlockedAt;
-    }
-
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, List<Todo> todos, Date lastUnlockedAt, Integer demarcationIndex) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.todos = todos;

@@ -13,6 +13,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Date;
 import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
@@ -31,6 +32,7 @@ public class TodosControllerTest {
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
     private List<TodoDTO> todoDTOs;
+    private List<CompletedTodoDTO> completedTodoDTOs;
 
     @Before
     public void setUp() throws Exception {
@@ -43,6 +45,10 @@ public class TodosControllerTest {
             new TodoDTO("someId", "someTask"),
             new TodoDTO("oneLaterId", "procrastination"),
             new TodoDTO("twoLaterId", "station"));
+        completedTodoDTOs = asList(
+            new CompletedTodoDTO("someTask", new Date()),
+            new CompletedTodoDTO("procrastination", new Date()),
+            new CompletedTodoDTO("station", new Date()));
         mockMvc = MockMvcBuilders
             .standaloneSetup(todosController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -249,7 +255,7 @@ public class TodosControllerTest {
 
     @Test
     public void completedTodos_mapping() throws Exception {
-        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(todoDTOs));
+        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(completedTodoDTOs));
 
         mockMvc.perform(get("/v1/completedTodos"))
             .andExpect(status().isOk());
@@ -257,9 +263,9 @@ public class TodosControllerTest {
 
     @Test
     public void completedTodos_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(todoDTOs));
+        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(completedTodoDTOs));
 
-        ResponseEntity<TodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
+        ResponseEntity<CompletedTodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
 
         verify(mockTodoApiService).getCompleted(authenticatedUser);
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -271,7 +277,7 @@ public class TodosControllerTest {
     public void completedTodos_whenInvalidRequest_returns400BadRequest() throws Exception {
         when(mockTodoApiService.getCompleted(any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<TodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
+        ResponseEntity<CompletedTodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

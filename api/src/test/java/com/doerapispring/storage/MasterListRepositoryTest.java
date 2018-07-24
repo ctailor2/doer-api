@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 
@@ -53,7 +54,7 @@ public class MasterListRepositoryTest {
     public void savesMasterList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         userRepository.add(new User(uniqueIdentifier));
-        MasterList masterList = new MasterList(clock, uniqueIdentifier, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")));
+        MasterList masterList = new MasterList(clock, uniqueIdentifier, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         masterList.addDeferred("firstTask");
         masterList.add("secondTask");
         masterList.addDeferred("thirdTask");

@@ -3,14 +3,14 @@ package com.doerapispring.web;
 import java.util.List;
 
 public class CompletedTodoListDTO {
-    private final List<TodoDTO> todoDTOs;
+    private final List<CompletedTodoDTO> completedTodoDTOs;
 
-    public CompletedTodoListDTO(List<TodoDTO> todoDTOs) {
-        this.todoDTOs = todoDTOs;
+    public CompletedTodoListDTO(List<CompletedTodoDTO> completedTodoDTOS) {
+        this.completedTodoDTOs = completedTodoDTOS;
     }
 
-    public List<TodoDTO> getTodoDTOs() {
-        return todoDTOs;
+    public List<CompletedTodoDTO> getCompletedTodoDTOs() {
+        return completedTodoDTOs;
     }
 
     @Override
@@ -20,19 +20,19 @@ public class CompletedTodoListDTO {
 
         CompletedTodoListDTO that = (CompletedTodoListDTO) o;
 
-        return todoDTOs != null ? todoDTOs.equals(that.todoDTOs) : that.todoDTOs == null;
+        return completedTodoDTOs != null ? completedTodoDTOs.equals(that.completedTodoDTOs) : that.completedTodoDTOs == null;
 
     }
 
     @Override
     public int hashCode() {
-        return todoDTOs != null ? todoDTOs.hashCode() : 0;
+        return completedTodoDTOs != null ? completedTodoDTOs.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "CompletedTodoListDTO{" +
-                "todoDTOs=" + todoDTOs +
+                "completedTodoDTOs=" + completedTodoDTOs +
                 '}';
     }
 }

@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +52,7 @@ public class ListApiServiceImplTest {
     @Test
     public void get_callsListService() throws Exception {
         when(mockListService.get(any()))
-            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), null));
+            .thenReturn(new MasterList(Clock.systemDefaultZone(), new UniqueIdentifier<>("someIdentifier"), null, new ArrayList<>(), 0));
 
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
@@ -63,7 +64,9 @@ public class ListApiServiceImplTest {
         MasterList masterList = new MasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("someIdentifier"),
-            Date.from(Instant.now().minusMillis(1798766))
+            Date.from(Instant.now().minusMillis(1798766)),
+            new ArrayList<>(),
+            0
         );
         masterList.addDeferred("someTask");
         when(mockListService.get(any())).thenReturn(masterList);
