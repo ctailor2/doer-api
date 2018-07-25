@@ -39,7 +39,8 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/history")));
-        assertThat(responseContent, hasJsonPath("$._links.completedTodos.href", containsString("/v1/completedTodos")));
+        assertThat(responseContent, hasJsonPath("$._links.completedTodos.href", containsString("/v1/completedList/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.completedList.href", containsString("/v1/completedList")));
     }
 
     private void doGet() throws Exception {

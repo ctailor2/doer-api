@@ -20,24 +20,24 @@ class ListsController {
         this.listApiService = listApiService;
     }
 
-    @RequestMapping(value = "/list/unlock", method = RequestMethod.POST)
+    @PostMapping(value = "/list/unlock")
     @ResponseBody
     ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             listApiService.unlock(authenticatedUser);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                    hateoasLinkGenerator.listUnlockLink().withSelfRel(),
-                    hateoasLinkGenerator.listLink().withRel("list"));
+                hateoasLinkGenerator.listUnlockLink().withSelfRel(),
+                hateoasLinkGenerator.listLink().withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @RequestMapping(value = "/list")
     @ResponseBody
-    ResponseEntity<ListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<MasterListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             MasterListDTO masterListDTO = listApiService.get(authenticatedUser);
             masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
@@ -45,7 +45,7 @@ class ListsController {
             if (masterListDTO.isAbleToBeUnlocked()) {
                 masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
-            if (!masterListDTO.isLocked()){
+            if (!masterListDTO.isLocked()) {
                 masterListDTO.add(hateoasLinkGenerator.deferredTodosLink().withRel("deferredTodos"));
             }
             if (masterListDTO.isFull()) {
@@ -56,11 +56,25 @@ class ListsController {
             if (masterListDTO.isAbleToBeReplenished()) {
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
-            ListResponse listResponse = new ListResponse(masterListDTO);
-            listResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
-            return ResponseEntity.ok(listResponse);
+            MasterListResponse masterListResponse = new MasterListResponse(masterListDTO);
+            masterListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
+            return ResponseEntity.ok(masterListResponse);
         } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping(value = "/completedList")
+    @ResponseBody
+    ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        try {
+            CompletedListDTO completedListDTO = listApiService.getCompleted(authenticatedUser);
+            completedListDTO.add(hateoasLinkGenerator.completedTodosLink().withRel("todos"));
+            CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
+            completedListResponse.add(hateoasLinkGenerator.completedListLink().withSelfRel());
+            return ResponseEntity.ok(completedListResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

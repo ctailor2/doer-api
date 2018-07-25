@@ -20,7 +20,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     compile('org.springframework.plugin:spring-plugin-core:1.0.0.RELEASE')
     compile('org.springframework.security:spring-security-crypto:4.1.2.RELEASE')
-    compile('org.springframework.hateoas:spring-hateoas:0.18.0.RELEASE')
+    compile('org.springframework.hateoas:spring-hateoas:0.23.0.RELEASE')
     compile('org.postgresql:postgresql:9.4-1206-jdbc42')
     compile('org.flywaydb:flyway-core:4.1.2')
     compileOnly('org.projectlombok:lombok:1.16.10')

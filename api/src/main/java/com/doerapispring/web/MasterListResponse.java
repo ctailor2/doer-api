@@ -3,11 +3,11 @@ package com.doerapispring.web;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.ResourceSupport;
 
-class ListResponse extends ResourceSupport {
+class MasterListResponse extends ResourceSupport {
     @JsonProperty("list")
     private final MasterListDTO masterListDTO;
 
-    ListResponse(MasterListDTO masterListDTO) {
+    MasterListResponse(MasterListDTO masterListDTO) {
         this.masterListDTO = masterListDTO;
     }
 

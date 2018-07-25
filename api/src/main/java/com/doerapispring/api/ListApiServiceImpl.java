@@ -4,6 +4,7 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListService;
 import com.doerapispring.domain.MasterList;
 import com.doerapispring.domain.OperationRefusedException;
+import com.doerapispring.web.CompletedListDTO;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.ListApiService;
 import com.doerapispring.web.MasterListDTO;
@@ -43,5 +44,10 @@ class ListApiServiceImpl implements ListApiService {
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
+    }
+
+    @Override
+    public CompletedListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        return new CompletedListDTO();
     }
 }

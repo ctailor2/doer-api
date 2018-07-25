@@ -124,6 +124,11 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
+    public Link completedListLink() {
+        return linkTo(methodOn(ListsController.class).showCompleted(null)).withSelfRel();
+    }
+
+    @Override
     public Link todosLink() {
         return linkTo(methodOn(TodosController.class).todos(null)).withSelfRel();
     }
