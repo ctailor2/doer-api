@@ -50,7 +50,7 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/completedTodos")
+                .get("/v1/completedList/todos")
                 .headers(httpHeaders);
     }
 

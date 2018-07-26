@@ -80,11 +80,10 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .andExpect(jsonPath("$.todos[1].task", equalTo("updated task")))
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(
-            post(
-                JsonPath.parse(jsonResponse)
-                    .read("$.todos[0]._links.move[1].href", String.class))
-                .headers(httpHeaders));
+        mockMvc.perform(post(
+            JsonPath.parse(jsonResponse)
+                .read("$.todos[0]._links.move[1].href", String.class))
+            .headers(httpHeaders));
 
         jsonResponse = mockMvc.perform(
             get(getTodosHref)
@@ -94,15 +93,13 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .andExpect(jsonPath("$.todos[1].task", equalTo("some other task")))
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(
-            delete(
-                JsonPath.parse(jsonResponse)
-                    .read("$.todos[1]._links.delete.href", String.class))
-                .headers(httpHeaders));
+        mockMvc.perform(delete(
+            JsonPath.parse(jsonResponse)
+                .read("$.todos[1]._links.delete.href", String.class))
+            .headers(httpHeaders));
 
-        mockMvc.perform(
-            get(getTodosHref)
-                .headers(httpHeaders))
+        mockMvc.perform(get(getTodosHref)
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(1)))
             .andExpect(jsonPath("$.todos[0].task", equalTo("updated task")));
     }
@@ -113,9 +110,15 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
+        jsonResponse = mockMvc.perform(get(
+            JsonPath.parse(jsonResponse)
+                .read("$._links.completedList.href", String.class))
+            .headers(httpHeaders))
+            .andReturn().getResponse().getContentAsString();
+
         mockMvc.perform(get(
             JsonPath.parse(jsonResponse)
-                .read("$._links.completedTodos.href", String.class))
+                .read("$.list._links.todos.href", String.class))
             .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(0)));
 
@@ -123,11 +126,10 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
-        jsonResponse = mockMvc.perform(
-            get(
-                JsonPath.parse(jsonResponse)
-                    .read("$._links.list.href", String.class))
-                .headers(httpHeaders))
+        jsonResponse = mockMvc.perform(get(
+            JsonPath.parse(jsonResponse)
+                .read("$._links.list.href", String.class))
+            .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(
@@ -137,30 +139,33 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
                 .headers(httpHeaders));
 
         String getTodosHref = JsonPath.parse(jsonResponse).read("$.list._links.todos.href", String.class);
-        jsonResponse = mockMvc.perform(
-            get(getTodosHref)
-                .headers(httpHeaders))
+        jsonResponse = mockMvc.perform(get(getTodosHref)
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(1)))
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(
-            post(
-                JsonPath.parse(jsonResponse)
-                    .read("$.todos[0]._links.complete.href", String.class))
-                .headers(httpHeaders));
+        mockMvc.perform(post(
+            JsonPath.parse(jsonResponse)
+                .read("$.todos[0]._links.complete.href", String.class))
+            .headers(httpHeaders));
 
-        mockMvc.perform(
-            get(getTodosHref)
-                .headers(httpHeaders))
+        mockMvc.perform(get(getTodosHref)
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(0)));
 
         jsonResponse = mockMvc.perform(get("/v1/resources/history")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
+        jsonResponse = mockMvc.perform(get(
+            JsonPath.parse(jsonResponse)
+                .read("$._links.completedList.href", String.class))
+            .headers(httpHeaders))
+            .andReturn().getResponse().getContentAsString();
+
         mockMvc.perform(get(
             JsonPath.parse(jsonResponse)
-                .read("$._links.completedTodos.href", String.class))
+                .read("$.list._links.todos.href", String.class))
             .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(1)))
             .andExpect(jsonPath("$.todos[0].task", equalTo("some task")));
@@ -173,40 +178,35 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .andReturn().getResponse().getContentAsString();
 
         String listHref = JsonPath.parse(jsonResponse).read("$._links.list.href", String.class);
-        jsonResponse = mockMvc.perform(
-            get(listHref)
-                .headers(httpHeaders))
+        jsonResponse = mockMvc.perform(get(listHref)
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.list.unlockDuration", equalTo(0)))
             .andExpect(jsonPath("$.list._links", hasKey("unlock")))
             .andExpect(jsonPath("$.list._links", not(hasKey("deferredTodos"))))
             .andReturn().getResponse().getContentAsString();
 
         String createDeferredTodoHref = JsonPath.parse(jsonResponse).read("$.list._links.createDeferred.href", String.class);
-        mockMvc.perform(
-            post(createDeferredTodoHref)
-                .content("{\"task\":\"some task\"}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(httpHeaders));
+        mockMvc.perform(post(createDeferredTodoHref)
+            .content("{\"task\":\"some task\"}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(httpHeaders));
 
-        mockMvc.perform(
-            post(
-                JsonPath.parse(jsonResponse)
-                    .read("$.list._links.unlock.href", String.class))
-                .headers(httpHeaders));
+        mockMvc.perform(post(
+            JsonPath.parse(jsonResponse)
+                .read("$.list._links.unlock.href", String.class))
+            .headers(httpHeaders));
 
-        jsonResponse = mockMvc.perform(
-            get(listHref)
-                .headers(httpHeaders))
+        jsonResponse = mockMvc.perform(get(listHref)
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.list.unlockDuration", greaterThan(0)))
             .andExpect(jsonPath("$.list._links", not(hasKey("unlock"))))
             .andExpect(jsonPath("$.list._links", hasKey("deferredTodos")))
             .andReturn().getResponse().getContentAsString();
 
-        mockMvc.perform(
-            get(
-                JsonPath.parse(jsonResponse)
-                    .read("$.list._links.deferredTodos.href", String.class))
-                .headers(httpHeaders))
+        mockMvc.perform(get(
+            JsonPath.parse(jsonResponse)
+                .read("$.list._links.deferredTodos.href", String.class))
+            .headers(httpHeaders))
             .andExpect(jsonPath("$.todos", hasSize(1)))
             .andExpect(jsonPath("$.todos[0].task", equalTo("some task")));
     }

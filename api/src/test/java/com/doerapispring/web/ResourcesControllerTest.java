@@ -92,7 +92,6 @@ public class ResourcesControllerTest {
 
         assertThat(responseEntity.getBody().getLinks()).contains(
                 new Link(MOCK_BASE_URL + "/historyResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/completedTodos").withRel("completedTodos"),
                 new Link(MOCK_BASE_URL + "/completedList").withRel("completedList"));
     }
 }

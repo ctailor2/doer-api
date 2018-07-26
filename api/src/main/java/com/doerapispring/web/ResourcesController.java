@@ -56,7 +56,6 @@ class ResourcesController {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.completedTodosLink().withRel("completedTodos"),
             hateoasLinkGenerator.completedListLink().withRel("completedList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }

@@ -90,7 +90,7 @@ class TodosController {
         }
     }
 
-    @RequestMapping(value = {"/completedList/todos", "/completedTodos"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/completedList/todos", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<CompletedTodosResponse> completedTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {

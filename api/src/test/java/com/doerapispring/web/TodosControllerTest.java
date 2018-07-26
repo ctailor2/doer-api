@@ -257,7 +257,7 @@ public class TodosControllerTest {
     public void completedTodos_mapping() throws Exception {
         when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(completedTodoDTOs));
 
-        mockMvc.perform(get("/v1/completedTodos"))
+        mockMvc.perform(get("/v1/completedList/todos"))
             .andExpect(status().isOk());
     }
 
