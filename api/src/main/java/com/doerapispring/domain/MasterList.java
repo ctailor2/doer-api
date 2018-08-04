@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
@@ -67,9 +69,9 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public List<Todo> getDeferredTodos() throws LockTimerNotExpiredException {
+    public List<Todo> getDeferredTodos() {
         if (isLocked()) {
-            throw new LockTimerNotExpiredException();
+            return emptyList();
         }
         return deferredTodos();
     }

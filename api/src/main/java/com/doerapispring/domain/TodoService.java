@@ -129,11 +129,7 @@ public class TodoService {
     }
 
     public List<Todo> getDeferredTodos(User user) throws OperationRefusedException {
-        try {
-            MasterList masterList = listService.get(user);
-            return masterList.getDeferredTodos();
-        } catch (LockTimerNotExpiredException e) {
-            throw new OperationRefusedException();
-        }
+        MasterList masterList = listService.get(user);
+        return masterList.getDeferredTodos();
     }
 }

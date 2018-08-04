@@ -11,7 +11,7 @@ public interface IMasterList {
 
     ListUnlock unlock() throws LockTimerNotExpiredException;
 
-    List<Todo> getDeferredTodos() throws LockTimerNotExpiredException;
+    List<Todo> getDeferredTodos();
 
     Todo delete(String localIdentifier) throws TodoNotFoundException;
 

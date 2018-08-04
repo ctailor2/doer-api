@@ -84,15 +84,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void getDeferredTodos_whenMasterListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
-        when(masterList.getDeferredTodos()).thenThrow(new LockTimerNotExpiredException());
-
-        exception.expect(OperationRefusedException.class);
-        User user = new User(uniqueIdentifier);
-        todoService.getDeferredTodos(user);
-    }
-
-    @Test
     public void getDeferredTodos_whenMasterListNotFound_refusesGet() throws Exception {
         when(listService.get(any())).thenThrow(new OperationRefusedException());
 

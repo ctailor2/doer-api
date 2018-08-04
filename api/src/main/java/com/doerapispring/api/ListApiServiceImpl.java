@@ -4,12 +4,11 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListService;
 import com.doerapispring.domain.MasterList;
 import com.doerapispring.domain.OperationRefusedException;
-import com.doerapispring.web.CompletedListDTO;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.ListApiService;
-import com.doerapispring.web.MasterListDTO;
+import com.doerapispring.web.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 class ListApiServiceImpl implements ListApiService {
@@ -36,6 +35,8 @@ class ListApiServiceImpl implements ListApiService {
             return new MasterListDTO(
                 masterList.getName(),
                 masterList.getDeferredName(),
+                masterList.getTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
+                masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
                 masterList.unlockDuration(),
                 masterList.isFull(),
                 masterList.isLocked(),

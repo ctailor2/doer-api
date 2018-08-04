@@ -4,6 +4,7 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.MasterListDTO;
+import com.doerapispring.web.TodoDTO;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,13 +69,16 @@ public class ListApiServiceImplTest {
             new ArrayList<>(),
             0
         );
-        masterList.addDeferred("someTask");
+        Todo todo = masterList.add("task");
+        Todo deferredTodo = masterList.addDeferred("deferredTask");
         when(mockListService.get(any())).thenReturn(masterList);
 
         MasterListDTO masterListDTO = listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
 
         verify(mockListService).get(new User(new UniqueIdentifier<>("someIdentifier")));
         assertThat(masterListDTO).isNotNull();
+        assertThat(masterListDTO.getTodos()).contains(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
+        assertThat(masterListDTO.getDeferredTodos()).contains(new TodoDTO(deferredTodo.getLocalIdentifier(), deferredTodo.getTask()));
         assertThat(masterListDTO.getName()).isEqualTo("now");
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
         assertThat(masterListDTO.getUnlockDuration()).isCloseTo(1234L, within(100L));

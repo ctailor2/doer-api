@@ -514,9 +514,12 @@ public class MasterListTest {
     }
 
     @Test
-    public void getDeferredTodos_whenListIsLocked_throwsListTimerNotExpiredException() throws Exception {
-        exception.expect(LockTimerNotExpiredException.class);
-        masterList.getDeferredTodos();
+    public void getDeferredTodos_whenListIsLocked_returnEmptyList() throws Exception {
+        masterList.add("someTask");
+
+        List<Todo> deferredTodos = masterList.getDeferredTodos();
+
+        assertThat(deferredTodos).isEmpty();
     }
 
     @Test

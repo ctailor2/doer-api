@@ -1,8 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.hamcrest.Matchers;
@@ -14,6 +12,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,6 +32,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
     @Autowired
     private TodoService todoService;
+    @Autowired
+    private ListService listService;
+    private User user;
 
     @Override
     @Before
@@ -40,9 +42,8 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        User user = new User(uniqueIdentifier);
+        user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        todoService.createDeferred(user, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/list")
@@ -52,6 +53,12 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
+        listService.unlock(user);
+        todoService.create(user, "this and that");
+        todoService.createDeferred(user, "here and there");
+        MasterList masterList = todoService.get(user);
+        Todo todo = masterList.getTodos().get(0);
+        Todo deferredTodo = masterList.getDeferredTodos().get(0);
 
         doGet();
 
@@ -62,6 +69,20 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, hasJsonPath("$.list.name", equalTo("now")));
         assertThat(responseContent, hasJsonPath("$.list.deferredName", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.list.unlockDuration", not(Matchers.isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("this and that")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + todo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + todo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + todo.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + todo.getLocalIdentifier() + "/move/" + todo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0].task", equalTo("here and there")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.delete.href", containsString("v1/todos/" + deferredTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.update.href", containsString("v1/todos/" + deferredTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.complete.href", containsString("v1/todos/" + deferredTodo.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move.href", containsString("v1/todos/" + deferredTodo.getLocalIdentifier() + "/move/" + deferredTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.todos.href", containsString("/v1/list/todos")));

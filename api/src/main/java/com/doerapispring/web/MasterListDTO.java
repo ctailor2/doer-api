@@ -3,9 +3,13 @@ package com.doerapispring.web;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.hateoas.ResourceSupport;
 
+import java.util.List;
+
 public class MasterListDTO extends ResourceSupport {
     private final String name;
     private final String deferredName;
+    private final List<TodoDTO> todos;
+    private final List<TodoDTO> deferredTodos;
     private final Long unlockDuration;
     private final boolean full;
     private final boolean ableToBeUnlocked;
@@ -15,6 +19,8 @@ public class MasterListDTO extends ResourceSupport {
     public MasterListDTO(
         String name,
         String deferredName,
+        List<TodoDTO> todos,
+        List<TodoDTO> deferredTodos,
         Long unlockDuration,
         boolean full,
         boolean locked,
@@ -23,6 +29,8 @@ public class MasterListDTO extends ResourceSupport {
     ) {
         this.name = name;
         this.deferredName = deferredName;
+        this.todos = todos;
+        this.deferredTodos = deferredTodos;
         this.unlockDuration = unlockDuration;
         this.full = full;
         this.locked = locked;
@@ -36,6 +44,14 @@ public class MasterListDTO extends ResourceSupport {
 
     public String getDeferredName() {
         return deferredName;
+    }
+
+    public List<TodoDTO> getTodos() {
+        return todos;
+    }
+
+    public List<TodoDTO> getDeferredTodos() {
+        return deferredTodos;
     }
 
     public Long getUnlockDuration() {

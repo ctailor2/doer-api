@@ -56,6 +56,26 @@ class ListsController {
             if (masterListDTO.isAbleToBeReplenished()) {
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
+            masterListDTO.getTodos().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
+
+                masterListDTO.getTodos().forEach(targetTodoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                        todoDTO.getLocalIdentifier(),
+                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
+            });
+            masterListDTO.getDeferredTodos().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
+
+                masterListDTO.getDeferredTodos().forEach(targetTodoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                        todoDTO.getLocalIdentifier(),
+                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
+            });
             MasterListResponse masterListResponse = new MasterListResponse(masterListDTO);
             masterListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
             return ResponseEntity.ok(masterListResponse);
