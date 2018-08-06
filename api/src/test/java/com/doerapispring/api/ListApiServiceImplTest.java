@@ -83,7 +83,6 @@ public class ListApiServiceImplTest {
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
         assertThat(masterListDTO.getUnlockDuration()).isCloseTo(1234L, within(100L));
         assertThat(masterListDTO.isFull()).isFalse();
-        assertThat(masterListDTO.isLocked()).isFalse();
         assertThat(masterListDTO.isAbleToBeUnlocked()).isFalse();
         assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();
     }

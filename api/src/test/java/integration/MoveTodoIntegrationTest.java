@@ -63,13 +63,13 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .content("{\"task\": \"some other task\"}"))
             .andExpect(status().isCreated());
 
-        String todosResponse = mockMvc.perform(get("/v1/list/todos")
+        String todosResponse = mockMvc.perform(get("/v1/list")
             .headers(httpHeaders))
-            .andExpect(jsonPath("$.todos", hasSize(2)))
-            .andExpect(jsonPath("$.todos[0].task", equalTo("some other task")))
-            .andExpect(jsonPath("$.todos[1].task", equalTo("some task")))
+            .andExpect(jsonPath("$.list.todos", hasSize(2)))
+            .andExpect(jsonPath("$.list.todos[0].task", equalTo("some other task")))
+            .andExpect(jsonPath("$.list.todos[1].task", equalTo("some task")))
             .andReturn().getResponse().getContentAsString();
-        String moveLink = JsonPath.parse(todosResponse).read("$.todos[0]._links.move[1].href", String.class);
+        String moveLink = JsonPath.parse(todosResponse).read("$.list.todos[0]._links.move[1].href", String.class);
         String movePath = URI.create(moveLink).getPath();
 
         MvcResult mvcResult = mockMvc.perform(post(movePath)
@@ -82,10 +82,10 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString(movePath)));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
 
-        mockMvc.perform(get("/v1/list/todos")
+        mockMvc.perform(get("/v1/list")
             .headers(httpHeaders))
-            .andExpect(jsonPath("$.todos", hasSize(2)))
-            .andExpect(jsonPath("$.todos[0].task", equalTo("some task")))
-            .andExpect(jsonPath("$.todos[1].task", equalTo("some other task")));
+            .andExpect(jsonPath("$.list.todos", hasSize(2)))
+            .andExpect(jsonPath("$.list.todos[0].task", equalTo("some task")))
+            .andExpect(jsonPath("$.list.todos[1].task", equalTo("some other task")));
     }
 }

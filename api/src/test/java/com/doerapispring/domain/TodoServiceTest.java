@@ -9,11 +9,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.Optional;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -50,45 +48,6 @@ public class TodoServiceTest {
         when(listService.get(any())).thenReturn(masterList);
         completedList = mock(CompletedList.class);
         when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
-    }
-
-    @Test
-    public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
-        when(listService.get(any())).thenReturn(masterList);
-        User user = new User(uniqueIdentifier);
-
-        MasterList masterList = todoService.get(user);
-
-        verify(listService).get(user);
-        assertThat(masterList).isEqualTo(masterList);
-    }
-
-    @Test
-    public void get_whenMasterListNotFound_refusesGet() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
-
-        exception.expect(OperationRefusedException.class);
-        todoService.get(new User(new UniqueIdentifier<>("one@two.com")));
-    }
-
-    @Test
-    public void getDeferredTodos_whenMasterListFound_returnsDeferredTodos() throws Exception {
-        List<Todo> expectedTodos = singletonList(new Todo("someIdentifier", "someTask", 1));
-        when(masterList.getDeferredTodos()).thenReturn(expectedTodos);
-
-        User user = new User(uniqueIdentifier);
-        List<Todo> actualTodos = todoService.getDeferredTodos(user);
-
-        verify(listService).get(user);
-        assertThat(actualTodos).isEqualTo(expectedTodos);
-    }
-
-    @Test
-    public void getDeferredTodos_whenMasterListNotFound_refusesGet() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
-
-        exception.expect(OperationRefusedException.class);
-        todoService.getDeferredTodos(new User(uniqueIdentifier));
     }
 
     @Test

@@ -33,13 +33,9 @@ interface HateoasLinkGenerator {
 
     Link listLink();
 
-    Link todosLink();
-
     Link createTodoLink();
 
     Link createDeferredTodoLink();
-
-    Link deferredTodosLink();
 
     Link completedListLink();
 }

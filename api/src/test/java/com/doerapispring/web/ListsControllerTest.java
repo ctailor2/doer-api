@@ -74,7 +74,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_mapping() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         mockMvc.perform(get("/v1/list"))
             .andExpect(status().isOk());
@@ -84,7 +84,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_returnsList_includesLinks_byDefault() throws Exception {
-        MasterListDTO masterListDTO = new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false);
+        MasterListDTO masterListDTO = new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false);
         when(mockListApiService.get(any())).thenReturn(masterListDTO);
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
@@ -92,8 +92,7 @@ public class ListsControllerTest {
         assertThat(responseEntity.getBody().getMasterListDTO()).isEqualTo(masterListDTO);
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/list").withSelfRel());
         assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"),
-            new Link(MOCK_BASE_URL + "/list/todos").withRel("todos"));
+            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"));
     }
 
     @Test
@@ -109,7 +108,6 @@ public class ListsControllerTest {
             0L,
             false,
             false,
-            false,
             false);
         when(mockListApiService.get(any())).thenReturn(masterListDTO);
 
@@ -118,8 +116,7 @@ public class ListsControllerTest {
         assertThat(responseEntity.getBody().getMasterListDTO()).isEqualTo(masterListDTO);
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/list").withSelfRel());
         assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"),
-            new Link(MOCK_BASE_URL + "/list/todos").withRel("todos"));
+            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withRel("createDeferred"));
         assertThat(responseEntity.getBody().getMasterListDTO().getTodos()).hasSize(2);
         assertThat(responseEntity.getBody().getMasterListDTO().getTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/deleteTodo/oneNowId").withRel("delete"),
@@ -154,7 +151,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -166,7 +163,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, true, false, false, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, true, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -179,7 +176,7 @@ public class ListsControllerTest {
     @Test
     public void show_whenListIsAbleToBeReplenished_includesPullLink() throws Exception {
         when(mockListApiService.get(any())).thenReturn(
-            new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, true));
+            new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, true));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -190,7 +187,7 @@ public class ListsControllerTest {
     @Test
     public void show_whenListIsNotAbleToBeReplenished_doesNotIncludePullLink() throws Exception {
         when(mockListApiService.get(any())).thenReturn(
-            new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false));
+            new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -200,7 +197,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeUnlocked_includesUnlockLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, true, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, true, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -210,7 +207,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeUnlocked_doesNotIncludeUnlockLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -219,18 +216,8 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void show_whenListIsNotLocked_includesDeferredTodosLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false, false));
-
-        ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
-
-        assertThat(responseEntity.getBody().getMasterListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/deferredTodos").withRel("deferredTodos"));
-    }
-
-    @Test
     public void show_whenListIsLocked_doesNotIncludeDeferredTodosLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, true, false, false));
+        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 

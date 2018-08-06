@@ -52,7 +52,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        MasterList newMasterList = todosService.get(user);
+        MasterList newMasterList = listService.get(user);
 
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("will get pulled")),

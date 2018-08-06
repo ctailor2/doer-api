@@ -2,12 +2,13 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.*;
+import com.doerapispring.web.CompletedTodoDTO;
+import com.doerapispring.web.CompletedTodoListDTO;
+import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
@@ -20,16 +21,11 @@ public class TodoApiServiceImplTest {
     private TodoApiServiceImpl todoApiServiceImpl;
 
     private TodoService mockTodoService;
-    private UniqueIdentifier<String> uniqueIdentifier;
-    private MasterList masterList;
 
     @Before
     public void setUp() throws Exception {
         mockTodoService = mock(TodoService.class);
         todoApiServiceImpl = new TodoApiServiceImpl(mockTodoService);
-        uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        masterList = new MasterList(Clock.systemDefaultZone(), uniqueIdentifier, null, new ArrayList<>(), 0);
-        when(mockTodoService.get(any())).thenReturn(masterList);
     }
 
     @Test
@@ -191,41 +187,5 @@ public class TodoApiServiceImplTest {
         assertThatThrownBy(() ->
             todoApiServiceImpl.pull(new AuthenticatedUser("someIdentifier")))
             .isInstanceOf(InvalidRequestException.class);
-    }
-
-    @Test
-    public void getTodos_callsTodoService() throws Exception {
-
-        todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).get(new User(uniqueIdentifier));
-    }
-
-    @Test
-    public void getTodos_callsTodoService_returnsTodosFromImmediateList() throws Exception {
-        Todo todo = masterList.add("someTask");
-        masterList.addDeferred("someOtherTask");
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
-    }
-
-    @Test
-    public void getDeferredTodos_callsTodoService() throws Exception {
-        todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).getDeferredTodos(new User(uniqueIdentifier));
-    }
-
-    @Test
-    public void getDeferredTodos_callsTodoService_returnsDeferredTodos() throws Exception {
-        Todo todo = new Todo("someIdentifier", "someTask", 1);
-        when(mockTodoService.getDeferredTodos(any())).thenReturn(Collections.singletonList(todo));
-
-        TodoListDTO todoListDTO = todoApiServiceImpl.getDeferredTodos(new AuthenticatedUser("someIdentifier"));
-
-        assertThat(todoListDTO).isNotNull();
-        assertThat(todoListDTO.getTodoDTOs()).containsOnly(new TodoDTO("someIdentifier", "someTask"));
     }
 }

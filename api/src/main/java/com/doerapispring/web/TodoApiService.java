@@ -20,8 +20,4 @@ public interface TodoApiService {
     void move(AuthenticatedUser authenticatedUser, String localId, String targetLocalId) throws InvalidRequestException;
 
     void pull(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
-
-    TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
-
-    TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
 }

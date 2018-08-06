@@ -32,6 +32,9 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Autowired
     private TodoService todosService;
 
+    @Autowired
+    private ListService listService;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -42,7 +45,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/list/todos")
+                .get("/v1/list")
                 .headers(httpHeaders);
     }
 
@@ -50,7 +53,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that");
-        MasterList masterList = todosService.get(user);
+        MasterList masterList = listService.get(user);
         Todo firstTodo = masterList.getTodos().get(0);
 
         doGet();
@@ -58,16 +61,15 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.todos", hasSize(1)));
-        assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("this and that")));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("this and that")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list/todos")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
     }
 
     private void doGet() throws Exception {

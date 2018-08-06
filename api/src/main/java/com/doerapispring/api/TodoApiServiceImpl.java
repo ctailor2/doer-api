@@ -1,8 +1,13 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.*;
-import com.doerapispring.web.*;
+import com.doerapispring.domain.CompletedList;
+import com.doerapispring.domain.OperationRefusedException;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.web.CompletedTodoDTO;
+import com.doerapispring.web.CompletedTodoListDTO;
+import com.doerapispring.web.InvalidRequestException;
+import com.doerapispring.web.TodoApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,33 +21,6 @@ class TodoApiServiceImpl implements TodoApiService {
     @Autowired
     TodoApiServiceImpl(TodoService todoService) {
         this.todoService = todoService;
-    }
-
-    @Override
-    public TodoListDTO getTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        try {
-            MasterList masterList = todoService.get(authenticatedUser.getUser());
-            List<TodoDTO> todoDTOs = masterList.getTodos()
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs);
-        } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
-        }
-    }
-
-    @Override
-    public TodoListDTO getDeferredTodos(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        try {
-            List<TodoDTO> todoDTOs = todoService.getDeferredTodos(authenticatedUser.getUser())
-                    .stream()
-                    .map(this::mapToDTO)
-                    .collect(Collectors.toList());
-            return new TodoListDTO(todoDTOs);
-        } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
-        }
     }
 
     @Override
@@ -128,9 +106,5 @@ class TodoApiServiceImpl implements TodoApiService {
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }
-    }
-
-    private TodoDTO mapToDTO(Todo todo) {
-        return new TodoDTO(todo.getLocalIdentifier(), todo.getTask());
     }
 }

@@ -14,7 +14,6 @@ public class MasterListDTO extends ResourceSupport {
     private final boolean full;
     private final boolean ableToBeUnlocked;
     private final boolean ableToBeReplenished;
-    private final boolean locked;
 
     public MasterListDTO(
         String name,
@@ -23,7 +22,6 @@ public class MasterListDTO extends ResourceSupport {
         List<TodoDTO> deferredTodos,
         Long unlockDuration,
         boolean full,
-        boolean locked,
         boolean ableToBeUnlocked,
         boolean ableToBeReplenished
     ) {
@@ -33,7 +31,6 @@ public class MasterListDTO extends ResourceSupport {
         this.deferredTodos = deferredTodos;
         this.unlockDuration = unlockDuration;
         this.full = full;
-        this.locked = locked;
         this.ableToBeUnlocked = ableToBeUnlocked;
         this.ableToBeReplenished = ableToBeReplenished;
     }
@@ -73,11 +70,6 @@ public class MasterListDTO extends ResourceSupport {
         return ableToBeReplenished;
     }
 
-    @JsonIgnore
-    public boolean isLocked() {
-        return locked;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,11 +81,12 @@ public class MasterListDTO extends ResourceSupport {
         if (full != that.full) return false;
         if (ableToBeUnlocked != that.ableToBeUnlocked) return false;
         if (ableToBeReplenished != that.ableToBeReplenished) return false;
-        if (locked != that.locked) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (deferredName != null ? !deferredName.equals(that.deferredName) : that.deferredName != null) return false;
+        if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
+        if (deferredTodos != null ? !deferredTodos.equals(that.deferredTodos) : that.deferredTodos != null)
+            return false;
         return unlockDuration != null ? unlockDuration.equals(that.unlockDuration) : that.unlockDuration == null;
-
     }
 
     @Override
@@ -101,11 +94,12 @@ public class MasterListDTO extends ResourceSupport {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (deferredName != null ? deferredName.hashCode() : 0);
+        result = 31 * result + (todos != null ? todos.hashCode() : 0);
+        result = 31 * result + (deferredTodos != null ? deferredTodos.hashCode() : 0);
         result = 31 * result + (unlockDuration != null ? unlockDuration.hashCode() : 0);
         result = 31 * result + (full ? 1 : 0);
         result = 31 * result + (ableToBeUnlocked ? 1 : 0);
         result = 31 * result + (ableToBeReplenished ? 1 : 0);
-        result = 31 * result + (locked ? 1 : 0);
         return result;
     }
 
@@ -114,11 +108,12 @@ public class MasterListDTO extends ResourceSupport {
         return "MasterListDTO{" +
             "name='" + name + '\'' +
             ", deferredName='" + deferredName + '\'' +
+            ", todos=" + todos +
+            ", deferredTodos=" + deferredTodos +
             ", unlockDuration=" + unlockDuration +
             ", full=" + full +
             ", ableToBeUnlocked=" + ableToBeUnlocked +
             ", ableToBeReplenished=" + ableToBeReplenished +
-            ", locked=" + locked +
             '}';
     }
 }

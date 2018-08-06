@@ -28,6 +28,9 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     @Autowired
     private TodoService todosService;
 
+    @Autowired
+    private ListService listService;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -43,7 +46,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        MasterList masterList = todosService.get(user);
+        MasterList masterList = listService.get(user);
         Todo todo1 = masterList.getTodos().get(0);
         Todo todo2 = masterList.getTodos().get(1);
 
@@ -54,7 +57,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        MasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
         CompletedList newCompletedList = todosService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));

@@ -45,8 +45,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        MasterList masterList = todosService.get(user);
-        masterList.getTodos().get(0);
+        MasterList masterList = listService.get(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/list/displace")
             .content("{\"task\":\"do the things\"}")
@@ -57,7 +56,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        MasterList newMasterList = todosService.get(user);
+        MasterList newMasterList = listService.get(user);
 
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("do the things")),

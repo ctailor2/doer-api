@@ -59,7 +59,7 @@ public class GetCompletedTodosIntegrationTest extends AbstractWebAppJUnit4Spring
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.createDeferred(user, "this and that");
         listService.unlock(user);
-        MasterList masterList = todosService.get(user);
+        MasterList masterList = listService.get(user);
         Todo todo = masterList.getDeferredTodos().get(0);
         todosService.complete(user, todo.getLocalIdentifier());
 

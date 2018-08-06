@@ -39,7 +39,6 @@ class ListApiServiceImpl implements ListApiService {
                 masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
                 masterList.unlockDuration(),
                 masterList.isFull(),
-                masterList.isLocked(),
                 masterList.isAbleToBeUnlocked(),
                 masterList.isAbleToBeReplenished());
         } catch (OperationRefusedException e) {

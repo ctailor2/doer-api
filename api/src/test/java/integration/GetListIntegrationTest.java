@@ -56,7 +56,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         listService.unlock(user);
         todoService.create(user, "this and that");
         todoService.createDeferred(user, "here and there");
-        MasterList masterList = todoService.get(user);
+        MasterList masterList = listService.get(user);
         Todo todo = masterList.getTodos().get(0);
         Todo deferredTodo = masterList.getDeferredTodos().get(0);
 
@@ -85,7 +85,6 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move.href", containsString("v1/todos/" + deferredTodo.getLocalIdentifier() + "/move/" + deferredTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
-        assertThat(responseContent, hasJsonPath("$.list._links.todos.href", containsString("/v1/list/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/list/deferredTodos")));
         assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

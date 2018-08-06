@@ -25,6 +25,8 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     private UserSessionsApiService userSessionsApiService;
     @Autowired
     private TodoService todosService;
+    @Autowired
+    private ListService listService;
 
     @Override
     @Before
@@ -40,7 +42,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void update() throws Exception {
         todosService.create(user, "some task");
-        MasterList masterList = todosService.get(user);
+        MasterList masterList = listService.get(user);
         Todo todo = masterList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getLocalIdentifier())
@@ -50,7 +52,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        MasterList newMasterList = todosService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        MasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasItem(allOf(
                 hasProperty("task", equalTo("do the things")),

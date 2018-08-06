@@ -131,30 +131,6 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/list/todos", method = RequestMethod.GET)
-    @ResponseBody
-    ResponseEntity<TodosResponse> todos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        try {
-            TodoListDTO todoListDTO = todoApiService.getTodos(authenticatedUser);
-            todoListDTO.getTodoDTOs().forEach(todoDTO -> {
-                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
-                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
-
-                todoListDTO.getTodoDTOs().forEach(targetTodoDTO ->
-                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                        todoDTO.getLocalIdentifier(),
-                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
-            });
-            TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
-            todosResponse.add(hateoasLinkGenerator.todosLink().withSelfRel());
-            todosResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
-            return ResponseEntity.status(HttpStatus.OK).body(todosResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
     @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
@@ -165,29 +141,5 @@ class TodosController {
             hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),
             hateoasLinkGenerator.listLink().withRel("list"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
-    }
-
-    @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.GET)
-    @ResponseBody
-    ResponseEntity<TodosResponse> deferredTodos(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        try {
-            TodoListDTO todoListDTO = todoApiService.getDeferredTodos(authenticatedUser);
-            todoListDTO.getTodoDTOs().forEach(todoDTO -> {
-                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
-                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
-
-                todoListDTO.getTodoDTOs().forEach(targetTodoDTO ->
-                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                        todoDTO.getLocalIdentifier(),
-                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
-            });
-            TodosResponse todosResponse = new TodosResponse(todoListDTO.getTodoDTOs());
-            todosResponse.add(hateoasLinkGenerator.deferredTodosLink().withSelfRel());
-            todosResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
-            return ResponseEntity.status(HttpStatus.OK).body(todosResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
     }
 }

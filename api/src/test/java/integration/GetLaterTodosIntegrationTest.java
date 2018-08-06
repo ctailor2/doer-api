@@ -45,7 +45,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/list/deferredTodos")
+                .get("/v1/list")
                 .headers(httpHeaders);
     }
 
@@ -56,7 +56,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         todosService.createDeferred(user, "here and now");
         todosService.createDeferred(user, "near and far");
         listService.unlock(user);
-        MasterList masterList = todosService.get(user);
+        MasterList masterList = listService.get(user);
         Todo secondTodo = masterList.getDeferredTodos().get(0);
         Todo thirdTodo = masterList.getDeferredTodos().get(1);
 
@@ -65,18 +65,19 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.todos", hasSize(2)));
-        assertThat(responseContent, hasJsonPath("$.todos[0].task", equalTo("here and now")));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move", hasSize(2)));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[0].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[0]._links.move[1].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[1].task", equalTo("near and far")));
-        assertThat(responseContent, hasJsonPath("$.todos[1]._links.move", hasSize(2)));
-        assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.todos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("this and that")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos", hasSize(2)));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0].task", equalTo("here and now")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move", hasSize(2)));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[0].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[1].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1].task", equalTo("near and far")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move", hasSize(2)));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list/deferredTodos")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
     }
 
     private void doGet() throws Exception {

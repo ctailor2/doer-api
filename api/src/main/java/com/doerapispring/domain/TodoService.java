@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,10 +44,6 @@ public class TodoService {
         } catch (DuplicateTodoException e) {
             throw new OperationRefusedException(e.getMessage());
         }
-    }
-
-    public MasterList get(User user) throws OperationRefusedException {
-        return listService.get(user);
     }
 
     public void delete(User user, String localIdentifier) throws OperationRefusedException {
@@ -126,10 +121,5 @@ public class TodoService {
         } catch (AbnormalModelException e) {
             throw new OperationRefusedException();
         }
-    }
-
-    public List<Todo> getDeferredTodos(User user) throws OperationRefusedException {
-        MasterList masterList = listService.get(user);
-        return masterList.getDeferredTodos();
     }
 }
