@@ -85,7 +85,6 @@ class ListsController {
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
             CompletedListDTO completedListDTO = listApiService.getCompleted(authenticatedUser);
-            completedListDTO.add(hateoasLinkGenerator.completedTodosLink().withRel("todos"));
             CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
             completedListResponse.add(hateoasLinkGenerator.completedListLink().withSelfRel());
             return ResponseEntity.ok(completedListResponse);

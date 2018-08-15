@@ -155,35 +155,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void completedTodos_mapping() throws Exception {
-        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(completedTodoDTOs));
-
-        mockMvc.perform(get("/v1/completedList/todos"))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    public void completedTodos_callsTodoService_includesLinksByDefault() throws Exception {
-        when(mockTodoApiService.getCompleted(any())).thenReturn(new CompletedTodoListDTO(completedTodoDTOs));
-
-        ResponseEntity<CompletedTodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
-
-        verify(mockTodoApiService).getCompleted(authenticatedUser);
-        assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/completedTodos").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
-    }
-
-    @Test
-    public void completedTodos_whenInvalidRequest_returns400BadRequest() throws Exception {
-        when(mockTodoApiService.getCompleted(any())).thenThrow(new InvalidRequestException());
-
-        ResponseEntity<CompletedTodosResponse> responseEntity = todosController.completedTodos(authenticatedUser);
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void move_mapping() throws Exception {
         mockMvc.perform(post("/v1/todos/1/move/3"))
             .andExpect(status().isAccepted());

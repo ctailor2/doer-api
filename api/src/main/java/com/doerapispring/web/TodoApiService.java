@@ -15,8 +15,6 @@ public interface TodoApiService {
 
     void complete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException;
 
-    CompletedTodoListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException;
-
     void move(AuthenticatedUser authenticatedUser, String localId, String targetLocalId) throws InvalidRequestException;
 
     void pull(AuthenticatedUser authenticatedUser) throws InvalidRequestException;

@@ -5,7 +5,6 @@ import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
 import org.fest.assertions.api.Assertions;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +74,6 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         Assertions.assertThat(completedAtString).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{4}");
         Date completedAt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(completedAtString);
         Assertions.assertThat(completedAt).isToday();
-        assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list._links.todos.href", containsString("/v1/completedList/todos")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/completedList")));
     }

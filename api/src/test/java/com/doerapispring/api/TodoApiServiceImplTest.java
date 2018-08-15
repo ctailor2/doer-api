@@ -1,19 +1,15 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.*;
-import com.doerapispring.web.CompletedTodoDTO;
-import com.doerapispring.web.CompletedTodoListDTO;
+import com.doerapispring.domain.OperationRefusedException;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
 import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.time.Clock;
-import java.util.Collections;
-import java.util.Date;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -129,30 +125,6 @@ public class TodoApiServiceImplTest {
 
         assertThatThrownBy(() ->
             todoApiServiceImpl.complete(new AuthenticatedUser("someIdentifier"), "someId"))
-            .isInstanceOf(InvalidRequestException.class);
-    }
-
-    @Test
-    public void getCompleted_callsTodoService_returnsCompletedTodoListDTO_containingAllTodos() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        Date completedAt = new Date();
-        CompletedTodo completedTodo = new CompletedTodo("someUuid", "some task", completedAt);
-        CompletedList completedList = new CompletedList(mock(Clock.class), uniqueIdentifier, Collections.singletonList(completedTodo));
-        when(mockTodoService.getCompleted(any())).thenReturn(completedList);
-
-        CompletedTodoListDTO completedTodoListDTO = todoApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier"));
-
-        verify(mockTodoService).getCompleted(new User(uniqueIdentifier));
-        assertThat(completedTodoListDTO.getCompletedTodoDTOs()).contains(
-            new CompletedTodoDTO("some task", completedAt));
-    }
-
-    @Test
-    public void getCompleted_whenTheOperationIsRefused_throwsInvalidRequest() throws Exception {
-        when(mockTodoService.getCompleted(any())).thenThrow(new OperationRefusedException());
-
-        assertThatThrownBy(() ->
-            todoApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier")))
             .isInstanceOf(InvalidRequestException.class);
     }
 

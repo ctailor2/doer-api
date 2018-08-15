@@ -254,8 +254,6 @@ public class ListsControllerTest {
 
         assertThat(responseEntity.getBody().getCompletedListDTO()).isEqualTo(completedListDTO);
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/completedList").withSelfRel());
-        assertThat(responseEntity.getBody().getCompletedListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/completedTodos").withRel("todos"));
     }
 
     @Test

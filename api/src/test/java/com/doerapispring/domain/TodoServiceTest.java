@@ -8,12 +8,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.time.Clock;
 import java.util.Optional;
 
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -296,27 +293,6 @@ public class TodoServiceTest {
 
         exception.expect(OperationRefusedException.class);
         todoService.complete(new User(uniqueIdentifier), "someId");
-    }
-
-    @Test
-    public void getCompleted_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("one@two.com");
-        CompletedList completedListFromRepository = new CompletedList(mock(Clock.class), uniqueIdentifier, emptyList());
-        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedListFromRepository));
-        User user = new User(uniqueIdentifier);
-
-        CompletedList completedList = todoService.getCompleted(user);
-
-        verify(mockCompletedListRepository).find(uniqueIdentifier);
-        assertThat(completedList).isEqualTo(completedListFromRepository);
-    }
-
-    @Test
-    public void getCompleted_whenCompletedListNotFound_refusesGet() throws Exception {
-        when(mockCompletedListRepository.find(any())).thenReturn(Optional.empty());
-
-        exception.expect(OperationRefusedException.class);
-        todoService.getCompleted(new User(new UniqueIdentifier<>("one@two.com")));
     }
 
     @Test

@@ -58,7 +58,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .andReturn();
 
         MasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
-        CompletedList newCompletedList = todosService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
+        CompletedList newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = newCompletedList.getTodos();

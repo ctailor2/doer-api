@@ -1,18 +1,12 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.CompletedList;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.TodoService;
-import com.doerapispring.web.CompletedTodoDTO;
-import com.doerapispring.web.CompletedTodoListDTO;
 import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.TodoApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 class TodoApiServiceImpl implements TodoApiService {
@@ -72,19 +66,6 @@ class TodoApiServiceImpl implements TodoApiService {
     public void complete(AuthenticatedUser authenticatedUser, String localId) throws InvalidRequestException {
         try {
             todoService.complete(authenticatedUser.getUser(), localId);
-        } catch (OperationRefusedException e) {
-            throw new InvalidRequestException();
-        }
-    }
-
-    @Override
-    public CompletedTodoListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        try {
-            CompletedList completedList = todoService.getCompleted(authenticatedUser.getUser());
-            List<CompletedTodoDTO> completedTodoDTOs = completedList.getTodos().stream()
-                .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
-                .collect(Collectors.toList());
-            return new CompletedTodoListDTO(completedTodoDTOs);
         } catch (OperationRefusedException e) {
             throw new InvalidRequestException();
         }

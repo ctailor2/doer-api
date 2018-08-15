@@ -98,11 +98,6 @@ public class TodoService {
         }
     }
 
-    public CompletedList getCompleted(User user) throws OperationRefusedException {
-        return completedListRepository.find(user.getIdentifier())
-            .orElseThrow(OperationRefusedException::new);
-    }
-
     public void move(User user, String localIdentifier, String targetLocalIdentifier) throws OperationRefusedException {
         try {
             MasterList masterList = listService.get(user);
