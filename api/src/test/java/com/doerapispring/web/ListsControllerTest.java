@@ -236,7 +236,7 @@ public class ListsControllerTest {
 
     @Test
     public void showCompleted_mapping() throws Exception {
-        CompletedListDTO completedListDTO = new CompletedListDTO();
+        CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
         when(mockListApiService.getCompleted(any())).thenReturn(completedListDTO);
 
         mockMvc.perform(get("/v1/completedList"))
@@ -247,7 +247,7 @@ public class ListsControllerTest {
 
     @Test
     public void showCompleted_returnsList_includesLinksByDefault() throws Exception {
-        CompletedListDTO completedListDTO = new CompletedListDTO();
+        CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
         when(mockListApiService.getCompleted(any())).thenReturn(completedListDTO);
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);

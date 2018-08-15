@@ -2,9 +2,7 @@ package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.*;
-import com.doerapispring.web.InvalidRequestException;
-import com.doerapispring.web.MasterListDTO;
-import com.doerapispring.web.TodoDTO;
+import com.doerapispring.web.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,5 +91,30 @@ public class ListApiServiceImplTest {
 
         exception.expect(InvalidRequestException.class);
         listApiServiceImpl.get(new AuthenticatedUser("someIdentifier"));
+    }
+
+    @Test
+    public void getCompleted_callsListService_returnsCompletedListDTO() throws Exception {
+        CompletedList completedList = new CompletedList(
+            Clock.systemDefaultZone(),
+            new UniqueIdentifier<>("someIdentifier"),
+            new ArrayList<>());
+        completedList.add("some task");
+        CompletedTodo completedTodo = completedList.getTodos().get(0);
+        when(mockListService.getCompleted(any())).thenReturn(completedList);
+
+        CompletedListDTO completedListDTO = listApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier"));
+
+        verify(mockListService).getCompleted(new User(new UniqueIdentifier<>("someIdentifier")));
+        assertThat(completedListDTO.getTodos()).contains(
+            new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()));
+    }
+
+    @Test
+    public void getCompleted_whenOperationRefused_throwsInvalidRequest() throws Exception {
+        when(mockListService.getCompleted(any())).thenThrow(new OperationRefusedException());
+
+        exception.expect(InvalidRequestException.class);
+        listApiServiceImpl.getCompleted(new AuthenticatedUser("someIdentifier"));
     }
 }

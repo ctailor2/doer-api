@@ -5,9 +5,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ListService {
     private final ObjectRepository<MasterList, String> masterListRepository;
+    private final ObjectRepository<CompletedList, String> completedListRepository;
 
-    ListService(ObjectRepository<MasterList, String> masterListRepository) {
+    ListService(ObjectRepository<MasterList, String> masterListRepository,
+                ObjectRepository<CompletedList, String> completedListRepository) {
         this.masterListRepository = masterListRepository;
+        this.completedListRepository = completedListRepository;
     }
 
     public void unlock(User user) throws OperationRefusedException {
@@ -22,6 +25,11 @@ public class ListService {
 
     public MasterList get(User user) throws OperationRefusedException {
         return masterListRepository.find(user.getIdentifier())
+            .orElseThrow(OperationRefusedException::new);
+    }
+
+    public CompletedList getCompleted(User user) throws OperationRefusedException {
+        return completedListRepository.find(user.getIdentifier())
             .orElseThrow(OperationRefusedException::new);
     }
 }

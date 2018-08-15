@@ -1,10 +1,10 @@
 package integration;
 
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
+import org.fest.assertions.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +14,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
 public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -33,13 +35,18 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     @Autowired
     private TodoService todoService;
 
+    @Autowired
+    private ListService listService;
+
+    private User user;
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        User user = new User(uniqueIdentifier);
+        user = new User(uniqueIdentifier);
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         todoService.createDeferred(user, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
@@ -51,6 +58,10 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
+        todoService.create(user, "some task");
+        MasterList masterList = listService.get(user);
+        Todo todo = masterList.getTodos().get(0);
+        todoService.complete(user, todo.getLocalIdentifier());
 
         doGet();
 
@@ -58,6 +69,12 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("some task")));
+        String completedAtString = JsonPath.parse(responseContent).read("$.list.todos[0].completedAt", String.class);
+        Assertions.assertThat(completedAtString).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{4}");
+        Date completedAt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(completedAtString);
+        Assertions.assertThat(completedAt).isToday();
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.todos.href", containsString("/v1/completedList/todos")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

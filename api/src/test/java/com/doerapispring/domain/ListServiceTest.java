@@ -21,16 +21,21 @@ public class ListServiceTest {
     @Mock
     private ObjectRepository<MasterList, String> mockMasterListRepository;
 
+    @Mock
+    private ObjectRepository<CompletedList, String> mockCompletedListRepository;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private MasterList masterList;
+    private CompletedList completedList;
     private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockMasterListRepository);
+        listService = new ListService(mockMasterListRepository, mockCompletedListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
+        completedList = mock(CompletedList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
     }
 
@@ -71,9 +76,9 @@ public class ListServiceTest {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         User user = new User(uniqueIdentifier);
 
-        MasterList masterList = listService.get(user);
+        MasterList actualMasterList = listService.get(user);
 
-        assertThat(masterList).isEqualTo(masterList);
+        assertThat(actualMasterList).isEqualTo(masterList);
     }
 
     @Test
@@ -82,5 +87,23 @@ public class ListServiceTest {
 
         exception.expect(OperationRefusedException.class);
         listService.get(new User(uniqueIdentifier));
+    }
+
+    @Test
+    public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
+        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedList));
+        User user = new User(uniqueIdentifier);
+
+        CompletedList actualCompletedList = listService.getCompleted(user);
+
+        assertThat(actualCompletedList).isEqualTo(completedList);
+    }
+
+    @Test
+    public void get_whenCompletedListNotFound_refusesOperation() throws Exception {
+        when(mockCompletedListRepository.find(any())).thenReturn(Optional.empty());
+
+        exception.expect(OperationRefusedException.class);
+        listService.getCompleted(new User(uniqueIdentifier));
     }
 }

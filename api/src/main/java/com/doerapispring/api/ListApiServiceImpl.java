@@ -1,12 +1,15 @@
 package com.doerapispring.api;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.CompletedList;
 import com.doerapispring.domain.ListService;
 import com.doerapispring.domain.MasterList;
 import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.web.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
@@ -48,6 +51,14 @@ class ListApiServiceImpl implements ListApiService {
 
     @Override
     public CompletedListDTO getCompleted(AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        return new CompletedListDTO();
+        try {
+            CompletedList completedList = listService.getCompleted(authenticatedUser.getUser());
+            List<CompletedTodoDTO> completedTodoDTOs = completedList.getTodos().stream()
+                .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+                .collect(toList());
+            return new CompletedListDTO(completedTodoDTOs);
+        } catch (OperationRefusedException e) {
+            throw new InvalidRequestException();
+        }
     }
 }
