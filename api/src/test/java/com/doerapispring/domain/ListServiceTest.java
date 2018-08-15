@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,9 +20,6 @@ public class ListServiceTest {
 
     @Mock
     private ObjectRepository<MasterList, String> mockMasterListRepository;
-
-    @Mock
-    private AggregateRootRepository<MasterList, ListUnlock> mockListUnlockRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -40,9 +36,6 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenMasterListFound_unlocksMasterList_andSavesIt() throws Exception {
-        ListUnlock listUnlock = new ListUnlock(new Date());
-        when(masterList.unlock()).thenReturn(listUnlock);
-
         listService.unlock(new User(uniqueIdentifier));
 
         verify(masterList).unlock();

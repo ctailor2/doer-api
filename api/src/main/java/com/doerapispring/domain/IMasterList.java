@@ -9,7 +9,7 @@ public interface IMasterList {
 
     Todo addDeferred(String task) throws DuplicateTodoException;
 
-    ListUnlock unlock() throws LockTimerNotExpiredException;
+    void unlock() throws LockTimerNotExpiredException;
 
     List<Todo> getDeferredTodos();
 

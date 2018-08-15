@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -355,14 +354,15 @@ public class MasterListTest {
     }
 
     @Test
-    public void unlock_whenListIsAbleToBeUnlockedReturnsAListUnlock_createdAtCurrentInstant() throws Exception {
+    public void unlock_whenListIsAbleToBeUnlocked_unlocksTheList() throws Exception {
         Instant currentInstant = Instant.ofEpochMilli(1234L);
         when(mockClock.instant()).thenReturn(currentInstant);
 
-        ListUnlock listUnlock = masterList.unlock();
+        assertThat(masterList.isLocked()).isTrue();
 
-        assertThat(listUnlock).isNotNull();
-        assertThat(listUnlock.getCreatedAt()).isEqualTo(Date.from(currentInstant));
+        masterList.unlock();
+
+        assertThat(masterList.isLocked()).isFalse();
     }
 
     @Test

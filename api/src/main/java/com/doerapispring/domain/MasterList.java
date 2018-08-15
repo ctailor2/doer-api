@@ -60,12 +60,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public ListUnlock unlock() throws LockTimerNotExpiredException {
+    public void unlock() throws LockTimerNotExpiredException {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
         lastUnlockedAt = Date.from(clock.instant());
-        return new ListUnlock(lastUnlockedAt);
     }
 
     @Override
