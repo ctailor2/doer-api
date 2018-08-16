@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.TodoApplicationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -13,11 +14,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Date;
-import java.util.List;
-
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
-import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -27,23 +24,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TodosControllerTest {
     private TodosController todosController;
 
-    private TodoApiService mockTodoApiService;
+    private TodoApplicationService todoApplicationService;
 
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
-    private List<CompletedTodoDTO> completedTodoDTOs;
 
     @Before
     public void setUp() throws Exception {
-        mockTodoApiService = mock(TodoApiService.class);
+        todoApplicationService = mock(TodoApplicationService.class);
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        todosController = new TodosController(new MockHateoasLinkGenerator(), mockTodoApiService);
-        completedTodoDTOs = asList(
-            new CompletedTodoDTO("someTask", new Date()),
-            new CompletedTodoDTO("procrastination", new Date()),
-            new CompletedTodoDTO("station", new Date()));
+        todosController = new TodosController(new MockHateoasLinkGenerator(), todoApplicationService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(todosController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -61,7 +53,7 @@ public class TodosControllerTest {
         String localId = "someId";
         ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, localId);
 
-        verify(mockTodoApiService).delete(authenticatedUser, localId);
+        verify(todoApplicationService).delete(authenticatedUser.getUser(), localId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -71,7 +63,7 @@ public class TodosControllerTest {
 
     @Test
     public void delete_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).delete(any(), any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).delete(any(), any());
 
         ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, "someId");
 
@@ -93,7 +85,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.displace(authenticatedUser, new TodoForm(task));
 
-        verify(mockTodoApiService).displace(authenticatedUser, task);
+        verify(todoApplicationService).displace(authenticatedUser.getUser(), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -116,7 +108,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.update(authenticatedUser, localId, new TodoForm(task));
 
-        verify(mockTodoApiService).update(authenticatedUser, localId, task);
+        verify(todoApplicationService).update(authenticatedUser.getUser(), localId, task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -136,7 +128,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.complete(authenticatedUser, localId);
 
-        verify(mockTodoApiService).complete(authenticatedUser, localId);
+        verify(todoApplicationService).complete(authenticatedUser.getUser(), localId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -146,7 +138,7 @@ public class TodosControllerTest {
 
     @Test
     public void complete_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).complete(any(), any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).complete(any(), any());
 
         ResponseEntity<ResourcesResponse> responseEntity = todosController.complete(authenticatedUser, "someId");
 
@@ -167,7 +159,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.move(authenticatedUser, localId, targetLocalId);
 
-        verify(mockTodoApiService).move(authenticatedUser, localId, targetLocalId);
+        verify(todoApplicationService).move(authenticatedUser.getUser(), localId, targetLocalId);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -177,7 +169,7 @@ public class TodosControllerTest {
 
     @Test
     public void move_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).move(any(), any(), any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).move(any(), any(), any());
 
         ResponseEntity<ResourcesResponse> responseEntity = todosController.move(authenticatedUser, "localId", "targetLocalId");
 
@@ -190,7 +182,7 @@ public class TodosControllerTest {
         mockMvc.perform(post("/v1/list/pull"))
             .andExpect(status().isAccepted());
 
-        verify(mockTodoApiService).pull(authenticatedUser);
+        verify(todoApplicationService).pull(authenticatedUser.getUser());
     }
 
     @Test
@@ -206,7 +198,7 @@ public class TodosControllerTest {
 
     @Test
     public void pull_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockTodoApiService).pull(any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).pull(any());
 
         ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser);
 
@@ -228,7 +220,7 @@ public class TodosControllerTest {
         TodoForm todoForm = new TodoForm(task);
         ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, todoForm);
 
-        verify(mockTodoApiService).create(authenticatedUser, task);
+        verify(todoApplicationService).create(authenticatedUser.getUser(), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -250,7 +242,7 @@ public class TodosControllerTest {
         TodoForm todoForm = new TodoForm(task);
         ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, todoForm);
 
-        verify(mockTodoApiService).createDeferred(authenticatedUser, task);
+        verify(todoApplicationService).createDeferred(authenticatedUser.getUser(), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(

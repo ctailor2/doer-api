@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.web.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,9 +9,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -51,7 +57,7 @@ public class ListServiceTest {
     public void unlock_whenMasterListFound_whenRepositoryRejectsModels_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
@@ -59,7 +65,7 @@ public class ListServiceTest {
     public void unlock_whenMasterListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
         doThrow(new LockTimerNotExpiredException()).when(masterList).unlock();
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
@@ -67,43 +73,67 @@ public class ListServiceTest {
     public void unlock_whenMasterListNotFound_refusesOperation() throws Exception {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
+        MasterList masterList = new MasterList(
+            Clock.systemDefaultZone(),
+            new UniqueIdentifier<>("someIdentifier"),
+            Date.from(Instant.now().minusMillis(1798766)),
+            new ArrayList<>(),
+            0
+        );
+        Todo todo = masterList.add("task");
+        Todo deferredTodo = masterList.addDeferred("deferredTask");
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         User user = new User(uniqueIdentifier);
 
-        MasterList actualMasterList = listService.get(user);
+        MasterListDTO masterListDTO = listService.get(user);
 
-        assertThat(actualMasterList).isEqualTo(masterList);
+        assertThat(masterListDTO).isNotNull();
+        assertThat(masterListDTO.getTodos()).contains(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
+        assertThat(masterListDTO.getDeferredTodos()).contains(new TodoDTO(deferredTodo.getLocalIdentifier(), deferredTodo.getTask()));
+        assertThat(masterListDTO.getName()).isEqualTo("now");
+        assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
+        assertThat(masterListDTO.getUnlockDuration()).isCloseTo(1234L, within(100L));
+        assertThat(masterListDTO.isFull()).isFalse();
+        assertThat(masterListDTO.isAbleToBeUnlocked()).isFalse();
+        assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();
     }
 
     @Test
     public void get_whenMasterListNotFound_refusesOperation() throws Exception {
         when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         listService.get(new User(uniqueIdentifier));
     }
 
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
+        CompletedList completedList = new CompletedList(
+            Clock.systemDefaultZone(),
+            new UniqueIdentifier<>("someIdentifier"),
+            new ArrayList<>());
+        completedList.add("some task");
+        CompletedTodo completedTodo = completedList.getTodos().get(0);
         when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedList));
         User user = new User(uniqueIdentifier);
 
-        CompletedList actualCompletedList = listService.getCompleted(user);
+        CompletedListDTO completedListDTO = listService.getCompleted(user);
 
-        assertThat(actualCompletedList).isEqualTo(completedList);
+        assertThat(completedListDTO.getTodos()).contains(
+            new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()));
     }
 
     @Test
     public void get_whenCompletedListNotFound_refusesOperation() throws Exception {
         when(mockCompletedListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         listService.getCompleted(new User(uniqueIdentifier));
     }
 }

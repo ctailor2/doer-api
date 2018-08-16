@@ -1,8 +1,13 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +50,6 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        MasterList masterList = listService.get(user);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/list/displace")
             .content("{\"task\":\"do the things\"}")
@@ -56,17 +60,12 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        MasterList newMasterList = listService.get(user);
+        MasterListDTO newMasterList = listService.get(user);
 
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("do the things")),
-                hasProperty("position", equalTo(-1)))));
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("some task")),
-                hasProperty("position", equalTo(0)))));
-        assertThat(newMasterList.getDeferredTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("some other task")),
-                hasProperty("position", equalTo(1)))));
+        Assertions.assertThat(newMasterList.getTodos()).extracting("task")
+            .containsExactly("do the things", "some task");
+        Assertions.assertThat(newMasterList.getDeferredTodos()).extracting("task")
+            .containsExactly("some other task");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/displace")));

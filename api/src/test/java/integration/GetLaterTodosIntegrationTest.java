@@ -1,7 +1,12 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,9 +61,9 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         todosService.createDeferred(user, "here and now");
         todosService.createDeferred(user, "near and far");
         listService.unlock(user);
-        MasterList masterList = listService.get(user);
-        Todo secondTodo = masterList.getDeferredTodos().get(0);
-        Todo thirdTodo = masterList.getDeferredTodos().get(1);
+        MasterListDTO masterList = listService.get(user);
+        TodoDTO secondTodo = masterList.getDeferredTodos().get(0);
+        TodoDTO thirdTodo = masterList.getDeferredTodos().get(1);
 
         doGet();
 

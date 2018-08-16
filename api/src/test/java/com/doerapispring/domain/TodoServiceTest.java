@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,8 +18,6 @@ import static org.mockito.Mockito.*;
 public class TodoServiceTest {
     private TodoService todoService;
 
-    private ListService listService;
-
     @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
 
@@ -34,15 +33,13 @@ public class TodoServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = mock(ListService.class);
         todoService = new TodoService(
-            listService,
             mockCompletedListRepository,
             mockMasterListRepository
         );
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
-        when(listService.get(any())).thenReturn(masterList);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         completedList = mock(CompletedList.class);
         when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
     }
@@ -62,24 +59,23 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.create(new User(uniqueIdentifier), "some things"))
-            .isInstanceOf(OperationRefusedException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
-
     }
 
     @Test
     public void create_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
         when(masterList.add(any())).thenThrow(new ListSizeExceededException());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
     }
 
     @Test
     public void create_whenMasterListNotFound_refusesCreate() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
     }
 
@@ -87,7 +83,7 @@ public class TodoServiceTest {
     public void create_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
     }
 
@@ -106,16 +102,16 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.createDeferred(new User(uniqueIdentifier), "some things"))
-            .isInstanceOf(OperationRefusedException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
 
     }
 
     @Test
     public void createDeferred_whenMasterListNotFound_refusesCreate() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.createDeferred(new User(uniqueIdentifier), "some things");
     }
 
@@ -123,7 +119,7 @@ public class TodoServiceTest {
     public void createDeferred_whenMasterListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.createDeferred(new User(uniqueIdentifier), "some things");
     }
 
@@ -140,7 +136,7 @@ public class TodoServiceTest {
     public void delete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModels_refusesDelete() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
     }
 
@@ -148,7 +144,7 @@ public class TodoServiceTest {
     public void delete_whenMasterListFound_whenTodoNotFound_refusesDelete() throws Exception {
         when(masterList.delete(any())).thenThrow(new TodoNotFoundException());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
     }
 
@@ -162,9 +158,9 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenMasterListNotFound_refusesDisplace() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
@@ -174,7 +170,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.displace(new User(uniqueIdentifier), "someTask"))
-            .isInstanceOf(OperationRefusedException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
 
@@ -182,7 +178,7 @@ public class TodoServiceTest {
     public void displace_whenMasterListFound_whenTodoFound_whenListIsNotFull_refusesDisplace() throws Exception {
         when(masterList.displace(any())).thenThrow(new ListNotFullException());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
@@ -190,7 +186,7 @@ public class TodoServiceTest {
     public void displace_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesDisplace() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
     }
 
@@ -208,7 +204,7 @@ public class TodoServiceTest {
     public void update_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.update(new User(uniqueIdentifier), "someIdentifier", "someOtherTask");
     }
 
@@ -218,7 +214,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.update(new User(uniqueIdentifier), "someIdentifier", "someTask"))
-            .isInstanceOf(OperationRefusedException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
 
@@ -226,15 +222,15 @@ public class TodoServiceTest {
     public void update_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         when(masterList.update(any(), any())).thenThrow(new TodoNotFoundException());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.update(new User(uniqueIdentifier), "someId", "someTask");
     }
 
     @Test
     public void update_whenMasterListNotFound_refusesUpdate() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.update(new User(uniqueIdentifier), "someId", "someTask");
     }
 
@@ -267,7 +263,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockCompletedListRepository).save(any(CompletedList.class));
 
         String localIdentifier = "someIdentifier";
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.complete(new User(uniqueIdentifier), localIdentifier);
     }
 
@@ -275,7 +271,7 @@ public class TodoServiceTest {
     public void complete_whenMasterListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.complete(new User(uniqueIdentifier), "someIdentifier");
     }
 
@@ -283,15 +279,15 @@ public class TodoServiceTest {
     public void complete_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         doThrow(new TodoNotFoundException()).when(masterList).complete(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.complete(new User(uniqueIdentifier), "someId");
     }
 
     @Test
     public void complete_whenMasterListNotFound_refusesUpdate() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.complete(new User(uniqueIdentifier), "someId");
     }
 
@@ -312,7 +308,7 @@ public class TodoServiceTest {
     public void move_whenMasterListFound_whenTodosFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.move(new User(uniqueIdentifier), "sourceIdentifier", "destinationIdentifier");
     }
 
@@ -320,15 +316,15 @@ public class TodoServiceTest {
     public void move_whenMasterListFound_whenTodosNotFound_refusesOperation() throws Exception {
         when(masterList.move(any(), any())).thenThrow(new TodoNotFoundException());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.move(new User(uniqueIdentifier), "idOne", "idTwo");
     }
 
     @Test
-    public void move_whenMasterListNotFound_refsusesOperation() throws Exception {
-        when(listService.get(any())).thenThrow(new OperationRefusedException());
+    public void move_whenMasterListNotFound_refusesOperation() throws Exception {
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.move(new User(uniqueIdentifier), "idOne", "idTwo");
     }
 
@@ -344,7 +340,7 @@ public class TodoServiceTest {
     public void pull_whenMasterListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
         doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         todoService.pull(new User(uniqueIdentifier));
     }
 }

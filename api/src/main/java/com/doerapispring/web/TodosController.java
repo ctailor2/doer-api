@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.TodoApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1")
 class TodosController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
-    private final TodoApiService todoApiService;
+    private final TodoApplicationService todoApplicationService;
 
     @Autowired
-    TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApiService todoApiService) {
+    TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApplicationService todoApplicationService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
-        this.todoApiService = todoApiService;
+        this.todoApplicationService = todoApplicationService;
     }
 
     @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
@@ -25,7 +26,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId) {
         try {
-            todoApiService.delete(authenticatedUser, localId);
+            todoApplicationService.delete(authenticatedUser.getUser(), localId);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
                 hateoasLinkGenerator.listLink().withRel("list"));
@@ -39,7 +40,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApiService.displace(authenticatedUser, todoForm.getTask());
+        todoApplicationService.displace(authenticatedUser.getUser(), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink().withSelfRel(),
             hateoasLinkGenerator.listLink().withRel("list"));
@@ -51,7 +52,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId,
                                              @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApiService.update(authenticatedUser, localId, todoForm.getTask());
+        todoApplicationService.update(authenticatedUser.getUser(), localId, todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
             hateoasLinkGenerator.listLink().withRel("list"));
@@ -63,7 +64,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable(value = "localId") String localId) {
         try {
-            todoApiService.complete(authenticatedUser, localId);
+            todoApplicationService.complete(authenticatedUser.getUser(), localId);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
                 hateoasLinkGenerator.listLink().withRel("list"));
@@ -79,7 +80,7 @@ class TodosController {
                                            @PathVariable String localId,
                                            @PathVariable String targetLocalId) {
         try {
-            todoApiService.move(authenticatedUser, localId, targetLocalId);
+            todoApplicationService.move(authenticatedUser.getUser(), localId, targetLocalId);
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
@@ -94,7 +95,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            todoApiService.pull(authenticatedUser);
+            todoApplicationService.pull(authenticatedUser.getUser());
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.listPullTodosLink().withSelfRel(),
@@ -109,7 +110,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApiService.create(authenticatedUser, todoForm.getTask());
+        todoApplicationService.create(authenticatedUser.getUser(), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.createTodoLink().withSelfRel(),
@@ -121,7 +122,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApiService.createDeferred(authenticatedUser, todoForm.getTask());
+        todoApplicationService.createDeferred(authenticatedUser.getUser(), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),

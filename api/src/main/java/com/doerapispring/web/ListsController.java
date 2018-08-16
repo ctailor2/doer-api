@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,19 +13,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1")
 class ListsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
-    private final ListApiService listApiService;
+    private final ListApplicationService listApplicationService;
 
     @Autowired
-    ListsController(HateoasLinkGenerator hateoasLinkGenerator, ListApiService listApiService) {
+    ListsController(HateoasLinkGenerator hateoasLinkGenerator, ListApplicationService listApplicationService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
-        this.listApiService = listApiService;
+        this.listApplicationService = listApplicationService;
     }
 
     @PostMapping(value = "/list/unlock")
     @ResponseBody
     ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            listApiService.unlock(authenticatedUser);
+            listApplicationService.unlock(authenticatedUser.getUser());
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.listUnlockLink().withSelfRel(),
@@ -39,7 +40,7 @@ class ListsController {
     @ResponseBody
     ResponseEntity<MasterListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            MasterListDTO masterListDTO = listApiService.get(authenticatedUser);
+            MasterListDTO masterListDTO = listApplicationService.get(authenticatedUser.getUser());
             masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
             if (masterListDTO.isAbleToBeUnlocked()) {
                 masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
@@ -84,7 +85,7 @@ class ListsController {
     @ResponseBody
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            CompletedListDTO completedListDTO = listApiService.getCompleted(authenticatedUser);
+            CompletedListDTO completedListDTO = listApplicationService.getCompleted(authenticatedUser.getUser());
             CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
             completedListResponse.add(hateoasLinkGenerator.completedListLink().withSelfRel());
             return ResponseEntity.ok(completedListResponse);

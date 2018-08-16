@@ -1,7 +1,12 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
 import org.fest.assertions.api.Assertions;
@@ -58,8 +63,8 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todoService.create(user, "some task");
-        MasterList masterList = listService.get(user);
-        Todo todo = masterList.getTodos().get(0);
+        MasterListDTO masterList = listService.get(user);
+        TodoDTO todo = masterList.getTodos().get(0);
         todoService.complete(user, todo.getLocalIdentifier());
 
         doGet();

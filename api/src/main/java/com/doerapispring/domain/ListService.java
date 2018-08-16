@@ -1,9 +1,14 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.web.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 @Service
-public class ListService {
+public class ListService implements ListApplicationService {
     private final ObjectRepository<MasterList, String> masterListRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
 
@@ -13,23 +18,37 @@ public class ListService {
         this.completedListRepository = completedListRepository;
     }
 
-    public void unlock(User user) throws OperationRefusedException {
-        MasterList masterList = get(user);
+    public void unlock(User user) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
             masterList.unlock();
             masterListRepository.save(masterList);
         } catch (LockTimerNotExpiredException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         }
     }
 
-    public MasterList get(User user) throws OperationRefusedException {
-        return masterListRepository.find(user.getIdentifier())
-            .orElseThrow(OperationRefusedException::new);
+    public MasterListDTO get(User user) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
+        return new MasterListDTO(
+            masterList.getName(),
+            masterList.getDeferredName(),
+            masterList.getTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
+            masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
+            masterList.unlockDuration(),
+            masterList.isFull(),
+            masterList.isAbleToBeUnlocked(),
+            masterList.isAbleToBeReplenished());
     }
 
-    public CompletedList getCompleted(User user) throws OperationRefusedException {
-        return completedListRepository.find(user.getIdentifier())
-            .orElseThrow(OperationRefusedException::new);
+    public CompletedListDTO getCompleted(User user) throws InvalidRequestException {
+        CompletedList completedList = completedListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
+        List<CompletedTodoDTO> completedTodoDTOs = completedList.getTodos().stream()
+            .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+            .collect(toList());
+        return new CompletedListDTO(completedTodoDTOs);
     }
 }

@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListApplicationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -25,18 +26,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ListsControllerTest {
     private ListsController listsController;
 
-    private ListApiService mockListApiService;
+    private ListApplicationService listApplicationService;
 
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
 
     @Before
     public void setUp() throws Exception {
-        mockListApiService = mock(ListApiService.class);
+        listApplicationService = mock(ListApplicationService.class);
         String identifier = "test@email.com";
         authenticatedUser = new AuthenticatedUser(identifier);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        listsController = new ListsController(new MockHateoasLinkGenerator(), mockListApiService);
+        listsController = new ListsController(new MockHateoasLinkGenerator(), listApplicationService);
         mockMvc = MockMvcBuilders
             .standaloneSetup(listsController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
@@ -48,7 +49,7 @@ public class ListsControllerTest {
         mockMvc.perform(post("/v1/list/unlock"))
             .andExpect(status().isAccepted());
 
-        verify(mockListApiService).unlock(authenticatedUser);
+        verify(listApplicationService).unlock(authenticatedUser.getUser());
     }
 
     @Test
@@ -64,7 +65,7 @@ public class ListsControllerTest {
 
     @Test
     public void unlock_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(mockListApiService).unlock(any());
+        doThrow(new InvalidRequestException()).when(listApplicationService).unlock(any());
 
         ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser);
 
@@ -74,18 +75,18 @@ public class ListsControllerTest {
 
     @Test
     public void show_mapping() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         mockMvc.perform(get("/v1/list"))
             .andExpect(status().isOk());
 
-        verify(mockListApiService).get(authenticatedUser);
+        verify(listApplicationService).get(authenticatedUser.getUser());
     }
 
     @Test
     public void show_returnsList_includesLinks_byDefault() throws Exception {
         MasterListDTO masterListDTO = new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false);
-        when(mockListApiService.get(any())).thenReturn(masterListDTO);
+        when(listApplicationService.get(any())).thenReturn(masterListDTO);
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -109,7 +110,7 @@ public class ListsControllerTest {
             false,
             false,
             false);
-        when(mockListApiService.get(any())).thenReturn(masterListDTO);
+        when(listApplicationService.get(any())).thenReturn(masterListDTO);
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -151,7 +152,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -163,7 +164,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, true, false, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, true, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -175,7 +176,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeReplenished_includesPullLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(
+        when(listApplicationService.get(any())).thenReturn(
             new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, true));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
@@ -186,7 +187,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeReplenished_doesNotIncludePullLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(
+        when(listApplicationService.get(any())).thenReturn(
             new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
@@ -197,7 +198,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeUnlocked_includesUnlockLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, true, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, true, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -207,7 +208,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeUnlocked_doesNotIncludeUnlockLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -217,7 +218,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsLocked_doesNotIncludeDeferredTodosLink() throws Exception {
-        when(mockListApiService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
+        when(listApplicationService.get(any())).thenReturn(new MasterListDTO("someName", "someDeferredName", emptyList(), emptyList(), 0L, false, false, false));
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -227,7 +228,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(mockListApiService.get(any())).thenThrow(new InvalidRequestException());
+        when(listApplicationService.get(any())).thenThrow(new InvalidRequestException());
 
         ResponseEntity<MasterListResponse> responseEntity = listsController.show(authenticatedUser);
 
@@ -237,18 +238,18 @@ public class ListsControllerTest {
     @Test
     public void showCompleted_mapping() throws Exception {
         CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
-        when(mockListApiService.getCompleted(any())).thenReturn(completedListDTO);
+        when(listApplicationService.getCompleted(any())).thenReturn(completedListDTO);
 
         mockMvc.perform(get("/v1/completedList"))
             .andExpect(status().isOk());
 
-        verify(mockListApiService).getCompleted(authenticatedUser);
+        verify(listApplicationService).getCompleted(authenticatedUser.getUser());
     }
 
     @Test
     public void showCompleted_returnsList_includesLinksByDefault() throws Exception {
         CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
-        when(mockListApiService.getCompleted(any())).thenReturn(completedListDTO);
+        when(listApplicationService.getCompleted(any())).thenReturn(completedListDTO);
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
 
@@ -258,7 +259,7 @@ public class ListsControllerTest {
 
     @Test
     public void showCompleted_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(mockListApiService.getCompleted(any())).thenThrow(new InvalidRequestException());
+        when(listApplicationService.getCompleted(any())).thenThrow(new InvalidRequestException());
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
 

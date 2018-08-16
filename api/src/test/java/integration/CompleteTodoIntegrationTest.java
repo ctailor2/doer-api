@@ -1,8 +1,10 @@
 package integration;
 
-import com.doerapispring.domain.*;
-import com.doerapispring.web.SessionTokenDTO;
-import com.doerapispring.web.UserSessionsApiService;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +48,9 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        MasterList masterList = listService.get(user);
-        Todo todo1 = masterList.getTodos().get(0);
-        Todo todo2 = masterList.getTodos().get(1);
+        MasterListDTO masterList = listService.get(user);
+        TodoDTO todo1 = masterList.getTodos().get(0);
+        TodoDTO todo2 = masterList.getTodos().get(1);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")
             .headers(httpHeaders))
@@ -57,11 +59,11 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        MasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
-        CompletedList newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
+        MasterListDTO newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        CompletedListDTO newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
-        List<CompletedTodo> completedTodos = newCompletedList.getTodos();
+        List<CompletedTodoDTO> completedTodos = newCompletedList.getTodos();
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));

@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.web.InvalidRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,79 +9,82 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class TodoService {
+public class TodoService implements TodoApplicationService {
     private final ObjectRepository<CompletedList, String> completedListRepository;
-    private final ListService listService;
     private final ObjectRepository<MasterList, String> masterListRepository;
 
     @Autowired
-    TodoService(ListService listService,
-                ObjectRepository<CompletedList, String> completedListRepository,
+    TodoService(ObjectRepository<CompletedList, String> completedListRepository,
                 ObjectRepository<MasterList, String> masterListRepository) {
         this.completedListRepository = completedListRepository;
-        this.listService = listService;
         this.masterListRepository = masterListRepository;
     }
 
-    public void create(User user, String task) throws OperationRefusedException {
-        MasterList masterList = listService.get(user);
+    public void create(User user, String task) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
             masterList.add(task);
             masterListRepository.save(masterList);
         } catch (ListSizeExceededException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
-            throw new OperationRefusedException(e.getMessage());
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
-    public void createDeferred(User user, String task) throws OperationRefusedException {
-        MasterList masterList = listService.get(user);
+    public void createDeferred(User user, String task) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
             masterList.addDeferred(task);
             masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
-            throw new OperationRefusedException(e.getMessage());
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
-    public void delete(User user, String localIdentifier) throws OperationRefusedException {
+    public void delete(User user, String localIdentifier) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
-            MasterList masterList = listService.get(user);
             masterList.delete(localIdentifier);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         }
     }
 
-    public void displace(User user, String task) throws OperationRefusedException {
-        MasterList masterList = listService.get(user);
+    public void displace(User user, String task) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
             masterList.displace(task);
             masterListRepository.save(masterList);
         } catch (AbnormalModelException | DuplicateTodoException | ListNotFullException e) {
-            throw new OperationRefusedException(e.getMessage());
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
-    public void update(User user, String localIdentifier, String task) throws OperationRefusedException {
+    public void update(User user, String localIdentifier, String task) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
-            MasterList masterList = listService.get(user);
             masterList.update(localIdentifier, task);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
-            throw new OperationRefusedException(e.getMessage());
+            throw new InvalidRequestException(e.getMessage());
         }
     }
 
-    public void complete(User user, String localIdentifier) throws OperationRefusedException {
+    public void complete(User user, String localIdentifier) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
-            MasterList masterList = listService.get(user);
             String task = masterList.complete(localIdentifier);
             masterListRepository.save(masterList);
             Optional<CompletedList> completedListOptional = completedListRepository.find(user.getIdentifier());
@@ -90,31 +94,33 @@ public class TodoService {
                 try {
                     completedListRepository.save(completedList);
                 } catch (AbnormalModelException e) {
-                    throw new OperationRefusedException();
+                    throw new InvalidRequestException();
                 }
             }
         } catch (TodoNotFoundException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         }
     }
 
-    public void move(User user, String localIdentifier, String targetLocalIdentifier) throws OperationRefusedException {
+    public void move(User user, String localIdentifier, String targetLocalIdentifier) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
-            MasterList masterList = listService.get(user);
             masterList.move(localIdentifier, targetLocalIdentifier);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         }
     }
 
-    public void pull(User user) throws OperationRefusedException {
+    public void pull(User user) throws InvalidRequestException {
+        MasterList masterList = masterListRepository.find(user.getIdentifier())
+            .orElseThrow(InvalidRequestException::new);
         try {
-            MasterList masterList = listService.get(user);
             masterList.pull();
             masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {
-            throw new OperationRefusedException();
+            throw new InvalidRequestException();
         }
     }
 }

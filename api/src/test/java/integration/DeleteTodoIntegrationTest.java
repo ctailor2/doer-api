@@ -1,7 +1,12 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,15 +48,15 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void delete_removesTodo() throws Exception {
         todosService.create(user, "some task");
-        MasterList masterList = listService.get(user);
-        Todo todo = masterList.getTodos().get(0);
+        MasterListDTO masterList = listService.get(user);
+        TodoDTO todo = masterList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(delete("/v1/todos/" + todo.getLocalIdentifier())
             .headers(httpHeaders))
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        MasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        MasterListDTO newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());

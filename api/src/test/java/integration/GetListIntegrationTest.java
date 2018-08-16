@@ -1,7 +1,12 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -56,9 +61,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         listService.unlock(user);
         todoService.create(user, "this and that");
         todoService.createDeferred(user, "here and there");
-        MasterList masterList = listService.get(user);
-        Todo todo = masterList.getTodos().get(0);
-        Todo deferredTodo = masterList.getDeferredTodos().get(0);
+        MasterListDTO masterList = listService.get(user);
+        TodoDTO todo = masterList.getTodos().get(0);
+        TodoDTO deferredTodo = masterList.getDeferredTodos().get(0);
 
         doGet();
 

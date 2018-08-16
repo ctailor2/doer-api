@@ -13,7 +13,7 @@ public class TodoDTO extends ResourceSupport {
     }
 
     @JsonProperty("id")
-    String getLocalIdentifier() {
+    public String getLocalIdentifier() {
         return localIdentifier;
     }
 

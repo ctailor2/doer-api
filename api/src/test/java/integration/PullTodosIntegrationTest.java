@@ -1,8 +1,13 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoService;
+import com.doerapispring.domain.UniqueIdentifier;
+import com.doerapispring.domain.User;
+import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,17 +57,12 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        MasterList newMasterList = listService.get(user);
+        MasterListDTO newMasterList = listService.get(user);
 
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("will get pulled")),
-                hasProperty("position", equalTo(1)))));
-        assertThat(newMasterList.getTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("will also get pulled")),
-                hasProperty("position", equalTo(2)))));
-        assertThat(newMasterList.getDeferredTodos(), hasItem(allOf(
-                hasProperty("task", equalTo("keep for later")),
-                hasProperty("position", equalTo(3)))));
+        Assertions.assertThat(newMasterList.getTodos()).extracting("task")
+            .containsExactly("will get pulled", "will also get pulled");
+        Assertions.assertThat(newMasterList.getDeferredTodos()).extracting("task")
+            .containsExactly("keep for later");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/pull")));
