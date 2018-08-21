@@ -8,6 +8,8 @@ import static java.util.Collections.emptyList;
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
+    private static final long UNLOCK_DURATION = 1800000L;
+    private static final int MAX_SIZE = 2;
     private final List<Todo> todos;
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
@@ -28,7 +30,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        if (getTodos().size() >= maxSize()) {
+        if (getTodos().size() >= MAX_SIZE) {
             throw new ListSizeExceededException();
         }
         Todo todo = new Todo(generateIdentifier(), task);
@@ -134,7 +136,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     @Override
     public Long unlockDuration() {
         return mostRecentListUnlock()
-            .map(listUnlock -> listUnlock.toInstant().toEpochMilli() + 1800000L - clock.instant().toEpochMilli())
+            .map(listUnlock -> listUnlock.toInstant().toEpochMilli() + UNLOCK_DURATION - clock.instant().toEpochMilli())
             .filter(duration -> duration > 0L)
             .orElse(0L);
     }
@@ -151,19 +153,24 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     @Override
     public void pull() {
-        while (demarcationIndex < todos.size() && getTodos().size() < maxSize()) {
+        while (demarcationIndex < todos.size() && getTodos().size() < MAX_SIZE) {
             demarcationIndex++;
         }
     }
 
     @Override
     public boolean isFull() {
-        return getTodos().size() >= maxSize();
+        return getTodos().size() >= MAX_SIZE;
     }
 
     @Override
     public boolean isAbleToBeReplenished() {
         return !isFull() && deferredTodos().size() > 0;
+    }
+
+    @Override
+    public UniqueIdentifier<String> getIdentifier() {
+        return uniqueIdentifier;
     }
 
     private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
@@ -185,10 +192,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return UUID.randomUUID().toString();
     }
 
-    private int maxSize() {
-        return 2;
-    }
-
     private Date beginningOfToday() {
         Date now = Date.from(clock.instant());
         Calendar calendar = Calendar.getInstance();
@@ -203,11 +206,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     private Optional<Date> mostRecentListUnlock() {
         return Optional.ofNullable(lastUnlockedAt);
-    }
-
-    @Override
-    public UniqueIdentifier<String> getIdentifier() {
-        return uniqueIdentifier;
     }
 
     String getName() {
