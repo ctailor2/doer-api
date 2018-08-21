@@ -86,8 +86,10 @@ public class ListServiceTest {
             new ArrayList<>(),
             0
         );
-        Todo todo = masterList.add("task");
-        Todo deferredTodo = masterList.addDeferred("deferredTask");
+        masterList.add("task");
+        Todo todo = masterList.getTodos().get(0);
+        masterList.addDeferred("deferredTask");
+        Todo deferredTodo = masterList.getDeferredTodos().get(0);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         User user = new User(uniqueIdentifier);
 

@@ -2,7 +2,6 @@ package com.doerapispring.domain;
 
 import java.time.Clock;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
@@ -25,7 +24,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo add(String task) throws ListSizeExceededException, DuplicateTodoException {
+    public void add(String task) throws ListSizeExceededException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
@@ -41,7 +40,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         Todo todo = new Todo(generateIdentifier(), task, position);
         todos.add(0, todo);
         demarcationIndex++;
-        return todo;
     }
 
     @Override
@@ -50,13 +48,12 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo addDeferred(String task) throws DuplicateTodoException {
+    public void addDeferred(String task) throws DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
         Todo todo = new Todo(generateIdentifier(), task, getNextDeferredPosition());
         todos.add(todo);
-        return todo;
     }
 
     @Override
@@ -76,17 +73,16 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public Todo delete(String localIdentifier) throws TodoNotFoundException {
+    public void delete(String localIdentifier) throws TodoNotFoundException {
         Todo todoToDelete = getByLocalIdentifier(localIdentifier);
         if (todos.indexOf(todoToDelete) < demarcationIndex) {
             demarcationIndex--;
         }
         todos.remove(todoToDelete);
-        return todoToDelete;
     }
 
     @Override
-    public Todo displace(String task) throws DuplicateTodoException, ListNotFullException {
+    public void displace(String task) throws DuplicateTodoException, ListNotFullException {
         if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
         int position;
@@ -97,27 +93,26 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         }
         Todo todo = new Todo(generateIdentifier(), task, position);
         todos.add(0, todo);
-        return todo;
     }
 
     @Override
-    public Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public void update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
         Todo todo = getByLocalIdentifier(localIdentifier);
         todo.setTask(task);
-        return todo;
     }
 
     @Override
     public String complete(String localIdentifier) throws TodoNotFoundException {
-        Todo todo = delete(localIdentifier);
+        Todo todo = getByLocalIdentifier(localIdentifier);
+        delete(localIdentifier);
         return todo.getTask();
     }
 
     @Override
-    public List<Todo> move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
+    public void move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
         Todo todo = getByLocalIdentifier(localIdentifier);
         int index = todos.indexOf(todo);
         Todo targetTodo = getByLocalIdentifier(targetLocalIdentifier);
@@ -141,13 +136,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         subList.remove(todo);
         subList.add(targetIndex, todo);
 
-        return originalMapping.entrySet().stream()
-            .map(entry -> {
+        originalMapping.entrySet()
+            .forEach(entry -> {
                 Todo effectedTodo = subList.get(entry.getKey());
                 effectedTodo.setPosition(entry.getValue());
-                return effectedTodo;
-            })
-            .collect(Collectors.toList());
+            });
     }
 
     @Override
@@ -183,14 +176,13 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public List<Todo> pull() {
+    public void pull() {
         List<Todo> pulledTodos = new ArrayList<>();
         while (demarcationIndex < todos.size() && getTodos().size() < maxSize()) {
             Todo pulledTodo = todos.get(demarcationIndex);
             pulledTodos.add(pulledTodo);
             demarcationIndex++;
         }
-        return pulledTodos;
     }
 
     @Override
@@ -257,11 +249,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    public String getName() {
+    String getName() {
         return NAME;
     }
 
-    public String getDeferredName() {
+    String getDeferredName() {
         return DEFERRED_NAME;
     }
 

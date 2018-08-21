@@ -3,25 +3,25 @@ package com.doerapispring.domain;
 import java.util.List;
 
 public interface IMasterList {
-    Todo add(String task) throws ListSizeExceededException, DuplicateTodoException;
+    void add(String task) throws ListSizeExceededException, DuplicateTodoException;
 
     List<Todo> getTodos();
 
-    Todo addDeferred(String task) throws DuplicateTodoException;
+    void addDeferred(String task) throws DuplicateTodoException;
 
     void unlock() throws LockTimerNotExpiredException;
 
     List<Todo> getDeferredTodos();
 
-    Todo delete(String localIdentifier) throws TodoNotFoundException;
+    void delete(String localIdentifier) throws TodoNotFoundException;
 
-    Todo displace(String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
+    void displace(String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
 
-    Todo update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
+    void update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
 
     String complete(String localIdentifier) throws TodoNotFoundException;
 
-    List<Todo> move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException;
+    void move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException;
 
     boolean isAbleToBeUnlocked();
 
@@ -29,7 +29,7 @@ public interface IMasterList {
 
     Long unlockDuration();
 
-    List<Todo> pull();
+    void pull();
 
     boolean isFull();
 

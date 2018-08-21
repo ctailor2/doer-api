@@ -55,7 +55,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        when(masterList.add(any())).thenThrow(new DuplicateTodoException());
+        doThrow(new DuplicateTodoException()).when(masterList).add(any());
 
         assertThatThrownBy(() ->
             todoService.create(new User(uniqueIdentifier), "some things"))
@@ -65,7 +65,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
-        when(masterList.add(any())).thenThrow(new ListSizeExceededException());
+        doThrow(new ListSizeExceededException()).when(masterList).add(any());
 
         exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
@@ -98,7 +98,7 @@ public class TodoServiceTest {
 
     @Test
     public void createDeferred_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        when(masterList.addDeferred(any())).thenThrow(new DuplicateTodoException());
+        doThrow(new DuplicateTodoException()).when(masterList).addDeferred(any());
 
         assertThatThrownBy(() ->
             todoService.createDeferred(new User(uniqueIdentifier), "some things"))
@@ -142,7 +142,7 @@ public class TodoServiceTest {
 
     @Test
     public void delete_whenMasterListFound_whenTodoNotFound_refusesDelete() throws Exception {
-        when(masterList.delete(any())).thenThrow(new TodoNotFoundException());
+        doThrow(new TodoNotFoundException()).when(masterList).delete(any());
 
         exception.expect(InvalidRequestException.class);
         todoService.delete(new User(uniqueIdentifier), "someTodoId");
@@ -166,7 +166,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
-        when(masterList.displace(any())).thenThrow(new DuplicateTodoException());
+        doThrow(new DuplicateTodoException()).when(masterList).displace(any());
 
         assertThatThrownBy(() ->
             todoService.displace(new User(uniqueIdentifier), "someTask"))
@@ -176,7 +176,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenMasterListFound_whenTodoFound_whenListIsNotFull_refusesDisplace() throws Exception {
-        when(masterList.displace(any())).thenThrow(new ListNotFullException());
+        doThrow(new ListNotFullException()).when(masterList).displace(any());
 
         exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
@@ -210,7 +210,7 @@ public class TodoServiceTest {
 
     @Test
     public void update_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesUpdate() throws Exception {
-        when(masterList.update(any(), any())).thenThrow(new DuplicateTodoException());
+        doThrow(new DuplicateTodoException()).when(masterList).update(any(), any());
 
         assertThatThrownBy(() ->
             todoService.update(new User(uniqueIdentifier), "someIdentifier", "someTask"))
@@ -220,7 +220,7 @@ public class TodoServiceTest {
 
     @Test
     public void update_whenMasterListFound_whenTodoNotFound_refusesUpdate() throws Exception {
-        when(masterList.update(any(), any())).thenThrow(new TodoNotFoundException());
+        doThrow(new TodoNotFoundException()).when(masterList).update(any(), any());
 
         exception.expect(InvalidRequestException.class);
         todoService.update(new User(uniqueIdentifier), "someId", "someTask");
@@ -314,7 +314,7 @@ public class TodoServiceTest {
 
     @Test
     public void move_whenMasterListFound_whenTodosNotFound_refusesOperation() throws Exception {
-        when(masterList.move(any(), any())).thenThrow(new TodoNotFoundException());
+        doThrow(new TodoNotFoundException()).when(masterList).move(any(), any());
 
         exception.expect(InvalidRequestException.class);
         todoService.move(new User(uniqueIdentifier), "idOne", "idTwo");
