@@ -146,13 +146,11 @@ public class MasterListTest {
     public void displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
         masterList.add("someNowTask");
         masterList.add("someOtherNowTask");
-        Todo firstTodo = masterList.getTodos().get(0);
 
         masterList.displace("displace it");
 
         assertThat(masterList.getTodos()).hasSize(2);
         assertThat(masterList.getTodos().get(0).getTask()).isEqualTo("displace it");
-        assertThat(masterList.getTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition() - 1);
         assertThat(masterList.getTodos().get(1).getTask()).isEqualTo("someOtherNowTask");
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).hasSize(1);
@@ -170,7 +168,6 @@ public class MasterListTest {
 
         assertThat(masterList.getTodos()).hasSize(2);
         assertThat(masterList.getTodos().get(0).getTask()).isEqualTo("displace it");
-        assertThat(masterList.getTodos().get(0).getPosition()).isEqualTo(firstTodo.getPosition() - 1);
         assertThat(masterList.getTodos().get(1).getTask()).isEqualTo(firstTodo.getTask());
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).hasSize(2);

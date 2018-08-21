@@ -31,13 +31,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (getTodos().size() >= maxSize()) {
             throw new ListSizeExceededException();
         }
-        int position;
-        if (todos.isEmpty()) {
-            position = 1;
-        } else {
-            position = todos.get(0).getPosition() - 1;
-        }
-        Todo todo = new Todo(generateIdentifier(), task, position);
+        Todo todo = new Todo(generateIdentifier(), task);
         todos.add(0, todo);
         demarcationIndex++;
     }
@@ -52,7 +46,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        Todo todo = new Todo(generateIdentifier(), task, getNextDeferredPosition());
+        Todo todo = new Todo(generateIdentifier(), task);
         todos.add(todo);
     }
 
@@ -85,13 +79,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     public void displace(String task) throws DuplicateTodoException, ListNotFullException {
         if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
-        int position;
-        if (todos.isEmpty()) {
-            position = 1;
-        } else {
-            position = todos.get(0).getPosition() - 1;
-        }
-        Todo todo = new Todo(generateIdentifier(), task, position);
+        Todo todo = new Todo(generateIdentifier(), task);
         todos.add(0, todo);
     }
 
@@ -116,7 +104,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         Todo todo = getByLocalIdentifier(localIdentifier);
         int index = todos.indexOf(todo);
         Todo targetTodo = getByLocalIdentifier(targetLocalIdentifier);
-        int originalIndex;
         int targetIndex;
         List<Todo> subList;
         if (index < demarcationIndex) {
@@ -124,23 +111,10 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         } else {
             subList = deferredTodos();
         }
-        originalIndex = subList.indexOf(todo);
         targetIndex = subList.indexOf(targetTodo);
-
-        Direction direction = Direction.valueOf(Integer.compare(targetTodo.getPosition(), todo.getPosition()));
-        Map<Integer, Integer> originalMapping = new HashMap<>();
-        for (int i = originalIndex; direction.targetNotExceeded(i, targetIndex); i += direction.getValue()) {
-            originalMapping.put(i, subList.get(i).getPosition());
-        }
 
         subList.remove(todo);
         subList.add(targetIndex, todo);
-
-        originalMapping.entrySet()
-            .forEach(entry -> {
-                Todo effectedTodo = subList.get(entry.getKey());
-                effectedTodo.setPosition(entry.getValue());
-            });
     }
 
     @Override
@@ -177,10 +151,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     @Override
     public void pull() {
-        List<Todo> pulledTodos = new ArrayList<>();
         while (demarcationIndex < todos.size() && getTodos().size() < maxSize()) {
-            Todo pulledTodo = todos.get(demarcationIndex);
-            pulledTodos.add(pulledTodo);
             demarcationIndex++;
         }
     }
@@ -228,16 +199,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
-    }
-
-    private int getNextDeferredPosition() {
-        int position;
-        if (todos.isEmpty()) {
-            position = 1;
-        } else {
-            position = todos.get(todos.size() - 1).getPosition() + 1;
-        }
-        return position;
     }
 
     private Optional<Date> mostRecentListUnlock() {
