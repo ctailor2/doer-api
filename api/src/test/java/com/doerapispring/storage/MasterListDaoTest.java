@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class MasterListDaoTest {
     @Autowired
-    MasterListDao masterListDao;
+    private MasterListDao masterListDao;
 
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     private Long userId;
 
@@ -39,11 +39,11 @@ public class MasterListDaoTest {
     @Test
     public void findsMasterList_withTodosOrderedByPosition() {
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid2', 'task2', 2, now(), now())");
+            "todos (user_id, task, position, created_at, updated_at) " +
+            "VALUES (" + userId + ", 'task2', 2, now(), now())");
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid1', 'task1', 1, now(), now())");
+            "todos (user_id, task, position, created_at, updated_at) " +
+            "VALUES (" + userId + ", 'task1', 1, now(), now())");
 
         List<TodoEntity> todoEntities = masterListDao.findByEmail("someEmail").getTodoEntities();
         assertThat(todoEntities).hasSize(2);

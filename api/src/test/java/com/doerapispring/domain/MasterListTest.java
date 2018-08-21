@@ -124,7 +124,7 @@ public class MasterListTest {
     @Test
     public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.delete("someBogusIdentifier");
+        masterList.delete("999");
     }
 
     @Test
@@ -182,6 +182,7 @@ public class MasterListTest {
 
         masterList.update(todo.getLocalIdentifier(), "someOtherTask");
 
+        todo = masterList.getTodos().get(0);
         assertThat(todo.getTask()).isEqualTo("someOtherTask");
     }
 
@@ -197,7 +198,7 @@ public class MasterListTest {
     @Test
     public void update_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.update("bananaPudding", "sameTask");
+        masterList.update("999", "sameTask");
     }
 
     @Test
@@ -214,13 +215,13 @@ public class MasterListTest {
     @Test
     public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.complete("someBogusIdentifier");
+        masterList.complete("999");
     }
 
     @Test
     public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.move("junk", "bogus");
+        masterList.move("99", "999");
     }
 
     @Test
@@ -463,33 +464,20 @@ public class MasterListTest {
     @Test
     public void getTodos_getsTodosFromImmediateList() throws Exception {
         masterList.add("someTask");
+        masterList.addDeferred("someDeferredTask");
 
         assertThat(masterList.getTodos()).extracting("task")
-            .contains("someTask");
-    }
-
-    @Test
-    public void getTodos_doesNotGetTodosFromPostponedList() throws Exception {
-        masterList.addDeferred("someTask");
-
-        assertThat(masterList.getTodos()).isEmpty();
+            .containsExactly("someTask");
     }
 
     @Test
     public void getDeferredTodos_getsTodosFromPostponedList() throws Exception {
-        masterList.addDeferred("someTask");
+        masterList.add("someTask");
+        masterList.addDeferred("someDeferredTask");
 
         masterList.unlock();
         assertThat(masterList.getDeferredTodos()).extracting("task")
-            .contains("someTask");
-    }
-
-    @Test
-    public void getDeferredTodos_doesNotGetTodosFromImmediateList() throws Exception {
-        masterList.add("someTask");
-
-        masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).isEmpty();
+            .containsExactly("someDeferredTask");
     }
 
     @Test
