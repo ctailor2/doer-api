@@ -2,9 +2,9 @@ package com.doerapispring.domain;
 
 public class Todo {
     private final String localIdentifier;
-    private final String task;
+    private String task;
 
-    Todo(String localIdentifier, String task) {
+    public Todo(String localIdentifier, String task) {
         this.localIdentifier = localIdentifier;
         this.task = task;
     }
@@ -15,6 +15,10 @@ public class Todo {
 
     public String getLocalIdentifier() {
         return localIdentifier;
+    }
+
+    public void setTask(String task) {
+        this.task = task;
     }
 
     @Override

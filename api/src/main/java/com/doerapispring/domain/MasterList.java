@@ -4,24 +4,23 @@ import java.time.Clock;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
     private static final long UNLOCK_DURATION = 1800000L;
     private static final int MAX_SIZE = 2;
-    private final List<String> tasks;
+    private final List<Todo> todos;
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
 
     private Integer demarcationIndex = 0;
     private Date lastUnlockedAt;
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<String> tasks, Integer demarcationIndex) {
+    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
-        this.tasks = tasks;
+        this.todos = todos;
         this.lastUnlockedAt = lastUnlockedAt;
         this.demarcationIndex = demarcationIndex;
     }
@@ -34,16 +33,14 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (getTodos().size() >= MAX_SIZE) {
             throw new ListSizeExceededException();
         }
-        tasks.add(0, task);
+        Todo todo = new Todo(generateIdentifier(), task);
+        todos.add(0, todo);
         demarcationIndex++;
     }
 
     @Override
     public List<Todo> getTodos() {
-        List<String> subList = tasks.subList(0, demarcationIndex);
-        return subList.stream()
-            .map(task -> new Todo(String.valueOf(tasks.indexOf(task)), task))
-            .collect(toList());
+        return todos.subList(0, demarcationIndex);
     }
 
     @Override
@@ -51,7 +48,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        tasks.add(task);
+        Todo todo = new Todo(generateIdentifier(), task);
+        todos.add(todo);
     }
 
     @Override
@@ -72,18 +70,19 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     @Override
     public void delete(String localIdentifier) throws TodoNotFoundException {
-        String task = getTaskByLocalIdentifier(localIdentifier);
-        if (tasks.indexOf(task) < demarcationIndex) {
+        Todo todoToDelete = getByLocalIdentifier(localIdentifier);
+        if (todos.indexOf(todoToDelete) < demarcationIndex) {
             demarcationIndex--;
         }
-        tasks.remove(task);
+        todos.remove(todoToDelete);
     }
 
     @Override
     public void displace(String task) throws DuplicateTodoException, ListNotFullException {
         if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
-        tasks.add(0, task);
+        Todo todo = new Todo(generateIdentifier(), task);
+        todos.add(0, todo);
     }
 
     @Override
@@ -91,28 +90,33 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        String taskToUpdate = getTaskByLocalIdentifier(localIdentifier);
-        int index = tasks.indexOf(taskToUpdate);
-        tasks.remove(taskToUpdate);
-        tasks.add(index, task);
+        Todo todo = getByLocalIdentifier(localIdentifier);
+        todo.setTask(task);
     }
 
     @Override
     public String complete(String localIdentifier) throws TodoNotFoundException {
-        String task = getTaskByLocalIdentifier(localIdentifier);
+        Todo todo = getByLocalIdentifier(localIdentifier);
         delete(localIdentifier);
-        return task;
+        return todo.getTask();
     }
 
     @Override
     public void move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
-        String taskToMove = getTaskByLocalIdentifier(localIdentifier);
-        int index = tasks.indexOf(taskToMove);
-        String targetTask = getTaskByLocalIdentifier(targetLocalIdentifier);
-        int targetIndex = tasks.indexOf(targetTask);
+        Todo todo = getByLocalIdentifier(localIdentifier);
+        int index = todos.indexOf(todo);
+        Todo targetTodo = getByLocalIdentifier(targetLocalIdentifier);
+        int targetIndex;
+        List<Todo> subList;
+        if (index < demarcationIndex) {
+            subList = getTodos();
+        } else {
+            subList = deferredTodos();
+        }
+        targetIndex = subList.indexOf(targetTodo);
 
-        String task = tasks.remove(index);
-        tasks.add(targetIndex, task);
+        subList.remove(todo);
+        subList.add(targetIndex, todo);
     }
 
     @Override
@@ -149,7 +153,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     @Override
     public void pull() {
-        while (demarcationIndex < tasks.size() && getTodos().size() < MAX_SIZE) {
+        while (demarcationIndex < todos.size() && getTodos().size() < MAX_SIZE) {
             demarcationIndex++;
         }
     }
@@ -169,23 +173,23 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    private String getTaskByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
-        try {
-            return tasks.get(Integer.valueOf(localIdentifier));
-        } catch (IndexOutOfBoundsException e) {
-            throw new TodoNotFoundException();
-        }
+    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+        return todos.stream()
+            .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
+            .findFirst()
+            .orElseThrow(TodoNotFoundException::new);
     }
 
     private boolean alreadyExists(String task) {
-        return tasks.contains(task);
+        return todos.stream().anyMatch(todo -> todo.getTask().equals(task));
     }
 
     private List<Todo> deferredTodos() {
-        List<String> subList = tasks.subList(demarcationIndex, tasks.size());
-        return subList.stream()
-            .map(task -> new Todo(String.valueOf(tasks.indexOf(task)), task))
-            .collect(toList());
+        return todos.subList(demarcationIndex, todos.size());
+    }
+
+    private String generateIdentifier() {
+        return UUID.randomUUID().toString();
     }
 
     private Date beginningOfToday() {
@@ -213,9 +217,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     public List<Todo> getAllTodos() {
-        return tasks.stream()
-            .map(task -> new Todo(String.valueOf(tasks.indexOf(task)), task))
-            .collect(toList());
+        return todos;
     }
 
     public Date getLastUnlockedAt() {
@@ -229,21 +231,20 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
         MasterList that = (MasterList) o;
 
-        if (tasks != null ? !tasks.equals(that.tasks) : that.tasks != null) return false;
+        if (demarcationIndex != that.demarcationIndex) return false;
+        if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
         if (clock != null ? !clock.equals(that.clock) : that.clock != null) return false;
         if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
-            return false;
-        if (demarcationIndex != null ? !demarcationIndex.equals(that.demarcationIndex) : that.demarcationIndex != null)
             return false;
         return lastUnlockedAt != null ? lastUnlockedAt.equals(that.lastUnlockedAt) : that.lastUnlockedAt == null;
     }
 
     @Override
     public int hashCode() {
-        int result = tasks != null ? tasks.hashCode() : 0;
+        int result = todos != null ? todos.hashCode() : 0;
         result = 31 * result + (clock != null ? clock.hashCode() : 0);
         result = 31 * result + (uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0);
-        result = 31 * result + (demarcationIndex != null ? demarcationIndex.hashCode() : 0);
+        result = 31 * result + demarcationIndex;
         result = 31 * result + (lastUnlockedAt != null ? lastUnlockedAt.hashCode() : 0);
         return result;
     }
@@ -251,7 +252,7 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     @Override
     public String toString() {
         return "MasterList{" +
-            "tasks=" + tasks +
+            "todos=" + todos +
             ", clock=" + clock +
             ", uniqueIdentifier=" + uniqueIdentifier +
             ", demarcationIndex=" + demarcationIndex +

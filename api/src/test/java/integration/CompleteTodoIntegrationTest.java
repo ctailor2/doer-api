@@ -50,13 +50,11 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         todosService.create(user, "some task");
         MasterListDTO masterList = listService.get(user);
         TodoDTO todo1 = masterList.getTodos().get(0);
+        TodoDTO todo2 = masterList.getTodos().get(1);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
-
-        masterList = listService.get(user);
-        TodoDTO todo2 = masterList.getTodos().get(0);
         mockMvc.perform(post("/v1/todos/" + todo2.getLocalIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();

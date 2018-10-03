@@ -27,10 +27,12 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
     @Override
     public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
         MasterListEntity masterListEntity = masterListDao.findByEmail(uniqueIdentifier.get());
-        List<String> tasks = masterListEntity.todoEntities.stream()
-            .map(todoEntity -> todoEntity.task)
+        List<Todo> todos = masterListEntity.todoEntities.stream()
+            .map(todoEntity -> new Todo(
+                todoEntity.uuid,
+                todoEntity.task))
             .collect(toList());
-        return Optional.of(new MasterList(clock, uniqueIdentifier, masterListEntity.lastUnlockedAt, tasks, masterListEntity.demarcationIndex));
+        return Optional.of(new MasterList(clock, uniqueIdentifier, masterListEntity.lastUnlockedAt, todos, masterListEntity.demarcationIndex));
     }
 
     @Override
@@ -46,6 +48,7 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
             Todo todo = allTodos.get(i);
             masterListEntity.todoEntities.add(
                 TodoEntity.builder()
+                    .uuid(todo.getLocalIdentifier())
                     .task(todo.getTask())
                     .position(i)
                     .build());
