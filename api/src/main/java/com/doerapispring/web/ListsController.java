@@ -54,24 +54,24 @@ class ListsController {
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
             masterListDTO.getTodos().forEach(todoDTO -> {
-                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
-                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
 
                 masterListDTO.getTodos().forEach(targetTodoDTO ->
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                        todoDTO.getLocalIdentifier(),
-                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
+                        todoDTO.getIdentifier(),
+                        targetTodoDTO.getIdentifier()).withRel("move")));
             });
             masterListDTO.getDeferredTodos().forEach(todoDTO -> {
-                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getLocalIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getLocalIdentifier()).withRel("update"));
-                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getLocalIdentifier()).withRel("complete"));
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
 
                 masterListDTO.getDeferredTodos().forEach(targetTodoDTO ->
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                        todoDTO.getLocalIdentifier(),
-                        targetTodoDTO.getLocalIdentifier()).withRel("move")));
+                        todoDTO.getIdentifier(),
+                        targetTodoDTO.getIdentifier()).withRel("move")));
             });
             MasterListResponse masterListResponse = new MasterListResponse(masterListDTO);
             masterListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());

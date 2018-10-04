@@ -51,7 +51,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         MasterListDTO masterList = listService.get(user);
         TodoDTO todo = masterList.getTodos().get(0);
 
-        MvcResult mvcResult = mockMvc.perform(delete("/v1/todos/" + todo.getLocalIdentifier())
+        MvcResult mvcResult = mockMvc.perform(delete("/v1/todos/" + todo.getIdentifier())
             .headers(httpHeaders))
             .andReturn();
 
@@ -61,7 +61,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         assertThat(newMasterList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 }

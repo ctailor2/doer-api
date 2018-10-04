@@ -69,10 +69,10 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
         assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("this and that")));
         assertThat(responseContent, hasJsonPath("$.list.todos[0]._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/complete")));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getLocalIdentifier() + "/move/" + firstTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getIdentifier() + "/move/" + firstTodo.getIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
     }

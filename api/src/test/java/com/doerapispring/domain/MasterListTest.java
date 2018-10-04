@@ -101,21 +101,21 @@ public class MasterListTest {
 
     @Test
     public void delete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
-        masterList.add(new TodoId("someId"), "someTask");
-        Todo todo = masterList.getTodos().get(0);
+        TodoId todoId = new TodoId("someId");
+        masterList.add(todoId, "someTask");
 
-        masterList.delete(todo.getLocalIdentifier());
+        masterList.delete(todoId);
 
         assertThat(masterList.getTodos()).isEmpty();
     }
 
     @Test
     public void delete_whenTodoWithIdentifierExists_removesDeferredTodo() throws Exception {
-        masterList.addDeferred(new TodoId("someId"), "someTask");
+        TodoId todoId = new TodoId("someId");
+        masterList.addDeferred(todoId, "someTask");
         masterList.unlock();
-        Todo todo = masterList.getDeferredTodos().get(0);
 
-        masterList.delete(todo.getLocalIdentifier());
+        masterList.delete(todoId);
 
         assertThat(masterList.getDeferredTodos()).isEmpty();
     }
@@ -123,7 +123,7 @@ public class MasterListTest {
     @Test
     public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.delete("someBogusIdentifier");
+        masterList.delete(new TodoId("someBogusIdentifier"));
     }
 
     @Test
@@ -175,35 +175,36 @@ public class MasterListTest {
 
     @Test
     public void update_whenTodoWithIdentifierExists_updatesTodo() throws Exception {
-        masterList.add(new TodoId("someId"), "someTask");
+        TodoId todoId = new TodoId("someId");
+        masterList.add(todoId, "someTask");
+
+        masterList.update(todoId, "someOtherTask");
+
         Todo todo = masterList.getTodos().get(0);
-
-        masterList.update(todo.getLocalIdentifier(), "someOtherTask");
-
         assertThat(todo.getTask()).isEqualTo("someOtherTask");
     }
 
     @Test
     public void update_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
-        masterList.add(new TodoId("someId"), "sameTask");
-        Todo todo = masterList.getTodos().get(0);
+        TodoId todoId = new TodoId("someId");
+        masterList.add(todoId, "sameTask");
 
         exception.expect(DuplicateTodoException.class);
-        masterList.update(todo.getLocalIdentifier(), "sameTask");
+        masterList.update(todoId, "sameTask");
     }
 
     @Test
     public void update_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.update("bananaPudding", "sameTask");
+        masterList.update(new TodoId("bananaPudding"), "sameTask");
     }
 
     @Test
     public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTask() throws Exception {
-        masterList.add(new TodoId("someId"), "someTask");
-        Todo todo = masterList.getTodos().get(0);
+        TodoId todoId = new TodoId("someId");
+        masterList.add(todoId, "someTask");
 
-        String completedTask = masterList.complete(todo.getLocalIdentifier());
+        String completedTask = masterList.complete(todoId);
 
         assertThat(masterList.getTodos()).isEmpty();
         assertThat(completedTask).isEqualTo("someTask");
@@ -212,13 +213,13 @@ public class MasterListTest {
     @Test
     public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.complete("someBogusIdentifier");
+        masterList.complete(new TodoId("someBogusIdentifier"));
     }
 
     @Test
     public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
         exception.expect(TodoNotFoundException.class);
-        masterList.move("junk", "bogus");
+        masterList.move(new TodoId("junk"), new TodoId("bogus"));
     }
 
     @Test
@@ -236,10 +237,8 @@ public class MasterListTest {
             masterList.addDeferred(new TodoId(String.valueOf(i)), tasks.get(i));
         }
         masterList.unlock();
-        Todo firstTodo = masterList.getDeferredTodos().get(0);
-        Todo thirdTodo = masterList.getDeferredTodos().get(2);
 
-        masterList.move(firstTodo.getLocalIdentifier(), thirdTodo.getLocalIdentifier());
+        masterList.move(new TodoId("0"), new TodoId("2"));
 
         assertThat(masterList.getDeferredTodos()).extracting("task").containsExactly(
             "anotherTask",
@@ -263,10 +262,8 @@ public class MasterListTest {
             masterList.addDeferred(new TodoId(String.valueOf(i)), tasks.get(i));
         }
         masterList.unlock();
-        Todo secondTodo = masterList.getDeferredTodos().get(1);
-        Todo fourthTodo = masterList.getDeferredTodos().get(3);
 
-        masterList.move(fourthTodo.getLocalIdentifier(), secondTodo.getLocalIdentifier());
+        masterList.move(new TodoId("3"), new TodoId("1"));
 
         assertThat(masterList.getDeferredTodos()).extracting("task").containsExactly(
             "someTask",
@@ -284,13 +281,12 @@ public class MasterListTest {
             "evenYetAnotherTask"
         );
 
-        for (String task : tasks) {
-            masterList.addDeferred(new TodoId("someId"), task);
+        for (int i = 0; i < tasks.size(); i++) {
+            masterList.addDeferred(new TodoId(String.valueOf(i)), tasks.get(i));
         }
         masterList.unlock();
-        Todo firstTodo = masterList.getDeferredTodos().get(0);
 
-        masterList.move(firstTodo.getLocalIdentifier(), firstTodo.getLocalIdentifier());
+        masterList.move(new TodoId("0"), new TodoId("0"));
 
         assertThat(masterList.getDeferredTodos()).extracting("task").isEqualTo(tasks);
     }

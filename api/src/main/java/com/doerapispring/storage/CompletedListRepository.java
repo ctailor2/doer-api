@@ -51,7 +51,7 @@ class CompletedListRepository implements
 
         List<CompletedTodoEntity> completedTodoEntities = completedList.getTodos().stream()
             .map(completedTodo -> CompletedTodoEntity.builder()
-                .uuid(completedTodo.getLocalIdentifier())
+                .uuid(completedTodo.getCompletedTodoId().getIdentifier())
                 .task(completedTodo.getTask())
                 .completedAt(completedTodo.getCompletedAt())
                 .build())

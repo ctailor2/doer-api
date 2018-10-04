@@ -1,9 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.MasterListDTO;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.TodoDTO;
@@ -65,7 +62,7 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         todoService.create(user, "some task");
         MasterListDTO masterList = listService.get(user);
         TodoDTO todo = masterList.getTodos().get(0);
-        todoService.complete(user, todo.getLocalIdentifier());
+        todoService.complete(user, new TodoId(todo.getIdentifier()));
 
         doGet();
 

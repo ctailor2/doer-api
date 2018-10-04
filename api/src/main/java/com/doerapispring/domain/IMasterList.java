@@ -13,15 +13,15 @@ public interface IMasterList {
 
     List<Todo> getDeferredTodos();
 
-    void delete(String localIdentifier) throws TodoNotFoundException;
+    void delete(TodoId todoId) throws TodoNotFoundException;
 
     void displace(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
 
-    void update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
+    void update(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException;
 
-    String complete(String localIdentifier) throws TodoNotFoundException;
+    String complete(TodoId todoId) throws TodoNotFoundException;
 
-    void move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException;
+    void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException;
 
     boolean isAbleToBeUnlocked();
 
@@ -34,8 +34,6 @@ public interface IMasterList {
     boolean isFull();
 
     boolean isAbleToBeReplenished();
-
-    String getTask(String localIdentifier);
 
     Integer getDemarcationIndex();
 }

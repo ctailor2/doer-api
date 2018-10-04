@@ -35,8 +35,8 @@ public class ListService implements ListApplicationService {
         return new MasterListDTO(
             masterList.getName(),
             masterList.getDeferredName(),
-            masterList.getTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
-            masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getLocalIdentifier(), todo.getTask())).collect(toList()),
+            masterList.getTodos().stream().map(todo -> new TodoDTO(todo.getTodoId().getIdentifier(), todo.getTask())).collect(toList()),
+            masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getTodoId().getIdentifier(), todo.getTask())).collect(toList()),
             masterList.unlockDuration(),
             masterList.isFull(),
             masterList.isAbleToBeUnlocked(),

@@ -58,7 +58,7 @@ class MasterListRepository implements
             Todo todo = allTodos.get(i);
             masterListEntity.todoEntities.add(
                 TodoEntity.builder()
-                    .uuid(todo.getLocalIdentifier())
+                    .uuid(todo.getTodoId().getIdentifier())
                     .task(todo.getTask())
                     .position(i)
                     .build());

@@ -52,10 +52,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         TodoDTO todo1 = masterList.getTodos().get(0);
         TodoDTO todo2 = masterList.getTodos().get(1);
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
-        mockMvc.perform(post("/v1/todos/" + todo2.getLocalIdentifier() + "/complete")
+        mockMvc.perform(post("/v1/todos/" + todo2.getIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
 
@@ -70,7 +70,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo1.getLocalIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo1.getIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 }

@@ -13,8 +13,8 @@ public class CompletedTodo {
         this.completedAt = completedAt;
     }
 
-    public String getLocalIdentifier() {
-        return completedTodoId.getIdentifier();
+    public CompletedTodoId getCompletedTodoId() {
+        return completedTodoId;
     }
 
     public String getTask() {

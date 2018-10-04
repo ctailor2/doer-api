@@ -7,15 +7,15 @@ public interface TodoApplicationService {
 
     void createDeferred(User user, String task) throws InvalidRequestException;
 
-    void delete(User user, String localId) throws InvalidRequestException;
+    void delete(User user, TodoId todoId) throws InvalidRequestException;
 
     void displace(User user, String task) throws InvalidRequestException;
 
-    void update(User user, String localId, String task) throws InvalidRequestException;
+    void update(User user, TodoId todoId, String task) throws InvalidRequestException;
 
-    void complete(User user, String localId) throws InvalidRequestException;
+    void complete(User user, TodoId todoId) throws InvalidRequestException;
 
-    void move(User user, String localId, String targetLocalId) throws InvalidRequestException;
+    void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException;
 
     void pull(User user) throws InvalidRequestException;
 }

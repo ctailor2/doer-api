@@ -3,6 +3,7 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.TodoApplicationService;
+import com.doerapispring.domain.TodoId;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -53,7 +54,7 @@ public class TodosControllerTest {
         String localId = "someId";
         ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, localId);
 
-        verify(todoApplicationService).delete(authenticatedUser.getUser(), localId);
+        verify(todoApplicationService).delete(authenticatedUser.getUser(), new TodoId(localId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -108,7 +109,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.update(authenticatedUser, localId, new TodoForm(task));
 
-        verify(todoApplicationService).update(authenticatedUser.getUser(), localId, task);
+        verify(todoApplicationService).update(authenticatedUser.getUser(), new TodoId(localId), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -128,7 +129,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.complete(authenticatedUser, localId);
 
-        verify(todoApplicationService).complete(authenticatedUser.getUser(), localId);
+        verify(todoApplicationService).complete(authenticatedUser.getUser(), new TodoId(localId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -159,7 +160,7 @@ public class TodosControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity =
             todosController.move(authenticatedUser, localId, targetLocalId);
 
-        verify(todoApplicationService).move(authenticatedUser.getUser(), localId, targetLocalId);
+        verify(todoApplicationService).move(authenticatedUser.getUser(), new TodoId(localId), new TodoId(targetLocalId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(

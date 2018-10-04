@@ -49,11 +49,11 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void delete(User user, String localIdentifier) throws InvalidRequestException {
+    public void delete(User user, TodoId todoId) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
         try {
-            masterList.delete(localIdentifier);
+            masterList.delete(todoId);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -72,11 +72,11 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void update(User user, String localIdentifier, String task) throws InvalidRequestException {
+    public void update(User user, TodoId todoId, String task) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
         try {
-            masterList.update(localIdentifier, task);
+            masterList.update(todoId, task);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -85,11 +85,11 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void complete(User user, String localIdentifier) throws InvalidRequestException {
+    public void complete(User user, TodoId todoId) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
         try {
-            String task = masterList.complete(localIdentifier);
+            String task = masterList.complete(todoId);
             masterListRepository.save(masterList);
             Optional<CompletedList> completedListOptional = completedListRepository.find(user.getIdentifier());
             if (completedListOptional.isPresent()) {
@@ -107,11 +107,11 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void move(User user, String localIdentifier, String targetLocalIdentifier) throws InvalidRequestException {
+    public void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
         try {
-            masterList.move(localIdentifier, targetLocalIdentifier);
+            masterList.move(todoId, targetTodoId);
             masterListRepository.save(masterList);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new InvalidRequestException();

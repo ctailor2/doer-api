@@ -13,8 +13,8 @@ public class Todo {
         return task;
     }
 
-    public String getLocalIdentifier() {
-        return todoId.getIdentifier();
+    public TodoId getTodoId() {
+        return todoId;
     }
 
     public void setTask(String task) {

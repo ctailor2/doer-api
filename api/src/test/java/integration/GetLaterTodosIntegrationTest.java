@@ -75,12 +75,12 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos", hasSize(2)));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0].task", equalTo("here and now")));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move", hasSize(2)));
-        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[0].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[1].href", containsString("v1/todos/" + secondTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[0].href", containsString("v1/todos/" + secondTodo.getIdentifier() + "/move/" + secondTodo.getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move[1].href", containsString("v1/todos/" + secondTodo.getIdentifier() + "/move/" + thirdTodo.getIdentifier())));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1].task", equalTo("near and far")));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move", hasSize(2)));
-        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + secondTodo.getLocalIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getLocalIdentifier() + "/move/" + thirdTodo.getLocalIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getIdentifier() + "/move/" + secondTodo.getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getIdentifier() + "/move/" + thirdTodo.getIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
     }

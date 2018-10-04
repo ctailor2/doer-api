@@ -4,17 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.ResourceSupport;
 
 public class TodoDTO extends ResourceSupport {
-    private final String localIdentifier;
+    private final String identifier;
     private final String task;
 
-    public TodoDTO(String localIdentifier, String task) {
-        this.localIdentifier = localIdentifier;
+    public TodoDTO(String identifier, String task) {
+        this.identifier = identifier;
         this.task = task;
     }
 
     @JsonProperty("id")
-    public String getLocalIdentifier() {
-        return localIdentifier;
+    public String getIdentifier() {
+        return identifier;
     }
 
     public String getTask() {
@@ -29,7 +29,7 @@ public class TodoDTO extends ResourceSupport {
 
         TodoDTO todoDTO = (TodoDTO) o;
 
-        if (localIdentifier != null ? !localIdentifier.equals(todoDTO.localIdentifier) : todoDTO.localIdentifier != null)
+        if (identifier != null ? !identifier.equals(todoDTO.identifier) : todoDTO.identifier != null)
             return false;
         return task != null ? task.equals(todoDTO.task) : todoDTO.task == null;
     }
@@ -37,7 +37,7 @@ public class TodoDTO extends ResourceSupport {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (localIdentifier != null ? localIdentifier.hashCode() : 0);
+        result = 31 * result + (identifier != null ? identifier.hashCode() : 0);
         result = 31 * result + (task != null ? task.hashCode() : 0);
         return result;
     }
@@ -45,7 +45,7 @@ public class TodoDTO extends ResourceSupport {
     @Override
     public String toString() {
         return "TodoDTO{" +
-            "localIdentifier='" + localIdentifier + '\'' +
+            "identifier='" + identifier + '\'' +
             ", task='" + task + '\'' +
             '}';
     }

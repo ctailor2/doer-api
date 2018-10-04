@@ -86,18 +86,20 @@ public class ListServiceTest {
             new ArrayList<>(),
             0
         );
-        masterList.add(new TodoId("1"), "task");
-        Todo todo = masterList.getTodos().get(0);
-        masterList.addDeferred(new TodoId("2"), "deferredTask");
-        Todo deferredTodo = masterList.getDeferredTodos().get(0);
+        TodoId todoId = new TodoId("1");
+        String task = "task";
+        masterList.add(todoId, task);
+        TodoId deferredTodoId = new TodoId("2");
+        String deferredTask = "deferredTask";
+        masterList.addDeferred(deferredTodoId, deferredTask);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         User user = new User(uniqueIdentifier);
 
         MasterListDTO masterListDTO = listService.get(user);
 
         assertThat(masterListDTO).isNotNull();
-        assertThat(masterListDTO.getTodos()).contains(new TodoDTO(todo.getLocalIdentifier(), todo.getTask()));
-        assertThat(masterListDTO.getDeferredTodos()).contains(new TodoDTO(deferredTodo.getLocalIdentifier(), deferredTodo.getTask()));
+        assertThat(masterListDTO.getTodos()).contains(new TodoDTO(todoId.getIdentifier(), task));
+        assertThat(masterListDTO.getDeferredTodos()).contains(new TodoDTO(deferredTodoId.getIdentifier(), deferredTask));
         assertThat(masterListDTO.getName()).isEqualTo("now");
         assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
         assertThat(masterListDTO.getUnlockDuration()).isCloseTo(1234L, within(100L));

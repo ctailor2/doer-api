@@ -69,8 +69,8 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void delete(String localIdentifier) throws TodoNotFoundException {
-        Todo todoToDelete = getByLocalIdentifier(localIdentifier);
+    public void delete(TodoId todoId) throws TodoNotFoundException {
+        Todo todoToDelete = getByTodoId(todoId);
         if (todos.indexOf(todoToDelete) < demarcationIndex) {
             demarcationIndex--;
         }
@@ -86,26 +86,26 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public void update(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        Todo todo = getByLocalIdentifier(localIdentifier);
+        Todo todo = getByTodoId(todoId);
         todo.setTask(task);
     }
 
     @Override
-    public String complete(String localIdentifier) throws TodoNotFoundException {
-        Todo todo = getByLocalIdentifier(localIdentifier);
-        delete(localIdentifier);
+    public String complete(TodoId todoId) throws TodoNotFoundException {
+        Todo todo = getByTodoId(todoId);
+        delete(todoId);
         return todo.getTask();
     }
 
     @Override
-    public void move(String localIdentifier, String targetLocalIdentifier) throws TodoNotFoundException {
-        Todo todo = getByLocalIdentifier(localIdentifier);
+    public void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException {
+        Todo todo = getByTodoId(todoId);
         int index = todos.indexOf(todo);
-        Todo targetTodo = getByLocalIdentifier(targetLocalIdentifier);
+        Todo targetTodo = getByTodoId(targetTodoId);
         int targetIndex;
         List<Todo> subList;
         if (index < demarcationIndex) {
@@ -142,11 +142,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public String getTask(String localIdentifier) {
-        return null;
-    }
-
-    @Override
     public Integer getDemarcationIndex() {
         return demarcationIndex;
     }
@@ -173,9 +168,9 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return uniqueIdentifier;
     }
 
-    private Todo getByLocalIdentifier(String localIdentifier) throws TodoNotFoundException {
+    private Todo getByTodoId(TodoId todoId) throws TodoNotFoundException {
         return todos.stream()
-            .filter(todo -> localIdentifier.equals(todo.getLocalIdentifier()))
+            .filter(todo -> todoId.equals(todo.getTodoId()))
             .findFirst()
             .orElseThrow(TodoNotFoundException::new);
     }

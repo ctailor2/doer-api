@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.TodoApplicationService;
+import com.doerapispring.domain.TodoId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId) {
         try {
-            todoApplicationService.delete(authenticatedUser.getUser(), localId);
+            todoApplicationService.delete(authenticatedUser.getUser(), new TodoId(localId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
                 hateoasLinkGenerator.listLink().withRel("list"));
@@ -52,7 +53,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable(value = "localId") String localId,
                                              @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.update(authenticatedUser.getUser(), localId, todoForm.getTask());
+        todoApplicationService.update(authenticatedUser.getUser(), new TodoId(localId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
             hateoasLinkGenerator.listLink().withRel("list"));
@@ -64,7 +65,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable(value = "localId") String localId) {
         try {
-            todoApplicationService.complete(authenticatedUser.getUser(), localId);
+            todoApplicationService.complete(authenticatedUser.getUser(), new TodoId(localId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
                 hateoasLinkGenerator.listLink().withRel("list"));
@@ -80,7 +81,7 @@ class TodosController {
                                            @PathVariable String localId,
                                            @PathVariable String targetLocalId) {
         try {
-            todoApplicationService.move(authenticatedUser.getUser(), localId, targetLocalId);
+            todoApplicationService.move(authenticatedUser.getUser(), new TodoId(localId), new TodoId(targetLocalId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
