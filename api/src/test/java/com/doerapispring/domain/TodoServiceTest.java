@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.storage.IdentityGeneratingObjectRepository;
 import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,10 +20,10 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private ObjectRepository<CompletedList, String> mockCompletedListRepository;
+    private IdentityGeneratingObjectRepository<CompletedList, String> mockCompletedListRepository;
 
     @Mock
-    private ObjectRepository<MasterList, String> mockMasterListRepository;
+    private IdentityGeneratingObjectRepository<MasterList, String> mockMasterListRepository;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -30,6 +31,8 @@ public class TodoServiceTest {
     private MasterList masterList;
 
     private CompletedList completedList;
+    private String todoIdentifier;
+    private String completedTodoIdentifier;
 
     @Before
     public void setUp() throws Exception {
@@ -40,8 +43,12 @@ public class TodoServiceTest {
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
+        todoIdentifier = "todoId";
         completedList = mock(CompletedList.class);
         when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
+        when(mockMasterListRepository.nextIdentifier()).thenReturn(new UniqueIdentifier<>(todoIdentifier));
+        completedTodoIdentifier = "completedTodoId";
+        when(mockCompletedListRepository.nextIdentifier()).thenReturn(new UniqueIdentifier<>(completedTodoIdentifier));
     }
 
     @Test
@@ -49,13 +56,13 @@ public class TodoServiceTest {
         String task = "some things";
         todoService.create(new User(uniqueIdentifier), task);
 
-        verify(masterList).add(task);
+        verify(masterList).add(new TodoId(todoIdentifier), task);
         verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void create_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        doThrow(new DuplicateTodoException()).when(masterList).add(any());
+        doThrow(new DuplicateTodoException()).when(masterList).add(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
             todoService.create(new User(uniqueIdentifier), "some things"))
@@ -65,7 +72,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenMasterListFound_whenListFull_refusesCreate() throws Exception {
-        doThrow(new ListSizeExceededException()).when(masterList).add(any());
+        doThrow(new ListSizeExceededException()).when(masterList).add(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
@@ -92,13 +99,13 @@ public class TodoServiceTest {
         String task = "some things";
         todoService.createDeferred(new User(uniqueIdentifier), task);
 
-        verify(masterList).addDeferred(task);
+        verify(masterList).addDeferred(new TodoId(todoIdentifier), task);
         verify(mockMasterListRepository).save(masterList);
     }
 
     @Test
     public void createDeferred_whenMasterListFound_whenTodoWithTaskExists_refusesCreate() throws Exception {
-        doThrow(new DuplicateTodoException()).when(masterList).addDeferred(any());
+        doThrow(new DuplicateTodoException()).when(masterList).addDeferred(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
             todoService.createDeferred(new User(uniqueIdentifier), "some things"))
@@ -152,7 +159,7 @@ public class TodoServiceTest {
     public void displace_whenMasterListFound_whenTodoFound_savesUsingRepository() throws Exception {
         todoService.displace(new User(uniqueIdentifier), "someTask");
 
-        verify(masterList).displace("someTask");
+        verify(masterList).displace(new TodoId(todoIdentifier), "someTask");
         verify(mockMasterListRepository).save(masterList);
     }
 
@@ -166,7 +173,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenMasterListFound_whenTodoFound_whenTodoWithTaskExists_refusesDisplace() throws Exception {
-        doThrow(new DuplicateTodoException()).when(masterList).displace(any());
+        doThrow(new DuplicateTodoException()).when(masterList).displace(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
             todoService.displace(new User(uniqueIdentifier), "someTask"))
@@ -176,7 +183,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenMasterListFound_whenTodoFound_whenListIsNotFull_refusesDisplace() throws Exception {
-        doThrow(new ListNotFullException()).when(masterList).displace(any());
+        doThrow(new ListNotFullException()).when(masterList).displace(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
@@ -252,7 +259,7 @@ public class TodoServiceTest {
         todoService.complete(new User(uniqueIdentifier), localIdentifier);
 
         verify(mockCompletedListRepository).find(uniqueIdentifier);
-        verify(completedList).add(completedTask);
+        verify(completedList).add(new CompletedTodoId(completedTodoIdentifier), completedTask);
         verify(mockCompletedListRepository).save(completedList);
     }
 
@@ -293,8 +300,8 @@ public class TodoServiceTest {
 
     @Test
     public void move_whenMasterListFound_whenTodosFound_updatesMovedTodosUsingRepository() throws Exception {
-        masterList.add("task1");
-        masterList.add("task2");
+        masterList.add(new TodoId("1"), "task1");
+        masterList.add(new TodoId("2"), "task2");
 
         String sourceIdentifier = "sourceIdentifier";
         String destinationIdentifier = "destinationIdentifier";

@@ -3,18 +3,18 @@ package com.doerapispring.domain;
 import java.util.Date;
 
 public class CompletedTodo {
-    private final String localIdentifier;
-    private final String task;
-    private final Date completedAt;
+    private CompletedTodoId completedTodoId;
+    private String task;
+    private Date completedAt;
 
-    public CompletedTodo(String localIdentifier, String task, Date completedAt) {
-        this.localIdentifier = localIdentifier;
+    public CompletedTodo(CompletedTodoId completedTodoId, String task, Date completedAt) {
+        this.completedTodoId = completedTodoId;
         this.task = task;
         this.completedAt = completedAt;
     }
 
     public String getLocalIdentifier() {
-        return localIdentifier;
+        return completedTodoId.getIdentifier();
     }
 
     public String getTask() {
@@ -32,7 +32,7 @@ public class CompletedTodo {
 
         CompletedTodo that = (CompletedTodo) o;
 
-        if (localIdentifier != null ? !localIdentifier.equals(that.localIdentifier) : that.localIdentifier != null)
+        if (completedTodoId != null ? !completedTodoId.equals(that.completedTodoId) : that.completedTodoId != null)
             return false;
         if (task != null ? !task.equals(that.task) : that.task != null) return false;
         return completedAt != null ? completedAt.equals(that.completedAt) : that.completedAt == null;
@@ -40,7 +40,7 @@ public class CompletedTodo {
 
     @Override
     public int hashCode() {
-        int result = localIdentifier != null ? localIdentifier.hashCode() : 0;
+        int result = completedTodoId != null ? completedTodoId.hashCode() : 0;
         result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (completedAt != null ? completedAt.hashCode() : 0);
         return result;
@@ -49,7 +49,7 @@ public class CompletedTodo {
     @Override
     public String toString() {
         return "CompletedTodo{" +
-            "localIdentifier='" + localIdentifier + '\'' +
+            "completedTodoId=" + completedTodoId +
             ", task='" + task + '\'' +
             ", completedAt=" + completedAt +
             '}';

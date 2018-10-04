@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -19,11 +20,10 @@ public class CompletedListTest {
         when(clock.instant()).thenReturn(now);
         CompletedList completedList = new CompletedList(clock, new UniqueIdentifier<>("someIdentifier"), new ArrayList<>());
 
-        completedList.add("someTask");
-        assertThat(completedList.getTodos()).hasSize(1);
-        CompletedTodo completedTodo = completedList.getTodos().get(0);
-        assertThat(completedTodo.getLocalIdentifier()).matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}");
-        assertThat(completedTodo.getTask()).isEqualTo("someTask");
-        assertThat(completedTodo.getCompletedAt()).isEqualTo(Date.from(now));
+        completedList.add(new CompletedTodoId("someId"), "someTask");
+
+        List<CompletedTodo> completedListTodos = completedList.getTodos();
+        assertThat(completedListTodos).containsExactly(
+            new CompletedTodo(new CompletedTodoId("someId"), "someTask", Date.from(now)));
     }
 }

@@ -1,11 +1,11 @@
 package com.doerapispring.domain;
 
 public class Todo {
-    private final String localIdentifier;
+    private TodoId todoId;
     private String task;
 
-    public Todo(String localIdentifier, String task) {
-        this.localIdentifier = localIdentifier;
+    public Todo(TodoId todoId, String task) {
+        this.todoId = todoId;
         this.task = task;
     }
 
@@ -14,7 +14,7 @@ public class Todo {
     }
 
     public String getLocalIdentifier() {
-        return localIdentifier;
+        return todoId.getIdentifier();
     }
 
     public void setTask(String task) {
@@ -28,14 +28,13 @@ public class Todo {
 
         Todo todo = (Todo) o;
 
-        if (localIdentifier != null ? !localIdentifier.equals(todo.localIdentifier) : todo.localIdentifier != null)
-            return false;
+        if (todoId != null ? !todoId.equals(todo.todoId) : todo.todoId != null) return false;
         return task != null ? task.equals(todo.task) : todo.task == null;
     }
 
     @Override
     public int hashCode() {
-        int result = localIdentifier != null ? localIdentifier.hashCode() : 0;
+        int result = todoId != null ? todoId.hashCode() : 0;
         result = 31 * result + (task != null ? task.hashCode() : 0);
         return result;
     }
@@ -43,7 +42,7 @@ public class Todo {
     @Override
     public String toString() {
         return "Todo{" +
-            "localIdentifier='" + localIdentifier + '\'' +
+            "todoId=" + todoId +
             ", task='" + task + '\'' +
             '}';
     }

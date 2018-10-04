@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.storage.IdentityGeneratingObjectRepository;
 import com.doerapispring.web.InvalidRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,12 +11,12 @@ import java.util.Optional;
 @Service
 @Transactional
 public class TodoService implements TodoApplicationService {
-    private final ObjectRepository<CompletedList, String> completedListRepository;
-    private final ObjectRepository<MasterList, String> masterListRepository;
+    private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
+    private final IdentityGeneratingObjectRepository<MasterList, String> masterListRepository;
 
     @Autowired
-    TodoService(ObjectRepository<CompletedList, String> completedListRepository,
-                ObjectRepository<MasterList, String> masterListRepository) {
+    TodoService(IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository,
+                IdentityGeneratingObjectRepository<MasterList, String> masterListRepository) {
         this.completedListRepository = completedListRepository;
         this.masterListRepository = masterListRepository;
     }
@@ -23,8 +24,9 @@ public class TodoService implements TodoApplicationService {
     public void create(User user, String task) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
+        UniqueIdentifier<String> todoIdentifier = masterListRepository.nextIdentifier();
         try {
-            masterList.add(task);
+            masterList.add(new TodoId(todoIdentifier.get()), task);
             masterListRepository.save(masterList);
         } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -36,8 +38,9 @@ public class TodoService implements TodoApplicationService {
     public void createDeferred(User user, String task) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
+        UniqueIdentifier<String> todoIdentifier = masterListRepository.nextIdentifier();
         try {
-            masterList.addDeferred(task);
+            masterList.addDeferred(new TodoId(todoIdentifier.get()), task);
             masterListRepository.save(masterList);
         } catch (AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -60,8 +63,9 @@ public class TodoService implements TodoApplicationService {
     public void displace(User user, String task) throws InvalidRequestException {
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
+        UniqueIdentifier<String> todoIdentifier = masterListRepository.nextIdentifier();
         try {
-            masterList.displace(task);
+            masterList.displace(new TodoId(todoIdentifier.get()), task);
             masterListRepository.save(masterList);
         } catch (AbnormalModelException | DuplicateTodoException | ListNotFullException e) {
             throw new InvalidRequestException(e.getMessage());
@@ -89,8 +93,9 @@ public class TodoService implements TodoApplicationService {
             masterListRepository.save(masterList);
             Optional<CompletedList> completedListOptional = completedListRepository.find(user.getIdentifier());
             if (completedListOptional.isPresent()) {
+                UniqueIdentifier<String> completedTodoIdentifier = completedListRepository.nextIdentifier();
                 CompletedList completedList = completedListOptional.get();
-                completedList.add(task);
+                completedList.add(new CompletedTodoId(completedTodoIdentifier.get()), task);
                 try {
                     completedListRepository.save(completedList);
                 } catch (AbnormalModelException e) {

@@ -2,6 +2,7 @@ package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
 import java.util.List;
@@ -10,17 +11,21 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-class MasterListRepository implements ObjectRepository<MasterList, String> {
+class MasterListRepository implements
+    IdentityGeneratingObjectRepository<MasterList, String> {
     private final UserDAO userDAO;
     private final MasterListDao masterListDao;
+    private final IdGenerator idGenerator;
     private final Clock clock;
 
     MasterListRepository(
         UserDAO userDAO,
         MasterListDao masterListDao,
+        IdGenerator idGenerator,
         Clock clock) {
         this.userDAO = userDAO;
         this.masterListDao = masterListDao;
+        this.idGenerator = idGenerator;
         this.clock = clock;
     }
 
@@ -29,10 +34,15 @@ class MasterListRepository implements ObjectRepository<MasterList, String> {
         MasterListEntity masterListEntity = masterListDao.findByEmail(uniqueIdentifier.get());
         List<Todo> todos = masterListEntity.todoEntities.stream()
             .map(todoEntity -> new Todo(
-                todoEntity.uuid,
+                new TodoId(todoEntity.uuid),
                 todoEntity.task))
             .collect(toList());
         return Optional.of(new MasterList(clock, uniqueIdentifier, masterListEntity.lastUnlockedAt, todos, masterListEntity.demarcationIndex));
+    }
+
+    @Override
+    public UniqueIdentifier<String> nextIdentifier() {
+        return new UniqueIdentifier<>(idGenerator.generateId().toString());
     }
 
     @Override

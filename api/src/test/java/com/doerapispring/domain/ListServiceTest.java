@@ -86,9 +86,9 @@ public class ListServiceTest {
             new ArrayList<>(),
             0
         );
-        masterList.add("task");
+        masterList.add(new TodoId("1"), "task");
         Todo todo = masterList.getTodos().get(0);
-        masterList.addDeferred("deferredTask");
+        masterList.addDeferred(new TodoId("2"), "deferredTask");
         Todo deferredTodo = masterList.getDeferredTodos().get(0);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
         User user = new User(uniqueIdentifier);
@@ -120,7 +120,7 @@ public class ListServiceTest {
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("someIdentifier"),
             new ArrayList<>());
-        completedList.add("some task");
+        completedList.add(null, "some task");
         CompletedTodo completedTodo = completedList.getTodos().get(0);
         when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedList));
         User user = new User(uniqueIdentifier);

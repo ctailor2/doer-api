@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
 import java.util.Date;
@@ -34,11 +35,13 @@ public class CompletedListRepositoryTest {
     private CompletedListDAO completedListDAO;
 
     private Clock mockClock;
+    private IdGenerator idGenerator;
 
     @Before
     public void setUp() throws Exception {
         mockClock = mock(Clock.class);
-        completedListRepository = new CompletedListRepository(mockClock, completedListDAO, userDAO);
+        idGenerator = mock(IdGenerator.class);
+        completedListRepository = new CompletedListRepository(mockClock, completedListDAO, userDAO, idGenerator);
         userRepository = new UserRepository(userDAO);
     }
 
@@ -47,7 +50,7 @@ public class CompletedListRepositoryTest {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         userRepository.add(new User(uniqueIdentifier));
         CompletedList completedList = new CompletedList(mockClock, uniqueIdentifier, singletonList(
-            new CompletedTodo("someUuid", "someTask", new Date())));
+            new CompletedTodo(new CompletedTodoId("someUuid"), "someTask", new Date())));
 
         completedListRepository.save(completedList);
 

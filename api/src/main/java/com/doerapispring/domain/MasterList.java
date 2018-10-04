@@ -26,14 +26,14 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void add(String task) throws ListSizeExceededException, DuplicateTodoException {
+    public void add(TodoId todoId, String task) throws ListSizeExceededException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
         if (getTodos().size() >= MAX_SIZE) {
             throw new ListSizeExceededException();
         }
-        Todo todo = new Todo(generateIdentifier(), task);
+        Todo todo = new Todo(todoId, task);
         todos.add(0, todo);
         demarcationIndex++;
     }
@@ -44,11 +44,11 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void addDeferred(String task) throws DuplicateTodoException {
+    public void addDeferred(TodoId todoId, String task) throws DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        Todo todo = new Todo(generateIdentifier(), task);
+        Todo todo = new Todo(todoId, task);
         todos.add(todo);
     }
 
@@ -78,10 +78,10 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
     }
 
     @Override
-    public void displace(String task) throws DuplicateTodoException, ListNotFullException {
+    public void displace(TodoId todoId, String task) throws DuplicateTodoException, ListNotFullException {
         if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
-        Todo todo = new Todo(generateIdentifier(), task);
+        Todo todo = new Todo(todoId, task);
         todos.add(0, todo);
     }
 
@@ -186,10 +186,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     private List<Todo> deferredTodos() {
         return todos.subList(demarcationIndex, todos.size());
-    }
-
-    private String generateIdentifier() {
-        return UUID.randomUUID().toString();
     }
 
     private Date beginningOfToday() {

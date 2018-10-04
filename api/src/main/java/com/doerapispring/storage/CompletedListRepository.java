@@ -2,6 +2,7 @@ package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
 import java.util.List;
@@ -10,15 +11,18 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-class CompletedListRepository implements ObjectRepository<CompletedList, String> {
+class CompletedListRepository implements
+    IdentityGeneratingObjectRepository<CompletedList, String> {
     private final Clock clock;
     private final CompletedListDAO completedListDAO;
     private final UserDAO userDAO;
+    private final IdGenerator idGenerator;
 
-    CompletedListRepository(Clock clock, CompletedListDAO completedListDAO, UserDAO userDAO) {
+    CompletedListRepository(Clock clock, CompletedListDAO completedListDAO, UserDAO userDAO, IdGenerator idGenerator) {
         this.clock = clock;
         this.completedListDAO = completedListDAO;
         this.userDAO = userDAO;
+        this.idGenerator = idGenerator;
     }
 
     @Override
@@ -27,12 +31,17 @@ class CompletedListRepository implements ObjectRepository<CompletedList, String>
         List<CompletedTodo> todos = completedListEntity.getCompletedTodoEntities().stream()
             .map(completedTodoEntity ->
                 new CompletedTodo(
-                    completedTodoEntity.uuid,
+                    new CompletedTodoId(completedTodoEntity.uuid),
                     completedTodoEntity.task,
                     completedTodoEntity.completedAt))
             .collect(toList());
         CompletedList completedList = new CompletedList(clock, uniqueIdentifier, todos);
         return Optional.of(completedList);
+    }
+
+    @Override
+    public UniqueIdentifier<String> nextIdentifier() {
+        return new UniqueIdentifier<>(idGenerator.generateId().toString());
     }
 
     @Override

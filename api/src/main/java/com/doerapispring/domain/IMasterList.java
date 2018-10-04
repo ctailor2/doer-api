@@ -3,11 +3,11 @@ package com.doerapispring.domain;
 import java.util.List;
 
 public interface IMasterList {
-    void add(String task) throws ListSizeExceededException, DuplicateTodoException;
+    void add(TodoId todoId, String task) throws ListSizeExceededException, DuplicateTodoException;
 
     List<Todo> getTodos();
 
-    void addDeferred(String task) throws DuplicateTodoException;
+    void addDeferred(TodoId todoId, String task) throws DuplicateTodoException;
 
     void unlock() throws LockTimerNotExpiredException;
 
@@ -15,7 +15,7 @@ public interface IMasterList {
 
     void delete(String localIdentifier) throws TodoNotFoundException;
 
-    void displace(String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
+    void displace(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException, ListNotFullException;
 
     void update(String localIdentifier, String task) throws TodoNotFoundException, DuplicateTodoException;
 
