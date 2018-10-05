@@ -1,7 +1,10 @@
 package com.doerapispring.domain;
 
 import java.time.Clock;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 import static java.util.Collections.emptyList;
 
@@ -121,24 +124,31 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     @Override
     public boolean isAbleToBeUnlocked() {
-        return isLocked() && mostRecentListUnlock()
-            .map(listUnlock -> listUnlock.before(beginningOfToday()))
-            .orElse(true);
+        Date now = Date.from(clock.instant());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone(clock.getZone()));
+        calendar.setTime(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date beginningOfToday = calendar.getTime();
+        return isLocked() && lastUnlockedAt.before(beginningOfToday);
     }
 
     @Override
     public boolean isLocked() {
-        return mostRecentListUnlock()
-            .map(listUnlock -> listUnlock.before(Date.from(clock.instant().minusSeconds(1800L))))
-            .orElse(true);
+        return lastUnlockedAt.before(Date.from(clock.instant().minusSeconds(1800L)));
     }
 
     @Override
     public Long unlockDuration() {
-        return mostRecentListUnlock()
-            .map(listUnlock -> listUnlock.toInstant().toEpochMilli() + UNLOCK_DURATION - clock.instant().toEpochMilli())
-            .filter(duration -> duration > 0L)
-            .orElse(0L);
+        long duration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION - clock.instant().toEpochMilli();
+        if (duration > 0) {
+            return duration;
+        } else {
+            return 0L;
+        }
     }
 
     @Override
@@ -181,22 +191,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
 
     private List<Todo> deferredTodos() {
         return todos.subList(demarcationIndex, todos.size());
-    }
-
-    private Date beginningOfToday() {
-        Date now = Date.from(clock.instant());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(TimeZone.getTimeZone(clock.getZone()));
-        calendar.setTime(now);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
-    }
-
-    private Optional<Date> mostRecentListUnlock() {
-        return Optional.ofNullable(lastUnlockedAt);
     }
 
     String getName() {
