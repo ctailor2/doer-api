@@ -1,39 +1,19 @@
 package com.doerapispring.domain;
 
 import java.time.Clock;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
-import static java.util.Collections.emptyList;
-
-public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
-    private static final String NAME = "now";
-    private static final String DEFERRED_NAME = "later";
-    private static final long UNLOCK_DURATION = 1800000L;
-    private static final int MAX_SIZE = 2;
-    private final List<Todo> todos;
-    private final Clock clock;
-    private final UniqueIdentifier<String> uniqueIdentifier;
-
-    private Integer demarcationIndex = 0;
-    private Date lastUnlockedAt;
-
+public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiable<String> {
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
-        this.clock = clock;
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.todos = todos;
-        this.lastUnlockedAt = lastUnlockedAt;
-        this.demarcationIndex = demarcationIndex;
+        super(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
     }
 
-    @Override
     public void add(TodoId todoId, String task) throws ListSizeExceededException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        if (getTodos().size() >= MAX_SIZE) {
+        if (isFull()) {
             throw new ListSizeExceededException();
         }
         Todo todo = new Todo(todoId, task);
@@ -41,12 +21,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         demarcationIndex++;
     }
 
-    @Override
-    public List<Todo> getTodos() {
-        return todos.subList(0, demarcationIndex);
-    }
-
-    @Override
     public void addDeferred(TodoId todoId, String task) throws DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
@@ -55,7 +29,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todos.add(todo);
     }
 
-    @Override
     public void unlock() throws LockTimerNotExpiredException {
         if (!isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
@@ -63,15 +36,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         lastUnlockedAt = Date.from(clock.instant());
     }
 
-    @Override
-    public List<Todo> getDeferredTodos() {
-        if (isLocked()) {
-            return emptyList();
-        }
-        return deferredTodos();
-    }
-
-    @Override
     public void delete(TodoId todoId) throws TodoNotFoundException {
         Todo todoToDelete = getByTodoId(todoId);
         if (todos.indexOf(todoToDelete) < demarcationIndex) {
@@ -80,7 +44,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todos.remove(todoToDelete);
     }
 
-    @Override
     public void displace(TodoId todoId, String task) throws DuplicateTodoException, ListNotFullException {
         if (!isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
@@ -88,7 +51,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todos.add(0, todo);
     }
 
-    @Override
     public void update(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
@@ -97,83 +59,31 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         todo.setTask(task);
     }
 
-    @Override
     public String complete(TodoId todoId) throws TodoNotFoundException {
         Todo todo = getByTodoId(todoId);
         delete(todoId);
         return todo.getTask();
     }
 
-    @Override
     public void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException {
         Todo todo = getByTodoId(todoId);
-        int index = todos.indexOf(todo);
         Todo targetTodo = getByTodoId(targetTodoId);
-        int targetIndex;
-        List<Todo> subList;
-        if (index < demarcationIndex) {
-            subList = getTodos();
-        } else {
-            subList = deferredTodos();
-        }
-        targetIndex = subList.indexOf(targetTodo);
+        int targetIndex = todos.indexOf(targetTodo);
 
-        subList.remove(todo);
-        subList.add(targetIndex, todo);
+        todos.remove(todo);
+        todos.add(targetIndex, todo);
     }
 
-    @Override
-    public boolean isAbleToBeUnlocked() {
-        Date now = Date.from(clock.instant());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(TimeZone.getTimeZone(clock.getZone()));
-        calendar.setTime(now);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        Date beginningOfToday = calendar.getTime();
-        return isLocked() && lastUnlockedAt.before(beginningOfToday);
-    }
-
-    @Override
-    public boolean isLocked() {
-        return lastUnlockedAt.before(Date.from(clock.instant().minusSeconds(1800L)));
-    }
-
-    @Override
-    public Long unlockDuration() {
-        long duration = lastUnlockedAt.toInstant().toEpochMilli() + UNLOCK_DURATION - clock.instant().toEpochMilli();
-        if (duration > 0) {
-            return duration;
-        } else {
-            return 0L;
-        }
-    }
-
-    @Override
     public Integer getDemarcationIndex() {
         return demarcationIndex;
     }
 
-    @Override
     public void pull() {
-        while (demarcationIndex < todos.size() && getTodos().size() < MAX_SIZE) {
+        while (demarcationIndex < todos.size() && !isFull()) {
             demarcationIndex++;
         }
     }
 
-    @Override
-    public boolean isFull() {
-        return getTodos().size() >= MAX_SIZE;
-    }
-
-    @Override
-    public boolean isAbleToBeReplenished() {
-        return !isFull() && deferredTodos().size() > 0;
-    }
-
-    @Override
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
     }
@@ -189,18 +99,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return todos.stream().anyMatch(todo -> todo.getTask().equals(task));
     }
 
-    private List<Todo> deferredTodos() {
-        return todos.subList(demarcationIndex, todos.size());
-    }
-
-    String getName() {
-        return NAME;
-    }
-
-    String getDeferredName() {
-        return DEFERRED_NAME;
-    }
-
     public List<Todo> getAllTodos() {
         return todos;
     }
@@ -209,7 +107,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return lastUnlockedAt;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -224,7 +121,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return lastUnlockedAt != null ? lastUnlockedAt.equals(that.lastUnlockedAt) : that.lastUnlockedAt == null;
     }
 
-    @Override
     public int hashCode() {
         int result = todos != null ? todos.hashCode() : 0;
         result = 31 * result + (clock != null ? clock.hashCode() : 0);
@@ -234,7 +130,6 @@ public class MasterList implements IMasterList, UniquelyIdentifiable<String> {
         return result;
     }
 
-    @Override
     public String toString() {
         return "MasterList{" +
             "todos=" + todos +

@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "users")
 @EqualsAndHashCode
 @ToString
-class MasterListEntity implements Serializable {
+public class MasterListEntity implements Serializable {
     @Id
     @Column(name = "id")
     public Long id;

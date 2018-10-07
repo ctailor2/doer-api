@@ -22,9 +22,8 @@ import static org.mockito.Mockito.when;
 public class MasterListTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private IMasterList masterList;
+    private MasterList masterList;
     private Clock mockClock;
-    private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
     public void setUp() throws Exception {
@@ -33,7 +32,7 @@ public class MasterListTest {
         when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
-        uniqueIdentifier = new UniqueIdentifier<>("something");
+        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("something");
         masterList = new MasterList(
             mockClock,
             uniqueIdentifier,
@@ -338,11 +337,11 @@ public class MasterListTest {
     public void unlock_whenListIsAbleToBeUnlocked_unlocksTheList() throws Exception {
         when(mockClock.instant()).thenReturn(Instant.now());
 
-        assertThat(masterList.isLocked()).isTrue();
+        assertThat(masterList.isAbleToBeUnlocked()).isTrue();
 
         masterList.unlock();
 
-        assertThat(masterList.isLocked()).isFalse();
+        assertThat(masterList.isAbleToBeUnlocked()).isFalse();
     }
 
     @Test
@@ -352,31 +351,6 @@ public class MasterListTest {
 
         exception.expect(LockTimerNotExpiredException.class);
         masterList.unlock();
-    }
-
-    @Test
-    public void isLocked_returnsTrueByDefault() throws Exception {
-        assertThat(masterList.isLocked()).isTrue();
-    }
-
-    @Test
-    public void isLocked_whenItHasBeenMoreThan30MinutesSinceLastUnlock_returnsTrue() throws Exception {
-        Instant unlockInstant = Instant.now();
-        when(mockClock.instant()).thenReturn(unlockInstant);
-        masterList.unlock();
-
-        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1801L));
-        assertThat(masterList.isLocked()).isTrue();
-    }
-
-    @Test
-    public void isLocked_whenItHasBeen30MinutesOrLessSinceLastUnlock_returnsFalse() throws Exception {
-        Instant unlockInstant = Instant.now();
-        when(mockClock.instant()).thenReturn(unlockInstant);
-        masterList.unlock();
-
-        when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1800L));
-        assertThat(masterList.isLocked()).isFalse();
     }
 
     @Test

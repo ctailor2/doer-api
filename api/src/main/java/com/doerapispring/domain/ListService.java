@@ -30,6 +30,9 @@ public class ListService implements ListApplicationService {
     }
 
     public MasterListDTO get(User user) throws InvalidRequestException {
+//        TODO: This should probably just return a MasterList read model that is different from the write model
+//        which already exposes the query methods like isFull, isAbleToBeUnlocked, isAbleToBeReplenished
+//        along with it's state
         MasterList masterList = masterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
         return new MasterListDTO(

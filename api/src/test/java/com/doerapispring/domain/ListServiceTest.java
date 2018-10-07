@@ -33,7 +33,6 @@ public class ListServiceTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private MasterList masterList;
-    private CompletedList completedList;
     private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
@@ -41,7 +40,6 @@ public class ListServiceTest {
         listService = new ListService(mockMasterListRepository, mockCompletedListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
-        completedList = mock(CompletedList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
     }
 

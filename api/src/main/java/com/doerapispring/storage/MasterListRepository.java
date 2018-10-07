@@ -41,11 +41,6 @@ class MasterListRepository implements
     }
 
     @Override
-    public UniqueIdentifier<String> nextIdentifier() {
-        return new UniqueIdentifier<>(idGenerator.generateId().toString());
-    }
-
-    @Override
     public void save(MasterList masterList) throws AbnormalModelException {
         UserEntity userEntity = userDAO.findByEmail(masterList.getIdentifier().get());
         if (userEntity == null) throw new AbnormalModelException();
@@ -65,5 +60,10 @@ class MasterListRepository implements
         }
         masterListEntity.lastUnlockedAt = masterList.getLastUnlockedAt();
         masterListDao.save(masterListEntity);
+    }
+
+    @Override
+    public UniqueIdentifier<String> nextIdentifier() {
+        return new UniqueIdentifier<>(idGenerator.generateId().toString());
     }
 }
