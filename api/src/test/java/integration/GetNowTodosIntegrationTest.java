@@ -1,12 +1,7 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
-import com.doerapispring.web.MasterListDTO;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
-import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +53,8 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that");
-        MasterListDTO masterList = listService.get(user);
-        TodoDTO firstTodo = masterList.getTodos().get(0);
+        ReadOnlyMasterList masterList = listService.get(user);
+        Todo firstTodo = masterList.getTodos().get(0);
 
         doGet();
 
@@ -69,10 +64,10 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
         assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("this and that")));
         assertThat(responseContent, hasJsonPath("$.list.todos[0]._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getIdentifier())));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getIdentifier() + "/complete")));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getIdentifier() + "/move/" + firstTodo.getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.delete.href", containsString("v1/todos/" + firstTodo.getTodoId().getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.update.href", containsString("v1/todos/" + firstTodo.getTodoId().getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.complete.href", containsString("v1/todos/" + firstTodo.getTodoId().getIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0]._links.move.href", containsString("v1/todos/" + firstTodo.getTodoId().getIdentifier() + "/move/" + firstTodo.getTodoId().getIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
     }

@@ -1,10 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
-import com.doerapispring.web.MasterListDTO;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -57,7 +53,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        MasterListDTO newMasterList = listService.get(user);
+        ReadOnlyMasterList newMasterList = listService.get(user);
 
         Assertions.assertThat(newMasterList.getTodos()).extracting("task")
             .containsExactly("will get pulled", "will also get pulled");

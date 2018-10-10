@@ -2,11 +2,14 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ReadOnlyMasterList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import static java.util.stream.Collectors.toList;
 
 @RestController
 @CrossOrigin
@@ -40,7 +43,22 @@ class ListsController {
     @ResponseBody
     ResponseEntity<MasterListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            MasterListDTO masterListDTO = listApplicationService.get(authenticatedUser.getUser());
+            ReadOnlyMasterList readOnlyMasterList = listApplicationService.get(authenticatedUser.getUser());
+            MasterListDTO masterListDTO = new MasterListDTO(
+                readOnlyMasterList.getName(),
+                readOnlyMasterList.getDeferredName(),
+                readOnlyMasterList.getTodos().stream()
+                    .map(todo -> new TodoDTO(
+                        todo.getTodoId().getIdentifier(),
+                        todo.getTask())).collect(toList()),
+                readOnlyMasterList.getDeferredTodos().stream()
+                    .map(todo -> new TodoDTO(
+                        todo.getTodoId().getIdentifier(),
+                        todo.getTask())).collect(toList()),
+                readOnlyMasterList.unlockDuration(),
+                readOnlyMasterList.isFull(),
+                readOnlyMasterList.isAbleToBeUnlocked(),
+                readOnlyMasterList.isAbleToBeReplenished());
             masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
             if (masterListDTO.isAbleToBeUnlocked()) {
                 masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));

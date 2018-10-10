@@ -1,11 +1,7 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
-import com.doerapispring.web.TodoDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +48,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
                 .headers(httpHeaders))
                 .andReturn();
 
-        List<TodoDTO> todos = listService.get(new User(new UniqueIdentifier<>("test@email.com"))).getTodos();
+        List<Todo> todos = listService.get(new User(new UniqueIdentifier<>("test@email.com"))).getTodos();
 
         assertThat(todos.size(), equalTo(1));
 
@@ -73,7 +69,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        List<TodoDTO> todos = listService.get(user).getDeferredTodos();
+        List<Todo> todos = listService.get(user).getDeferredTodos();
 
         assertThat(todos.size(), equalTo(1));
 

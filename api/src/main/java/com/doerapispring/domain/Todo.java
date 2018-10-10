@@ -1,6 +1,8 @@
 package com.doerapispring.domain;
 
-public class Todo {
+import org.springframework.hateoas.ResourceSupport;
+
+public class Todo extends ResourceSupport {
     private TodoId todoId;
     private String task;
 

@@ -1,6 +1,8 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.*;
+import com.doerapispring.web.CompletedListDTO;
+import com.doerapispring.web.CompletedTodoDTO;
+import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,11 +13,14 @@ import static java.util.stream.Collectors.toList;
 public class ListService implements ListApplicationService {
     private final ObjectRepository<MasterList, String> masterListRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
+    private final ObjectRepository<ReadOnlyMasterList, String> readOnlyMasterListRepository;
 
     ListService(ObjectRepository<MasterList, String> masterListRepository,
-                ObjectRepository<CompletedList, String> completedListRepository) {
+                ObjectRepository<CompletedList, String> completedListRepository,
+                ObjectRepository<ReadOnlyMasterList, String> readOnlyMasterListRepository) {
         this.masterListRepository = masterListRepository;
         this.completedListRepository = completedListRepository;
+        this.readOnlyMasterListRepository = readOnlyMasterListRepository;
     }
 
     public void unlock(User user) throws InvalidRequestException {
@@ -29,21 +34,9 @@ public class ListService implements ListApplicationService {
         }
     }
 
-    public MasterListDTO get(User user) throws InvalidRequestException {
-//        TODO: This should probably just return a MasterList read model that is different from the write model
-//        which already exposes the query methods like isFull, isAbleToBeUnlocked, isAbleToBeReplenished
-//        along with it's state
-        MasterList masterList = masterListRepository.find(user.getIdentifier())
+    public ReadOnlyMasterList get(User user) throws InvalidRequestException {
+        return readOnlyMasterListRepository.find(user.getIdentifier())
             .orElseThrow(InvalidRequestException::new);
-        return new MasterListDTO(
-            masterList.getName(),
-            masterList.getDeferredName(),
-            masterList.getTodos().stream().map(todo -> new TodoDTO(todo.getTodoId().getIdentifier(), todo.getTask())).collect(toList()),
-            masterList.getDeferredTodos().stream().map(todo -> new TodoDTO(todo.getTodoId().getIdentifier(), todo.getTask())).collect(toList()),
-            masterList.unlockDuration(),
-            masterList.isFull(),
-            masterList.isAbleToBeUnlocked(),
-            masterList.isAbleToBeReplenished());
     }
 
     public CompletedListDTO getCompleted(User user) throws InvalidRequestException {

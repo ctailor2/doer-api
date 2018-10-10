@@ -1,6 +1,8 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.*;
+import com.doerapispring.web.CompletedListDTO;
+import com.doerapispring.web.CompletedTodoDTO;
+import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +18,6 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -30,6 +31,9 @@ public class ListServiceTest {
     @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
 
+    @Mock
+    private ObjectRepository<ReadOnlyMasterList, String> mockReadOnlyMasterListRepository;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private MasterList masterList;
@@ -37,7 +41,7 @@ public class ListServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockMasterListRepository, mockCompletedListRepository);
+        listService = new ListService(mockMasterListRepository, mockCompletedListRepository, mockReadOnlyMasterListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
@@ -77,38 +81,24 @@ public class ListServiceTest {
 
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
-        MasterList masterList = new MasterList(
+        ReadOnlyMasterList readOnlyMasterList = new ReadOnlyMasterList(
             Clock.systemDefaultZone(),
             new UniqueIdentifier<>("someIdentifier"),
             Date.from(Instant.now().minusMillis(1798766)),
             new ArrayList<>(),
             0
         );
-        TodoId todoId = new TodoId("1");
-        String task = "task";
-        masterList.add(todoId, task);
-        TodoId deferredTodoId = new TodoId("2");
-        String deferredTask = "deferredTask";
-        masterList.addDeferred(deferredTodoId, deferredTask);
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
+        when(mockReadOnlyMasterListRepository.find(any())).thenReturn(Optional.of(readOnlyMasterList));
         User user = new User(uniqueIdentifier);
 
-        MasterListDTO masterListDTO = listService.get(user);
+        ReadOnlyMasterList actual = listService.get(user);
 
-        assertThat(masterListDTO).isNotNull();
-        assertThat(masterListDTO.getTodos()).contains(new TodoDTO(todoId.getIdentifier(), task));
-        assertThat(masterListDTO.getDeferredTodos()).contains(new TodoDTO(deferredTodoId.getIdentifier(), deferredTask));
-        assertThat(masterListDTO.getName()).isEqualTo("now");
-        assertThat(masterListDTO.getDeferredName()).isEqualTo("later");
-        assertThat(masterListDTO.getUnlockDuration()).isCloseTo(1234L, within(100L));
-        assertThat(masterListDTO.isFull()).isFalse();
-        assertThat(masterListDTO.isAbleToBeUnlocked()).isFalse();
-        assertThat(masterListDTO.isAbleToBeReplenished()).isTrue();
+        assertThat(actual).isEqualTo(readOnlyMasterList);
     }
 
     @Test
     public void get_whenMasterListNotFound_refusesOperation() throws Exception {
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockReadOnlyMasterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.get(new User(uniqueIdentifier));

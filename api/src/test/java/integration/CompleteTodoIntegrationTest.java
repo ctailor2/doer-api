@@ -1,10 +1,10 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
-import com.doerapispring.web.*;
+import com.doerapispring.domain.*;
+import com.doerapispring.web.CompletedListDTO;
+import com.doerapispring.web.CompletedTodoDTO;
+import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,18 +48,18 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        MasterListDTO masterList = listService.get(user);
-        TodoDTO todo1 = masterList.getTodos().get(0);
-        TodoDTO todo2 = masterList.getTodos().get(1);
+        ReadOnlyMasterList masterList = listService.get(user);
+        Todo todo1 = masterList.getTodos().get(0);
+        Todo todo2 = masterList.getTodos().get(1);
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getIdentifier() + "/complete")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getTodoId().getIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
-        mockMvc.perform(post("/v1/todos/" + todo2.getIdentifier() + "/complete")
+        mockMvc.perform(post("/v1/todos/" + todo2.getTodoId().getIdentifier() + "/complete")
             .headers(httpHeaders))
             .andReturn();
 
-        MasterListDTO newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        ReadOnlyMasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
         CompletedListDTO newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
@@ -70,7 +70,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo1.getIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo1.getTodoId().getIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
     }
 }
