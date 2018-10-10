@@ -1,8 +1,6 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.web.CompletedListDTO;
-import com.doerapispring.web.CompletedTodoDTO;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -60,10 +58,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .andReturn();
 
         ReadOnlyMasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
-        CompletedListDTO newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
+        ReadOnlyCompletedList newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
         assertThat(newMasterList.getTodos(), hasSize(0));
-        List<CompletedTodoDTO> completedTodos = newCompletedList.getTodos();
+        List<CompletedTodo> completedTodos = newCompletedList.getTodos();
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));

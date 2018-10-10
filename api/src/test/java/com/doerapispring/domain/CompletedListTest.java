@@ -22,7 +22,7 @@ public class CompletedListTest {
 
         completedList.add(new CompletedTodoId("someId"), "someTask");
 
-        List<CompletedTodo> completedListTodos = completedList.getTodos();
+        List<CompletedTodo> completedListTodos = completedList.read().getTodos();
         assertThat(completedListTodos).containsExactly(
             new CompletedTodo(new CompletedTodoId("someId"), "someTask", Date.from(now)));
     }

@@ -1,7 +1,7 @@
 package com.doerapispring.domain;
 
-import java.sql.Date;
 import java.time.Clock;
+import java.util.Date;
 import java.util.List;
 
 public class CompletedList implements UniquelyIdentifiable<String> {
@@ -15,17 +15,21 @@ public class CompletedList implements UniquelyIdentifiable<String> {
         this.todos = todos;
     }
 
-    public List<CompletedTodo> getTodos() {
-        return todos;
-    }
-
     public void add(CompletedTodoId completedTodoId, String task) {
         todos.add(new CompletedTodo(completedTodoId, task, Date.from(clock.instant())));
+    }
+
+    public List<CompletedTodo> getAllTodos() {
+        return todos;
     }
 
     @Override
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
+    }
+
+    ReadOnlyCompletedList read() {
+        return new ReadOnlyCompletedList(todos);
     }
 
     @Override

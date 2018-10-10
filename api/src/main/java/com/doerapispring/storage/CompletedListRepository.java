@@ -49,7 +49,7 @@ class CompletedListRepository implements
         String email = completedList.getIdentifier().get();
         UserEntity userEntity = userDAO.findByEmail(email);
 
-        List<CompletedTodoEntity> completedTodoEntities = completedList.getTodos().stream()
+        List<CompletedTodoEntity> completedTodoEntities = completedList.getAllTodos().stream()
             .map(completedTodo -> CompletedTodoEntity.builder()
                 .uuid(completedTodo.getCompletedTodoId().getIdentifier())
                 .task(completedTodo.getTask())

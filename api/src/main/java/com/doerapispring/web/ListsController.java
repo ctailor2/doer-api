@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ReadOnlyCompletedList;
 import com.doerapispring.domain.ReadOnlyMasterList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -103,7 +104,11 @@ class ListsController {
     @ResponseBody
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            CompletedListDTO completedListDTO = listApplicationService.getCompleted(authenticatedUser.getUser());
+            ReadOnlyCompletedList readOnlyCompletedList = listApplicationService.getCompleted(authenticatedUser.getUser());
+            CompletedListDTO completedListDTO = new CompletedListDTO(
+                readOnlyCompletedList.getTodos().stream()
+                    .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+                    .collect(toList()));
             CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
             completedListResponse.add(hateoasLinkGenerator.completedListLink().withSelfRel());
             return ResponseEntity.ok(completedListResponse);

@@ -1,7 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.CompletedListDTO;
-import com.doerapispring.web.CompletedTodoDTO;
 import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -11,8 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,19 +96,15 @@ public class ListServiceTest {
 
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
-        CompletedList completedList = new CompletedList(
-            Clock.systemDefaultZone(),
-            new UniqueIdentifier<>("someIdentifier"),
-            new ArrayList<>());
-        completedList.add(null, "some task");
-        CompletedTodo completedTodo = completedList.getTodos().get(0);
-        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(completedList));
+        CompletedList mockCompletedList = mock(CompletedList.class);
+        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(mockCompletedList));
+        ReadOnlyCompletedList mockReadOnlyCompletedList = mock(ReadOnlyCompletedList.class);
+        when(mockCompletedList.read()).thenReturn(mockReadOnlyCompletedList);
         User user = new User(uniqueIdentifier);
 
-        CompletedListDTO completedListDTO = listService.getCompleted(user);
+        ReadOnlyCompletedList readOnlyCompletedList = listService.getCompleted(user);
 
-        assertThat(completedListDTO.getTodos()).contains(
-            new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()));
+        assertThat(readOnlyCompletedList).isEqualTo(mockReadOnlyCompletedList);
     }
 
     @Test

@@ -1,13 +1,7 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.CompletedListDTO;
-import com.doerapispring.web.CompletedTodoDTO;
 import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 public class ListService implements ListApplicationService {
@@ -37,12 +31,9 @@ public class ListService implements ListApplicationService {
             .orElseThrow(InvalidRequestException::new);
     }
 
-    public CompletedListDTO getCompleted(User user) throws InvalidRequestException {
-        CompletedList completedList = completedListRepository.find(user.getIdentifier())
+    public ReadOnlyCompletedList getCompleted(User user) throws InvalidRequestException {
+        return completedListRepository.find(user.getIdentifier())
+            .map(CompletedList::read)
             .orElseThrow(InvalidRequestException::new);
-        List<CompletedTodoDTO> completedTodoDTOs = completedList.getTodos().stream()
-            .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
-            .collect(toList());
-        return new CompletedListDTO(completedTodoDTOs);
     }
 }

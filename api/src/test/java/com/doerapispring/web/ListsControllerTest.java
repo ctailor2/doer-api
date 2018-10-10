@@ -2,10 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.ListApplicationService;
-import com.doerapispring.domain.ReadOnlyMasterList;
-import com.doerapispring.domain.Todo;
-import com.doerapispring.domain.TodoId;
+import com.doerapispring.domain.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -16,11 +13,12 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -37,6 +35,7 @@ public class ListsControllerTest {
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
     private ReadOnlyMasterList readOnlyMasterList;
+    private ReadOnlyCompletedList readOnlyCompletedList;
 
     @Before
     public void setUp() throws Exception {
@@ -52,6 +51,8 @@ public class ListsControllerTest {
 
         readOnlyMasterList = mock(ReadOnlyMasterList.class);
         when(listApplicationService.get(any())).thenReturn(readOnlyMasterList);
+        readOnlyCompletedList = mock(ReadOnlyCompletedList.class);
+        when(listApplicationService.getCompleted(any())).thenReturn(readOnlyCompletedList);
     }
 
     @Test
@@ -251,9 +252,6 @@ public class ListsControllerTest {
 
     @Test
     public void showCompleted_mapping() throws Exception {
-        CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
-        when(listApplicationService.getCompleted(any())).thenReturn(completedListDTO);
-
         mockMvc.perform(get("/v1/completedList"))
             .andExpect(status().isOk());
 
@@ -261,13 +259,25 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void showCompleted_returnsList_includesLinksByDefault() throws Exception {
-        CompletedListDTO completedListDTO = new CompletedListDTO(emptyList());
-        when(listApplicationService.getCompleted(any())).thenReturn(completedListDTO);
+    public void showCompleted_returnsList() {
+        String task = "someTask";
+        Date completedAt = Date.from(Instant.now());
+        when(readOnlyCompletedList.getTodos())
+            .thenReturn(singletonList(new CompletedTodo(new CompletedTodoId("someId"), task, completedAt)));
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
 
-        assertThat(responseEntity.getBody().getCompletedListDTO()).isEqualTo(completedListDTO);
+        assertThat(responseEntity.getBody().getCompletedListDTO()).isNotNull();
+        assertThat(responseEntity.getBody().getCompletedListDTO().getTodos()).hasSize(1);
+        assertThat(responseEntity.getBody().getCompletedListDTO().getTodos().get(0).getTask()).isEqualTo(task);
+        assertThat(responseEntity.getBody().getCompletedListDTO().getTodos().get(0).getCompletedAt()).isEqualTo(completedAt);
+        assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/completedList").withSelfRel());
+    }
+
+    @Test
+    public void showCompleted_includesLinksByDefault() throws Exception {
+        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
+
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/completedList").withSelfRel());
     }
 

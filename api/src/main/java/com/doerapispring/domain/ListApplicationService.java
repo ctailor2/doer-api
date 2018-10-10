@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.CompletedListDTO;
 import com.doerapispring.web.InvalidRequestException;
 
 public interface ListApplicationService {
@@ -8,5 +7,5 @@ public interface ListApplicationService {
 
     ReadOnlyMasterList get(User user) throws InvalidRequestException;
 
-    CompletedListDTO getCompleted(User user) throws InvalidRequestException;
+    ReadOnlyCompletedList getCompleted(User user) throws InvalidRequestException;
 }
