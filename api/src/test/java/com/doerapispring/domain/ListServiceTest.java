@@ -12,9 +12,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +39,7 @@ public class ListServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockMasterListRepository, mockCompletedListRepository, mockReadOnlyMasterListRepository);
+        listService = new ListService(mockMasterListRepository, mockCompletedListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         masterList = mock(MasterList.class);
         when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
@@ -81,24 +79,20 @@ public class ListServiceTest {
 
     @Test
     public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
-        ReadOnlyMasterList readOnlyMasterList = new ReadOnlyMasterList(
-            Clock.systemDefaultZone(),
-            new UniqueIdentifier<>("someIdentifier"),
-            Date.from(Instant.now().minusMillis(1798766)),
-            new ArrayList<>(),
-            0
-        );
-        when(mockReadOnlyMasterListRepository.find(any())).thenReturn(Optional.of(readOnlyMasterList));
+        MasterList mockMasterList = mock(MasterList.class);
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
+        ReadOnlyMasterList mockReadOnlyMasterList = mock(ReadOnlyMasterList.class);
+        when(mockMasterList.read()).thenReturn(mockReadOnlyMasterList);
         User user = new User(uniqueIdentifier);
 
         ReadOnlyMasterList actual = listService.get(user);
 
-        assertThat(actual).isEqualTo(readOnlyMasterList);
+        assertThat(actual).isEqualTo(mockReadOnlyMasterList);
     }
 
     @Test
     public void get_whenMasterListNotFound_refusesOperation() throws Exception {
-        when(mockReadOnlyMasterListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.get(new User(uniqueIdentifier));

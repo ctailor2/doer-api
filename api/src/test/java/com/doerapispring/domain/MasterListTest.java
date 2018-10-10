@@ -45,7 +45,7 @@ public class MasterListTest {
     public void add_addsToNowList() throws Exception {
         masterList.add(new TodoId("someId"), "someTask");
 
-        assertThat(masterList.getTodos()).containsExactly(new Todo(new TodoId("someId"), "someTask"));
+        assertThat(masterList.read().getTodos()).containsExactly(new Todo(new TodoId("someId"), "someTask"));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class MasterListTest {
         masterList.add(new TodoId("someId"), "someTask");
         masterList.add(new TodoId("someId"), "someOtherTask");
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .containsExactly("someOtherTask", "someTask");
     }
 
@@ -79,7 +79,7 @@ public class MasterListTest {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).containsExactly(new Todo(new TodoId("someId"), "someTask"));
+        assertThat(masterList.read().getDeferredTodos()).containsExactly(new Todo(new TodoId("someId"), "someTask"));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class MasterListTest {
         masterList.addDeferred(new TodoId("someId"), "someOtherTask");
 
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).extracting("task")
+        assertThat(masterList.read().getDeferredTodos()).extracting("task")
             .containsExactly("someTask", "someOtherTask");
     }
 
@@ -107,7 +107,7 @@ public class MasterListTest {
 
         masterList.delete(todoId);
 
-        assertThat(masterList.getTodos()).isEmpty();
+        assertThat(masterList.read().getTodos()).isEmpty();
     }
 
     @Test
@@ -118,7 +118,7 @@ public class MasterListTest {
 
         masterList.delete(todoId);
 
-        assertThat(masterList.getDeferredTodos()).isEmpty();
+        assertThat(masterList.read().getDeferredTodos()).isEmpty();
     }
 
     @Test
@@ -149,11 +149,11 @@ public class MasterListTest {
 
         masterList.displace(new TodoId("3"), "displace it");
 
-        assertThat(masterList.getTodos()).containsExactly(
+        assertThat(masterList.read().getTodos()).containsExactly(
             new Todo(new TodoId("3"), "displace it"),
             new Todo(new TodoId("2"), "someOtherNowTask"));
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).containsExactly(
+        assertThat(masterList.read().getDeferredTodos()).containsExactly(
             new Todo(new TodoId("1"), "someNowTask"));
     }
 
@@ -165,11 +165,11 @@ public class MasterListTest {
 
         masterList.displace(new TodoId("4"), "displace it");
 
-        assertThat(masterList.getTodos()).containsExactly(
+        assertThat(masterList.read().getTodos()).containsExactly(
             new Todo(new TodoId("4"), "displace it"),
             new Todo(new TodoId("2"), "someOtherNowTask"));
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).containsExactly(
+        assertThat(masterList.read().getDeferredTodos()).containsExactly(
             new Todo(new TodoId("1"), "someNowTask"),
             new Todo(new TodoId("3"), "someLaterTask"));
     }
@@ -181,7 +181,7 @@ public class MasterListTest {
 
         masterList.update(todoId, "someOtherTask");
 
-        Todo todo = masterList.getTodos().get(0);
+        Todo todo = masterList.read().getTodos().get(0);
         assertThat(todo.getTask()).isEqualTo("someOtherTask");
     }
 
@@ -207,7 +207,7 @@ public class MasterListTest {
 
         String completedTask = masterList.complete(todoId);
 
-        assertThat(masterList.getTodos()).isEmpty();
+        assertThat(masterList.read().getTodos()).isEmpty();
         assertThat(completedTask).isEqualTo("someTask");
     }
 
@@ -241,7 +241,7 @@ public class MasterListTest {
 
         masterList.move(new TodoId("0"), new TodoId("2"));
 
-        assertThat(masterList.getDeferredTodos()).extracting("task").containsExactly(
+        assertThat(masterList.read().getDeferredTodos()).extracting("task").containsExactly(
             "anotherTask",
             "yetAnotherTask",
             "someTask",
@@ -266,7 +266,7 @@ public class MasterListTest {
 
         masterList.move(new TodoId("3"), new TodoId("1"));
 
-        assertThat(masterList.getDeferredTodos()).extracting("task").containsExactly(
+        assertThat(masterList.read().getDeferredTodos()).extracting("task").containsExactly(
             "someTask",
             "evenYetAnotherTask",
             "anotherTask",
@@ -289,12 +289,12 @@ public class MasterListTest {
 
         masterList.move(new TodoId("0"), new TodoId("0"));
 
-        assertThat(masterList.getDeferredTodos()).extracting("task").isEqualTo(tasks);
+        assertThat(masterList.read().getDeferredTodos()).extracting("task").isEqualTo(tasks);
     }
 
     @Test
     public void isAbleToBeUnlocked_whenThereAreNoListUnlocks_returnsTrue() throws Exception {
-        Boolean ableToBeUnlocked = masterList.isAbleToBeUnlocked();
+        Boolean ableToBeUnlocked = masterList.read().isAbleToBeUnlocked();
 
         assertThat(ableToBeUnlocked).isTrue();
     }
@@ -305,7 +305,7 @@ public class MasterListTest {
         masterList.unlock();
 
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618623999999L)); // Tuesday, August 8, 1989 11:59:59 PM
-        Boolean ableToBeUnlocked = masterList.isAbleToBeUnlocked();
+        Boolean ableToBeUnlocked = masterList.read().isAbleToBeUnlocked();
 
         assertThat(ableToBeUnlocked).isFalse();
     }
@@ -316,7 +316,7 @@ public class MasterListTest {
         masterList.unlock();
 
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618537600000L)); // Tuesday, August 8, 1989 12:00:00 AM
-        Boolean ableToBeReplenished = masterList.isAbleToBeUnlocked();
+        Boolean ableToBeReplenished = masterList.read().isAbleToBeUnlocked();
 
         assertThat(ableToBeReplenished).isTrue();
     }
@@ -328,7 +328,7 @@ public class MasterListTest {
 
         Instant currentInstant = Instant.ofEpochMilli(618537900000L); // Tuesday, August 8, 1989 12:05:00 AM
         when(mockClock.instant()).thenReturn(currentInstant);
-        Boolean ableToBeReplenished = masterList.isAbleToBeUnlocked();
+        Boolean ableToBeReplenished = masterList.read().isAbleToBeUnlocked();
 
         assertThat(ableToBeReplenished).isFalse();
     }
@@ -337,11 +337,11 @@ public class MasterListTest {
     public void unlock_whenListIsAbleToBeUnlocked_unlocksTheList() throws Exception {
         when(mockClock.instant()).thenReturn(Instant.now());
 
-        assertThat(masterList.isAbleToBeUnlocked()).isTrue();
+        assertThat(masterList.read().isAbleToBeUnlocked()).isTrue();
 
         masterList.unlock();
 
-        assertThat(masterList.isAbleToBeUnlocked()).isFalse();
+        assertThat(masterList.read().isAbleToBeUnlocked()).isFalse();
     }
 
     @Test
@@ -355,7 +355,7 @@ public class MasterListTest {
 
     @Test
     public void unlockDuration_whenListHasNeverBeenUnlocked_returns0() {
-        assertThat(masterList.unlockDuration()).isEqualTo(0L);
+        assertThat(masterList.read().unlockDuration()).isEqualTo(0L);
     }
 
     @Test
@@ -364,7 +364,7 @@ public class MasterListTest {
         masterList.unlock();
 
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L).plus(Period.ofDays(1)));
-        assertThat(masterList.unlockDuration()).isEqualTo(1700000L);
+        assertThat(masterList.read().unlockDuration()).isEqualTo(1700000L);
     }
 
     @Test
@@ -373,7 +373,7 @@ public class MasterListTest {
         masterList.unlock();
 
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(5000000L).plus(Period.ofDays(1)));
-        assertThat(masterList.unlockDuration()).isEqualTo(0L);
+        assertThat(masterList.read().unlockDuration()).isEqualTo(0L);
     }
 
     @Test
@@ -383,7 +383,7 @@ public class MasterListTest {
 
         masterList.pull();
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .containsExactly("firstLater", "secondLater");
     }
 
@@ -393,7 +393,7 @@ public class MasterListTest {
 
         masterList.pull();
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .containsExactly("firstLater");
     }
 
@@ -406,7 +406,7 @@ public class MasterListTest {
 
         masterList.pull();
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .containsExactly("firstNow", "firstLater");
     }
 
@@ -418,7 +418,7 @@ public class MasterListTest {
 
         masterList.pull();
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .containsExactly("someOtherTask", "someTask");
     }
 
@@ -426,14 +426,14 @@ public class MasterListTest {
     public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() throws Exception {
         masterList.pull();
 
-        assertThat(masterList.getTodos()).isEmpty();
+        assertThat(masterList.read().getTodos()).isEmpty();
     }
 
     @Test
     public void getTodos_getsTodosFromImmediateList() throws Exception {
         masterList.add(new TodoId("someId"), "someTask");
 
-        assertThat(masterList.getTodos()).extracting("task")
+        assertThat(masterList.read().getTodos()).extracting("task")
             .contains("someTask");
     }
 
@@ -441,7 +441,7 @@ public class MasterListTest {
     public void getTodos_doesNotGetTodosFromPostponedList() throws Exception {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
-        assertThat(masterList.getTodos()).isEmpty();
+        assertThat(masterList.read().getTodos()).isEmpty();
     }
 
     @Test
@@ -449,7 +449,7 @@ public class MasterListTest {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).extracting("task")
+        assertThat(masterList.read().getDeferredTodos()).extracting("task")
             .contains("someTask");
     }
 
@@ -458,14 +458,14 @@ public class MasterListTest {
         masterList.add(new TodoId("someId"), "someTask");
 
         masterList.unlock();
-        assertThat(masterList.getDeferredTodos()).isEmpty();
+        assertThat(masterList.read().getDeferredTodos()).isEmpty();
     }
 
     @Test
     public void getDeferredTodos_whenListIsLocked_returnEmptyList() throws Exception {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
-        List<Todo> deferredTodos = masterList.getDeferredTodos();
+        List<Todo> deferredTodos = masterList.read().getDeferredTodos();
 
         assertThat(deferredTodos).isEmpty();
     }
@@ -479,7 +479,7 @@ public class MasterListTest {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
         when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1799L));
-        assertThat(masterList.getDeferredTodos()).extracting("task")
+        assertThat(masterList.read().getDeferredTodos()).extracting("task")
             .contains("someTask");
     }
 
@@ -488,19 +488,19 @@ public class MasterListTest {
         masterList.add(new TodoId("someId"), "todo1");
         masterList.add(new TodoId("someId"), "todo2");
 
-        assertThat(masterList.isFull()).isTrue();
+        assertThat(masterList.read().isFull()).isTrue();
     }
 
     @Test
     public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() throws Exception {
-        assertThat(masterList.isFull()).isEqualTo(false);
+        assertThat(masterList.read().isFull()).isEqualTo(false);
     }
 
     @Test
     public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsNotFull_returnsTrue() throws Exception {
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
-        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+        boolean hasDeferredTodosAvailable = masterList.read().isAbleToBeReplenished();
 
         assertThat(hasDeferredTodosAvailable).isTrue();
     }
@@ -511,7 +511,7 @@ public class MasterListTest {
         masterList.add(new TodoId("someId"), "todo2");
         masterList.addDeferred(new TodoId("someId"), "someTask");
 
-        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+        boolean hasDeferredTodosAvailable = masterList.read().isAbleToBeReplenished();
 
         assertThat(hasDeferredTodosAvailable).isFalse();
     }
@@ -520,7 +520,7 @@ public class MasterListTest {
     public void isAbleToBeReplenished_whenThereAreNoDeferredTodos_andTheListIsNotFull_returnsFalse() throws Exception {
         masterList.add(new TodoId("someId"), "todo1");
 
-        boolean hasDeferredTodosAvailable = masterList.isAbleToBeReplenished();
+        boolean hasDeferredTodosAvailable = masterList.read().isAbleToBeReplenished();
 
         assertThat(hasDeferredTodosAvailable).isFalse();
     }

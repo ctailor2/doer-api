@@ -13,14 +13,11 @@ import static java.util.stream.Collectors.toList;
 public class ListService implements ListApplicationService {
     private final ObjectRepository<MasterList, String> masterListRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
-    private final ObjectRepository<ReadOnlyMasterList, String> readOnlyMasterListRepository;
 
     ListService(ObjectRepository<MasterList, String> masterListRepository,
-                ObjectRepository<CompletedList, String> completedListRepository,
-                ObjectRepository<ReadOnlyMasterList, String> readOnlyMasterListRepository) {
+                ObjectRepository<CompletedList, String> completedListRepository) {
         this.masterListRepository = masterListRepository;
         this.completedListRepository = completedListRepository;
-        this.readOnlyMasterListRepository = readOnlyMasterListRepository;
     }
 
     public void unlock(User user) throws InvalidRequestException {
@@ -35,7 +32,8 @@ public class ListService implements ListApplicationService {
     }
 
     public ReadOnlyMasterList get(User user) throws InvalidRequestException {
-        return readOnlyMasterListRepository.find(user.getIdentifier())
+        return masterListRepository.find(user.getIdentifier())
+            .map(MasterList::read)
             .orElseThrow(InvalidRequestException::new);
     }
 

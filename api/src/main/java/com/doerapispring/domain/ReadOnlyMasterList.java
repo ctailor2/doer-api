@@ -13,11 +13,11 @@ public class ReadOnlyMasterList implements UniquelyIdentifiable<String> {
     private static final String DEFERRED_NAME = "later";
     private static final long UNLOCK_DURATION = 1800000L;
     private static final int MAX_SIZE = 2;
-    protected final Clock clock;
-    protected final UniqueIdentifier<String> uniqueIdentifier;
-    protected final List<Todo> todos;
-    protected Date lastUnlockedAt;
-    protected Integer demarcationIndex;
+    private final Clock clock;
+    private final UniqueIdentifier<String> uniqueIdentifier;
+    private final List<Todo> todos;
+    private final Date lastUnlockedAt;
+    private final Integer demarcationIndex;
 
     public ReadOnlyMasterList(Clock clock,
                               UniqueIdentifier<String> uniqueIdentifier,

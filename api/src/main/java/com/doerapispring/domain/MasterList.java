@@ -4,16 +4,26 @@ import java.time.Clock;
 import java.util.Date;
 import java.util.List;
 
-public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiable<String> {
+public class MasterList implements UniquelyIdentifiable<String> {
+    private final Clock clock;
+    private final UniqueIdentifier<String> uniqueIdentifier;
+    private final List<Todo> todos;
+    private Date lastUnlockedAt;
+    private Integer demarcationIndex;
+
     public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
-        super(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
+        this.clock = clock;
+        this.uniqueIdentifier = uniqueIdentifier;
+        this.lastUnlockedAt = lastUnlockedAt;
+        this.todos = todos;
+        this.demarcationIndex = demarcationIndex;
     }
 
     public void add(TodoId todoId, String task) throws ListSizeExceededException, DuplicateTodoException {
         if (alreadyExists(task)) {
             throw new DuplicateTodoException();
         }
-        if (isFull()) {
+        if (read().isFull()) {
             throw new ListSizeExceededException();
         }
         Todo todo = new Todo(todoId, task);
@@ -30,7 +40,7 @@ public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiab
     }
 
     public void unlock() throws LockTimerNotExpiredException {
-        if (!isAbleToBeUnlocked()) {
+        if (!read().isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
         lastUnlockedAt = Date.from(clock.instant());
@@ -45,7 +55,7 @@ public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiab
     }
 
     public void displace(TodoId todoId, String task) throws DuplicateTodoException, ListNotFullException {
-        if (!isFull()) throw new ListNotFullException();
+        if (!read().isFull()) throw new ListNotFullException();
         if (alreadyExists(task)) throw new DuplicateTodoException();
         Todo todo = new Todo(todoId, task);
         todos.add(0, todo);
@@ -79,7 +89,7 @@ public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiab
     }
 
     public void pull() {
-        while (demarcationIndex < todos.size() && !isFull()) {
+        while (demarcationIndex < todos.size() && !read().isFull()) {
             demarcationIndex++;
         }
     }
@@ -105,6 +115,10 @@ public class MasterList extends ReadOnlyMasterList implements UniquelyIdentifiab
 
     public Date getLastUnlockedAt() {
         return lastUnlockedAt;
+    }
+
+    ReadOnlyMasterList read() {
+        return new ReadOnlyMasterList(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
     }
 
     public boolean equals(Object o) {
