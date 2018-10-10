@@ -4,7 +4,6 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ReadOnlyCompletedList;
 import com.doerapispring.domain.ReadOnlyMasterList;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +18,6 @@ class ListsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final ListApplicationService listApplicationService;
 
-    @Autowired
     ListsController(HateoasLinkGenerator hateoasLinkGenerator, ListApplicationService listApplicationService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.listApplicationService = listApplicationService;
@@ -56,20 +54,18 @@ class ListsController {
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),
                         todo.getTask())).collect(toList()),
-                readOnlyMasterList.unlockDuration(),
-                readOnlyMasterList.isFull(),
-                readOnlyMasterList.isAbleToBeUnlocked(),
-                readOnlyMasterList.isAbleToBeReplenished());
+                readOnlyMasterList.unlockDuration()
+            );
             masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
-            if (masterListDTO.isAbleToBeUnlocked()) {
+            if (readOnlyMasterList.isAbleToBeUnlocked()) {
                 masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
-            if (masterListDTO.isFull()) {
+            if (readOnlyMasterList.isFull()) {
                 masterListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
             } else {
                 masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
             }
-            if (masterListDTO.isAbleToBeReplenished()) {
+            if (readOnlyMasterList.isAbleToBeReplenished()) {
                 masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
             masterListDTO.getTodos().forEach(todoDTO -> {

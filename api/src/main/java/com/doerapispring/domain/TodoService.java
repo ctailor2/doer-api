@@ -2,7 +2,6 @@ package com.doerapispring.domain;
 
 import com.doerapispring.storage.IdentityGeneratingObjectRepository;
 import com.doerapispring.web.InvalidRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ public class TodoService implements TodoApplicationService {
     private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
     private final IdentityGeneratingObjectRepository<MasterList, String> masterListRepository;
 
-    @Autowired
     TodoService(IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository,
                 IdentityGeneratingObjectRepository<MasterList, String> masterListRepository) {
         this.completedListRepository = completedListRepository;

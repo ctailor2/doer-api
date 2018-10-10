@@ -1,7 +1,6 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
 
-    @Autowired
     ResourcesController(HateoasLinkGenerator hateoasLinkGenerator) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
     }

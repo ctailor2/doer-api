@@ -1,6 +1,5 @@
 package com.doerapispring.authentication;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -14,7 +13,6 @@ class TokenAuthenticationProvider implements AuthenticationProvider {
 
     private final AuthenticationTokenService authenticationTokenService;
 
-    @Autowired
     public TokenAuthenticationProvider(AuthenticationTokenService authenticationTokenService) {
         this.authenticationTokenService = authenticationTokenService;
     }

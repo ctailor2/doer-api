@@ -2,7 +2,6 @@ package com.doerapispring.storage;
 
 import com.doerapispring.authentication.Credentials;
 import com.doerapispring.authentication.CredentialsStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ import java.util.Optional;
 class UserCredentialsRepository implements CredentialsStore {
     private final UserDAO userDAO;
 
-    @Autowired
     UserCredentialsRepository(UserDAO userDAO) {
         this.userDAO = userDAO;
     }

@@ -3,7 +3,6 @@ package com.doerapispring.storage;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ import java.util.Optional;
 class UserRepository implements ObjectRepository<User, String> {
     private final UserDAO userDAO;
 
-    @Autowired
     UserRepository(UserDAO userDAO) {
         this.userDAO = userDAO;
     }

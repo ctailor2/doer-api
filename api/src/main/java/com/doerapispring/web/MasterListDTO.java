@@ -1,6 +1,5 @@
 package com.doerapispring.web;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.hateoas.ResourceSupport;
 
 import java.util.List;
@@ -11,28 +10,19 @@ public class MasterListDTO extends ResourceSupport {
     private final List<TodoDTO> todos;
     private final List<TodoDTO> deferredTodos;
     private final Long unlockDuration;
-    private final boolean full;
-    private final boolean ableToBeUnlocked;
-    private final boolean ableToBeReplenished;
 
-    public MasterListDTO(
+    MasterListDTO(
         String name,
         String deferredName,
         List<TodoDTO> todos,
         List<TodoDTO> deferredTodos,
-        Long unlockDuration,
-        boolean full,
-        boolean ableToBeUnlocked,
-        boolean ableToBeReplenished
+        Long unlockDuration
     ) {
         this.name = name;
         this.deferredName = deferredName;
         this.todos = todos;
         this.deferredTodos = deferredTodos;
         this.unlockDuration = unlockDuration;
-        this.full = full;
-        this.ableToBeUnlocked = ableToBeUnlocked;
-        this.ableToBeReplenished = ableToBeReplenished;
     }
 
     public String getName() {
@@ -55,21 +45,6 @@ public class MasterListDTO extends ResourceSupport {
         return unlockDuration;
     }
 
-    @JsonIgnore
-    public boolean isFull() {
-        return full;
-    }
-
-    @JsonIgnore
-    public boolean isAbleToBeUnlocked() {
-        return ableToBeUnlocked;
-    }
-
-    @JsonIgnore
-    public boolean isAbleToBeReplenished() {
-        return ableToBeReplenished;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -78,9 +53,6 @@ public class MasterListDTO extends ResourceSupport {
 
         MasterListDTO that = (MasterListDTO) o;
 
-        if (full != that.full) return false;
-        if (ableToBeUnlocked != that.ableToBeUnlocked) return false;
-        if (ableToBeReplenished != that.ableToBeReplenished) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (deferredName != null ? !deferredName.equals(that.deferredName) : that.deferredName != null) return false;
         if (todos != null ? !todos.equals(that.todos) : that.todos != null) return false;
@@ -97,9 +69,6 @@ public class MasterListDTO extends ResourceSupport {
         result = 31 * result + (todos != null ? todos.hashCode() : 0);
         result = 31 * result + (deferredTodos != null ? deferredTodos.hashCode() : 0);
         result = 31 * result + (unlockDuration != null ? unlockDuration.hashCode() : 0);
-        result = 31 * result + (full ? 1 : 0);
-        result = 31 * result + (ableToBeUnlocked ? 1 : 0);
-        result = 31 * result + (ableToBeReplenished ? 1 : 0);
         return result;
     }
 
@@ -111,9 +80,6 @@ public class MasterListDTO extends ResourceSupport {
             ", todos=" + todos +
             ", deferredTodos=" + deferredTodos +
             ", unlockDuration=" + unlockDuration +
-            ", full=" + full +
-            ", ableToBeUnlocked=" + ableToBeUnlocked +
-            ", ableToBeReplenished=" + ableToBeReplenished +
             '}';
     }
 }

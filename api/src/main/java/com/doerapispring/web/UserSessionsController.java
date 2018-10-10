@@ -1,7 +1,6 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AccessDeniedException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
@@ -16,7 +15,6 @@ class UserSessionsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final UserSessionsApiService userSessionsApiService;
 
-    @Autowired
     UserSessionsController(HateoasLinkGenerator hateoasLinkGenerator, UserSessionsApiService userSessionsApiService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.userSessionsApiService = userSessionsApiService;

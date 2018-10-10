@@ -5,7 +5,6 @@ import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +13,6 @@ public class UserSessionsApiServiceImpl implements UserSessionsApiService {
     private final AuthenticationTokenService authenticationTokenService;
     private final BasicAuthenticationService authenticationService;
 
-    @Autowired
     public UserSessionsApiServiceImpl(UserService userService,
                                       AuthenticationTokenService authenticationTokenService,
                                       BasicAuthenticationService authenticationService) {

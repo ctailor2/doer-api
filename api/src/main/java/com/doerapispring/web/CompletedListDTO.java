@@ -7,7 +7,7 @@ import java.util.List;
 public class CompletedListDTO extends ResourceSupport {
     private final List<CompletedTodoDTO> completedTodoDTOs;
 
-    public CompletedListDTO(List<CompletedTodoDTO> completedTodoDTOs) {
+    CompletedListDTO(List<CompletedTodoDTO> completedTodoDTOs) {
         this.completedTodoDTOs = completedTodoDTOs;
     }
 

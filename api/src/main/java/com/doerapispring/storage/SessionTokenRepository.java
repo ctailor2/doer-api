@@ -4,7 +4,6 @@ import com.doerapispring.authentication.TransientAccessToken;
 import com.doerapispring.session.InvalidTokenException;
 import com.doerapispring.session.SessionToken;
 import com.doerapispring.session.TokenStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -15,7 +14,6 @@ class SessionTokenRepository implements TokenStore {
     private final UserDAO userDAO;
     private final SessionTokenDAO sessionTokenDAO;
 
-    @Autowired
     SessionTokenRepository(UserDAO userDAO, SessionTokenDAO sessionTokenDAO) {
         this.userDAO = userDAO;
         this.sessionTokenDAO = sessionTokenDAO;
