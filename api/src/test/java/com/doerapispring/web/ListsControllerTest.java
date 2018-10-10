@@ -36,12 +36,14 @@ public class ListsControllerTest {
     private AuthenticatedUser authenticatedUser;
     private ReadOnlyMasterList readOnlyMasterList;
     private ReadOnlyCompletedList readOnlyCompletedList;
+    private User user;
 
     @Before
     public void setUp() throws Exception {
         listApplicationService = mock(ListApplicationService.class);
-        String identifier = "test@email.com";
-        authenticatedUser = new AuthenticatedUser(identifier);
+        authenticatedUser = mock(AuthenticatedUser.class);
+        user = mock(User.class);
+        when(authenticatedUser.getUser()).thenReturn(user);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         listsController = new ListsController(new MockHateoasLinkGenerator(), listApplicationService);
         mockMvc = MockMvcBuilders
@@ -60,7 +62,7 @@ public class ListsControllerTest {
         mockMvc.perform(post("/v1/list/unlock"))
             .andExpect(status().isAccepted());
 
-        verify(listApplicationService).unlock(authenticatedUser.getUser());
+        verify(listApplicationService).unlock(user);
     }
 
     @Test
@@ -89,7 +91,7 @@ public class ListsControllerTest {
         mockMvc.perform(get("/v1/list"))
             .andExpect(status().isOk());
 
-        verify(listApplicationService).get(authenticatedUser.getUser());
+        verify(listApplicationService).get(user);
     }
 
     @Test
@@ -255,7 +257,7 @@ public class ListsControllerTest {
         mockMvc.perform(get("/v1/completedList"))
             .andExpect(status().isOk());
 
-        verify(listApplicationService).getCompleted(authenticatedUser.getUser());
+        verify(listApplicationService).getCompleted(user);
     }
 
     @Test

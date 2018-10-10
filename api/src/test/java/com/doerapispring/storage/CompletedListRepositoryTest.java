@@ -55,6 +55,6 @@ public class CompletedListRepositoryTest {
         completedListRepository.save(completedList);
 
         Optional<CompletedList> completedListOptional = completedListRepository.find(uniqueIdentifier);
-        assertThat(completedListOptional.get()).isEqualTo(completedList);
+        assertThat(completedListOptional.get()).isEqualsToByComparingFields(completedList);
     }
 }

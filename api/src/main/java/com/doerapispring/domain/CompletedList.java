@@ -31,32 +31,4 @@ public class CompletedList implements UniquelyIdentifiable<String> {
     ReadOnlyCompletedList read() {
         return new ReadOnlyCompletedList(todos);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CompletedList that = (CompletedList) o;
-
-        if (uniqueIdentifier != null ? !uniqueIdentifier.equals(that.uniqueIdentifier) : that.uniqueIdentifier != null)
-            return false;
-        return todos != null ? todos.equals(that.todos) : that.todos == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = uniqueIdentifier != null ? uniqueIdentifier.hashCode() : 0;
-        result = 31 * result + (todos != null ? todos.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "CompletedList{" +
-                "uniqueIdentifier=" + uniqueIdentifier +
-                ", todos=" + todos +
-                '}';
-    }
 }
