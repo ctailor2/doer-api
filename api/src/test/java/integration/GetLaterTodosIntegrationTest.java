@@ -56,9 +56,9 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         todosService.createDeferred(user, "here and now");
         todosService.createDeferred(user, "near and far");
         listService.unlock(user);
-        ReadOnlyMasterList masterList = listService.get(user);
-        Todo secondTodo = masterList.getDeferredTodos().get(0);
-        Todo thirdTodo = masterList.getDeferredTodos().get(1);
+        ReadOnlyTodoList todoList = listService.get(user);
+        Todo secondTodo = todoList.getDeferredTodos().get(0);
+        Todo thirdTodo = todoList.getDeferredTodos().get(1);
 
         doGet();
 

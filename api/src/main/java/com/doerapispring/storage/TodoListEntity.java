@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "users")
 @EqualsAndHashCode
 @ToString
-public class MasterListEntity implements Serializable {
+public class TodoListEntity implements Serializable {
     @Id
     @Column(name = "id")
     public Long id;
@@ -32,8 +32,4 @@ public class MasterListEntity implements Serializable {
 
     @Column(name = "demarcation_index")
     public Integer demarcationIndex;
-
-    public List<TodoEntity> getTodoEntities() {
-        return todoEntities;
-    }
 }

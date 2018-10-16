@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.ReadOnlyMasterList;
+import com.doerapispring.domain.ReadOnlyTodoList;
 import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
 import com.doerapispring.web.SessionTokenDTO;
@@ -46,9 +46,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyMasterList masterList = listService.get(user);
+        ReadOnlyTodoList todoList = listService.get(user);
 
-        assertThat(masterList.isAbleToBeUnlocked(), equalTo(false));
+        assertThat(todoList.isAbleToBeUnlocked(), equalTo(false));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());

@@ -11,55 +11,55 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-class MasterListRepository implements
-    IdentityGeneratingObjectRepository<MasterList, String> {
+class TodoListRepository implements
+    IdentityGeneratingObjectRepository<TodoList, String> {
     private final UserDAO userDAO;
-    private final MasterListDao masterListDao;
+    private final TodoListDao todoListDao;
     private final IdGenerator idGenerator;
     private final Clock clock;
 
-    MasterListRepository(
+    TodoListRepository(
         UserDAO userDAO,
-        MasterListDao masterListDao,
+        TodoListDao todoListDao,
         IdGenerator idGenerator,
         Clock clock) {
         this.userDAO = userDAO;
-        this.masterListDao = masterListDao;
+        this.todoListDao = todoListDao;
         this.idGenerator = idGenerator;
         this.clock = clock;
     }
 
     @Override
-    public Optional<MasterList> find(UniqueIdentifier<String> uniqueIdentifier) {
-        MasterListEntity masterListEntity = masterListDao.findByEmail(uniqueIdentifier.get());
-        List<Todo> todos = masterListEntity.todoEntities.stream()
+    public Optional<TodoList> find(UniqueIdentifier<String> uniqueIdentifier) {
+        TodoListEntity todoListEntity = todoListDao.findByEmail(uniqueIdentifier.get());
+        List<Todo> todos = todoListEntity.todoEntities.stream()
             .map(todoEntity -> new Todo(
                 new TodoId(todoEntity.uuid),
                 todoEntity.task))
             .collect(toList());
-        return Optional.of(new MasterList(clock, uniqueIdentifier, masterListEntity.lastUnlockedAt, todos, masterListEntity.demarcationIndex));
+        return Optional.of(new TodoList(clock, uniqueIdentifier, todoListEntity.lastUnlockedAt, todos, todoListEntity.demarcationIndex));
     }
 
     @Override
-    public void save(MasterList masterList) throws AbnormalModelException {
-        UserEntity userEntity = userDAO.findByEmail(masterList.getIdentifier().get());
+    public void save(TodoList todoList) throws AbnormalModelException {
+        UserEntity userEntity = userDAO.findByEmail(todoList.getIdentifier().get());
         if (userEntity == null) throw new AbnormalModelException();
-        MasterListEntity masterListEntity = new MasterListEntity();
-        masterListEntity.id = userEntity.id;
-        masterListEntity.email = masterList.getIdentifier().get();
-        masterListEntity.demarcationIndex = masterList.getDemarcationIndex();
-        List<Todo> allTodos = masterList.getAllTodos();
+        TodoListEntity todoListEntity = new TodoListEntity();
+        todoListEntity.id = userEntity.id;
+        todoListEntity.email = todoList.getIdentifier().get();
+        todoListEntity.demarcationIndex = todoList.getDemarcationIndex();
+        List<Todo> allTodos = todoList.getAllTodos();
         for (int i = 0; i < allTodos.size(); i++) {
             Todo todo = allTodos.get(i);
-            masterListEntity.todoEntities.add(
+            todoListEntity.todoEntities.add(
                 TodoEntity.builder()
                     .uuid(todo.getTodoId().getIdentifier())
                     .task(todo.getTask())
                     .position(i)
                     .build());
         }
-        masterListEntity.lastUnlockedAt = masterList.getLastUnlockedAt();
-        masterListDao.save(masterListEntity);
+        todoListEntity.lastUnlockedAt = todoList.getLastUnlockedAt();
+        todoListDao.save(todoListEntity);
     }
 
     @Override

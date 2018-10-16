@@ -4,14 +4,14 @@ import java.time.Clock;
 import java.util.Date;
 import java.util.List;
 
-public class MasterList implements UniquelyIdentifiable<String> {
+public class TodoList implements UniquelyIdentifiable<String> {
     private final Clock clock;
     private final UniqueIdentifier<String> uniqueIdentifier;
     private final List<Todo> todos;
     private Date lastUnlockedAt;
     private Integer demarcationIndex;
 
-    public MasterList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
+    public TodoList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.lastUnlockedAt = lastUnlockedAt;
@@ -117,7 +117,7 @@ public class MasterList implements UniquelyIdentifiable<String> {
         return lastUnlockedAt;
     }
 
-    ReadOnlyMasterList read() {
-        return new ReadOnlyMasterList(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
+    ReadOnlyTodoList read() {
+        return new ReadOnlyTodoList(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
     }
 }

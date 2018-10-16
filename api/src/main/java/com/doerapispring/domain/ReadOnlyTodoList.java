@@ -8,7 +8,7 @@ import java.util.TimeZone;
 
 import static java.util.Collections.emptyList;
 
-public class ReadOnlyMasterList implements UniquelyIdentifiable<String> {
+public class ReadOnlyTodoList implements UniquelyIdentifiable<String> {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
     private static final long UNLOCK_DURATION = 1800000L;
@@ -19,11 +19,11 @@ public class ReadOnlyMasterList implements UniquelyIdentifiable<String> {
     private final Date lastUnlockedAt;
     private final Integer demarcationIndex;
 
-    public ReadOnlyMasterList(Clock clock,
-                              UniqueIdentifier<String> uniqueIdentifier,
-                              Date lastUnlockedAt,
-                              List<Todo> todos,
-                              Integer demarcationIndex) {
+    public ReadOnlyTodoList(Clock clock,
+                            UniqueIdentifier<String> uniqueIdentifier,
+                            Date lastUnlockedAt,
+                            List<Todo> todos,
+                            Integer demarcationIndex) {
         this.clock = clock;
         this.uniqueIdentifier = uniqueIdentifier;
         this.lastUnlockedAt = lastUnlockedAt;

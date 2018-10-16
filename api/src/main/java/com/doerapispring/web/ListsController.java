@@ -3,7 +3,7 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ReadOnlyCompletedList;
-import com.doerapispring.domain.ReadOnlyMasterList;
+import com.doerapispring.domain.ReadOnlyTodoList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,57 +40,57 @@ class ListsController {
 
     @RequestMapping(value = "/list")
     @ResponseBody
-    ResponseEntity<MasterListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<TodoListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            ReadOnlyMasterList readOnlyMasterList = listApplicationService.get(authenticatedUser.getUser());
-            MasterListDTO masterListDTO = new MasterListDTO(
-                readOnlyMasterList.getName(),
-                readOnlyMasterList.getDeferredName(),
-                readOnlyMasterList.getTodos().stream()
+            ReadOnlyTodoList readOnlyTodoList = listApplicationService.get(authenticatedUser.getUser());
+            TodoListDTO todoListDTO = new TodoListDTO(
+                readOnlyTodoList.getName(),
+                readOnlyTodoList.getDeferredName(),
+                readOnlyTodoList.getTodos().stream()
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),
                         todo.getTask())).collect(toList()),
-                readOnlyMasterList.getDeferredTodos().stream()
+                readOnlyTodoList.getDeferredTodos().stream()
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),
                         todo.getTask())).collect(toList()),
-                readOnlyMasterList.unlockDuration()
+                readOnlyTodoList.unlockDuration()
             );
-            masterListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
-            if (readOnlyMasterList.isAbleToBeUnlocked()) {
-                masterListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
+            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
+            if (readOnlyTodoList.isAbleToBeUnlocked()) {
+                todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
-            if (readOnlyMasterList.isFull()) {
-                masterListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
+            if (readOnlyTodoList.isFull()) {
+                todoListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
             } else {
-                masterListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
+                todoListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
             }
-            if (readOnlyMasterList.isAbleToBeReplenished()) {
-                masterListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
+            if (readOnlyTodoList.isAbleToBeReplenished()) {
+                todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
-            masterListDTO.getTodos().forEach(todoDTO -> {
+            todoListDTO.getTodos().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
                 todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
 
-                masterListDTO.getTodos().forEach(targetTodoDTO ->
+                todoListDTO.getTodos().forEach(targetTodoDTO ->
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                         todoDTO.getIdentifier(),
                         targetTodoDTO.getIdentifier()).withRel("move")));
             });
-            masterListDTO.getDeferredTodos().forEach(todoDTO -> {
+            todoListDTO.getDeferredTodos().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
                 todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
 
-                masterListDTO.getDeferredTodos().forEach(targetTodoDTO ->
+                todoListDTO.getDeferredTodos().forEach(targetTodoDTO ->
                     todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                         todoDTO.getIdentifier(),
                         targetTodoDTO.getIdentifier()).withRel("move")));
             });
-            MasterListResponse masterListResponse = new MasterListResponse(masterListDTO);
-            masterListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
-            return ResponseEntity.ok(masterListResponse);
+            TodoListResponse todoListResponse = new TodoListResponse(todoListDTO);
+            todoListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
+            return ResponseEntity.ok(todoListResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();
         }

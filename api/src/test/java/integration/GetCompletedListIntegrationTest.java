@@ -58,8 +58,8 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todoService.create(user, "some task");
-        ReadOnlyMasterList masterList = listService.get(user);
-        Todo todo = masterList.getTodos().get(0);
+        ReadOnlyTodoList todoList = listService.get(user);
+        Todo todo = todoList.getTodos().get(0);
         todoService.complete(user, new TodoId(todo.getTodoId().getIdentifier()));
 
         doGet();

@@ -56,11 +56,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        ReadOnlyMasterList newMasterList = listService.get(user);
+        ReadOnlyTodoList newTodoList = listService.get(user);
 
-        Assertions.assertThat(newMasterList.getTodos()).extracting("task")
+        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("do the things", "some task");
-        Assertions.assertThat(newMasterList.getDeferredTodos()).extracting("task")
+        Assertions.assertThat(newTodoList.getDeferredTodos()).extracting("task")
             .containsExactly("some other task");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

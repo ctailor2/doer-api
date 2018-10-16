@@ -53,8 +53,8 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todosService.create(user, "this and that");
-        ReadOnlyMasterList masterList = listService.get(user);
-        Todo firstTodo = masterList.getTodos().get(0);
+        ReadOnlyTodoList todoList = listService.get(user);
+        Todo firstTodo = todoList.getTodos().get(0);
 
         doGet();
 

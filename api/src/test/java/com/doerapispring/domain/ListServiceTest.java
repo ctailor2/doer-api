@@ -20,75 +20,72 @@ public class ListServiceTest {
     private ListService listService;
 
     @Mock
-    private ObjectRepository<MasterList, String> mockMasterListRepository;
+    private ObjectRepository<TodoList, String> mockTodoListRepository;
 
     @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
 
-    @Mock
-    private ObjectRepository<ReadOnlyMasterList, String> mockReadOnlyMasterListRepository;
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private MasterList masterList;
+    private TodoList todoList;
     private UniqueIdentifier<String> uniqueIdentifier;
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockMasterListRepository, mockCompletedListRepository);
+        listService = new ListService(mockTodoListRepository, mockCompletedListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
-        masterList = mock(MasterList.class);
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(masterList));
+        todoList = mock(TodoList.class);
+        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(todoList));
     }
 
     @Test
-    public void unlock_whenMasterListFound_unlocksMasterList_andSavesIt() throws Exception {
+    public void unlock_whenTodoListFound_unlocksTodoList_andSavesIt() throws Exception {
         listService.unlock(new User(uniqueIdentifier));
 
-        verify(masterList).unlock();
-        verify(mockMasterListRepository).save(masterList);
+        verify(todoList).unlock();
+        verify(mockTodoListRepository).save(todoList);
     }
 
     @Test
-    public void unlock_whenMasterListFound_whenRepositoryRejectsModels_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockMasterListRepository).save(any());
+    public void unlock_whenTodoListFound_whenRepositoryRejectsModels_refusesOperation() throws Exception {
+        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
     @Test
-    public void unlock_whenMasterListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
-        doThrow(new LockTimerNotExpiredException()).when(masterList).unlock();
+    public void unlock_whenTodoListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
+        doThrow(new LockTimerNotExpiredException()).when(todoList).unlock();
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
     @Test
-    public void unlock_whenMasterListNotFound_refusesOperation() throws Exception {
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
+    public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
+        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
     }
 
     @Test
-    public void get_whenMasterListFound_returnsMasterListFromRepository() throws Exception {
-        MasterList mockMasterList = mock(MasterList.class);
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.of(mockMasterList));
-        ReadOnlyMasterList mockReadOnlyMasterList = mock(ReadOnlyMasterList.class);
-        when(mockMasterList.read()).thenReturn(mockReadOnlyMasterList);
+    public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
+        TodoList mockTodoList = mock(TodoList.class);
+        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(mockTodoList));
+        ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
+        when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
         User user = new User(uniqueIdentifier);
 
-        ReadOnlyMasterList actual = listService.get(user);
+        ReadOnlyTodoList actual = listService.get(user);
 
-        assertThat(actual).isEqualTo(mockReadOnlyMasterList);
+        assertThat(actual).isEqualTo(mockReadOnlyTodoList);
     }
 
     @Test
-    public void get_whenMasterListNotFound_refusesOperation() throws Exception {
-        when(mockMasterListRepository.find(any())).thenReturn(Optional.empty());
+    public void get_whenTodoListNotFound_refusesOperation() throws Exception {
+        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.get(new User(uniqueIdentifier));

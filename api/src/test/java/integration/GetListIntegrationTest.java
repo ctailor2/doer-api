@@ -56,9 +56,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         listService.unlock(user);
         todoService.create(user, "this and that");
         todoService.createDeferred(user, "here and there");
-        ReadOnlyMasterList masterList = listService.get(user);
-        Todo todo = masterList.getTodos().get(0);
-        Todo deferredTodo = masterList.getDeferredTodos().get(0);
+        ReadOnlyTodoList todoList = listService.get(user);
+        Todo todo = todoList.getTodos().get(0);
+        Todo deferredTodo = todoList.getDeferredTodos().get(0);
 
         doGet();
 

@@ -46,9 +46,9 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todosService.create(user, "some other task");
         todosService.create(user, "some task");
-        ReadOnlyMasterList masterList = listService.get(user);
-        Todo todo1 = masterList.getTodos().get(0);
-        Todo todo2 = masterList.getTodos().get(1);
+        ReadOnlyTodoList todoList = listService.get(user);
+        Todo todo1 = todoList.getTodos().get(0);
+        Todo todo2 = todoList.getTodos().get(1);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/todos/" + todo1.getTodoId().getIdentifier() + "/complete")
             .headers(httpHeaders))
@@ -57,10 +57,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyMasterList newMasterList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        ReadOnlyTodoList newTodoList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
         ReadOnlyCompletedList newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
 
-        assertThat(newMasterList.getTodos(), hasSize(0));
+        assertThat(newTodoList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = newCompletedList.getTodos();
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));

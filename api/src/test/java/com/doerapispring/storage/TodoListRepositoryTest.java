@@ -27,14 +27,14 @@ import static org.mockito.Mockito.mock;
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles(value = "test")
 @RunWith(SpringRunner.class)
-public class MasterListRepositoryTest {
-    private ObjectRepository<MasterList, String> masterListRepository;
+public class TodoListRepositoryTest {
+    private ObjectRepository<TodoList, String> todoListRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Autowired
-    private MasterListDao masterListDao;
+    private TodoListDao todoListDao;
 
     @Autowired
     private UserDAO userDao;
@@ -47,28 +47,28 @@ public class MasterListRepositoryTest {
     public void setUp() throws Exception {
         clock = Clock.systemDefaultZone();
         idGenerator = mock(IdGenerator.class);
-        masterListRepository = new MasterListRepository(userDao, masterListDao, idGenerator, clock);
+        todoListRepository = new TodoListRepository(userDao, todoListDao, idGenerator, clock);
         userRepository = new UserRepository(userDao);
     }
 
     @Test
-    public void savesMasterList() throws Exception {
+    public void savesTodoList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         userRepository.add(new User(uniqueIdentifier));
-        MasterList masterList = new MasterList(clock, uniqueIdentifier, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
-        masterList.addDeferred(new TodoId("1"), "firstTask");
-        masterList.add(new TodoId("2"), "secondTask");
-        masterList.addDeferred(new TodoId("3"), "thirdTask");
-        masterList.add(new TodoId("4"), "fourthTask");
-        masterList.unlock();
+        TodoList todoList = new TodoList(clock, uniqueIdentifier, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
+        todoList.addDeferred(new TodoId("1"), "firstTask");
+        todoList.add(new TodoId("2"), "secondTask");
+        todoList.addDeferred(new TodoId("3"), "thirdTask");
+        todoList.add(new TodoId("4"), "fourthTask");
+        todoList.unlock();
 
-        masterListRepository.save(masterList);
+        todoListRepository.save(todoList);
 
-        Optional<MasterList> masterListOptional = masterListRepository.find(uniqueIdentifier);
+        Optional<TodoList> todoListOptional = todoListRepository.find(uniqueIdentifier);
 
-        MasterList retrievedMasterList = masterListOptional.get();
-        assertThat(retrievedMasterList).isEqualToIgnoringGivenFields(masterList, "lastUnlockedAt");
+        TodoList retrievedTodoList = todoListOptional.get();
+        assertThat(retrievedTodoList).isEqualToIgnoringGivenFields(todoList, "lastUnlockedAt");
 //        Have to 're-wrap' this into a date for the assertion because it comes back from the db as a java.sql.Timestamp
-        assertThat(Date.from(retrievedMasterList.getLastUnlockedAt().toInstant())).isCloseTo(masterList.getLastUnlockedAt(), 10L);
+        assertThat(Date.from(retrievedTodoList.getLastUnlockedAt().toInstant())).isCloseTo(todoList.getLastUnlockedAt(), 10L);
     }
 }

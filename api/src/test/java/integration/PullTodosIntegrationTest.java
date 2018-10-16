@@ -53,11 +53,11 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UniqueIdentifier<>("test@email.com"));
         listService.unlock(user);
-        ReadOnlyMasterList newMasterList = listService.get(user);
+        ReadOnlyTodoList newTodoList = listService.get(user);
 
-        Assertions.assertThat(newMasterList.getTodos()).extracting("task")
+        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("will get pulled", "will also get pulled");
-        Assertions.assertThat(newMasterList.getDeferredTodos()).extracting("task")
+        Assertions.assertThat(newTodoList.getDeferredTodos()).extracting("task")
             .containsExactly("keep for later");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

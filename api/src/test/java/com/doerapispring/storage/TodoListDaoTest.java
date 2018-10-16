@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-public class MasterListDaoTest {
+public class TodoListDaoTest {
     @Autowired
-    private MasterListDao masterListDao;
+    private TodoListDao todoListDao;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,7 +37,7 @@ public class MasterListDaoTest {
     }
 
     @Test
-    public void findsMasterList_withTodosOrderedByPosition() {
+    public void findsTodoList_withTodosOrderedByPosition() {
         jdbcTemplate.update("INSERT INTO " +
             "todos (user_id, uuid, task, position, created_at, updated_at) " +
             "VALUES (" + userId + ", 'uuid2', 'task2', 2, now(), now())");
@@ -45,7 +45,7 @@ public class MasterListDaoTest {
             "todos (user_id, uuid, task, position, created_at, updated_at) " +
             "VALUES (" + userId + ", 'uuid1', 'task1', 1, now(), now())");
 
-        List<TodoEntity> todoEntities = masterListDao.findByEmail("someEmail").getTodoEntities();
+        List<TodoEntity> todoEntities = todoListDao.findByEmail("someEmail").todoEntities;
         assertThat(todoEntities).hasSize(2);
         assertThat(todoEntities.get(0).task).isEqualTo("task1");
         assertThat(todoEntities.get(1).task).isEqualTo("task2");
