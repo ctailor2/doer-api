@@ -27,8 +27,8 @@ jobs:
       app: doer-api-staging
   - stage: e2etest
     before_install:
-    - git clone https://github.com/ctailor2/doerE2ETests.git
-    - cd doerE2ETests
+    - git clone https://github.com/ctailor2/doer-e2e-tests.git
+    - cd doer-e2e-tests
     install:
     - npm install
     script:
