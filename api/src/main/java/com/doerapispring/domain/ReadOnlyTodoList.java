@@ -8,24 +8,21 @@ import java.util.TimeZone;
 
 import static java.util.Collections.emptyList;
 
-public class ReadOnlyTodoList implements UniquelyIdentifiable<String> {
+public class ReadOnlyTodoList {
     private static final String NAME = "now";
     private static final String DEFERRED_NAME = "later";
     private static final long UNLOCK_DURATION = 1800000L;
     private static final int MAX_SIZE = 2;
     private final Clock clock;
-    private final UniqueIdentifier<String> uniqueIdentifier;
     private final List<Todo> todos;
     private final Date lastUnlockedAt;
     private final Integer demarcationIndex;
 
     public ReadOnlyTodoList(Clock clock,
-                            UniqueIdentifier<String> uniqueIdentifier,
                             Date lastUnlockedAt,
                             List<Todo> todos,
                             Integer demarcationIndex) {
         this.clock = clock;
-        this.uniqueIdentifier = uniqueIdentifier;
         this.lastUnlockedAt = lastUnlockedAt;
         this.demarcationIndex = demarcationIndex;
         this.todos = todos;
@@ -86,10 +83,5 @@ public class ReadOnlyTodoList implements UniquelyIdentifiable<String> {
 
     private List<Todo> deferredTodos() {
         return todos.subList(demarcationIndex, todos.size());
-    }
-
-    @Override
-    public UniqueIdentifier<String> getIdentifier() {
-        return uniqueIdentifier;
     }
 }

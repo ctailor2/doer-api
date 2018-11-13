@@ -11,4 +11,8 @@ public class User implements UniquelyIdentifiable<String> {
     public UniqueIdentifier<String> getIdentifier() {
         return uniqueIdentifier;
     }
+
+    public UserId getId() {
+        return new UserId(uniqueIdentifier.get());
+    }
 }

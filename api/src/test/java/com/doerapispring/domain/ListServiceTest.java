@@ -20,7 +20,7 @@ public class ListServiceTest {
     private ListService listService;
 
     @Mock
-    private ObjectRepository<TodoList, String> mockTodoListRepository;
+    private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
     @Mock
     private ObjectRepository<CompletedList, String> mockCompletedListRepository;
@@ -35,7 +35,7 @@ public class ListServiceTest {
         listService = new ListService(mockTodoListRepository, mockCompletedListRepository);
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         todoList = mock(TodoList.class);
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(todoList));
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(todoList));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(uniqueIdentifier));
@@ -73,7 +73,7 @@ public class ListServiceTest {
     @Test
     public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
         TodoList mockTodoList = mock(TodoList.class);
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(mockTodoList));
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(mockTodoList));
         ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
         User user = new User(uniqueIdentifier);
@@ -85,7 +85,7 @@ public class ListServiceTest {
 
     @Test
     public void get_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.get(new User(uniqueIdentifier));

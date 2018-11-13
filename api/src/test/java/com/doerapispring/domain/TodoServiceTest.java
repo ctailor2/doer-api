@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.storage.IdentityGeneratingObjectRepository;
 import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,7 +22,7 @@ public class TodoServiceTest {
     private IdentityGeneratingObjectRepository<CompletedList, String> mockCompletedListRepository;
 
     @Mock
-    private IdentityGeneratingObjectRepository<TodoList, String> mockTodoListRepository;
+    private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -42,7 +41,7 @@ public class TodoServiceTest {
         );
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         todoList = mock(TodoList.class);
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.of(todoList));
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(todoList));
         todoIdentifier = "todoId";
         completedList = mock(CompletedList.class);
         when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
@@ -80,7 +79,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenTodoListNotFound_refusesCreate() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.create(new User(uniqueIdentifier), "some things");
@@ -116,7 +115,7 @@ public class TodoServiceTest {
 
     @Test
     public void createDeferred_whenTodoListNotFound_refusesCreate() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.createDeferred(new User(uniqueIdentifier), "some things");
@@ -165,7 +164,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenTodoListNotFound_refusesDisplace() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.displace(new User(uniqueIdentifier), "someTask");
@@ -235,7 +234,7 @@ public class TodoServiceTest {
 
     @Test
     public void update_whenTodoListNotFound_refusesUpdate() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.update(new User(uniqueIdentifier), new TodoId("someId"), "someTask");
@@ -290,7 +289,7 @@ public class TodoServiceTest {
 
     @Test
     public void complete_whenTodoListNotFound_refusesUpdate() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.complete(new User(uniqueIdentifier), new TodoId("someId"));
@@ -324,7 +323,7 @@ public class TodoServiceTest {
 
     @Test
     public void move_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.move(new User(uniqueIdentifier), new TodoId("idOne"), new TodoId("idTwo"));

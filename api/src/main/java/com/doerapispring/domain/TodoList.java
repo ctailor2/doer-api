@@ -4,16 +4,16 @@ import java.time.Clock;
 import java.util.Date;
 import java.util.List;
 
-public class TodoList implements UniquelyIdentifiable<String> {
+public class TodoList {
     private final Clock clock;
-    private final UniqueIdentifier<String> uniqueIdentifier;
+    private final UserId userId;
     private final List<Todo> todos;
     private Date lastUnlockedAt;
     private Integer demarcationIndex;
 
-    public TodoList(Clock clock, UniqueIdentifier<String> uniqueIdentifier, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
+    public TodoList(Clock clock, UserId userId, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
         this.clock = clock;
-        this.uniqueIdentifier = uniqueIdentifier;
+        this.userId = userId;
         this.lastUnlockedAt = lastUnlockedAt;
         this.todos = todos;
         this.demarcationIndex = demarcationIndex;
@@ -94,8 +94,8 @@ public class TodoList implements UniquelyIdentifiable<String> {
         }
     }
 
-    public UniqueIdentifier<String> getIdentifier() {
-        return uniqueIdentifier;
+    public UserId getUserId() {
+        return userId;
     }
 
     private Todo getByTodoId(TodoId todoId) throws TodoNotFoundException {
@@ -118,6 +118,6 @@ public class TodoList implements UniquelyIdentifiable<String> {
     }
 
     ReadOnlyTodoList read() {
-        return new ReadOnlyTodoList(clock, uniqueIdentifier, lastUnlockedAt, todos, demarcationIndex);
+        return new ReadOnlyTodoList(clock, lastUnlockedAt, todos, demarcationIndex);
     }
 }

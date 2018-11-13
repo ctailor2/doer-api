@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.storage.IdentityGeneratingObjectRepository;
 import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,16 +10,16 @@ import java.util.Optional;
 @Transactional
 public class TodoService implements TodoApplicationService {
     private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
-    private final IdentityGeneratingObjectRepository<TodoList, String> todoListRepository;
+    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
     TodoService(IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository,
-                IdentityGeneratingObjectRepository<TodoList, String> todoListRepository) {
+                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository) {
         this.completedListRepository = completedListRepository;
         this.todoListRepository = todoListRepository;
     }
 
     public void create(User user, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
         try {
@@ -34,7 +33,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void createDeferred(User user, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
         try {
@@ -48,7 +47,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void delete(User user, TodoId todoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.delete(todoId);
@@ -59,7 +58,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void displace(User user, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
         try {
@@ -71,7 +70,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void update(User user, TodoId todoId, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.update(todoId, task);
@@ -84,7 +83,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void complete(User user, TodoId todoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             String task = todoList.complete(todoId);
@@ -106,7 +105,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.move(todoId, targetTodoId);
@@ -117,7 +116,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void pull(User user) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.pull();

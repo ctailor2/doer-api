@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 @ActiveProfiles(value = "test")
 @RunWith(SpringRunner.class)
 public class TodoListRepositoryTest {
-    private ObjectRepository<TodoList, String> todoListRepository;
+    private TodoListRepository todoListRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -55,7 +55,7 @@ public class TodoListRepositoryTest {
     public void savesTodoList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
         userRepository.add(new User(uniqueIdentifier));
-        TodoList todoList = new TodoList(clock, uniqueIdentifier, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
+        TodoList todoList = new TodoList(clock, new UserId(uniqueIdentifier.get()), Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         todoList.addDeferred(new TodoId("1"), "firstTask");
         todoList.add(new TodoId("2"), "secondTask");
         todoList.addDeferred(new TodoId("3"), "thirdTask");
@@ -64,7 +64,7 @@ public class TodoListRepositoryTest {
 
         todoListRepository.save(todoList);
 
-        Optional<TodoList> todoListOptional = todoListRepository.find(uniqueIdentifier);
+        Optional<TodoList> todoListOptional = todoListRepository.findOne(new UserId(uniqueIdentifier.get()));
 
         TodoList retrievedTodoList = todoListOptional.get();
         assertThat(retrievedTodoList).isEqualToIgnoringGivenFields(todoList, "lastUnlockedAt");

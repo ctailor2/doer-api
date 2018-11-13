@@ -12,7 +12,7 @@ import static java.util.stream.Collectors.toList;
 
 @Repository
 class TodoListRepository implements
-    IdentityGeneratingObjectRepository<TodoList, String> {
+    OwnedObjectRepository<TodoList, UserId, ListId> {
     private final UserDAO userDAO;
     private final TodoListDao todoListDao;
     private final IdGenerator idGenerator;
@@ -30,23 +30,23 @@ class TodoListRepository implements
     }
 
     @Override
-    public Optional<TodoList> find(UniqueIdentifier<String> uniqueIdentifier) {
-        TodoListEntity todoListEntity = todoListDao.findByEmail(uniqueIdentifier.get());
+    public Optional<TodoList> findOne(UserId userId) {
+        TodoListEntity todoListEntity = todoListDao.findByEmail(userId.get());
         List<Todo> todos = todoListEntity.todoEntities.stream()
             .map(todoEntity -> new Todo(
                 new TodoId(todoEntity.uuid),
                 todoEntity.task))
             .collect(toList());
-        return Optional.of(new TodoList(clock, uniqueIdentifier, todoListEntity.lastUnlockedAt, todos, todoListEntity.demarcationIndex));
+        return Optional.of(new TodoList(clock, userId, todoListEntity.lastUnlockedAt, todos, todoListEntity.demarcationIndex));
     }
 
     @Override
     public void save(TodoList todoList) throws AbnormalModelException {
-        UserEntity userEntity = userDAO.findByEmail(todoList.getIdentifier().get());
+        UserEntity userEntity = userDAO.findByEmail(todoList.getUserId().get());
         if (userEntity == null) throw new AbnormalModelException();
         TodoListEntity todoListEntity = new TodoListEntity();
         todoListEntity.id = userEntity.id;
-        todoListEntity.email = todoList.getIdentifier().get();
+        todoListEntity.email = todoList.getUserId().get();
         todoListEntity.demarcationIndex = todoList.getDemarcationIndex();
         List<Todo> allTodos = todoList.getAllTodos();
         for (int i = 0; i < allTodos.size(); i++) {
@@ -62,7 +62,6 @@ class TodoListRepository implements
         todoListDao.save(todoListEntity);
     }
 
-    @Override
     public UniqueIdentifier<String> nextIdentifier() {
         return new UniqueIdentifier<>(idGenerator.generateId().toString());
     }

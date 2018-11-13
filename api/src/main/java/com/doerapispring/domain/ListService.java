@@ -5,17 +5,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ListService implements ListApplicationService {
-    private final ObjectRepository<TodoList, String> todoListRepository;
+    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final ObjectRepository<CompletedList, String> completedListRepository;
 
-    ListService(ObjectRepository<TodoList, String> todoListRepository,
+    ListService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
                 ObjectRepository<CompletedList, String> completedListRepository) {
         this.todoListRepository = todoListRepository;
         this.completedListRepository = completedListRepository;
     }
 
     public void unlock(User user) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.find(user.getIdentifier())
+        TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.unlock();
@@ -26,7 +26,7 @@ public class ListService implements ListApplicationService {
     }
 
     public ReadOnlyTodoList get(User user) throws InvalidRequestException {
-        return todoListRepository.find(user.getIdentifier())
+        return todoListRepository.findOne(user.getId())
             .map(TodoList::read)
             .orElseThrow(InvalidRequestException::new);
     }

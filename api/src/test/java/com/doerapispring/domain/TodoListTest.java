@@ -32,10 +32,9 @@ public class TodoListTest {
         when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("something");
         todoList = new TodoList(
             mockClock,
-            uniqueIdentifier,
+            new UserId("something"),
             Date.from(Instant.EPOCH),
             new ArrayList<>(),
             0);
