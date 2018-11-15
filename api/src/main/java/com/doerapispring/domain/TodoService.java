@@ -11,19 +11,22 @@ import java.util.Optional;
 public class TodoService implements TodoApplicationService {
     private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
+    private final IdentityGeneratingRepository<TodoId> todoRepository;
 
     TodoService(IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository,
-                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository) {
+                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
+                IdentityGeneratingRepository<TodoId> todoRepository) {
         this.completedListRepository = completedListRepository;
         this.todoListRepository = todoListRepository;
+        this.todoRepository = todoRepository;
     }
 
     public void create(User user, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
-        UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
+        TodoId todoId = todoRepository.nextIdentifier();
         try {
-            todoList.add(new TodoId(todoIdentifier.get()), task);
+            todoList.add(todoId, task);
             todoListRepository.save(todoList);
         } catch (ListSizeExceededException | AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -35,9 +38,9 @@ public class TodoService implements TodoApplicationService {
     public void createDeferred(User user, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
-        UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
+        TodoId todoId = todoRepository.nextIdentifier();
         try {
-            todoList.addDeferred(new TodoId(todoIdentifier.get()), task);
+            todoList.addDeferred(todoId, task);
             todoListRepository.save(todoList);
         } catch (AbnormalModelException e) {
             throw new InvalidRequestException();
@@ -60,9 +63,9 @@ public class TodoService implements TodoApplicationService {
     public void displace(User user, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getId())
             .orElseThrow(InvalidRequestException::new);
-        UniqueIdentifier<String> todoIdentifier = todoListRepository.nextIdentifier();
+        TodoId todoId = todoRepository.nextIdentifier();
         try {
-            todoList.displace(new TodoId(todoIdentifier.get()), task);
+            todoList.displace(todoId, task);
             todoListRepository.save(todoList);
         } catch (AbnormalModelException | DuplicateTodoException | ListNotFullException e) {
             throw new InvalidRequestException(e.getMessage());

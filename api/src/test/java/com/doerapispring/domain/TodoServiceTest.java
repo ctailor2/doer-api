@@ -24,6 +24,9 @@ public class TodoServiceTest {
     @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
+    @Mock
+    private IdentityGeneratingRepository<TodoId> mockTodoRepository;
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     private UniqueIdentifier<String> uniqueIdentifier;
@@ -37,7 +40,8 @@ public class TodoServiceTest {
     public void setUp() throws Exception {
         todoService = new TodoService(
             mockCompletedListRepository,
-            mockTodoListRepository
+            mockTodoListRepository,
+            mockTodoRepository
         );
         uniqueIdentifier = new UniqueIdentifier<>("userId");
         todoList = mock(TodoList.class);
@@ -45,7 +49,7 @@ public class TodoServiceTest {
         todoIdentifier = "todoId";
         completedList = mock(CompletedList.class);
         when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
-        when(mockTodoListRepository.nextIdentifier()).thenReturn(new UniqueIdentifier<>(todoIdentifier));
+        when(mockTodoRepository.nextIdentifier()).thenReturn(new TodoId(todoIdentifier));
         completedTodoIdentifier = "completedTodoId";
         when(mockCompletedListRepository.nextIdentifier()).thenReturn(new UniqueIdentifier<>(completedTodoIdentifier));
     }

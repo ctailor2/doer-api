@@ -61,8 +61,4 @@ class TodoListRepository implements
         todoListEntity.lastUnlockedAt = todoList.getLastUnlockedAt();
         todoListDao.save(todoListEntity);
     }
-
-    public UniqueIdentifier<String> nextIdentifier() {
-        return new UniqueIdentifier<>(idGenerator.generateId().toString());
-    }
 }

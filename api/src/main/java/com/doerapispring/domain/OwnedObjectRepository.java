@@ -12,7 +12,4 @@ public interface OwnedObjectRepository<T, OwnerId, Id> {
     }
 
     Optional<T> findOne(OwnerId ownerId);
-
-//    TODO: Remove this once it is no longer being used to generate TodoId's
-    UniqueIdentifier<String> nextIdentifier();
 }
