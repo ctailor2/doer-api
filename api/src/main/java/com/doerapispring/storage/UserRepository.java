@@ -1,8 +1,8 @@
 package com.doerapispring.storage;
 
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-class UserRepository implements ObjectRepository<User, String> {
+class UserRepository implements ObjectRepository<User, UserId> {
     private final UserDAO userDAO;
 
     UserRepository(UserDAO userDAO) {
@@ -21,7 +21,7 @@ class UserRepository implements ObjectRepository<User, String> {
     @Override
     public void add(User user) {
         UserEntity userEntity = UserEntity.builder()
-                .email(user.getIdentifier().get())
+                .email(user.getUserId().get())
                 .passwordDigest("")
                 .createdAt(new Date())
                 .updatedAt(new Date())
@@ -30,10 +30,9 @@ class UserRepository implements ObjectRepository<User, String> {
     }
 
     @Override
-    public Optional<User> find(UniqueIdentifier<String> uniqueIdentifier) {
-        String email = uniqueIdentifier.get();
-        UserEntity userEntity = userDAO.findByEmail(email);
+    public Optional<User> find(UserId userId) {
+        UserEntity userEntity = userDAO.findByEmail(userId.get());
         if (userEntity == null) return Optional.empty();
-        return Optional.of(new User(new UniqueIdentifier<>(email)));
+        return Optional.of(new User(userId));
     }
 }

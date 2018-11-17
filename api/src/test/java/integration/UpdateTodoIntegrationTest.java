@@ -35,7 +35,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(uniqueIdentifier);
+        user = new User(new UserId(uniqueIdentifier.get()));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
@@ -53,7 +53,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        ReadOnlyTodoList newTodoList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
+        ReadOnlyTodoList newTodoList = listService.get(new User(new UserId("test@email.com")));
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .contains("do the things");

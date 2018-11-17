@@ -23,7 +23,7 @@ public class ListServiceTest {
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
     @Mock
-    private ObjectRepository<CompletedList, String> mockCompletedListRepository;
+    private IdentityGeneratingObjectRepository<CompletedList, String> mockCompletedListRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -40,7 +40,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListFound_unlocksTodoList_andSavesIt() throws Exception {
-        listService.unlock(new User(uniqueIdentifier));
+        listService.unlock(new User(new UserId(uniqueIdentifier.get())));
 
         verify(todoList).unlock();
         verify(mockTodoListRepository).save(todoList);
@@ -51,7 +51,7 @@ public class ListServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(uniqueIdentifier));
+        listService.unlock(new User(new UserId(uniqueIdentifier.get())));
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ListServiceTest {
         doThrow(new LockTimerNotExpiredException()).when(todoList).unlock();
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(uniqueIdentifier));
+        listService.unlock(new User(new UserId(uniqueIdentifier.get())));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ListServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(uniqueIdentifier));
+        listService.unlock(new User(new UserId(uniqueIdentifier.get())));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class ListServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(mockTodoList));
         ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
-        User user = new User(uniqueIdentifier);
+        User user = new User(new UserId(uniqueIdentifier.get()));
 
         ReadOnlyTodoList actual = listService.get(user);
 
@@ -88,16 +88,16 @@ public class ListServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        listService.get(new User(uniqueIdentifier));
+        listService.get(new User(new UserId(uniqueIdentifier.get())));
     }
 
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
         CompletedList mockCompletedList = mock(CompletedList.class);
-        when(mockCompletedListRepository.find(any())).thenReturn(Optional.of(mockCompletedList));
+        when(mockCompletedListRepository.find(any(UniqueIdentifier.class))).thenReturn(Optional.of(mockCompletedList));
         ReadOnlyCompletedList mockReadOnlyCompletedList = mock(ReadOnlyCompletedList.class);
         when(mockCompletedList.read()).thenReturn(mockReadOnlyCompletedList);
-        User user = new User(uniqueIdentifier);
+        User user = new User(new UserId(uniqueIdentifier.get()));
 
         ReadOnlyCompletedList readOnlyCompletedList = listService.getCompleted(user);
 
@@ -106,9 +106,9 @@ public class ListServiceTest {
 
     @Test
     public void get_whenCompletedListNotFound_refusesOperation() throws Exception {
-        when(mockCompletedListRepository.find(any())).thenReturn(Optional.empty());
+        when(mockCompletedListRepository.find(any(UniqueIdentifier.class))).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        listService.getCompleted(new User(uniqueIdentifier));
+        listService.getCompleted(new User(new UserId(uniqueIdentifier.get())));
     }
 }

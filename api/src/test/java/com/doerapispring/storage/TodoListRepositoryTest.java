@@ -54,7 +54,7 @@ public class TodoListRepositoryTest {
     @Test
     public void savesTodoList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        userRepository.add(new User(uniqueIdentifier));
+        userRepository.add(new User(new UserId(uniqueIdentifier.get())));
         TodoList todoList = new TodoList(clock, new UserId(uniqueIdentifier.get()), Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         todoList.addDeferred(new TodoId("1"), "firstTask");
         todoList.add(new TodoId("2"), "secondTask");

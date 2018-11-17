@@ -7,5 +7,11 @@ public interface ObjectRepository<T extends UniquelyIdentifiable, U> {
 
     default void save(T model) throws AbnormalModelException {}
 
-    Optional<T> find(UniqueIdentifier<U> uniqueIdentifier);
+    default Optional<T> find(UniqueIdentifier<U> uniqueIdentifier) {
+        return Optional.empty();
+    }
+
+    default Optional<T> find(U id) {
+        return Optional.empty();
+    }
 }

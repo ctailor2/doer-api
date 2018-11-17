@@ -22,7 +22,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Mock
-    private ObjectRepository<User, String> userRepository;
+    private ObjectRepository<User, UserId> userRepository;
 
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;
@@ -39,24 +39,23 @@ public class UserServiceTest {
     public void create_whenIdentifierNotTaken_addsUserToRepository_returnsUser() throws Exception {
         String identifier = "soUnique";
 
-        when(userRepository.find(any())).thenReturn(Optional.empty());
+        when(userRepository.find(any(UserId.class))).thenReturn(Optional.empty());
 
         User createdUser = userService.create(identifier);
 
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        verify(userRepository).find(uniqueIdentifier);
+        UserId userId = new UserId(identifier);
+        verify(userRepository).find(userId);
         verify(userRepository).add(userArgumentCaptor.capture());
         User addedUser = userArgumentCaptor.getValue();
-        assertThat(addedUser.getIdentifier()).isEqualTo(uniqueIdentifier);
+        assertThat(addedUser.getUserId()).isEqualTo(userId);
         assertThat(createdUser).isNotNull();
     }
 
     @Test
     public void create_whenIdentifierTaken_refusesCreation() throws Exception {
         String identifier = "soUnique";
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
 
-        when(userRepository.find(any())).thenReturn(Optional.of(new User(uniqueIdentifier)));
+        when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier))));
 
         exception.expect(OperationRefusedException.class);
         userService.create(identifier);

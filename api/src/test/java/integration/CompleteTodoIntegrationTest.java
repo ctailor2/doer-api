@@ -37,7 +37,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(uniqueIdentifier);
+        user = new User(new UserId(uniqueIdentifier.get()));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
@@ -57,8 +57,8 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyTodoList newTodoList = listService.get(new User(new UniqueIdentifier<>("test@email.com")));
-        ReadOnlyCompletedList newCompletedList = listService.getCompleted(new User(new UniqueIdentifier<>("test@email.com")));
+        ReadOnlyTodoList newTodoList = listService.get(new User(new UserId("test@email.com")));
+        ReadOnlyCompletedList newCompletedList = listService.getCompleted(new User(new UserId("test@email.com")));
 
         assertThat(newTodoList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = newCompletedList.getTodos();

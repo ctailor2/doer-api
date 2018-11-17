@@ -3,8 +3,8 @@ package integration;
 import com.doerapispring.authentication.Credentials;
 import com.doerapispring.authentication.CredentialsStore;
 import com.doerapispring.domain.ObjectRepository;
-import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
     @SuppressWarnings("unused")
-    private ObjectRepository<User, String> userRepository;
+    private ObjectRepository<User, UserId> userRepository;
 
     @Autowired
     @SuppressWarnings("unused")
@@ -45,8 +45,7 @@ public class SignupIntegrationTest extends AbstractWebAppJUnit4SpringContextTest
         doPost();
 
         String userIdentifier = "test@email.com";
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(userIdentifier);
-        Optional<User> storedUserOptional = userRepository.find(uniqueIdentifier);
+        Optional<User> storedUserOptional = userRepository.find(new UserId(userIdentifier));
         Optional<Credentials> storedCredentialsOptional = userCredentialsRepository.findLatest(userIdentifier);
 
         String responseContent = mvcResult.getResponse().getContentAsString();

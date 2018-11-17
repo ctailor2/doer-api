@@ -1,9 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.UniqueIdentifier;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
@@ -45,7 +42,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(uniqueIdentifier);
+        user = new User(new UserId(uniqueIdentifier.get()));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }

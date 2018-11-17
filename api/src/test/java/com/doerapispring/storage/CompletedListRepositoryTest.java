@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "test")
 public class CompletedListRepositoryTest {
-    private ObjectRepository<CompletedList, String> completedListRepository;
+    private IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
     private UserRepository userRepository;
 
     @Autowired
@@ -48,7 +48,7 @@ public class CompletedListRepositoryTest {
     @Test
     public void savesCompletedList() throws Exception {
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>("someIdentifier");
-        userRepository.add(new User(uniqueIdentifier));
+        userRepository.add(new User(new UserId(uniqueIdentifier.get())));
         CompletedList completedList = new CompletedList(mockClock, uniqueIdentifier, singletonList(
             new CompletedTodo(new CompletedTodoId("someUuid"), "someTask", new Date())));
 

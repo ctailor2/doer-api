@@ -1,12 +1,12 @@
 package com.doerapispring.authentication;
 
-import com.doerapispring.domain.UniqueIdentifier;
 import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 
 public class AuthenticatedUser {
     private final String identifier;
 
-    public static AuthenticatedUser identifiedWith(String identifier) {
+    static AuthenticatedUser identifiedWith(String identifier) {
         return new AuthenticatedUser(identifier);
     }
 
@@ -19,7 +19,7 @@ public class AuthenticatedUser {
     }
 
     public User getUser() {
-        return new User(new UniqueIdentifier<>(identifier));
+        return new User(new UserId(identifier));
     }
 
     @Override

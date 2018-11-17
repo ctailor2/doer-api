@@ -36,7 +36,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         super.setUp();
         String identifier = "test@email.com";
         UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(uniqueIdentifier);
+        user = new User(new UserId(uniqueIdentifier.get()));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
@@ -51,7 +51,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        User user = new User(new UniqueIdentifier<>("test@email.com"));
+        User user = new User(new UserId("test@email.com"));
         listService.unlock(user);
         ReadOnlyTodoList newTodoList = listService.get(user);
 
