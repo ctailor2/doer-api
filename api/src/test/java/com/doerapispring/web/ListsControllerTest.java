@@ -35,7 +35,6 @@ public class ListsControllerTest {
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
     private ReadOnlyTodoList readOnlyTodoList;
-    private ReadOnlyCompletedList readOnlyCompletedList;
     private User user;
 
     @Before
@@ -53,8 +52,6 @@ public class ListsControllerTest {
 
         readOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(listApplicationService.get(any())).thenReturn(readOnlyTodoList);
-        readOnlyCompletedList = mock(ReadOnlyCompletedList.class);
-        when(listApplicationService.getCompleted(any())).thenReturn(readOnlyCompletedList);
     }
 
     @Test
@@ -261,11 +258,14 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void showCompleted_returnsList() {
+    public void showCompleted_returnsList() throws InvalidRequestException {
         String task = "someTask";
         Date completedAt = Date.from(Instant.now());
-        when(readOnlyCompletedList.getTodos())
-            .thenReturn(singletonList(new CompletedTodo(new CompletedTodoId("someId"), task, completedAt)));
+        when(listApplicationService.getCompleted(any())).thenReturn(singletonList(new CompletedTodo(
+            new UserId("someUserId"),
+            new CompletedTodoId("someTodoId"),
+            task,
+            completedAt)));
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
 

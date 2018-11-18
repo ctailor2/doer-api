@@ -69,10 +69,14 @@ public class TodoList {
         todo.setTask(task);
     }
 
-    public String complete(TodoId todoId) throws TodoNotFoundException {
+    public CompletedTodo complete(TodoId todoId) throws TodoNotFoundException {
         Todo todo = getByTodoId(todoId);
         delete(todoId);
-        return todo.getTask();
+        return new CompletedTodo(
+            userId,
+            new CompletedTodoId(todoId.getIdentifier()),
+            todo.getTask(),
+            Date.from(clock.instant()));
     }
 
     public void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException {

@@ -1,6 +1,9 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.ReadOnlyTodoList;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -31,8 +34,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(new UserId(uniqueIdentifier.get()));
+        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }

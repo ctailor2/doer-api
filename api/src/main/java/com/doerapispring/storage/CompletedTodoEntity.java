@@ -20,6 +20,9 @@ class CompletedTodoEntity {
     @Column(name = "uuid")
     public String uuid;
 
+    @Column(name = "user_id")
+    public Long userId;
+
     @Column(name = "task")
     public String task;
 

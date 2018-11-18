@@ -9,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,7 +21,7 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private IdentityGeneratingObjectRepository<CompletedList, String> mockCompletedListRepository;
+    private OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> mockCompletedTodoRepository;
 
     @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
@@ -29,35 +31,31 @@ public class TodoServiceTest {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-    private UniqueIdentifier<String> uniqueIdentifier;
+
     private TodoList todoList;
 
-    private CompletedList completedList;
     private String todoIdentifier;
-    private String completedTodoIdentifier;
+
+    private User user;
 
     @Before
     public void setUp() throws Exception {
         todoService = new TodoService(
-            mockCompletedListRepository,
             mockTodoListRepository,
-            mockTodoRepository
+            mockTodoRepository,
+            mockCompletedTodoRepository
         );
-        uniqueIdentifier = new UniqueIdentifier<>("userId");
+        user = new User(new UserId("userId"));
         todoList = mock(TodoList.class);
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(todoList));
         todoIdentifier = "todoId";
-        completedList = mock(CompletedList.class);
-        when(mockCompletedListRepository.find(uniqueIdentifier)).thenReturn(Optional.of(completedList));
         when(mockTodoRepository.nextIdentifier()).thenReturn(new TodoId(todoIdentifier));
-        completedTodoIdentifier = "completedTodoId";
-        when(mockCompletedListRepository.nextIdentifier()).thenReturn(new UniqueIdentifier<>(completedTodoIdentifier));
     }
 
     @Test
     public void create_whenTodoListFound_addsTodoToRepository() throws Exception {
         String task = "some things";
-        todoService.create(new User(new UserId(uniqueIdentifier.get())), task);
+        todoService.create(user, task);
 
         verify(todoList).add(new TodoId(todoIdentifier), task);
         verify(mockTodoListRepository).save(todoList);
@@ -68,7 +66,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).add(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.create(new User(new UserId(uniqueIdentifier.get())), "some things"))
+            todoService.create(user, "some things"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -78,7 +76,7 @@ public class TodoServiceTest {
         doThrow(new ListSizeExceededException()).when(todoList).add(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(new User(new UserId(uniqueIdentifier.get())), "some things");
+        todoService.create(user, "some things");
     }
 
     @Test
@@ -86,7 +84,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(new User(new UserId(uniqueIdentifier.get())), "some things");
+        todoService.create(user, "some things");
     }
 
     @Test
@@ -94,13 +92,13 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(new User(new UserId(uniqueIdentifier.get())), "some things");
+        todoService.create(user, "some things");
     }
 
     @Test
     public void createDeferred_whenTodoListFound_addsTodoToRepository() throws Exception {
         String task = "some things";
-        todoService.createDeferred(new User(new UserId(uniqueIdentifier.get())), task);
+        todoService.createDeferred(user, task);
 
         verify(todoList).addDeferred(new TodoId(todoIdentifier), task);
         verify(mockTodoListRepository).save(todoList);
@@ -111,7 +109,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).addDeferred(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.createDeferred(new User(new UserId(uniqueIdentifier.get())), "some things"))
+            todoService.createDeferred(user, "some things"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
 
@@ -122,7 +120,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.createDeferred(new User(new UserId(uniqueIdentifier.get())), "some things");
+        todoService.createDeferred(user, "some things");
     }
 
     @Test
@@ -130,13 +128,13 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.createDeferred(new User(new UserId(uniqueIdentifier.get())), "some things");
+        todoService.createDeferred(user, "some things");
     }
 
     @Test
     public void delete_whenTodoListFound_whenTodoFound_deletesTodoUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.delete(new User(new UserId(uniqueIdentifier.get())), todoId);
+        todoService.delete(user, todoId);
 
         verify(todoList).delete(todoId);
         verify(mockTodoListRepository).save(todoList);
@@ -147,7 +145,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.delete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someTodoId"));
+        todoService.delete(user, new TodoId("someTodoId"));
     }
 
     @Test
@@ -155,12 +153,12 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).delete(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.delete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someTodoId"));
+        todoService.delete(user, new TodoId("someTodoId"));
     }
 
     @Test
     public void displace_whenTodoListFound_whenTodoFound_savesUsingRepository() throws Exception {
-        todoService.displace(new User(new UserId(uniqueIdentifier.get())), "someTask");
+        todoService.displace(user, "someTask");
 
         verify(todoList).displace(new TodoId(todoIdentifier), "someTask");
         verify(mockTodoListRepository).save(todoList);
@@ -171,7 +169,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(new User(new UserId(uniqueIdentifier.get())), "someTask");
+        todoService.displace(user, "someTask");
     }
 
     @Test
@@ -179,7 +177,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).displace(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.displace(new User(new UserId(uniqueIdentifier.get())), "someTask"))
+            todoService.displace(user, "someTask"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -189,7 +187,7 @@ public class TodoServiceTest {
         doThrow(new ListNotFullException()).when(todoList).displace(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(new User(new UserId(uniqueIdentifier.get())), "someTask");
+        todoService.displace(user, "someTask");
     }
 
     @Test
@@ -197,14 +195,14 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(new User(new UserId(uniqueIdentifier.get())), "someTask");
+        todoService.displace(user, "someTask");
     }
 
     @Test
     public void update_whenTodoListFound_whenTodoFound_updatesUsingRepository() throws Exception {
         String updatedTask = "someOtherTask";
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.update(new User(new UserId(uniqueIdentifier.get())), todoId, updatedTask);
+        todoService.update(user, todoId, updatedTask);
 
         verify(todoList).update(todoId, updatedTask);
         verify(mockTodoListRepository).save(todoList);
@@ -215,7 +213,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(new User(new UserId(uniqueIdentifier.get())), new TodoId("someIdentifier"), "someOtherTask");
+        todoService.update(user, new TodoId("someIdentifier"), "someOtherTask");
     }
 
     @Test
@@ -223,7 +221,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).update(any(), any());
 
         assertThatThrownBy(() ->
-            todoService.update(new User(new UserId(uniqueIdentifier.get())), new TodoId("someIdentifier"), "someTask"))
+            todoService.update(user, new TodoId("someIdentifier"), "someTask"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -233,7 +231,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).update(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(new User(new UserId(uniqueIdentifier.get())), new TodoId("someId"), "someTask");
+        todoService.update(user, new TodoId("someId"), "someTask");
     }
 
     @Test
@@ -241,13 +239,13 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(new User(new UserId(uniqueIdentifier.get())), new TodoId("someId"), "someTask");
+        todoService.update(user, new TodoId("someId"), "someTask");
     }
 
     @Test
-    public void complete_whenTodoListFound_whenTodoFound_completesUsingRepository() throws Exception {
+    public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), todoId);
+        todoService.complete(user, todoId);
 
         verify(todoList).complete(todoId);
         verify(mockTodoListRepository).save(todoList);
@@ -255,24 +253,30 @@ public class TodoServiceTest {
 
     @Test
     public void complete_addsCompletedTaskToCompletedList_savesUsingRepository() throws Exception {
-        String completedTask = "completedTask";
-        when(todoList.complete(any(TodoId.class))).thenReturn(completedTask);
+        CompletedTodo completedTodo = new CompletedTodo(
+            new UserId("someUserId"),
+            new CompletedTodoId("someIdentifier"),
+            "completedTask",
+            Date.from(Instant.now()));
+        when(todoList.complete(any(TodoId.class))).thenReturn(completedTodo);
 
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someIdentifier"));
+        todoService.complete(user, new TodoId("someIdentifier"));
 
-        verify(mockCompletedListRepository).find(uniqueIdentifier);
-        verify(completedList).add(new CompletedTodoId(completedTodoIdentifier), completedTask);
-        verify(mockCompletedListRepository).save(completedList);
+        verify(mockCompletedTodoRepository).save(completedTodo);
     }
 
     @Test
     public void complete_whenCompletedListRepositoryRejectsModel_refusesOperation() throws Exception {
-        String completedTask = "completedTask";
-        when(todoList.complete(any(TodoId.class))).thenReturn(completedTask);
-        doThrow(new AbnormalModelException()).when(mockCompletedListRepository).save(any(CompletedList.class));
+        CompletedTodo completedTodo = new CompletedTodo(
+            new UserId("someUserId"),
+            new CompletedTodoId("someIdentifier"),
+            "completedTask",
+            Date.from(Instant.now()));
+        when(todoList.complete(any(TodoId.class))).thenReturn(completedTodo);
+        doThrow(new AbnormalModelException()).when(mockCompletedTodoRepository).save(any(CompletedTodo.class));
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someIdentifier"));
+        todoService.complete(user, new TodoId("someIdentifier"));
     }
 
     @Test
@@ -280,7 +284,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someIdentifier"));
+        todoService.complete(user, new TodoId("someIdentifier"));
     }
 
     @Test
@@ -288,7 +292,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).complete(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someId"));
+        todoService.complete(user, new TodoId("someId"));
     }
 
     @Test
@@ -296,14 +300,14 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(new User(new UserId(uniqueIdentifier.get())), new TodoId("someId"));
+        todoService.complete(user, new TodoId("someId"));
     }
 
     @Test
     public void move_whenTodoListFound_whenTodosFound_updatesMovedTodosUsingRepository() throws Exception {
         TodoId sourceIdentifier = new TodoId("sourceIdentifier");
         TodoId destinationIdentifier = new TodoId("destinationIdentifier");
-        todoService.move(new User(new UserId(uniqueIdentifier.get())), sourceIdentifier, destinationIdentifier);
+        todoService.move(user, sourceIdentifier, destinationIdentifier);
 
         verify(todoList).move(sourceIdentifier, destinationIdentifier);
         verify(mockTodoListRepository).save(todoList);
@@ -314,7 +318,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(new User(new UserId(uniqueIdentifier.get())), new TodoId("sourceIdentifier"), new TodoId("destinationIdentifier"));
+        todoService.move(user, new TodoId("sourceIdentifier"), new TodoId("destinationIdentifier"));
     }
 
     @Test
@@ -322,7 +326,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).move(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(new User(new UserId(uniqueIdentifier.get())), new TodoId("idOne"), new TodoId("idTwo"));
+        todoService.move(user, new TodoId("idOne"), new TodoId("idTwo"));
     }
 
     @Test
@@ -330,12 +334,12 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(new User(new UserId(uniqueIdentifier.get())), new TodoId("idOne"), new TodoId("idTwo"));
+        todoService.move(user, new TodoId("idOne"), new TodoId("idTwo"));
     }
 
     @Test
     public void pull_whenTodoListFound_whenTodosPulled_updatesPulledTodosUsingRepository() throws Exception {
-        todoService.pull(new User(new UserId(uniqueIdentifier.get())));
+        todoService.pull(user);
 
         verify(todoList).pull();
         verify(mockTodoListRepository).save(todoList);
@@ -346,6 +350,6 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.pull(new User(new UserId(uniqueIdentifier.get())));
+        todoService.pull(user);
     }
 }

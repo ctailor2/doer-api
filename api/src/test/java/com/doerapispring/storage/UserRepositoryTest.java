@@ -27,10 +27,10 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void add_user_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
+    public void saveUser_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
         User user = new User(new UserId("soUnique"));
 
-        userRepository.add(user);
+        userRepository.save(user);
 
         verify(userDAO).save(userEntityArgumentCaptor.capture());
         UserEntity userEntity = userEntityArgumentCaptor.getValue();

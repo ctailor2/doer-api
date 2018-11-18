@@ -3,11 +3,13 @@ package com.doerapispring.domain;
 import java.util.Date;
 
 public class CompletedTodo {
+    private UserId userId;
     private CompletedTodoId completedTodoId;
     private String task;
     private Date completedAt;
 
-    public CompletedTodo(CompletedTodoId completedTodoId, String task, Date completedAt) {
+    public CompletedTodo(UserId userId, CompletedTodoId completedTodoId, String task, Date completedAt) {
+        this.userId = userId;
         this.completedTodoId = completedTodoId;
         this.task = task;
         this.completedAt = completedAt;
@@ -25,6 +27,10 @@ public class CompletedTodo {
         return completedAt;
     }
 
+    public UserId getUserId() {
+        return userId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -32,6 +38,7 @@ public class CompletedTodo {
 
         CompletedTodo that = (CompletedTodo) o;
 
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (completedTodoId != null ? !completedTodoId.equals(that.completedTodoId) : that.completedTodoId != null)
             return false;
         if (task != null ? !task.equals(that.task) : that.task != null) return false;
@@ -40,7 +47,8 @@ public class CompletedTodo {
 
     @Override
     public int hashCode() {
-        int result = completedTodoId != null ? completedTodoId.hashCode() : 0;
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (completedTodoId != null ? completedTodoId.hashCode() : 0);
         result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (completedAt != null ? completedAt.hashCode() : 0);
         return result;
@@ -49,7 +57,8 @@ public class CompletedTodo {
     @Override
     public String toString() {
         return "CompletedTodo{" +
-            "completedTodoId=" + completedTodoId +
+            "userId=" + userId +
+            ", completedTodoId=" + completedTodoId +
             ", task='" + task + '\'' +
             ", completedAt=" + completedAt +
             '}';

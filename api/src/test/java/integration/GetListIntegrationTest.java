@@ -41,8 +41,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(new UserId(uniqueIdentifier.get()));
+        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders

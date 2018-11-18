@@ -3,15 +3,17 @@ package com.doerapispring.domain;
 import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ListService implements ListApplicationService {
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
-    private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
+    private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
 
     ListService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
-                IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository) {
+                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
         this.todoListRepository = todoListRepository;
-        this.completedListRepository = completedListRepository;
+        this.completedTodoRepository = completedTodoRepository;
     }
 
     public void unlock(User user) throws InvalidRequestException {
@@ -31,9 +33,7 @@ public class ListService implements ListApplicationService {
             .orElseThrow(InvalidRequestException::new);
     }
 
-    public ReadOnlyCompletedList getCompleted(User user) throws InvalidRequestException {
-        return completedListRepository.find(user.getIdentifier())
-            .map(CompletedList::read)
-            .orElseThrow(InvalidRequestException::new);
+    public List<CompletedTodo> getCompleted(User user) throws InvalidRequestException {
+        return completedTodoRepository.findAll(user.getUserId());
     }
 }

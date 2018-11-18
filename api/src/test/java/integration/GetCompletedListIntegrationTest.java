@@ -44,8 +44,7 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        UniqueIdentifier<String> uniqueIdentifier = new UniqueIdentifier<>(identifier);
-        user = new User(new UserId(uniqueIdentifier.get()));
+        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         todoService.createDeferred(user, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());

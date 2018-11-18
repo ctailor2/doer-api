@@ -1,5 +1,6 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,8 +15,7 @@ import java.util.Optional;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
@@ -45,7 +45,7 @@ public class UserServiceTest {
 
         UserId userId = new UserId(identifier);
         verify(userRepository).find(userId);
-        verify(userRepository).add(userArgumentCaptor.capture());
+        verify(userRepository).save(userArgumentCaptor.capture());
         User addedUser = userArgumentCaptor.getValue();
         assertThat(addedUser.getUserId()).isEqualTo(userId);
         assertThat(createdUser).isNotNull();
@@ -57,7 +57,17 @@ public class UserServiceTest {
 
         when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier))));
 
-        exception.expect(OperationRefusedException.class);
+        exception.expect(InvalidRequestException.class);
         userService.create(identifier);
+    }
+
+    @Test
+    public void create_whenRepositoryRejectsModel_refusesCreation() throws Exception {
+        when(userRepository.find(any(UserId.class))).thenReturn(Optional.empty());
+        doThrow(new AbnormalModelException()).when(userRepository).save(any(User.class));
+
+        exception.expect(InvalidRequestException.class);
+        userService.create("soUnique");
+
     }
 }

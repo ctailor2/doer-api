@@ -2,7 +2,6 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
-import com.doerapispring.domain.ReadOnlyCompletedList;
 import com.doerapispring.domain.ReadOnlyTodoList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,11 +48,13 @@ class ListsController {
                 readOnlyTodoList.getTodos().stream()
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),
-                        todo.getTask())).collect(toList()),
+                        todo.getTask()))
+                    .collect(toList()),
                 readOnlyTodoList.getDeferredTodos().stream()
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),
-                        todo.getTask())).collect(toList()),
+                        todo.getTask()))
+                    .collect(toList()),
                 readOnlyTodoList.unlockDuration()
             );
             todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
@@ -100,9 +101,8 @@ class ListsController {
     @ResponseBody
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         try {
-            ReadOnlyCompletedList readOnlyCompletedList = listApplicationService.getCompleted(authenticatedUser.getUser());
             CompletedListDTO completedListDTO = new CompletedListDTO(
-                readOnlyCompletedList.getTodos().stream()
+                listApplicationService.getCompleted(authenticatedUser.getUser()).stream()
                     .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
                     .collect(toList()));
             CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);

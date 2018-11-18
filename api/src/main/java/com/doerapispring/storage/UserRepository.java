@@ -19,7 +19,7 @@ class UserRepository implements ObjectRepository<User, UserId> {
     }
 
     @Override
-    public void add(User user) {
+    public void save(User user) {
         UserEntity userEntity = UserEntity.builder()
                 .email(user.getUserId().get())
                 .passwordDigest("")

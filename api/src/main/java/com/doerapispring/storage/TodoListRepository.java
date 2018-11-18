@@ -2,8 +2,8 @@ package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.IdGenerator;
 
+import java.sql.Date;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
@@ -15,17 +15,14 @@ class TodoListRepository implements
     OwnedObjectRepository<TodoList, UserId, ListId> {
     private final UserDAO userDAO;
     private final TodoListDao todoListDao;
-    private final IdGenerator idGenerator;
     private final Clock clock;
 
     TodoListRepository(
         UserDAO userDAO,
         TodoListDao todoListDao,
-        IdGenerator idGenerator,
         Clock clock) {
         this.userDAO = userDAO;
         this.todoListDao = todoListDao;
-        this.idGenerator = idGenerator;
         this.clock = clock;
     }
 
@@ -37,7 +34,12 @@ class TodoListRepository implements
                 new TodoId(todoEntity.uuid),
                 todoEntity.task))
             .collect(toList());
-        return Optional.of(new TodoList(clock, userId, todoListEntity.lastUnlockedAt, todos, todoListEntity.demarcationIndex));
+        return Optional.of(new TodoList(
+            clock,
+            userId,
+            Date.from(todoListEntity.lastUnlockedAt.toInstant()),
+            todos,
+            todoListEntity.demarcationIndex));
     }
 
     @Override

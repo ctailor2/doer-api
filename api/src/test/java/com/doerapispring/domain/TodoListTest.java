@@ -24,6 +24,7 @@ public class TodoListTest {
     public ExpectedException exception = ExpectedException.none();
     private TodoList todoList;
     private Clock mockClock;
+    private UserId userId;
 
     @Before
     public void setUp() throws Exception {
@@ -32,9 +33,10 @@ public class TodoListTest {
         when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
+        userId = new UserId("something");
         todoList = new TodoList(
             mockClock,
-            new UserId("something"),
+            userId,
             Date.from(Instant.EPOCH),
             new ArrayList<>(),
             0);
@@ -200,14 +202,20 @@ public class TodoListTest {
     }
 
     @Test
-    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTask() throws Exception {
+    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() throws Exception {
+        Instant now = Instant.now();
+        when(mockClock.instant()).thenReturn(now);
+
         TodoId todoId = new TodoId("someId");
         todoList.add(todoId, "someTask");
 
-        String completedTask = todoList.complete(todoId);
+        CompletedTodo completedTodo = todoList.complete(todoId);
 
         assertThat(todoList.read().getTodos()).isEmpty();
-        assertThat(completedTask).isEqualTo("someTask");
+        assertThat(completedTodo.getUserId()).isEqualTo(userId);
+        assertThat(completedTodo.getCompletedTodoId()).isEqualTo(new CompletedTodoId("someId"));
+        assertThat(completedTodo.getTask()).isEqualTo("someTask");
+        assertThat(completedTodo.getCompletedAt()).isEqualTo(Date.from(now));
     }
 
     @Test

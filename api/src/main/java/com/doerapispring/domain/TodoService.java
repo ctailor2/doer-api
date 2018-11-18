@@ -4,21 +4,19 @@ import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @Transactional
 public class TodoService implements TodoApplicationService {
-    private final IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository;
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final IdentityGeneratingRepository<TodoId> todoRepository;
+    private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
 
-    TodoService(IdentityGeneratingObjectRepository<CompletedList, String> completedListRepository,
-                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
-                IdentityGeneratingRepository<TodoId> todoRepository) {
-        this.completedListRepository = completedListRepository;
+    TodoService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
+                IdentityGeneratingRepository<TodoId> todoRepository,
+                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
         this.todoListRepository = todoListRepository;
         this.todoRepository = todoRepository;
+        this.completedTodoRepository = completedTodoRepository;
     }
 
     public void create(User user, String task) throws InvalidRequestException {
@@ -89,19 +87,9 @@ public class TodoService implements TodoApplicationService {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
-            String task = todoList.complete(todoId);
+            CompletedTodo completedTodo = todoList.complete(todoId);
             todoListRepository.save(todoList);
-            Optional<CompletedList> completedListOptional = completedListRepository.find(user.getIdentifier());
-            if (completedListOptional.isPresent()) {
-                UniqueIdentifier<String> completedTodoIdentifier = completedListRepository.nextIdentifier();
-                CompletedList completedList = completedListOptional.get();
-                completedList.add(new CompletedTodoId(completedTodoIdentifier.get()), task);
-                try {
-                    completedListRepository.save(completedList);
-                } catch (AbnormalModelException e) {
-                    throw new InvalidRequestException();
-                }
-            }
+            completedTodoRepository.save(completedTodo);
         } catch (TodoNotFoundException | AbnormalModelException e) {
             throw new InvalidRequestException();
         }

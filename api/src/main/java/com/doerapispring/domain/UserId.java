@@ -25,4 +25,11 @@ public class UserId {
     public int hashCode() {
         return identifier != null ? identifier.hashCode() : 0;
     }
+
+    @Override
+    public String toString() {
+        return "UserId{" +
+            "identifier='" + identifier + '\'' +
+            '}';
+    }
 }

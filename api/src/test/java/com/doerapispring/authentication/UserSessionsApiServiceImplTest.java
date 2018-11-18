@@ -1,9 +1,9 @@
 package com.doerapispring.authentication;
 
 import com.doerapispring.api.UserSessionsApiServiceImpl;
-import com.doerapispring.domain.OperationRefusedException;
 import com.doerapispring.domain.UserService;
 import com.doerapispring.session.SessionToken;
+import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.SessionTokenDTO;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class UserSessionsApiServiceImplTest {
 
     @Test
     public void signup_whenUserCreationRefused_deniesAccess() throws Exception {
-        when(mockUserService.create(any())).thenThrow(new OperationRefusedException());
+        when(mockUserService.create(any())).thenThrow(new InvalidRequestException());
 
         assertThatThrownBy(() -> userSessionsApiServiceImpl.signup("soUnique", "soSecure"))
             .isInstanceOf(AccessDeniedException.class)

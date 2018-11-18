@@ -1,15 +1,21 @@
 package com.doerapispring.domain;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public interface OwnedObjectRepository<T, OwnerId, Id> {
-    default void add(T model) {}
-
-    default void save(T model) throws AbnormalModelException {}
+    void save(T model) throws AbnormalModelException;
 
     default Optional<T> find(OwnerId ownerId, Id id) {
         return findOne(ownerId);
     }
 
-    Optional<T> findOne(OwnerId ownerId);
+    default Optional<T> findOne(OwnerId ownerId) {
+        return Optional.empty();
+    }
+
+    default List<T> findAll(OwnerId ownerId) {
+        return Collections.emptyList();
+    }
 }
