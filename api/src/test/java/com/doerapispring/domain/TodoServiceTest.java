@@ -352,4 +352,36 @@ public class TodoServiceTest {
         exception.expect(InvalidRequestException.class);
         todoService.pull(user);
     }
+
+    @Test
+    public void escalate_escalatesList_andSavesIt() throws Exception {
+        todoService.escalate(user);
+
+        verify(todoList).escalate();
+        verify(mockTodoListRepository).save(todoList);
+    }
+
+    @Test
+    public void escalate_whenEscalateNotAllowed_refusesOperation() throws Exception {
+        doThrow(new EscalateNotAllowException()).when(todoList).escalate();
+
+        exception.expect(InvalidRequestException.class);
+        todoService.escalate(user);
+    }
+
+    @Test
+    public void escalate_whenRepositoryRejectsModel_refusesOperation() throws Exception {
+        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
+
+        exception.expect(InvalidRequestException.class);
+        todoService.escalate(user);
+    }
+
+    @Test
+    public void escalate_whenListNotFound_refusesOperation() throws Exception {
+        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
+
+        exception.expect(InvalidRequestException.class);
+        todoService.escalate(user);
+    }
 }

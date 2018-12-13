@@ -124,4 +124,13 @@ public class TodoList {
     ReadOnlyTodoList read() {
         return new ReadOnlyTodoList(clock, lastUnlockedAt, todos, demarcationIndex);
     }
+
+    void escalate() throws EscalateNotAllowException {
+        if (!read().isAbleToBeEscalated()) {
+            throw new EscalateNotAllowException();
+        }
+        Todo firstDeferredTodo = todos.get(demarcationIndex);
+        todos.remove(firstDeferredTodo);
+        todos.add(demarcationIndex - 1, firstDeferredTodo);
+    }
 }

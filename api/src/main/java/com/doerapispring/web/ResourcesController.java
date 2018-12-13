@@ -1,9 +1,7 @@
 package com.doerapispring.web;
 
-import com.doerapispring.authentication.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,7 +38,7 @@ class ResourcesController {
 
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> todo() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.todoResourcesLink().withSelfRel(),

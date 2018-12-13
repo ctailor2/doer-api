@@ -105,6 +105,16 @@ class TodosController {
         }
     }
 
+    @RequestMapping(value = "/list/escalate", method = RequestMethod.POST)
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> escalate(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        todoApplicationService.escalate(authenticatedUser.getUser());
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink().withSelfRel());
+        resourcesResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
+    }
+
     @RequestMapping(value = "/list/todos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,

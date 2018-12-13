@@ -11,7 +11,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
     public Link todoResourcesLink() {
-        return linkTo(methodOn(ResourcesController.class).todo(null)).withSelfRel();
+        return linkTo(methodOn(ResourcesController.class).todo()).withSelfRel();
     }
 
     @Override
@@ -116,5 +116,14 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
     public Link completedListLink() {
         return linkTo(methodOn(ListsController.class).showCompleted(null)).withSelfRel();
+    }
+
+    @Override
+    public Link listEscalateTodoLink() {
+        try {
+            return linkTo(methodOn(TodosController.class).escalate(null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 }

@@ -190,10 +190,9 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void pull_callsTodoService_returns202() throws Exception {
+    public void pull_responseIncludesLinks() throws Exception {
         ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser);
 
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
             new Link(MOCK_BASE_URL + "/list/pullTodos").withSelfRel(),
@@ -208,6 +207,24 @@ public class TodosControllerTest {
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void escalate_mapping() throws Exception {
+        mockMvc.perform(post("/v1/list/escalate"))
+            .andExpect(status().isAccepted());
+
+        verify(todoApplicationService).escalate(user);
+    }
+
+    @Test
+    public void escalate_responseIncludesLinks() throws Exception {
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.escalate(authenticatedUser);
+
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).containsOnly(
+            new Link(MOCK_BASE_URL + "/list/escalateTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/list").withRel("list"));
     }
 
     @Test

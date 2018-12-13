@@ -531,4 +531,54 @@ public class TodoListTest {
 
         assertThat(hasDeferredTodosAvailable).isFalse();
     }
+
+    @Test
+    public void escalate_swapsPositionsOfLastTodoAndFirstDeferredTodo() throws Exception {
+        todoList.add(new TodoId("someId"), "will be deferred after escalate");
+        todoList.add(new TodoId("someId"), "some task");
+        todoList.addDeferred(new TodoId("someId"), "will no longer be deferred after escalate");
+
+        todoList.escalate();
+        todoList.unlock();
+
+        ReadOnlyTodoList readOnlyTodoList = todoList.read();
+        assertThat(readOnlyTodoList.getTodos()).containsExactly(
+            new Todo(new TodoId("someId"), "some task"),
+            new Todo(new TodoId("someId"), "will no longer be deferred after escalate"));
+        assertThat(readOnlyTodoList.getDeferredTodos()).containsExactly(
+            new Todo(new TodoId("someId"), "will be deferred after escalate"));
+    }
+
+    @Test
+    public void escalate_whenListIsNotAbleToBeEscalated_throwsEscalateNotAllowedException() throws Exception {
+        todoList.add(new TodoId("someId"), "task 2");
+
+        exception.expect(EscalateNotAllowException.class);
+        todoList.escalate();
+    }
+
+    @Test
+    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreDeferredTodos_returnsTrue() throws Exception {
+        todoList.add(new TodoId("someId"), "task 1");
+        todoList.add(new TodoId("someId"), "task 2");
+        todoList.addDeferred(new TodoId("someId"), "task 3");
+
+        assertThat(todoList.read().isAbleToBeEscalated()).isTrue();
+    }
+
+    @Test
+    public void isAbleToBeEscalated_whenTheListIsNotFull_andThereAreDeferredTodos_returnsFalse() throws Exception {
+        todoList.add(new TodoId("someId"), "task 1");
+        todoList.addDeferred(new TodoId("someId"), "task 2");
+
+        assertThat(todoList.read().isAbleToBeEscalated()).isFalse();
+    }
+
+    @Test
+    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreNoDeferredTodos_returnsFalse() throws Exception {
+        todoList.add(new TodoId("someId"), "task 1");
+        todoList.add(new TodoId("someId"), "task 2");
+
+        assertThat(todoList.read().isAbleToBeEscalated()).isFalse();
+    }
 }

@@ -82,12 +82,53 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.update.href", containsString("v1/todos/" + deferredTodo.getTodoId().getIdentifier())));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.complete.href", containsString("v1/todos/" + deferredTodo.getTodoId().getIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[0]._links.move.href", containsString("v1/todos/" + deferredTodo.getTodoId().getIdentifier() + "/move/" + deferredTodo.getTodoId().getIdentifier())));
+    }
+
+    @Test
+    public void defaultListActions() throws Exception {
+        mockRequestBuilder = baseMockRequestBuilder;
+
+        doGet();
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+
+        assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/list/deferredTodos")));
-        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list")));
+    }
+
+    @Test
+    public void listActions_whenListHasCapacity() throws Exception {
+        mockRequestBuilder = baseMockRequestBuilder;
+        todoService.create(user, "this and that");
+        todoService.createDeferred(user, "here and there");
+
+        doGet();
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
+    }
+
+    @Test
+    public void listActions_whenListDoesNotHaveCapacity() throws Exception {
+        mockRequestBuilder = baseMockRequestBuilder;
+        todoService.create(user, "this and that");
+        todoService.create(user, "one and two");
+        todoService.createDeferred(user, "here and there");
+
+        doGet();
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list._links.escalate.href", containsString("/v1/list/escalate")));
     }
 
     private void doGet() throws Exception {

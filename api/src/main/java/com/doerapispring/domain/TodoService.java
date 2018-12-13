@@ -116,4 +116,16 @@ public class TodoService implements TodoApplicationService {
             throw new InvalidRequestException();
         }
     }
+
+    @Override
+    public void escalate(User user) throws InvalidRequestException {
+        TodoList todoList = todoListRepository.findOne(user.getUserId())
+            .orElseThrow(InvalidRequestException::new);
+        try {
+            todoList.escalate();
+            todoListRepository.save(todoList);
+        } catch (AbnormalModelException | EscalateNotAllowException e) {
+            throw new InvalidRequestException();
+        }
+    }
 }

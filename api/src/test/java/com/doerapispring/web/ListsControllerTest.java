@@ -241,6 +241,26 @@ public class ListsControllerTest {
     }
 
     @Test
+    public void show_whenListIsAbleToBeEscalated_includesEscalateLink() throws Exception {
+        when(readOnlyTodoList.isAbleToBeEscalated()).thenReturn(true);
+
+        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/list/escalateTodo").withRel("escalate"));
+    }
+
+    @Test
+    public void show_whenListIsNotAbleToBeEscalated_doesNotIncludeEscalateLink() throws Exception {
+        when(readOnlyTodoList.isAbleToBeEscalated()).thenReturn(false);
+
+        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+            new Link(MOCK_BASE_URL + "/list/escalateTodo").withRel("escalate"));
+    }
+
+    @Test
     public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
         when(listApplicationService.get(any())).thenThrow(new InvalidRequestException());
 

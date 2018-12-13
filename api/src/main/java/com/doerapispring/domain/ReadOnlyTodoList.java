@@ -84,4 +84,8 @@ public class ReadOnlyTodoList {
     private List<Todo> deferredTodos() {
         return todos.subList(demarcationIndex, todos.size());
     }
+
+    public boolean isAbleToBeEscalated() {
+        return isFull() && deferredTodos().size() > 0;
+    }
 }

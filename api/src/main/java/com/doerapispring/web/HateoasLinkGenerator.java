@@ -36,4 +36,6 @@ interface HateoasLinkGenerator {
     Link createDeferredTodoLink();
 
     Link completedListLink();
+
+    Link listEscalateTodoLink();
 }

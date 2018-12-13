@@ -73,7 +73,7 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_includesLinksByDefault() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo();
 
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
                 new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),

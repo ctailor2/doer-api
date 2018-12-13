@@ -89,4 +89,9 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link completedListLink() {
         return new Link(MOCK_BASE_URL + "/completedList");
     }
+
+    @Override
+    public Link listEscalateTodoLink() {
+        return new Link(MOCK_BASE_URL + "/list/escalateTodo");
+    }
 }
