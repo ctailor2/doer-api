@@ -235,6 +235,65 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     }
 
     @Test
+    public void escalatingDeferredTodos() throws Exception {
+        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+            .headers(httpHeaders))
+            .andReturn().getResponse().getContentAsString();
+
+        String listHref = JsonPath.parse(jsonResponse).read("$._links.list.href", String.class);
+        jsonResponse = mockMvc.perform(get(listHref)
+            .headers(httpHeaders))
+            .andExpect(jsonPath("$.list._links", not(hasKey("pull"))))
+            .andReturn().getResponse().getContentAsString();
+
+        mockMvc.perform(
+            post(
+                JsonPath.parse(jsonResponse)
+                    .read("$.list._links.create.href", String.class))
+                .content("{\"task\":\"first added task for now\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders));
+
+        mockMvc.perform(
+            post(
+                JsonPath.parse(jsonResponse)
+                    .read("$.list._links.create.href", String.class))
+                .content("{\"task\":\"second added task for now\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders));
+
+        mockMvc.perform(
+            post(
+                JsonPath.parse(jsonResponse)
+                    .read("$.list._links.createDeferred.href", String.class))
+                .content("{\"task\":\"task for later\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders));
+
+        jsonResponse = mockMvc.perform(
+            get(listHref)
+                .headers(httpHeaders))
+            .andExpect(jsonPath("$.list.todos", hasSize(2)))
+            .andExpect(jsonPath("$.list.todos[0].task", equalTo("second added task for now")))
+            .andExpect(jsonPath("$.list.todos[1].task", equalTo("first added task for now")))
+            .andExpect(jsonPath("$.list._links", hasKey("escalate")))
+            .andReturn().getResponse().getContentAsString();
+
+        mockMvc.perform(
+            post(
+                JsonPath.parse(jsonResponse)
+                    .read("$.list._links.escalate.href", String.class))
+                .headers(httpHeaders));
+
+        mockMvc.perform(
+            get(listHref)
+                .headers(httpHeaders))
+            .andExpect(jsonPath("$.list.todos", hasSize(2)))
+            .andExpect(jsonPath("$.list.todos[0].task", equalTo("second added task for now")))
+            .andExpect(jsonPath("$.list.todos[1].task", equalTo("task for later")));
+    }
+
+    @Test
     public void displacingTodos_defersTodos() throws Exception {
         String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
             .headers(httpHeaders))
