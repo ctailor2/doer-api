@@ -30,10 +30,11 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -42,6 +43,7 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/list")
@@ -51,8 +53,8 @@ public class GetNowTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Test
     public void todos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that");
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "this and that");
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo firstTodo = todoList.getTodos().get(0);
 
         doGet();

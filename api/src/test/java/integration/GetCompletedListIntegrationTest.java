@@ -32,12 +32,13 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todoService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
 
     private User user;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -46,7 +47,8 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        todoService.createDeferred(user, "someTask");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
+        todoApplicationService.createDeferred(user, defaultListId, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/completedList")
@@ -56,10 +58,10 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todoService.create(user, "some task");
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "some task");
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo = todoList.getTodos().get(0);
-        todoService.complete(user, new TodoId(todo.getTodoId().getIdentifier()));
+        todoApplicationService.complete(user, new TodoId(todo.getTodoId().getIdentifier()));
 
         doGet();
 

@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.ReadOnlyTodoList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,14 +58,14 @@ class ListsController {
                     .collect(toList()),
                 readOnlyTodoList.unlockDuration()
             );
-            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
+            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink("someListId").withRel("createDeferred"));
             if (readOnlyTodoList.isAbleToBeUnlocked()) {
                 todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
             if (readOnlyTodoList.isFull()) {
                 todoListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
             } else {
-                todoListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
+                todoListDTO.add(hateoasLinkGenerator.createTodoLink("listId").withRel("create"));
             }
             if (readOnlyTodoList.isAbleToBeReplenished()) {
                 todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
@@ -94,6 +95,70 @@ class ListsController {
             });
             TodoListResponse todoListResponse = new TodoListResponse(todoListDTO);
             todoListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
+            return ResponseEntity.ok(todoListResponse);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @RequestMapping(value = "/lists/{listId}")
+    @ResponseBody
+    ResponseEntity<TodoListResponse> showOne(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @PathVariable String listId) {
+        try {
+            ReadOnlyTodoList readOnlyTodoList = listApplicationService.getOne(authenticatedUser.getUser(), new ListId(listId));
+            TodoListDTO todoListDTO = new TodoListDTO(
+                readOnlyTodoList.getSectionName(),
+                readOnlyTodoList.getDeferredSectionName(),
+                readOnlyTodoList.getTodos().stream()
+                    .map(todo -> new TodoDTO(
+                        todo.getTodoId().getIdentifier(),
+                        todo.getTask()))
+                    .collect(toList()),
+                readOnlyTodoList.getDeferredTodos().stream()
+                    .map(todo -> new TodoDTO(
+                        todo.getTodoId().getIdentifier(),
+                        todo.getTask()))
+                    .collect(toList()),
+                readOnlyTodoList.unlockDuration()
+            );
+            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"));
+            if (readOnlyTodoList.isAbleToBeUnlocked()) {
+                todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
+            }
+            if (readOnlyTodoList.isFull()) {
+                todoListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
+            } else {
+                todoListDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"));
+            }
+            if (readOnlyTodoList.isAbleToBeReplenished()) {
+                todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
+            }
+            if (readOnlyTodoList.isAbleToBeEscalated()) {
+                todoListDTO.add(hateoasLinkGenerator.listEscalateTodoLink().withRel("escalate"));
+            }
+            todoListDTO.getTodos().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
+
+                todoListDTO.getTodos().forEach(targetTodoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                        todoDTO.getIdentifier(),
+                        targetTodoDTO.getIdentifier()).withRel("move")));
+            });
+            todoListDTO.getDeferredTodos().forEach(todoDTO -> {
+                todoDTO.add(hateoasLinkGenerator.deleteTodoLink(todoDTO.getIdentifier()).withRel("delete"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.completeTodoLink(todoDTO.getIdentifier()).withRel("complete"));
+
+                todoListDTO.getDeferredTodos().forEach(targetTodoDTO ->
+                    todoDTO.add(hateoasLinkGenerator.moveTodoLink(
+                        todoDTO.getIdentifier(),
+                        targetTodoDTO.getIdentifier()).withRel("move")));
+            });
+            TodoListResponse todoListResponse = new TodoListResponse(todoListDTO);
+            todoListResponse.add(hateoasLinkGenerator.listOneLink(listId).withSelfRel());
             return ResponseEntity.ok(todoListResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();

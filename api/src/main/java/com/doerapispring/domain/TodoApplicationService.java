@@ -3,9 +3,9 @@ package com.doerapispring.domain;
 import com.doerapispring.web.InvalidRequestException;
 
 public interface TodoApplicationService {
-    void create(User user, String task) throws InvalidRequestException;
+    void create(User user, ListId listId, String task) throws InvalidRequestException;
 
-    void createDeferred(User user, String task) throws InvalidRequestException;
+    void createDeferred(User user, ListId listId, String task) throws InvalidRequestException;
 
     void delete(User user, TodoId todoId) throws InvalidRequestException;
 

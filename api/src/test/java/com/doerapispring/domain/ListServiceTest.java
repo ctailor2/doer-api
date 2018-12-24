@@ -96,6 +96,27 @@ public class ListServiceTest {
     }
 
     @Test
+    public void getOne_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
+        TodoList mockTodoList = mock(TodoList.class);
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(mockTodoList));
+        ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
+        when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
+        User user = new User(new UserId(identifier));
+
+        ReadOnlyTodoList actual = listService.getOne(user, new ListId("someListId"));
+
+        assertThat(actual).isEqualTo(mockReadOnlyTodoList);
+    }
+
+    @Test
+    public void getOne_whenTodoListNotFound_refusesOperation() throws Exception {
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
+
+        exception.expect(InvalidRequestException.class);
+        listService.getOne(new User(new UserId(identifier)), new ListId("someListId"));
+    }
+
+    @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
         List<CompletedTodo> expectedTodos = singletonList(new CompletedTodo(
             new UserId("someUserId"),

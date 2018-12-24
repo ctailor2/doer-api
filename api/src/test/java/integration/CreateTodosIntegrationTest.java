@@ -27,56 +27,60 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        SessionTokenDTO signupSessionToken = userSessionsApiService.signup("test@email.com", "password");
+        String identifier = "test@email.com";
+        User user = new User(new UserId(identifier));
+        SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void createForNow() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/list/todos")
-                .content("{\"task\":\"read the things\"}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(httpHeaders))
-                .andReturn();
+        mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos")
+            .content("{\"task\":\"read the things\"}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(httpHeaders))
+            .andReturn();
 
-        List<Todo> todos = listService.get(new User(new UserId("test@email.com"))).getTodos();
+        List<Todo> todos = listApplicationService.getOne(new User(new UserId("test@email.com")), defaultListId).getTodos();
 
         assertThat(todos.size(), equalTo(1));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/todos")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 
     @Test
     public void createForLater() throws Exception {
-        mvcResult = mockMvc.perform(post("/v1/list/deferredTodos")
-                .content("{\"task\":\"read the things\"}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .headers(httpHeaders))
-                .andReturn();
+        mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/deferredTodos")
+            .content("{\"task\":\"read the things\"}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .headers(httpHeaders))
+            .andReturn();
 
         User user = new User(new UserId("test@email.com"));
-        listService.unlock(user);
-        List<Todo> todos = listService.get(user).getDeferredTodos();
+        listApplicationService.unlock(user);
+        List<Todo> todos = listApplicationService.getOne(user, defaultListId).getDeferredTodos();
 
         assertThat(todos.size(), equalTo(1));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/deferredTodos")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/deferredTodos")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 }

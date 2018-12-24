@@ -25,9 +25,10 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Autowired
     private UserSessionsApiService userSessionsApiService;
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -36,13 +37,14 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void update() throws Exception {
-        todosService.create(user, "some task");
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "some task");
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo = todoList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getTodoId().getIdentifier())
@@ -52,7 +54,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        ReadOnlyTodoList newTodoList = listService.get(new User(new UserId("test@email.com")));
+        ReadOnlyTodoList newTodoList = listApplicationService.get(new User(new UserId("test@email.com")));
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .contains("do the things");

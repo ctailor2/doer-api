@@ -1,7 +1,11 @@
 package com.doerapispring.web;
 
+import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ReadOnlyTodoList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -9,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1/resources")
 class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
+    private final ListApplicationService listApplicationService;
 
-    ResourcesController(HateoasLinkGenerator hateoasLinkGenerator) {
+    ResourcesController(HateoasLinkGenerator hateoasLinkGenerator,
+                        ListApplicationService listApplicationService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
+        this.listApplicationService = listApplicationService;
     }
 
     @RequestMapping(value = "/base", method = RequestMethod.GET)
@@ -38,11 +45,12 @@ class ResourcesController {
 
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> todo() {
+    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        ReadOnlyTodoList firstList = listApplicationService.getAll(authenticatedUser.getUser()).get(0);
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.todoResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.listOneLink(firstList.getListId().get()).withRel("list"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 

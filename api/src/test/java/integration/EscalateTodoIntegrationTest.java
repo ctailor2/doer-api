@@ -25,10 +25,11 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -37,22 +38,23 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void pull() throws Exception {
-        todosService.create(user, "will become deferred after the escalate");
-        todosService.create(user, "will remain");
-        todosService.createDeferred(user, "will no longer be deferred after the escalate");
+        todoApplicationService.create(user, defaultListId, "will become deferred after the escalate");
+        todoApplicationService.create(user, defaultListId, "will remain");
+        todoApplicationService.createDeferred(user, defaultListId, "will no longer be deferred after the escalate");
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/list/escalate")
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
-        listService.unlock(user);
-        ReadOnlyTodoList newTodoList = listService.get(user);
+        listApplicationService.unlock(user);
+        ReadOnlyTodoList newTodoList = listApplicationService.get(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("will remain", "will no longer be deferred after the escalate");

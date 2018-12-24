@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
 import com.doerapispring.domain.TodoId;
 import org.springframework.http.HttpStatus;
@@ -115,27 +116,30 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/list/todos", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/todos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.create(authenticatedUser.getUser(), todoForm.getTask());
+                                             @PathVariable String listId,
+                                             @RequestBody TodoForm todoForm
+    ) throws InvalidRequestException {
+        todoApplicationService.create(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.createTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.createTodoLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listOneLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/deferredTodos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                     @PathVariable String listId,
                                                      @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.createDeferred(authenticatedUser.getUser(), todoForm.getTask());
+        todoApplicationService.createDeferred(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.createDeferredTodoLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listOneLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 }

@@ -9,5 +9,9 @@ public interface ListApplicationService {
 
     ReadOnlyTodoList get(User user) throws InvalidRequestException;
 
+    ReadOnlyTodoList getOne(User user, ListId listId) throws InvalidRequestException;
+
+    List<ReadOnlyTodoList> getAll(User user);
+
     List<CompletedTodo> getCompleted(User user) throws InvalidRequestException;
 }

@@ -31,10 +31,13 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todoService;
+    private TodoApplicationService todoApplicationService;
+
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+
     private User user;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -43,19 +46,20 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/list")
-                .headers(httpHeaders);
+            .get("/v1/lists/" + defaultListId.get())
+            .headers(httpHeaders);
     }
 
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        listService.unlock(user);
-        todoService.create(user, "this and that");
-        todoService.createDeferred(user, "here and there");
-        ReadOnlyTodoList todoList = listService.get(user);
+        listApplicationService.unlock(user);
+        todoApplicationService.create(user, defaultListId, "this and that");
+        todoApplicationService.createDeferred(user, defaultListId, "here and there");
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo = todoList.getTodos().get(0);
         Todo deferredTodo = todoList.getDeferredTodos().get(0);
 
@@ -94,7 +98,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/list/deferredTodos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/lists/" + defaultListId.get() + "/deferredTodos")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list")));
     }
@@ -102,8 +106,8 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void listActions_whenListHasCapacity() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todoService.create(user, "this and that");
-        todoService.createDeferred(user, "here and there");
+        todoApplicationService.create(user, defaultListId, "this and that");
+        todoApplicationService.createDeferred(user, defaultListId, "here and there");
 
         doGet();
 
@@ -111,16 +115,16 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/list/todos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/lists/" + defaultListId.get() + "/todos")));
         assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
     }
 
     @Test
     public void listActions_whenListDoesNotHaveCapacity() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todoService.create(user, "this and that");
-        todoService.create(user, "one and two");
-        todoService.createDeferred(user, "here and there");
+        todoApplicationService.create(user, defaultListId, "this and that");
+        todoApplicationService.create(user, defaultListId, "one and two");
+        todoApplicationService.createDeferred(user, defaultListId, "here and there");
 
         doGet();
 
@@ -133,6 +137,6 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
     private void doGet() throws Exception {
         mvcResult = mockMvc.perform(mockRequestBuilder)
-                .andReturn();
+            .andReturn();
     }
 }

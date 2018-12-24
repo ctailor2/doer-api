@@ -1,5 +1,8 @@
 package integration;
 
+import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -21,12 +24,19 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     @Autowired
     private UserSessionsApiService userSessionsApiService;
 
+    @Autowired
+    private ListApplicationService listApplicationService;
+
+    private String defaultListId;
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
+        User user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId().get();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -39,7 +49,7 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/resources/todo")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId)));
     }
 
     private void doGet() throws Exception {

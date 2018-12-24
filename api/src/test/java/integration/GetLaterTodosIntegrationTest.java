@@ -30,10 +30,11 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -42,6 +43,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.getAll(user).get(0).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
                 .get("/v1/list")
@@ -51,11 +53,11 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     @Test
     public void deferredTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that");
-        todosService.createDeferred(user, "here and now");
-        todosService.createDeferred(user, "near and far");
-        listService.unlock(user);
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "this and that");
+        todoApplicationService.createDeferred(user, defaultListId, "here and now");
+        todoApplicationService.createDeferred(user, defaultListId, "near and far");
+        listApplicationService.unlock(user);
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo secondTodo = todoList.getDeferredTodos().get(0);
         Todo thirdTodo = todoList.getDeferredTodos().get(1);
 
