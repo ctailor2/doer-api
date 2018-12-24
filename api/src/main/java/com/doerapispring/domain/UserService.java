@@ -8,9 +8,15 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final ObjectRepository<User, UserId> userRepository;
+    private final TodoListFactory todoListFactory;
+    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
-    UserService(ObjectRepository<User, UserId> userRepository) {
+    UserService(ObjectRepository<User, UserId> userRepository,
+                TodoListFactory todoListFactory,
+                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository) {
         this.userRepository = userRepository;
+        this.todoListFactory = todoListFactory;
+        this.todoListRepository = todoListRepository;
     }
 
     public User create(String identifier) throws InvalidRequestException {
@@ -20,6 +26,11 @@ public class UserService {
         User user = new User(userId);
         try {
             userRepository.save(user);
+            TodoList todoList = todoListFactory.todoList(
+                userId,
+                todoListRepository.nextIdentifier(),
+                "default");
+            todoListRepository.save(todoList);
         } catch (AbnormalModelException e) {
             throw new InvalidRequestException();
         }

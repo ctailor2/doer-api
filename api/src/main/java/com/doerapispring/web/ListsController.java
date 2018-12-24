@@ -43,8 +43,8 @@ class ListsController {
         try {
             ReadOnlyTodoList readOnlyTodoList = listApplicationService.get(authenticatedUser.getUser());
             TodoListDTO todoListDTO = new TodoListDTO(
-                readOnlyTodoList.getName(),
-                readOnlyTodoList.getDeferredName(),
+                readOnlyTodoList.getSectionName(),
+                readOnlyTodoList.getDeferredSectionName(),
                 readOnlyTodoList.getTodos().stream()
                     .map(todo -> new TodoDTO(
                         todo.getTodoId().getIdentifier(),

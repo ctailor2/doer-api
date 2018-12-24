@@ -15,24 +15,38 @@ public class ReadOnlyTodoList {
     private static final int MAX_SIZE = 2;
     private final Clock clock;
     private final List<Todo> todos;
+    private final ListId listId;
+    private final String name;
     private final Date lastUnlockedAt;
     private final Integer demarcationIndex;
 
     public ReadOnlyTodoList(Clock clock,
+                            String name,
                             Date lastUnlockedAt,
                             List<Todo> todos,
-                            Integer demarcationIndex) {
+                            Integer demarcationIndex,
+                            ListId listId) {
         this.clock = clock;
+        this.name = name;
         this.lastUnlockedAt = lastUnlockedAt;
         this.demarcationIndex = demarcationIndex;
         this.todos = todos;
+        this.listId = listId;
+    }
+
+    public ListId getListId() {
+        return listId;
     }
 
     public String getName() {
+        return name;
+    }
+
+    public String getSectionName() {
         return NAME;
     }
 
-    public String getDeferredName() {
+    public String getDeferredSectionName() {
         return DEFERRED_NAME;
     }
 

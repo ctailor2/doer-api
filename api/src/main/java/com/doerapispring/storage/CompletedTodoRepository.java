@@ -2,6 +2,7 @@ package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.IdGenerator;
 
 import java.sql.Date;
 import java.util.List;
@@ -12,10 +13,14 @@ import static java.util.stream.Collectors.toList;
 public class CompletedTodoRepository implements OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> {
     private final CompletedTodoDAO completedTodoDAO;
     private final UserDAO userDAO;
+    private final IdGenerator idGenerator;
 
-    CompletedTodoRepository(CompletedTodoDAO completedTodoDAO, UserDAO userDAO) {
+    CompletedTodoRepository(CompletedTodoDAO completedTodoDAO,
+                            UserDAO userDAO,
+                            IdGenerator idGenerator) {
         this.completedTodoDAO = completedTodoDAO;
         this.userDAO = userDAO;
+        this.idGenerator = idGenerator;
     }
 
     @Override
@@ -41,5 +46,10 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
                     Date.from(completedTodoEntity.completedAt.toInstant())
                 ))
             .collect(toList());
+    }
+
+    @Override
+    public CompletedTodoId nextIdentifier() {
+        return new CompletedTodoId(idGenerator.generateId().toString());
     }
 }

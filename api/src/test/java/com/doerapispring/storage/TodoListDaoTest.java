@@ -27,6 +27,7 @@ public class TodoListDaoTest {
     private JdbcTemplate jdbcTemplate;
 
     private Long userId;
+    private String listId;
 
     @Before
     public void setUp() throws Exception {
@@ -34,18 +35,22 @@ public class TodoListDaoTest {
             "users (email, password_digest, created_at, updated_at) " +
             "VALUES ('someEmail', 'somePasswordDigest', now(), now())");
         userId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE email = 'someEmail'", Long.class);
+        listId = "someUuid";
+        jdbcTemplate.update("INSERT INTO " +
+            "lists (uuid, name, user_id, last_unlocked_at, demarcation_index) " +
+            "VALUES ('" + listId + "', 'someName'," + userId + ", now(), 0)");
     }
 
     @Test
     public void findsTodoList_withTodosOrderedByPosition() {
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid2', 'task2', 2, now(), now())");
+            "todos (list_id, uuid, task, position, created_at, updated_at) " +
+            "VALUES ('" + listId + "', 'uuid2', 'task2', 2, now(), now())");
         jdbcTemplate.update("INSERT INTO " +
-            "todos (user_id, uuid, task, position, created_at, updated_at) " +
-            "VALUES (" + userId + ", 'uuid1', 'task1', 1, now(), now())");
+            "todos (list_id, uuid, task, position, created_at, updated_at) " +
+            "VALUES ('" + listId + "', 'uuid1', 'task1', 1, now(), now())");
 
-        List<TodoEntity> todoEntities = todoListDao.findByEmail("someEmail").todoEntities;
+        List<TodoEntity> todoEntities = todoListDao.findByEmail("someEmail").get(0).todoEntities;
         assertThat(todoEntities).hasSize(2);
         assertThat(todoEntities.get(0).task).isEqualTo("task1");
         assertThat(todoEntities.get(1).task).isEqualTo("task2");

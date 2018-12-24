@@ -37,6 +37,8 @@ public class TodoListTest {
         todoList = new TodoList(
             mockClock,
             userId,
+            new ListId("someListId"),
+            "someName",
             Date.from(Instant.EPOCH),
             new ArrayList<>(),
             0);

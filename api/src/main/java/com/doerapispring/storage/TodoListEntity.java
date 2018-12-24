@@ -12,19 +12,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "lists")
 @EqualsAndHashCode
 @ToString
 public class TodoListEntity implements Serializable {
     @Id
-    @Column(name = "id")
-    public Long id;
+    @Column(name = "uuid")
+    public String uuid;
 
-    @Column(name = "email", unique = true)
-    public String email;
+    @Column(name = "name")
+    public String name;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    public UserEntity userEntity;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "list_id", referencedColumnName = "uuid", nullable = false)
     public List<TodoEntity> todoEntities = new ArrayList<>();
 
     @Column(name = "last_unlocked_at")

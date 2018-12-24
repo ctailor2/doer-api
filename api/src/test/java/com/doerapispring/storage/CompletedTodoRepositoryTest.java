@@ -9,12 +9,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.IdGenerator;
 
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @SpringBootTest
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -34,7 +36,7 @@ public class CompletedTodoRepositoryTest {
 
     @Before
     public void setUp() throws Exception {
-        completedTodoRepository = new CompletedTodoRepository(completedTodoDAO, userDAO);
+        completedTodoRepository = new CompletedTodoRepository(completedTodoDAO, userDAO, mock(IdGenerator.class));
         userRepository = new UserRepository(userDAO);
 
     }

@@ -8,12 +8,23 @@ public class TodoList {
     private final Clock clock;
     private final UserId userId;
     private final List<Todo> todos;
+    private final ListId listId;
+    private final String name;
     private Date lastUnlockedAt;
     private Integer demarcationIndex;
 
-    public TodoList(Clock clock, UserId userId, Date lastUnlockedAt, List<Todo> todos, Integer demarcationIndex) {
+    public TodoList(
+        Clock clock,
+        UserId userId,
+        ListId listId,
+        String name,
+        Date lastUnlockedAt,
+        List<Todo> todos,
+        Integer demarcationIndex) {
         this.clock = clock;
         this.userId = userId;
+        this.listId = listId;
+        this.name = name;
         this.lastUnlockedAt = lastUnlockedAt;
         this.todos = todos;
         this.demarcationIndex = demarcationIndex;
@@ -102,6 +113,14 @@ public class TodoList {
         return userId;
     }
 
+    public ListId getListId() {
+        return listId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     private Todo getByTodoId(TodoId todoId) throws TodoNotFoundException {
         return todos.stream()
             .filter(todo -> todoId.equals(todo.getTodoId()))
@@ -122,7 +141,7 @@ public class TodoList {
     }
 
     ReadOnlyTodoList read() {
-        return new ReadOnlyTodoList(clock, lastUnlockedAt, todos, demarcationIndex);
+        return new ReadOnlyTodoList(clock, name, lastUnlockedAt, todos, demarcationIndex, listId);
     }
 
     void escalate() throws EscalateNotAllowException {

@@ -94,9 +94,9 @@ public class ListsControllerTest {
     @Test
     public void show_returnsList() throws Exception {
         String name = "someName";
-        when(readOnlyTodoList.getName()).thenReturn(name);
+        when(readOnlyTodoList.getSectionName()).thenReturn(name);
         String deferredName = "someDeferredName";
-        when(readOnlyTodoList.getDeferredName()).thenReturn(deferredName);
+        when(readOnlyTodoList.getDeferredSectionName()).thenReturn(deferredName);
         Todo todo = new Todo(new TodoId("oneNowId"), "oneNowTask");
         when(readOnlyTodoList.getTodos()).thenReturn(singletonList(todo));
         Todo deferredTodo = new Todo(new TodoId("oneLaterId"), "oneLaterTask");

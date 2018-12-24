@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public interface OwnedObjectRepository<T, OwnerId, Id> {
+public interface OwnedObjectRepository<T, OwnerId, Id> extends IdentityGeneratingRepository<Id> {
     void save(T model) throws AbnormalModelException;
 
     default Optional<T> find(OwnerId ownerId, Id id) {
