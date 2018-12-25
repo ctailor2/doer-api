@@ -15,7 +15,8 @@ import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 
@@ -30,10 +31,11 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -42,20 +44,21 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.get(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/list")
+                .get("/v1/lists/" + defaultListId.get())
                 .headers(httpHeaders);
     }
 
     @Test
     public void deferredTodos() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todosService.create(user, "this and that");
-        todosService.createDeferred(user, "here and now");
-        todosService.createDeferred(user, "near and far");
-        listService.unlock(user);
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "this and that");
+        todoApplicationService.createDeferred(user, defaultListId, "here and now");
+        todoApplicationService.createDeferred(user, defaultListId, "near and far");
+        listApplicationService.unlock(user);
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo secondTodo = todoList.getDeferredTodos().get(0);
         Todo thirdTodo = todoList.getDeferredTodos().get(1);
 
@@ -76,7 +79,7 @@ public class GetLaterTodosIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[0].href", containsString("v1/todos/" + thirdTodo.getTodoId().getIdentifier() + "/move/" + secondTodo.getTodoId().getIdentifier())));
         assertThat(responseContent, hasJsonPath("$.list.deferredTodos[1]._links.move[1].href", containsString("v1/todos/" + thirdTodo.getTodoId().getIdentifier() + "/move/" + thirdTodo.getTodoId().getIdentifier())));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 
     private void doGet() throws Exception {

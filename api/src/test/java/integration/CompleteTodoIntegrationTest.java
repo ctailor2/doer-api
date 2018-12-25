@@ -26,10 +26,11 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -38,14 +39,15 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.get(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void complete_completesTodo() throws Exception {
-        todosService.create(user, "some other task");
-        todosService.create(user, "some task");
-        ReadOnlyTodoList todoList = listService.get(user);
+        todoApplicationService.create(user, defaultListId, "some other task");
+        todoApplicationService.create(user, defaultListId, "some task");
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo1 = todoList.getTodos().get(0);
         Todo todo2 = todoList.getTodos().get(1);
 
@@ -56,10 +58,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyTodoList newTodoList = listService.get(new User(new UserId("test@email.com")));
+        ReadOnlyTodoList newTodoList = listApplicationService.get(new User(new UserId("test@email.com")));
 
         assertThat(newTodoList.getTodos(), hasSize(0));
-        List<CompletedTodo> completedTodos = listService.getCompleted(new User(new UserId("test@email.com")));
+        List<CompletedTodo> completedTodos = listApplicationService.getCompleted(new User(new UserId("test@email.com")));
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));

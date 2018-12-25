@@ -25,10 +25,11 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -37,22 +38,23 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.get(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void pull() throws Exception {
-        todosService.createDeferred(user, "will get pulled");
-        todosService.createDeferred(user, "will also get pulled");
-        todosService.createDeferred(user, "keep for later");
+        todoApplicationService.createDeferred(user, defaultListId, "will get pulled");
+        todoApplicationService.createDeferred(user, defaultListId, "will also get pulled");
+        todoApplicationService.createDeferred(user, defaultListId, "keep for later");
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/list/pull")
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
-        listService.unlock(user);
-        ReadOnlyTodoList newTodoList = listService.get(user);
+        listApplicationService.unlock(user);
+        ReadOnlyTodoList newTodoList = listApplicationService.get(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("will get pulled", "will also get pulled");

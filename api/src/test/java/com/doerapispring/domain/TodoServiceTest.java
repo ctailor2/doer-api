@@ -55,7 +55,7 @@ public class TodoServiceTest {
     @Test
     public void create_whenTodoListFound_addsTodoToRepository() throws Exception {
         String task = "some things";
-        todoService.create(user, task);
+        todoService.create(user, new ListId("someListId"), task);
 
         verify(todoList).add(new TodoId(todoIdentifier), task);
         verify(mockTodoListRepository).save(todoList);
@@ -66,7 +66,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).add(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.create(user, "some things"))
+            todoService.create(user, new ListId("someListId"), "some things"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -76,7 +76,7 @@ public class TodoServiceTest {
         doThrow(new ListSizeExceededException()).when(todoList).add(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(user, "some things");
+        todoService.create(user, new ListId("someListId"), "some things");
     }
 
     @Test
@@ -84,7 +84,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(user, "some things");
+        todoService.create(user, new ListId("someListId"), "some things");
     }
 
     @Test
@@ -92,13 +92,13 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.create(user, "some things");
+        todoService.create(user, new ListId("someListId"), "some things");
     }
 
     @Test
     public void createDeferred_whenTodoListFound_addsTodoToRepository() throws Exception {
         String task = "some things";
-        todoService.createDeferred(user, task);
+        todoService.createDeferred(user, new ListId("someListId"), task);
 
         verify(todoList).addDeferred(new TodoId(todoIdentifier), task);
         verify(mockTodoListRepository).save(todoList);
@@ -109,7 +109,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).addDeferred(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.createDeferred(user, "some things"))
+            todoService.createDeferred(user, new ListId("someListId"), "some things"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
 
@@ -120,7 +120,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.createDeferred(user, "some things");
+        todoService.createDeferred(user, new ListId("someListId"), "some things");
     }
 
     @Test
@@ -128,7 +128,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.createDeferred(user, "some things");
+        todoService.createDeferred(user, new ListId("someListId"), "some things");
     }
 
     @Test

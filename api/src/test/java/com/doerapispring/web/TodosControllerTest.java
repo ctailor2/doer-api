@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
 import com.doerapispring.domain.TodoId;
 import com.doerapispring.domain.User;
@@ -229,7 +230,7 @@ public class TodosControllerTest {
 
     @Test
     public void create_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/todos")
+        mockMvc.perform(post("/v1/lists/someListId/todos")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"task\": \"return redbox movie\"}"))
             .andExpect(status().isCreated());
@@ -239,19 +240,20 @@ public class TodosControllerTest {
     public void create_callsTodoService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, todoForm);
+        String listIdPathVariable = "someListId";
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, listIdPathVariable, todoForm);
 
-        verify(todoApplicationService).create(user, task);
+        verify(todoApplicationService).create(user, new ListId(listIdPathVariable), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/list/createTodo").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listIdPathVariable + "/createTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listIdPathVariable).withRel("list"));
     }
 
     @Test
     public void createDeferred_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/deferredTodos")
+        mockMvc.perform(post("/v1/lists/someListId/deferredTodos")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"task\": \"return redbox movie\"}"))
             .andExpect(status().isCreated());
@@ -261,13 +263,14 @@ public class TodosControllerTest {
     public void createDeferred_callsTodoService_returns201() throws Exception {
         String task = "some task";
         TodoForm todoForm = new TodoForm(task);
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, todoForm);
+        String listIdPathVariable = "someListId";
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, listIdPathVariable, todoForm);
 
-        verify(todoApplicationService).createDeferred(user, task);
+        verify(todoApplicationService).createDeferred(user, new ListId(listIdPathVariable), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/list/createDeferredTodo").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listIdPathVariable + "/createDeferredTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listIdPathVariable).withRel("list"));
     }
 }

@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
 import com.doerapispring.domain.TodoId;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ class TodosController {
             todoApplicationService.delete(authenticatedUser.getUser(), new TodoId(localId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
-                hateoasLinkGenerator.listLink().withRel("list"));
+                hateoasLinkGenerator.listLink(null).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -42,7 +43,7 @@ class TodosController {
         todoApplicationService.displace(authenticatedUser.getUser(), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.listLink(null).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
@@ -54,7 +55,7 @@ class TodosController {
         todoApplicationService.update(authenticatedUser.getUser(), new TodoId(localId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.listLink(null).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
@@ -65,8 +66,9 @@ class TodosController {
         try {
             todoApplicationService.complete(authenticatedUser.getUser(), new TodoId(localId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
-                hateoasLinkGenerator.listLink().withRel("list"));
+            resourcesResponse.add(
+                hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
+                hateoasLinkGenerator.listLink(null).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -83,7 +85,7 @@ class TodosController {
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.moveTodoLink(localId, targetLocalId).withSelfRel(),
-                hateoasLinkGenerator.listLink().withRel("list"));
+                hateoasLinkGenerator.listLink(null).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -98,7 +100,7 @@ class TodosController {
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.listPullTodosLink().withSelfRel(),
-                hateoasLinkGenerator.listLink().withRel("list"));
+                hateoasLinkGenerator.listLink(null).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -111,31 +113,34 @@ class TodosController {
         todoApplicationService.escalate(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink().withSelfRel());
-        resourcesResponse.add(hateoasLinkGenerator.listLink().withRel("list"));
+        resourcesResponse.add(hateoasLinkGenerator.listLink(null).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/list/todos", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/todos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.create(authenticatedUser.getUser(), todoForm.getTask());
+                                             @PathVariable String listId,
+                                             @RequestBody TodoForm todoForm
+    ) throws InvalidRequestException {
+        todoApplicationService.create(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.createTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.createTodoLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/list/deferredTodos", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/deferredTodos", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                     @PathVariable String listId,
                                                      @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.createDeferred(authenticatedUser.getUser(), todoForm.getTask());
+        todoApplicationService.createDeferred(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.createDeferredTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink().withRel("list"));
+            hateoasLinkGenerator.createDeferredTodoLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 }

@@ -30,16 +30,17 @@ class ListsController {
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
                 hateoasLinkGenerator.listUnlockLink().withSelfRel(),
-                hateoasLinkGenerator.listLink().withRel("list"));
+                hateoasLinkGenerator.listLink(null).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @RequestMapping(value = "/list")
+    @RequestMapping(value = {"/lists/{listId}", "/list"})
     @ResponseBody
-    ResponseEntity<TodoListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<TodoListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                          @PathVariable(required = false) String listId) {
         try {
             ReadOnlyTodoList readOnlyTodoList = listApplicationService.get(authenticatedUser.getUser());
             TodoListDTO todoListDTO = new TodoListDTO(
@@ -57,14 +58,15 @@ class ListsController {
                     .collect(toList()),
                 readOnlyTodoList.unlockDuration()
             );
-            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink().withRel("createDeferred"));
+            String readOnlyTodoListId = readOnlyTodoList.getListId().get();
+            todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink(readOnlyTodoListId).withRel("createDeferred"));
             if (readOnlyTodoList.isAbleToBeUnlocked()) {
                 todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
             if (readOnlyTodoList.isFull()) {
                 todoListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
             } else {
-                todoListDTO.add(hateoasLinkGenerator.createTodoLink().withRel("create"));
+                todoListDTO.add(hateoasLinkGenerator.createTodoLink(readOnlyTodoListId).withRel("create"));
             }
             if (readOnlyTodoList.isAbleToBeReplenished()) {
                 todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
@@ -93,7 +95,7 @@ class ListsController {
                         targetTodoDTO.getIdentifier()).withRel("move")));
             });
             TodoListResponse todoListResponse = new TodoListResponse(todoListDTO);
-            todoListResponse.add(hateoasLinkGenerator.listLink().withSelfRel());
+            todoListResponse.add(hateoasLinkGenerator.listLink(readOnlyTodoListId).withSelfRel());
             return ResponseEntity.ok(todoListResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();

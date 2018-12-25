@@ -19,7 +19,7 @@ public class TodoService implements TodoApplicationService {
         this.completedTodoRepository = completedTodoRepository;
     }
 
-    public void create(User user, String task) throws InvalidRequestException {
+    public void create(User user, ListId listId, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();
@@ -33,7 +33,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void createDeferred(User user, String task) throws InvalidRequestException {
+    public void createDeferred(User user, ListId listId, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();

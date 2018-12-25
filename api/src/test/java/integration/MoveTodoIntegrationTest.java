@@ -1,9 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoService;
-import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserId;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
@@ -11,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.net.URI;
@@ -23,7 +19,6 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -34,10 +29,11 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -46,21 +42,14 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.get(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void move() throws Exception {
-        mockMvc.perform(post("/v1/list/todos")
-            .headers(httpHeaders)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"task\": \"some task\"}"))
-            .andExpect(status().isCreated());
-        mockMvc.perform(post("/v1/list/todos")
-            .headers(httpHeaders)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"task\": \"some other task\"}"))
-            .andExpect(status().isCreated());
+        todoApplicationService.create(user, defaultListId, "some task");
+        todoApplicationService.create(user, defaultListId, "some other task");
 
         String todosResponse = mockMvc.perform(get("/v1/list")
             .headers(httpHeaders))

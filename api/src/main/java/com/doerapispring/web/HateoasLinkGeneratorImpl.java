@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.mvc.BasicLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -11,7 +12,11 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
     public Link todoResourcesLink() {
-        return linkTo(methodOn(ResourcesController.class).todo()).withSelfRel();
+        try {
+            return linkTo(methodOn(ResourcesController.class).todo(null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
@@ -91,23 +96,26 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link listLink() {
-        return linkTo(methodOn(ListsController.class).show(null)).withSelfRel();
+    public Link listLink(String listId) {
+        if (listId == null) {
+            return BasicLinkBuilder.linkToCurrentMapping().slash("/v1/list").withSelfRel();
+        }
+        return linkTo(methodOn(ListsController.class).show(null, listId)).withSelfRel();
     }
 
     @Override
-    public Link createTodoLink() {
+    public Link createTodoLink(String listId) {
         try {
-            return linkTo(methodOn(TodosController.class).create(null, null)).withSelfRel();
+            return linkTo(methodOn(TodosController.class).create(null, listId, null)).withSelfRel();
         } catch (InvalidRequestException e) {
             throw new RuntimeException("Failed to create link", e);
         }
     }
 
     @Override
-    public Link createDeferredTodoLink() {
+    public Link createDeferredTodoLink(String listId) {
         try {
-            return linkTo(methodOn(TodosController.class).createDeferred(null, null)).withSelfRel();
+            return linkTo(methodOn(TodosController.class).createDeferred(null, listId, null)).withSelfRel();
         } catch (InvalidRequestException e) {
             throw new RuntimeException("Failed to create link", e);
         }

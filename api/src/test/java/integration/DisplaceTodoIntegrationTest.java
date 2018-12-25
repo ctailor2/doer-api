@@ -26,10 +26,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private TodoService todosService;
+    private TodoApplicationService todoApplicationService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -38,13 +39,14 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        defaultListId = listApplicationService.get(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
-        todosService.create(user, "some other task");
-        todosService.create(user, "some task");
+        todoApplicationService.create(user, defaultListId, "some other task");
+        todoApplicationService.create(user, defaultListId, "some task");
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/list/displace")
             .content("{\"task\":\"do the things\"}")
@@ -54,8 +56,8 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
-        listService.unlock(user);
-        ReadOnlyTodoList newTodoList = listService.get(user);
+        listApplicationService.unlock(user);
+        ReadOnlyTodoList newTodoList = listApplicationService.get(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("do the things", "some task");

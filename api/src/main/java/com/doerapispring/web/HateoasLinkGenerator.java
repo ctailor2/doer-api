@@ -29,11 +29,11 @@ interface HateoasLinkGenerator {
 
     Link listUnlockLink();
 
-    Link listLink();
+    Link listLink(String listId);
 
-    Link createTodoLink();
+    Link createTodoLink(String listId);
 
-    Link createDeferredTodoLink();
+    Link createDeferredTodoLink(String listId);
 
     Link completedListLink();
 
