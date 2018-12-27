@@ -106,7 +106,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void pull(User user) throws InvalidRequestException {
+    public void pull(User user, ListId listId) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {

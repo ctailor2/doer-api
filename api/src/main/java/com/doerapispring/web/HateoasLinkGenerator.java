@@ -25,7 +25,7 @@ interface HateoasLinkGenerator {
 
     Link moveTodoLink(String localId, String targetLocalId);
 
-    Link listPullTodosLink();
+    Link listPullTodosLink(String listId);
 
     Link listUnlockLink();
 

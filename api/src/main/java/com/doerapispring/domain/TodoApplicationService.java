@@ -17,7 +17,7 @@ public interface TodoApplicationService {
 
     void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException;
 
-    void pull(User user) throws InvalidRequestException;
+    void pull(User user, ListId listId) throws InvalidRequestException;
 
     void escalate(User user, ListId listId) throws InvalidRequestException;
 }

@@ -339,7 +339,7 @@ public class TodoServiceTest {
 
     @Test
     public void pull_whenTodoListFound_whenTodosPulled_updatesPulledTodosUsingRepository() throws Exception {
-        todoService.pull(user);
+        todoService.pull(user, new ListId("someListId"));
 
         verify(todoList).pull();
         verify(mockTodoListRepository).save(todoList);
@@ -350,7 +350,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.pull(user);
+        todoService.pull(user, new ListId("someListId"));
     }
 
     @Test

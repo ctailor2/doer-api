@@ -48,7 +48,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         todoApplicationService.createDeferred(user, defaultListId, "will also get pulled");
         todoApplicationService.createDeferred(user, defaultListId, "keep for later");
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/list/pull")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
@@ -62,7 +62,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
             .containsExactly("keep for later");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/pull")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/pull")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 }

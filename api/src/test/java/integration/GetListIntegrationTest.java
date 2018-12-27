@@ -122,7 +122,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.create.href", containsString("/v1/lists/" + defaultListId.get() + "/todos")));
-        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/list/pull")));
+        assertThat(responseContent, hasJsonPath("$.list._links.pull.href", containsString("/v1/lists/" + defaultListId.get() + "/pull")));
     }
 
     @Test

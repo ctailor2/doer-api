@@ -187,27 +187,28 @@ public class TodosControllerTest {
 
     @Test
     public void pull_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/pull"))
+        mockMvc.perform(post("/v1/lists/someListId/pull"))
             .andExpect(status().isAccepted());
 
-        verify(todoApplicationService).pull(user);
+        verify(todoApplicationService).pull(user, new ListId("someListId"));
     }
 
     @Test
     public void pull_responseIncludesLinks() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser);
+        String listId = "someListId";
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/list/pullTodos").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test
     public void pull_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).pull(any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).pull(any(), any());
 
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser, "someListId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

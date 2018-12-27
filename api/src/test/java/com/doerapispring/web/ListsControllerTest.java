@@ -209,7 +209,7 @@ public class ListsControllerTest {
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
     }
 
     @Test
@@ -219,7 +219,7 @@ public class ListsControllerTest {
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
-            new Link(MOCK_BASE_URL + "/list/pullTodos").withRel("pull"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
     }
 
     @Test
