@@ -48,7 +48,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         todoApplicationService.create(user, defaultListId, "some other task");
         todoApplicationService.create(user, defaultListId, "some task");
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/list/displace")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/displace")
             .content("{\"task\":\"do the things\"}")
             .contentType(MediaType.APPLICATION_JSON)
             .headers(httpHeaders))
@@ -65,7 +65,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .containsExactly("some other task");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/displace")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/displace")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
     }
 }

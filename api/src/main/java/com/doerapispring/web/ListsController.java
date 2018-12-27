@@ -64,7 +64,7 @@ class ListsController {
                 todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
             }
             if (readOnlyTodoList.isFull()) {
-                todoListDTO.add(hateoasLinkGenerator.displaceTodoLink().withRel("displace"));
+                todoListDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"));
             } else {
                 todoListDTO.add(hateoasLinkGenerator.createTodoLink(readOnlyTodoListId).withRel("create"));
             }

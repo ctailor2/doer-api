@@ -37,14 +37,15 @@ class TodosController {
         }
     }
 
-    @RequestMapping(value = "/list/displace", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/displace", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                               @PathVariable String listId,
                                                @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.displace(authenticatedUser.getUser(), todoForm.getTask());
+        todoApplicationService.displace(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink().withSelfRel(),
-            hateoasLinkGenerator.listLink(null).withRel("list"));
+        resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 

@@ -58,7 +58,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void displace(User user, String task) throws InvalidRequestException {
+    public void displace(User user, ListId listId, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();

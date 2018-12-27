@@ -79,7 +79,7 @@ public class TodosControllerTest {
 
     @Test
     public void displace_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/displace")
+        mockMvc.perform(post("/v1/lists/someListId/displace")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"task\": \"return redbox movie\"}"))
             .andExpect(status().isAccepted());
@@ -88,15 +88,16 @@ public class TodosControllerTest {
     @Test
     public void displace_callsTodoService_returns202() throws Exception {
         String task = "some task";
+        String listId = "someListId";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.displace(authenticatedUser, new TodoForm(task));
+            todosController.displace(authenticatedUser, listId, new TodoForm(task));
 
-        verify(todoApplicationService).displace(user, task);
+        verify(todoApplicationService).displace(user, new ListId(listId), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/list/displaceTodo").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/displaceTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test

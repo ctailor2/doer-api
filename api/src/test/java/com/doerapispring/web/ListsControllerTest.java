@@ -199,7 +199,7 @@ public class ListsControllerTest {
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createTodo").withRel("create"));
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/displaceTodo").withRel("displace"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/displaceTodo").withRel("displace"));
     }
 
     @Test

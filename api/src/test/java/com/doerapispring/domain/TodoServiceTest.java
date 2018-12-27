@@ -158,7 +158,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenTodoListFound_whenTodoFound_savesUsingRepository() throws Exception {
-        todoService.displace(user, "someTask");
+        todoService.displace(user, new ListId("someListId"), "someTask");
 
         verify(todoList).displace(new TodoId(todoIdentifier), "someTask");
         verify(mockTodoListRepository).save(todoList);
@@ -169,7 +169,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(user, "someTask");
+        todoService.displace(user, new ListId("someListId"), "someTask");
     }
 
     @Test
@@ -177,7 +177,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).displace(any(TodoId.class), any());
 
         assertThatThrownBy(() ->
-            todoService.displace(user, "someTask"))
+            todoService.displace(user, new ListId("someListId"), "someTask"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -187,7 +187,7 @@ public class TodoServiceTest {
         doThrow(new ListNotFullException()).when(todoList).displace(any(TodoId.class), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(user, "someTask");
+        todoService.displace(user, new ListId("someListId"), "someTask");
     }
 
     @Test
@@ -195,7 +195,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.displace(user, "someTask");
+        todoService.displace(user, new ListId("someListId"), "someTask");
     }
 
     @Test

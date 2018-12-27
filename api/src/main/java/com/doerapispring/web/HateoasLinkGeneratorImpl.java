@@ -48,9 +48,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link displaceTodoLink() {
+    public Link displaceTodoLink(String listId) {
         try {
-            return linkTo(methodOn(TodosController.class).displace(null, null)).withSelfRel();
+            return linkTo(methodOn(TodosController.class).displace(null, listId, null)).withSelfRel();
         } catch (InvalidRequestException e) {
             throw new RuntimeException("Failed to create link", e);
         }
