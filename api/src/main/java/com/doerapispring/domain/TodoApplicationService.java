@@ -7,7 +7,7 @@ public interface TodoApplicationService {
 
     void createDeferred(User user, ListId listId, String task) throws InvalidRequestException;
 
-    void delete(User user, TodoId todoId) throws InvalidRequestException;
+    void delete(User user, ListId listId, TodoId todoId) throws InvalidRequestException;
 
     void displace(User user, String task) throws InvalidRequestException;
 

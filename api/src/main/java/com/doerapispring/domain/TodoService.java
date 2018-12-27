@@ -47,7 +47,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void delete(User user, TodoId todoId) throws InvalidRequestException {
+    public void delete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {

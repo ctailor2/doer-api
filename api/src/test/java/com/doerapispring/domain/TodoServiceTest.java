@@ -134,7 +134,7 @@ public class TodoServiceTest {
     @Test
     public void delete_whenTodoListFound_whenTodoFound_deletesTodoUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.delete(user, todoId);
+        todoService.delete(user, new ListId("someListId"), todoId);
 
         verify(todoList).delete(todoId);
         verify(mockTodoListRepository).save(todoList);
@@ -145,7 +145,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.delete(user, new TodoId("someTodoId"));
+        todoService.delete(user, new ListId("someListId"), new TodoId("someTodoId"));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).delete(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.delete(user, new TodoId("someTodoId"));
+        todoService.delete(user, new ListId("someListId"), new TodoId("someTodoId"));
     }
 
     @Test

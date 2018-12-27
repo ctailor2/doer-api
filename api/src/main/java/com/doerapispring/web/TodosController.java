@@ -21,15 +21,16 @@ class TodosController {
         this.todoApplicationService = todoApplicationService;
     }
 
-    @RequestMapping(value = "/todos/{localId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/lists/{listId}/todos/{todoId}", method = RequestMethod.DELETE)
     @ResponseBody
     ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable(value = "localId") String localId) {
+                                             @PathVariable String listId,
+                                             @PathVariable String todoId) {
         try {
-            todoApplicationService.delete(authenticatedUser.getUser(), new TodoId(localId));
+            todoApplicationService.delete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(localId).withSelfRel(),
-                hateoasLinkGenerator.listLink(null).withRel("list"));
+            resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, todoId).withSelfRel(),
+                hateoasLinkGenerator.listLink(listId).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
