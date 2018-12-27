@@ -202,7 +202,7 @@ public class TodoServiceTest {
     public void update_whenTodoListFound_whenTodoFound_updatesUsingRepository() throws Exception {
         String updatedTask = "someOtherTask";
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.update(user, todoId, updatedTask);
+        todoService.update(user, new ListId("someListId"), todoId, updatedTask);
 
         verify(todoList).update(todoId, updatedTask);
         verify(mockTodoListRepository).save(todoList);
@@ -213,7 +213,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(user, new TodoId("someIdentifier"), "someOtherTask");
+        todoService.update(user, new ListId("someListId"), new TodoId("someIdentifier"), "someOtherTask");
     }
 
     @Test
@@ -221,7 +221,7 @@ public class TodoServiceTest {
         doThrow(new DuplicateTodoException()).when(todoList).update(any(), any());
 
         assertThatThrownBy(() ->
-            todoService.update(user, new TodoId("someIdentifier"), "someTask"))
+            todoService.update(user, new ListId("someListId"), new TodoId("someIdentifier"), "someTask"))
             .isInstanceOf(InvalidRequestException.class)
             .hasMessageContaining("already exists");
     }
@@ -231,7 +231,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).update(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(user, new TodoId("someId"), "someTask");
+        todoService.update(user, new ListId("someListId"), new TodoId("someId"), "someTask");
     }
 
     @Test
@@ -239,7 +239,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.update(user, new TodoId("someId"), "someTask");
+        todoService.update(user, new ListId("someListId"), new TodoId("someId"), "someTask");
     }
 
     @Test

@@ -49,15 +49,16 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/todos/{localId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/lists/{listId}/todos/{todoId}", method = RequestMethod.PUT)
     @ResponseBody
     ResponseEntity<ResourcesResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                             @PathVariable(value = "localId") String localId,
+                                             @PathVariable String listId,
+                                             @PathVariable String todoId,
                                              @RequestBody TodoForm todoForm) throws InvalidRequestException {
-        todoApplicationService.update(authenticatedUser.getUser(), new TodoId(localId), todoForm.getTask());
+        todoApplicationService.update(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(localId).withSelfRel(),
-            hateoasLinkGenerator.listLink(null).withRel("list"));
+        resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(listId, todoId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 

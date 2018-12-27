@@ -78,7 +78,7 @@ class ListsController {
             }
             todoListDTO.getTodos().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("complete"));
 
                 todoListDTO.getTodos().forEach(targetTodoDTO ->
@@ -88,7 +88,7 @@ class ListsController {
             });
             todoListDTO.getDeferredTodos().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("delete"));
-                todoDTO.add(hateoasLinkGenerator.updateTodoLink(todoDTO.getIdentifier()).withRel("update"));
+                todoDTO.add(hateoasLinkGenerator.updateTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("update"));
                 todoDTO.add(hateoasLinkGenerator.completeTodoLink(readOnlyTodoListId, todoDTO.getIdentifier()).withRel("complete"));
 
                 todoListDTO.getDeferredTodos().forEach(targetTodoDTO ->

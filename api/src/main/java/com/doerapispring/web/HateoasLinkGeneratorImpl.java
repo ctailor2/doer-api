@@ -57,9 +57,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String localId) {
+    public Link updateTodoLink(String listId, String todoId) {
         try {
-            return linkTo(methodOn(TodosController.class).update(null, localId, null)).withSelfRel();
+            return linkTo(methodOn(TodosController.class).update(null, listId, todoId, null)).withSelfRel();
         } catch (InvalidRequestException e) {
             throw new RuntimeException("Failed to create link", e);
         }

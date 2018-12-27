@@ -47,7 +47,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo = todoList.getTodos().get(0);
 
-        MvcResult mvcResult = mockMvc.perform(put("/v1/todos/" + todo.getTodoId().getIdentifier())
+        MvcResult mvcResult = mockMvc.perform(put("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
             .content("{\"task\":\"do the things\"}")
             .contentType(MediaType.APPLICATION_JSON)
             .headers(httpHeaders))
@@ -60,7 +60,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .contains("do the things");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/todos/" + todo.getTodoId().getIdentifier())));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
     }
 }

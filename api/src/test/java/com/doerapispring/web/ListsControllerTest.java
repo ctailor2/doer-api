@@ -150,11 +150,11 @@ public class ListsControllerTest {
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos()).hasSize(2);
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneNowId").withRel("delete"),
-            new Link(MOCK_BASE_URL + "/updateTodo/oneNowId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneNowId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneNowId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneNowId").withRel("delete"),
-            new Link(MOCK_BASE_URL + "/updateTodo/oneNowId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneNowId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneNowId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneNowId/moveTodo/oneNowId").withRel("move"),
@@ -165,11 +165,11 @@ public class ListsControllerTest {
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos()).hasSize(2);
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneLaterId").withRel("delete"),
-            new Link(MOCK_BASE_URL + "/updateTodo/oneLaterId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneLaterId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneLaterId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneLaterId").withRel("delete"),
-            new Link(MOCK_BASE_URL + "/updateTodo/oneLaterId").withRel("update"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneLaterId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneLaterId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),

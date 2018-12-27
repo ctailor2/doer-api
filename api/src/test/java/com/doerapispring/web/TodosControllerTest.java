@@ -102,7 +102,7 @@ public class TodosControllerTest {
 
     @Test
     public void update_mapping() throws Exception {
-        mockMvc.perform(put("/v1/todos/123")
+        mockMvc.perform(put("/v1/lists/someListId/todos/123")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"task\": \"return redbox movie\"}"))
             .andExpect(status().isAccepted());
@@ -110,17 +110,18 @@ public class TodosControllerTest {
 
     @Test
     public void update_callsTodoService_returns202() throws Exception {
-        String localId = "someId";
+        String listId = "someListId";
+        String todoId = "someId";
         String task = "some task";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.update(authenticatedUser, localId, new TodoForm(task));
+            todosController.update(authenticatedUser, listId, todoId, new TodoForm(task));
 
-        verify(todoApplicationService).update(user, new TodoId(localId), task);
+        verify(todoApplicationService).update(user, new ListId(listId), new TodoId(todoId), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/updateTodo/someId").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/someId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test

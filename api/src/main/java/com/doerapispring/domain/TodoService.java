@@ -70,7 +70,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void update(User user, TodoId todoId, String task) throws InvalidRequestException {
+    public void update(User user, ListId listId, TodoId todoId, String task) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {

@@ -11,7 +11,7 @@ public interface TodoApplicationService {
 
     void displace(User user, ListId listId, String task) throws InvalidRequestException;
 
-    void update(User user, TodoId todoId, String task) throws InvalidRequestException;
+    void update(User user, ListId listId, TodoId todoId, String task) throws InvalidRequestException;
 
     void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException;
 
