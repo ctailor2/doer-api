@@ -13,7 +13,7 @@ public interface TodoApplicationService {
 
     void update(User user, TodoId todoId, String task) throws InvalidRequestException;
 
-    void complete(User user, TodoId todoId) throws InvalidRequestException;
+    void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException;
 
     void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException;
 

@@ -123,29 +123,30 @@ public class TodosControllerTest {
 
     @Test
     public void complete_mapping() throws Exception {
-        mockMvc.perform(post("/v1/todos/123/complete"))
+        mockMvc.perform(post("/v1/lists/someListId/todos/someTodoId/complete"))
             .andExpect(status().isAccepted());
     }
 
     @Test
     public void complete_callsTodoService_returns202() throws Exception {
-        String localId = "someId";
+        String listId = "someListId";
+        String todoId = "someTodoId";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.complete(authenticatedUser, localId);
+            todosController.complete(authenticatedUser, listId, todoId);
 
-        verify(todoApplicationService).complete(user, new TodoId(localId));
+        verify(todoApplicationService).complete(user, new ListId(listId), new TodoId(todoId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/completeTodo/someId").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/someListId/completeTodo/someTodoId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/someListId").withRel("list"));
     }
 
     @Test
     public void complete_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).complete(any(), any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).complete(any(), any(), any());
 
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.complete(authenticatedUser, "someId");
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.complete(authenticatedUser, "someListId", "someId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

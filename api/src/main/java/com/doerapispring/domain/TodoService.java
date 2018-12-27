@@ -83,7 +83,7 @@ public class TodoService implements TodoApplicationService {
         }
     }
 
-    public void complete(User user, TodoId todoId) throws InvalidRequestException {
+    public void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {

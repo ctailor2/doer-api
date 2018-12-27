@@ -61,7 +61,7 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         todoApplicationService.create(user, defaultListId, "some task");
         ReadOnlyTodoList todoList = listApplicationService.get(user);
         Todo todo = todoList.getTodos().get(0);
-        todoApplicationService.complete(user, new TodoId(todo.getTodoId().getIdentifier()));
+        todoApplicationService.complete(user, defaultListId, new TodoId(todo.getTodoId().getIdentifier()));
 
         doGet();
 

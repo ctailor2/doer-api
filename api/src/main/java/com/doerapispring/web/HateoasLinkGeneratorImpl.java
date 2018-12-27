@@ -66,8 +66,8 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link completeTodoLink(String localId) {
-        return linkTo(methodOn(TodosController.class).complete(null, localId)).withSelfRel();
+    public Link completeTodoLink(String listId, String todoId) {
+        return linkTo(methodOn(TodosController.class).complete(null, listId, todoId)).withSelfRel();
     }
 
     @Override

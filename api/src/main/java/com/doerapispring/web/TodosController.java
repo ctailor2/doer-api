@@ -59,16 +59,17 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/todos/{localId}/complete", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/todos/{todoId}/complete", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                               @PathVariable(value = "localId") String localId) {
+                                               @PathVariable String listId,
+                                               @PathVariable String todoId) {
         try {
-            todoApplicationService.complete(authenticatedUser.getUser(), new TodoId(localId));
+            todoApplicationService.complete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                hateoasLinkGenerator.completeTodoLink(localId).withSelfRel(),
-                hateoasLinkGenerator.listLink(null).withRel("list"));
+                hateoasLinkGenerator.completeTodoLink(listId, todoId).withSelfRel(),
+                hateoasLinkGenerator.listLink(listId).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

@@ -41,8 +41,8 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link completeTodoLink(String localId) {
-        return new Link(MOCK_BASE_URL + "/completeTodo/" + localId);
+    public Link completeTodoLink(String listId, String localId) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + localId);
     }
 
     @Override

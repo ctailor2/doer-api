@@ -245,7 +245,7 @@ public class TodoServiceTest {
     @Test
     public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
-        todoService.complete(user, todoId);
+        todoService.complete(user, new ListId("someListId"), todoId);
 
         verify(todoList).complete(todoId);
         verify(mockTodoListRepository).save(todoList);
@@ -260,7 +260,7 @@ public class TodoServiceTest {
             Date.from(Instant.now()));
         when(todoList.complete(any(TodoId.class))).thenReturn(completedTodo);
 
-        todoService.complete(user, new TodoId("someIdentifier"));
+        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
 
         verify(mockCompletedTodoRepository).save(completedTodo);
     }
@@ -276,7 +276,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockCompletedTodoRepository).save(any(CompletedTodo.class));
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new TodoId("someIdentifier"));
+        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
     }
 
     @Test
@@ -284,7 +284,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new TodoId("someIdentifier"));
+        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
     }
 
     @Test
@@ -292,7 +292,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).complete(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new TodoId("someId"));
+        todoService.complete(user, new ListId("someListId"), new TodoId("someId"));
     }
 
     @Test
@@ -300,7 +300,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new TodoId("someId"));
+        todoService.complete(user, new ListId("someListId"), new TodoId("someId"));
     }
 
     @Test
