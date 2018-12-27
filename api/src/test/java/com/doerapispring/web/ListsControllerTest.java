@@ -88,9 +88,6 @@ public class ListsControllerTest {
 
     @Test
     public void show_mappings() throws Exception {
-        mockMvc.perform(get("/v1/list"))
-            .andExpect(status().isOk());
-
         mockMvc.perform(get("/v1/lists/someListId"))
             .andExpect(status().isOk());
     }

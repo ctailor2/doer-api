@@ -2,7 +2,6 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.mvc.BasicLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -97,9 +96,6 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link listLink(String listId) {
-        if (listId == null) {
-            return BasicLinkBuilder.linkToCurrentMapping().slash("/v1/list").withSelfRel();
-        }
         return linkTo(methodOn(ListsController.class).show(null, listId)).withSelfRel();
     }
 

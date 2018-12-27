@@ -51,7 +51,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         todoApplicationService.create(user, defaultListId, "some task");
         todoApplicationService.create(user, defaultListId, "some other task");
 
-        String todosResponse = mockMvc.perform(get("/v1/list")
+        String todosResponse = mockMvc.perform(get("/v1/lists/" + defaultListId.get())
             .headers(httpHeaders))
             .andExpect(jsonPath("$.list.todos", hasSize(2)))
             .andExpect(jsonPath("$.list.todos[0].task", equalTo("some other task")))
@@ -70,7 +70,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString(movePath)));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
 
-        mockMvc.perform(get("/v1/list")
+        mockMvc.perform(get("/v1/lists/" + defaultListId.get())
             .headers(httpHeaders))
             .andExpect(jsonPath("$.list.todos", hasSize(2)))
             .andExpect(jsonPath("$.list.todos[0].task", equalTo("some task")))

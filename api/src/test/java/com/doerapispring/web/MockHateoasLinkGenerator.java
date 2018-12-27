@@ -72,11 +72,7 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
 
     @Override
     public Link listLink(String listId) {
-        if (listId == null) {
-            return new Link(MOCK_BASE_URL + "/list");
-        } else {
-            return new Link(MOCK_BASE_URL + "/lists/" + listId);
-        }
+        return new Link(MOCK_BASE_URL + "/lists/" + listId);
     }
 
     @Override
