@@ -23,7 +23,7 @@ interface HateoasLinkGenerator {
 
     Link completeTodoLink(String listId, String localId);
 
-    Link moveTodoLink(String localId, String targetLocalId);
+    Link moveTodoLink(String listId, String todoId, String targetTodoId);
 
     Link listPullTodosLink(String listId);
 

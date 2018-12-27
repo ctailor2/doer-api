@@ -15,7 +15,7 @@ public interface TodoApplicationService {
 
     void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException;
 
-    void move(User user, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException;
+    void move(User user, ListId listId, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException;
 
     void pull(User user, ListId listId) throws InvalidRequestException;
 

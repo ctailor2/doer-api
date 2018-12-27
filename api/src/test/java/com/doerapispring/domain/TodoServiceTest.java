@@ -307,7 +307,7 @@ public class TodoServiceTest {
     public void move_whenTodoListFound_whenTodosFound_updatesMovedTodosUsingRepository() throws Exception {
         TodoId sourceIdentifier = new TodoId("sourceIdentifier");
         TodoId destinationIdentifier = new TodoId("destinationIdentifier");
-        todoService.move(user, sourceIdentifier, destinationIdentifier);
+        todoService.move(user, new ListId("someListId"), sourceIdentifier, destinationIdentifier);
 
         verify(todoList).move(sourceIdentifier, destinationIdentifier);
         verify(mockTodoListRepository).save(todoList);
@@ -318,7 +318,7 @@ public class TodoServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(user, new TodoId("sourceIdentifier"), new TodoId("destinationIdentifier"));
+        todoService.move(user, new ListId("someListId"), new TodoId("sourceIdentifier"), new TodoId("destinationIdentifier"));
     }
 
     @Test
@@ -326,7 +326,7 @@ public class TodoServiceTest {
         doThrow(new TodoNotFoundException()).when(todoList).move(any(), any());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(user, new TodoId("idOne"), new TodoId("idTwo"));
+        todoService.move(user, new ListId("someListId"), new TodoId("idOne"), new TodoId("idTwo"));
     }
 
     @Test
@@ -334,7 +334,7 @@ public class TodoServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        todoService.move(user, new TodoId("idOne"), new TodoId("idTwo"));
+        todoService.move(user, new ListId("someListId"), new TodoId("idOne"), new TodoId("idTwo"));
     }
 
     @Test

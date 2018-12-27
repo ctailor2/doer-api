@@ -157,11 +157,11 @@ public class ListsControllerTest {
             new Link(MOCK_BASE_URL + "/updateTodo/oneNowId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneNowId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).containsSequence(
-            new Link(MOCK_BASE_URL + "/todos/oneNowId/moveTodo/oneNowId").withRel("move"),
-            new Link(MOCK_BASE_URL + "/todos/oneNowId/moveTodo/twoNowId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneNowId/moveTodo/oneNowId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneNowId/moveTodo/twoNowId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(1).getLinks()).containsSequence(
-            new Link(MOCK_BASE_URL + "/todos/twoNowId/moveTodo/oneNowId").withRel("move"),
-            new Link(MOCK_BASE_URL + "/todos/twoNowId/moveTodo/twoNowId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoNowId/moveTodo/oneNowId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoNowId/moveTodo/twoNowId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos()).hasSize(2);
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneLaterId").withRel("delete"),
@@ -172,11 +172,11 @@ public class ListsControllerTest {
             new Link(MOCK_BASE_URL + "/updateTodo/oneLaterId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneLaterId").withRel("complete"));
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).containsSequence(
-            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
-            new Link(MOCK_BASE_URL + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
         assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(1).getLinks()).containsSequence(
-            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
-            new Link(MOCK_BASE_URL + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
     }
 
     @Test

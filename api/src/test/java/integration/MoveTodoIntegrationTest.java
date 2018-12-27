@@ -68,7 +68,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString(movePath)));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
 
         mockMvc.perform(get("/v1/list")
             .headers(httpHeaders))

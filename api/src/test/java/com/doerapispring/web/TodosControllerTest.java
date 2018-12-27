@@ -156,30 +156,31 @@ public class TodosControllerTest {
 
     @Test
     public void move_mapping() throws Exception {
-        mockMvc.perform(post("/v1/todos/1/move/3"))
+        mockMvc.perform(post("/v1/lists/someListId/todos/1/move/3"))
             .andExpect(status().isAccepted());
     }
 
     @Test
     public void move_callsTodoService_returns202() throws Exception {
-        String localId = "localId";
-        String targetLocalId = "targetLocalId";
+        String listId = "someListId";
+        String todoId = "todoId";
+        String targetTodoId = "targetTodoId";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.move(authenticatedUser, localId, targetLocalId);
+            todosController.move(authenticatedUser, listId, todoId, targetTodoId);
 
-        verify(todoApplicationService).move(user, new TodoId(localId), new TodoId(targetLocalId));
+        verify(todoApplicationService).move(user, new ListId(listId), new TodoId(todoId), new TodoId(targetTodoId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/todos/localId/moveTodo/targetLocalId").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/todoId/moveTodo/targetTodoId").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test
     public void move_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).move(any(), any(), any());
+        doThrow(new InvalidRequestException()).when(todoApplicationService).move(any(), any(), any(), any());
 
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.move(authenticatedUser, "localId", "targetLocalId");
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.move(authenticatedUser, "someListId", "localId", "targetLocalId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
