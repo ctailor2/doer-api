@@ -118,7 +118,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     @Override
-    public void escalate(User user) throws InvalidRequestException {
+    public void escalate(User user, ListId listId) throws InvalidRequestException {
         TodoList todoList = todoListRepository.findOne(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {

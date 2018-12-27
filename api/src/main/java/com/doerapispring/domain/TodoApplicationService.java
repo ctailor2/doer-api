@@ -19,5 +19,5 @@ public interface TodoApplicationService {
 
     void pull(User user) throws InvalidRequestException;
 
-    void escalate(User user) throws InvalidRequestException;
+    void escalate(User user, ListId listId) throws InvalidRequestException;
 }

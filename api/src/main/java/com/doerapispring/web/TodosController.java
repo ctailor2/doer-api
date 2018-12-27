@@ -110,13 +110,14 @@ class TodosController {
         }
     }
 
-    @RequestMapping(value = "/list/escalate", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/escalate", method = RequestMethod.POST)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> escalate(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        todoApplicationService.escalate(authenticatedUser.getUser());
+    ResponseEntity<ResourcesResponse> escalate(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                               @PathVariable String listId) throws InvalidRequestException {
+        todoApplicationService.escalate(authenticatedUser.getUser(), new ListId(listId));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink().withSelfRel());
-        resourcesResponse.add(hateoasLinkGenerator.listLink(null).withRel("list"));
+        resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withSelfRel());
+        resourcesResponse.add(hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 

@@ -72,7 +72,7 @@ class ListsController {
                 todoListDTO.add(hateoasLinkGenerator.listPullTodosLink().withRel("pull"));
             }
             if (readOnlyTodoList.isAbleToBeEscalated()) {
-                todoListDTO.add(hateoasLinkGenerator.listEscalateTodoLink().withRel("escalate"));
+                todoListDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"));
             }
             todoListDTO.getTodos().forEach(todoDTO -> {
                 todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, todoDTO.getIdentifier()).withRel("delete"));

@@ -127,9 +127,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link listEscalateTodoLink() {
+    public Link listEscalateTodoLink(String listId) {
         try {
-            return linkTo(methodOn(TodosController.class).escalate(null)).withSelfRel();
+            return linkTo(methodOn(TodosController.class).escalate(null, listId)).withSelfRel();
         } catch (InvalidRequestException e) {
             throw new RuntimeException("Failed to create link", e);
         }

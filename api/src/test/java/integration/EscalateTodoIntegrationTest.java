@@ -48,7 +48,7 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         todoApplicationService.create(user, defaultListId, "will remain");
         todoApplicationService.createDeferred(user, defaultListId, "will no longer be deferred after the escalate");
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/list/escalate")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
@@ -62,7 +62,7 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .containsExactly("will become deferred after the escalate");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/escalate")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/escalate")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 }

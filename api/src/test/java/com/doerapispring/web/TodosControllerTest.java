@@ -215,20 +215,21 @@ public class TodosControllerTest {
 
     @Test
     public void escalate_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/escalate"))
+        mockMvc.perform(post("/v1/lists/someListId/escalate"))
             .andExpect(status().isAccepted());
 
-        verify(todoApplicationService).escalate(user);
+        verify(todoApplicationService).escalate(user, new ListId("someListId"));
     }
 
     @Test
     public void escalate_responseIncludesLinks() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.escalate(authenticatedUser);
+        String listId = "someListId";
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.escalate(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/list/escalateTodo").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/escalateTodo").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test

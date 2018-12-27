@@ -249,7 +249,7 @@ public class ListsControllerTest {
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/escalateTodo").withRel("escalate"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/escalateTodo").withRel("escalate"));
     }
 
     @Test
