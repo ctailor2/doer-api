@@ -58,28 +58,29 @@ public class ListsControllerTest {
 
     @Test
     public void unlock_mapping() throws Exception {
-        mockMvc.perform(post("/v1/list/unlock"))
+        mockMvc.perform(post("/v1/lists/someListId/unlock"))
             .andExpect(status().isAccepted());
 
-        verify(listApplicationService).unlock(user);
+        verify(listApplicationService).unlock(user, new ListId("someListId"));
     }
 
     @Test
     public void unlock_callsTodoService_returns202() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser);
+        String listId = "someListId";
+        ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser, listId);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/unlockTodos").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/list").withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 
     @Test
     public void unlock_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(listApplicationService).unlock(any());
+        doThrow(new InvalidRequestException()).when(listApplicationService).unlock(any(), any());
 
-        ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser, "someListId");
 
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -229,7 +230,7 @@ public class ListsControllerTest {
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/list/unlockTodos").withRel("unlock"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
     }
 
     @Test
@@ -239,7 +240,7 @@ public class ListsControllerTest {
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
-            new Link(MOCK_BASE_URL + "/list/unlockTodos").withRel("unlock"));
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
     }
 
     @Test

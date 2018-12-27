@@ -2,6 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.ReadOnlyTodoList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +23,16 @@ class ListsController {
         this.listApplicationService = listApplicationService;
     }
 
-    @PostMapping(value = "/list/unlock")
+    @PostMapping(value = "/lists/{listId}/unlock")
     @ResponseBody
-    ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                             @PathVariable String listId) {
         try {
-            listApplicationService.unlock(authenticatedUser.getUser());
+            listApplicationService.unlock(authenticatedUser.getUser(), new ListId(listId));
             ResourcesResponse resourcesResponse = new ResourcesResponse();
             resourcesResponse.add(
-                hateoasLinkGenerator.listUnlockLink().withSelfRel(),
-                hateoasLinkGenerator.listLink(null).withRel("list"));
+                hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
+                hateoasLinkGenerator.listLink(listId).withRel("list"));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();
@@ -61,7 +63,7 @@ class ListsController {
             String readOnlyTodoListId = readOnlyTodoList.getListId().get();
             todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink(readOnlyTodoListId).withRel("createDeferred"));
             if (readOnlyTodoList.isAbleToBeUnlocked()) {
-                todoListDTO.add(hateoasLinkGenerator.listUnlockLink().withRel("unlock"));
+                todoListDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"));
             }
             if (readOnlyTodoList.isFull()) {
                 todoListDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"));

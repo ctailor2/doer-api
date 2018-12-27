@@ -56,7 +56,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        listApplicationService.unlock(user);
+        listApplicationService.unlock(user, defaultListId);
         todoApplicationService.create(user, defaultListId, "this and that");
         todoApplicationService.createDeferred(user, defaultListId, "here and there");
         todoApplicationService.createDeferred(user, defaultListId, "near and far");
@@ -105,6 +105,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list._links", not(Matchers.isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list._links.createDeferred.href", containsString("/v1/lists/" + defaultListId.get() + "/deferredTodos")));
+        assertThat(responseContent, hasJsonPath("$.list._links.unlock.href", containsString("/v1/lists/" + defaultListId.get() + "/unlock")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list")));
     }

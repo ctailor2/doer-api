@@ -1,9 +1,6 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.ReadOnlyTodoList;
-import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserId;
+import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -27,7 +24,8 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     private UserSessionsApiService userSessionsApiService;
 
     @Autowired
-    private ListService listService;
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
 
     @Override
     @Before
@@ -37,22 +35,23 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+        defaultListId = listApplicationService.get(user).getListId();
     }
 
     @Test
     public void unlock() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(post("/v1/list/unlock")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/unlock")
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyTodoList todoList = listService.get(user);
+        ReadOnlyTodoList todoList = listApplicationService.get(user);
 
         assertThat(todoList.isAbleToBeUnlocked(), equalTo(false));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/list/unlock")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/list")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/unlock")));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 }

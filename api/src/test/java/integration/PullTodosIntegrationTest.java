@@ -53,7 +53,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
-        listApplicationService.unlock(user);
+        listApplicationService.unlock(user, defaultListId);
         ReadOnlyTodoList newTodoList = listApplicationService.get(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")

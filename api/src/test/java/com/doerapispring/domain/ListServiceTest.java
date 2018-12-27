@@ -44,7 +44,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListFound_unlocksTodoList_andSavesIt() throws Exception {
-        listService.unlock(new User(new UserId(identifier)));
+        listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
 
         verify(todoList).unlock();
         verify(mockTodoListRepository).save(todoList);
@@ -55,7 +55,7 @@ public class ListServiceTest {
         doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(new UserId(identifier)));
+        listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ListServiceTest {
         doThrow(new LockTimerNotExpiredException()).when(todoList).unlock();
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(new UserId(identifier)));
+        listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ListServiceTest {
         when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(new UserId(identifier)));
+        listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
     @Test

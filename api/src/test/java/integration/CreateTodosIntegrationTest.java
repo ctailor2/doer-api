@@ -72,7 +72,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .andReturn();
 
         User user = new User(new UserId("test@email.com"));
-        listApplicationService.unlock(user);
+        listApplicationService.unlock(user, defaultListId);
         List<Todo> todos = listApplicationService.get(user).getDeferredTodos();
 
         assertThat(todos.size(), equalTo(1));

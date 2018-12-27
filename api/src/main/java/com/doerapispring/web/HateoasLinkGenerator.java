@@ -27,7 +27,7 @@ interface HateoasLinkGenerator {
 
     Link listPullTodosLink(String listId);
 
-    Link listUnlockLink();
+    Link listUnlockLink(String listId);
 
     Link listLink(String listId);
 
