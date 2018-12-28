@@ -42,7 +42,7 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 

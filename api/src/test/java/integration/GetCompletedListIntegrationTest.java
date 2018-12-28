@@ -47,7 +47,7 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
         todoApplicationService.createDeferred(user, defaultListId, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
@@ -59,7 +59,7 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         todoApplicationService.create(user, defaultListId, "some task");
-        ReadOnlyTodoList todoList = listApplicationService.get(user);
+        ReadOnlyTodoList todoList = listApplicationService.getDefault(user);
         Todo todo = todoList.getTodos().get(0);
         todoApplicationService.complete(user, defaultListId, new TodoId(todo.getTodoId().getIdentifier()));
 

@@ -31,7 +31,7 @@ class TodoListRepository implements
     }
 
     @Override
-    public Optional<TodoList> findOne(UserId userId) {
+    public Optional<TodoList> findFirst(UserId userId) {
         return findAll(userId).stream().findFirst();
     }
 

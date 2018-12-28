@@ -20,7 +20,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void create(User user, ListId listId, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
@@ -34,7 +34,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void createDeferred(User user, ListId listId, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
@@ -48,7 +48,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void delete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.delete(todoId);
@@ -59,7 +59,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void displace(User user, ListId listId, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
@@ -71,7 +71,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void update(User user, ListId listId, TodoId todoId, String task) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.update(todoId, task);
@@ -84,7 +84,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             CompletedTodo completedTodo = todoList.complete(todoId);
@@ -96,7 +96,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void move(User user, ListId listId, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.move(todoId, targetTodoId);
@@ -107,7 +107,7 @@ public class TodoService implements TodoApplicationService {
     }
 
     public void pull(User user, ListId listId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.pull();
@@ -119,7 +119,7 @@ public class TodoService implements TodoApplicationService {
 
     @Override
     public void escalate(User user, ListId listId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.escalate();

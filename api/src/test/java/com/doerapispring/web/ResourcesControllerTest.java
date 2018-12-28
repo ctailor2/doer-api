@@ -76,18 +76,18 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_mapping() throws Exception {
-        when(listApplicationService.get(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, new ListId("someListId")));
+        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, new ListId("someListId")));
 
         mockMvc.perform(get("/v1/resources/todo"))
                 .andExpect(status().isOk());
 
-        verify(listApplicationService).get(user);
+        verify(listApplicationService).getDefault(user);
     }
 
     @Test
     public void todo_includesLinksByDefault() throws Exception {
         ListId firstListId = new ListId("firstListId");
-        when(listApplicationService.get(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, firstListId));
+        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, firstListId));
 
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 

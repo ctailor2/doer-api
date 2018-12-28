@@ -46,7 +46,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
             .get("/v1/lists/" + defaultListId.get())
@@ -60,7 +60,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         todoApplicationService.create(user, defaultListId, "this and that");
         todoApplicationService.createDeferred(user, defaultListId, "here and there");
         todoApplicationService.createDeferred(user, defaultListId, "near and far");
-        ReadOnlyTodoList todoList = listApplicationService.get(user);
+        ReadOnlyTodoList todoList = listApplicationService.getDefault(user);
         Todo todo = todoList.getTodos().get(0);
         Todo firstDeferredTodo = todoList.getDeferredTodos().get(0);
         Todo secondDeferredTodo = todoList.getDeferredTodos().get(1);

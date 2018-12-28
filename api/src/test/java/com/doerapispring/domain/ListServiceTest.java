@@ -39,7 +39,7 @@ public class ListServiceTest {
         listService = new ListService(mockTodoListRepository, mockCompletedTodoRepository);
         identifier = "userId";
         todoList = mock(TodoList.class);
-        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(todoList));
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoList));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
@@ -77,22 +77,22 @@ public class ListServiceTest {
     @Test
     public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
         TodoList mockTodoList = mock(TodoList.class);
-        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.of(mockTodoList));
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(mockTodoList));
         ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
         User user = new User(new UserId(identifier));
 
-        ReadOnlyTodoList actual = listService.get(user);
+        ReadOnlyTodoList actual = listService.getDefault(user);
 
         assertThat(actual).isEqualTo(mockReadOnlyTodoList);
     }
 
     @Test
     public void get_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findOne(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
-        listService.get(new User(new UserId(identifier)));
+        listService.getDefault(new User(new UserId(identifier)));
     }
 
     @Test

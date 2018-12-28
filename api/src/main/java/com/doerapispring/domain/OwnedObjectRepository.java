@@ -8,10 +8,10 @@ public interface OwnedObjectRepository<T, OwnerId, Id> extends IdentityGeneratin
     void save(T model) throws AbnormalModelException;
 
     default Optional<T> find(OwnerId ownerId, Id id) {
-        return findOne(ownerId);
+        return findFirst(ownerId);
     }
 
-    default Optional<T> findOne(OwnerId ownerId) {
+    default Optional<T> findFirst(OwnerId ownerId) {
         return Optional.empty();
     }
 

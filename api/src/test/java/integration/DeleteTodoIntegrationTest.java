@@ -37,14 +37,14 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void delete_removesTodo() throws Exception {
         todoApplicationService.create(user, defaultListId, "some task");
-        ReadOnlyTodoList todoList = listApplicationService.get(user);
+        ReadOnlyTodoList todoList = listApplicationService.getDefault(user);
         Todo todo = todoList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(delete("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
@@ -52,7 +52,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        ReadOnlyTodoList newTodoList = listApplicationService.get(new User(new UserId("test@email.com")));
+        ReadOnlyTodoList newTodoList = listApplicationService.getDefault(new User(new UserId("test@email.com")));
 
         assertThat(newTodoList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());

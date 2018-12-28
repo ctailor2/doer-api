@@ -64,7 +64,7 @@ public class TodoListRepositoryTest {
 
         todoListRepository.save(todoList);
 
-        Optional<TodoList> todoListOptional = todoListRepository.findOne(userId);
+        Optional<TodoList> todoListOptional = todoListRepository.findFirst(userId);
 
         TodoList retrievedTodoList = todoListOptional.get();
         assertThat(retrievedTodoList).isEqualToComparingFieldByField(todoList);

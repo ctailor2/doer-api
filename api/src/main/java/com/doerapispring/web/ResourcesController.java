@@ -46,7 +46,7 @@ class ResourcesController {
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        ReadOnlyTodoList firstList = listApplicationService.get(authenticatedUser.getUser());
+        ReadOnlyTodoList firstList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.todoResourcesLink().withSelfRel(),

@@ -53,7 +53,7 @@ public class ListsControllerTest {
 
         readOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(readOnlyTodoList.getListId()).thenReturn(new ListId(listId));
-        when(listApplicationService.get(any())).thenReturn(readOnlyTodoList);
+        when(listApplicationService.getDefault(any())).thenReturn(readOnlyTodoList);
     }
 
     @Test
@@ -262,7 +262,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(listApplicationService.get(any())).thenThrow(new InvalidRequestException());
+        when(listApplicationService.getDefault(any())).thenThrow(new InvalidRequestException());
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 

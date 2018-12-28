@@ -17,7 +17,7 @@ public class ListService implements ListApplicationService {
     }
 
     public void unlock(User user, ListId listId) throws InvalidRequestException {
-        TodoList todoList = todoListRepository.findOne(user.getUserId())
+        TodoList todoList = todoListRepository.findFirst(user.getUserId())
             .orElseThrow(InvalidRequestException::new);
         try {
             todoList.unlock();
@@ -27,8 +27,8 @@ public class ListService implements ListApplicationService {
         }
     }
 
-    public ReadOnlyTodoList get(User user) throws InvalidRequestException {
-        return todoListRepository.findOne(user.getUserId())
+    public ReadOnlyTodoList getDefault(User user) throws InvalidRequestException {
+        return todoListRepository.findFirst(user.getUserId())
             .map(TodoList::read)
             .orElseThrow(InvalidRequestException::new);
     }

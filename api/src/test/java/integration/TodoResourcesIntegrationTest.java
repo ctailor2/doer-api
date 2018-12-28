@@ -36,7 +36,7 @@ public class TodoResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         String identifier = "test@email.com";
         User user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId().get();
+        defaultListId = listApplicationService.getDefault(user).getListId().get();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 

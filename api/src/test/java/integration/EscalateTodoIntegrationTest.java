@@ -38,7 +38,7 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String identifier = "test@email.com";
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -54,7 +54,7 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
-        ReadOnlyTodoList newTodoList = listApplicationService.get(user);
+        ReadOnlyTodoList newTodoList = listApplicationService.getDefault(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("will remain", "will no longer be deferred after the escalate");

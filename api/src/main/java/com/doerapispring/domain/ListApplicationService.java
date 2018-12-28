@@ -7,7 +7,7 @@ import java.util.List;
 public interface ListApplicationService {
     void unlock(User user, ListId listId) throws InvalidRequestException;
 
-    ReadOnlyTodoList get(User user) throws InvalidRequestException;
+    ReadOnlyTodoList getDefault(User user) throws InvalidRequestException;
 
     List<CompletedTodo> getCompleted(User user) throws InvalidRequestException;
 }

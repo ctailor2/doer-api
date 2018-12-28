@@ -35,7 +35,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
         user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        defaultListId = listApplicationService.get(user).getListId();
+        defaultListId = listApplicationService.getDefault(user).getListId();
     }
 
     @Test
@@ -44,7 +44,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyTodoList todoList = listApplicationService.get(user);
+        ReadOnlyTodoList todoList = listApplicationService.getDefault(user);
 
         assertThat(todoList.isAbleToBeUnlocked(), equalTo(false));
 
