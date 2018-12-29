@@ -75,7 +75,7 @@ public class ListServiceTest {
     }
 
     @Test
-    public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
+    public void getDefault_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
         TodoList mockTodoList = mock(TodoList.class);
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(mockTodoList));
         ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
@@ -88,11 +88,32 @@ public class ListServiceTest {
     }
 
     @Test
-    public void get_whenTodoListNotFound_refusesOperation() throws Exception {
+    public void getDefault_whenTodoListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.getDefault(new User(new UserId(identifier)));
+    }
+
+    @Test
+    public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
+        TodoList mockTodoList = mock(TodoList.class);
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(mockTodoList));
+        ReadOnlyTodoList mockReadOnlyTodoList = mock(ReadOnlyTodoList.class);
+        when(mockTodoList.read()).thenReturn(mockReadOnlyTodoList);
+        User user = new User(new UserId(identifier));
+
+        ReadOnlyTodoList actual = listService.get(user, new ListId("someListId"));
+
+        assertThat(actual).isEqualTo(mockReadOnlyTodoList);
+    }
+
+    @Test
+    public void get_whenTodoListNotFound_refusesOperation() throws Exception {
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
+
+        exception.expect(InvalidRequestException.class);
+        listService.get(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
     @Test

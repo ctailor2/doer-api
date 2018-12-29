@@ -84,4 +84,22 @@ public class TodoListRepositoryTest {
         assertThat(todoLists).usingFieldByFieldElementComparator()
             .containsExactlyInAnyOrder(firstTodoList, secondTodoList);
     }
+
+    @Test
+    public void findsTheMatchingList() throws Exception {
+        UserId userId = new UserId("someIdentifier");
+        userRepository.save(new User(userId));
+        TodoList firstTodoList = new TodoList(clock, userId, new ListId("someListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
+        ListId listId = new ListId("anotherListIdentifier");
+        TodoList secondTodoList = new TodoList(clock, userId, listId, "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
+        TodoList thirdTodoList = new TodoList(clock, userId, new ListId("yetAnotherListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
+        todoListRepository.save(firstTodoList);
+        todoListRepository.save(secondTodoList);
+        todoListRepository.save(thirdTodoList);
+
+        Optional<TodoList> todoListOptional = todoListRepository.find(userId, listId);
+
+        TodoList todoList = todoListOptional.get();
+        assertThat(todoList).isEqualToComparingFieldByField(secondTodoList);
+    }
 }

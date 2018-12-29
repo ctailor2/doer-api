@@ -36,4 +36,11 @@ public class ListService implements ListApplicationService {
     public List<CompletedTodo> getCompleted(User user) throws InvalidRequestException {
         return completedTodoRepository.findAll(user.getUserId());
     }
+
+    @Override
+    public ReadOnlyTodoList get(User user, ListId listId) throws InvalidRequestException {
+        return todoListRepository.find(user.getUserId(), listId)
+            .map(TodoList::read)
+            .orElseThrow(InvalidRequestException::new);
+    }
 }

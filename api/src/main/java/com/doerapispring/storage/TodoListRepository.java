@@ -59,29 +59,37 @@ class TodoListRepository implements
     }
 
     @Override
+    public Optional<TodoList> find(UserId userId, ListId listId) {
+        TodoListEntity todoListEntity = todoListDao.findByEmailAndListId(userId.get(), listId.get());
+        return Optional.of(mapToTodoList(userId, todoListEntity));
+    }
+
+    @Override
     public List<TodoList> findAll(UserId userId) {
         List<TodoListEntity> todoListEntities = todoListDao.findByEmail(userId.get());
         return todoListEntities.stream()
-            .map(todoListEntity -> {
-                List<Todo> todos = todoListEntity.todoEntities.stream()
-                    .map(todoEntity -> new Todo(
-                        new TodoId(todoEntity.uuid),
-                        todoEntity.task))
-                    .collect(toList());
-                return new TodoList(
-                    clock,
-                    userId,
-                    new ListId(todoListEntity.uuid),
-                    todoListEntity.name,
-                    Date.from(todoListEntity.lastUnlockedAt.toInstant()),
-                    todos,
-                    todoListEntity.demarcationIndex);
-            })
+            .map(todoListEntity -> mapToTodoList(userId, todoListEntity))
             .collect(toList());
     }
 
     @Override
     public ListId nextIdentifier() {
         return new ListId(idGenerator.generateId().toString());
+    }
+
+    private TodoList mapToTodoList(UserId userId, TodoListEntity todoListEntity) {
+        List<Todo> todos = todoListEntity.todoEntities.stream()
+            .map(todoEntity -> new Todo(
+                new TodoId(todoEntity.uuid),
+                todoEntity.task))
+            .collect(toList());
+        return new TodoList(
+            clock,
+            userId,
+            new ListId(todoListEntity.uuid),
+            todoListEntity.name,
+            Date.from(todoListEntity.lastUnlockedAt.toInstant()),
+            todos,
+            todoListEntity.demarcationIndex);
     }
 }

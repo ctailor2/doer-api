@@ -54,6 +54,7 @@ public class ListsControllerTest {
         readOnlyTodoList = mock(ReadOnlyTodoList.class);
         when(readOnlyTodoList.getListId()).thenReturn(new ListId(listId));
         when(listApplicationService.getDefault(any())).thenReturn(readOnlyTodoList);
+        when(listApplicationService.get(any(), any())).thenReturn(readOnlyTodoList);
     }
 
     @Test
@@ -90,6 +91,8 @@ public class ListsControllerTest {
     public void show_mappings() throws Exception {
         mockMvc.perform(get("/v1/lists/someListId"))
             .andExpect(status().isOk());
+
+        verify(listApplicationService).get(user, new ListId("someListId"));
     }
 
     @Test
@@ -262,7 +265,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(listApplicationService.getDefault(any())).thenThrow(new InvalidRequestException());
+        when(listApplicationService.get(any(), any())).thenThrow(new InvalidRequestException());
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 

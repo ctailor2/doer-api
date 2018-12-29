@@ -44,7 +44,7 @@ class ListsController {
     ResponseEntity<TodoListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                           @PathVariable String listId) {
         try {
-            ReadOnlyTodoList readOnlyTodoList = listApplicationService.getDefault(authenticatedUser.getUser());
+            ReadOnlyTodoList readOnlyTodoList = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
             TodoListDTO todoListDTO = new TodoListDTO(
                 readOnlyTodoList.getSectionName(),
                 readOnlyTodoList.getDeferredSectionName(),
