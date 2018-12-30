@@ -40,6 +40,7 @@ public class ListServiceTest {
         identifier = "userId";
         todoList = mock(TodoList.class);
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoList));
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(todoList));
     }
 
     @Test
@@ -68,7 +69,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));

@@ -12,7 +12,7 @@ public interface OwnedObjectRepository<T, OwnerId, Id> extends IdentityGeneratin
     }
 
     default Optional<T> findFirst(OwnerId ownerId) {
-        return Optional.empty();
+        return findAll(ownerId).stream().findFirst();
     }
 
     default List<T> findAll(OwnerId ownerId) {

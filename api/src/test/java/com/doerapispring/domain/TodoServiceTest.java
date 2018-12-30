@@ -47,7 +47,7 @@ public class TodoServiceTest {
         );
         user = new User(new UserId("userId"));
         todoList = mock(TodoList.class);
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoList));
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(todoList));
         todoIdentifier = "todoId";
         when(mockTodoRepository.nextIdentifier()).thenReturn(new TodoId(todoIdentifier));
     }
@@ -81,7 +81,7 @@ public class TodoServiceTest {
 
     @Test
     public void create_whenTodoListNotFound_refusesCreate() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.create(user, new ListId("someListId"), "some things");
@@ -117,7 +117,7 @@ public class TodoServiceTest {
 
     @Test
     public void createDeferred_whenTodoListNotFound_refusesCreate() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.createDeferred(user, new ListId("someListId"), "some things");
@@ -166,7 +166,7 @@ public class TodoServiceTest {
 
     @Test
     public void displace_whenTodoListNotFound_refusesDisplace() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.displace(user, new ListId("someListId"), "someTask");
@@ -236,7 +236,7 @@ public class TodoServiceTest {
 
     @Test
     public void update_whenTodoListNotFound_refusesUpdate() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.update(user, new ListId("someListId"), new TodoId("someId"), "someTask");
@@ -297,7 +297,7 @@ public class TodoServiceTest {
 
     @Test
     public void complete_whenTodoListNotFound_refusesUpdate() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.complete(user, new ListId("someListId"), new TodoId("someId"));
@@ -331,7 +331,7 @@ public class TodoServiceTest {
 
     @Test
     public void move_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.move(user, new ListId("someListId"), new TodoId("idOne"), new TodoId("idTwo"));
@@ -379,7 +379,7 @@ public class TodoServiceTest {
 
     @Test
     public void escalate_whenListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidRequestException.class);
         todoService.escalate(user, new ListId("someListId"));

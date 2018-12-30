@@ -31,11 +31,6 @@ class TodoListRepository implements
     }
 
     @Override
-    public Optional<TodoList> findFirst(UserId userId) {
-        return findAll(userId).stream().findFirst();
-    }
-
-    @Override
     public void save(TodoList todoList) throws AbnormalModelException {
         UserEntity userEntity = userDAO.findByEmail(todoList.getUserId().get());
         if (userEntity == null) throw new AbnormalModelException();
