@@ -27,8 +27,9 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
     public void save(CompletedTodo completedTodo) throws AbnormalModelException {
         UserEntity userEntity = userDAO.findByEmail(completedTodo.getUserId().get());
         completedTodoDAO.save(CompletedTodoEntity.builder()
+            .listId(completedTodo.getListId().get())
             .userId(userEntity.id)
-            .uuid(completedTodo.getCompletedTodoId().getIdentifier())
+            .uuid(completedTodo.getCompletedTodoId().get())
             .task(completedTodo.getTask())
             .completedAt(completedTodo.getCompletedAt())
             .build());
@@ -41,10 +42,10 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
             .map(completedTodoEntity ->
                 new CompletedTodo(
                     new UserId(userEntity.email),
+                    new ListId(completedTodoEntity.listId),
                     new CompletedTodoId(completedTodoEntity.uuid),
                     completedTodoEntity.task,
-                    Date.from(completedTodoEntity.completedAt.toInstant())
-                ))
+                    Date.from(completedTodoEntity.completedAt.toInstant())))
             .collect(toList());
     }
 

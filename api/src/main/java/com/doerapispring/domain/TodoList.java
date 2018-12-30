@@ -85,6 +85,7 @@ public class TodoList {
         delete(todoId);
         return new CompletedTodo(
             userId,
+            listId,
             new CompletedTodoId(todoId.getIdentifier()),
             todo.getTask(),
             Date.from(clock.instant()));

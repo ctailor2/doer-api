@@ -7,7 +7,7 @@ public class CompletedTodoId {
         this.identifier = identifier;
     }
 
-    public String getIdentifier() {
+    public String get() {
         return identifier;
     }
 

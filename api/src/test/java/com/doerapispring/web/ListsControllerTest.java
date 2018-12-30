@@ -286,6 +286,7 @@ public class ListsControllerTest {
         Date completedAt = Date.from(Instant.now());
         when(listApplicationService.getCompleted(any())).thenReturn(singletonList(new CompletedTodo(
             new UserId("someUserId"),
+            new ListId("someListId"),
             new CompletedTodoId("someTodoId"),
             task,
             completedAt)));

@@ -3,13 +3,19 @@ package com.doerapispring.domain;
 import java.util.Date;
 
 public class CompletedTodo {
-    private UserId userId;
-    private CompletedTodoId completedTodoId;
-    private String task;
-    private Date completedAt;
+    private final UserId userId;
+    private final ListId listId;
+    private final CompletedTodoId completedTodoId;
+    private final String task;
+    private final Date completedAt;
 
-    public CompletedTodo(UserId userId, CompletedTodoId completedTodoId, String task, Date completedAt) {
+    public CompletedTodo(UserId userId,
+                         ListId listId,
+                         CompletedTodoId completedTodoId,
+                         String task,
+                         Date completedAt) {
         this.userId = userId;
+        this.listId = listId;
         this.completedTodoId = completedTodoId;
         this.task = task;
         this.completedAt = completedAt;
@@ -31,6 +37,10 @@ public class CompletedTodo {
         return userId;
     }
 
+    public ListId getListId() {
+        return listId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -39,6 +49,7 @@ public class CompletedTodo {
         CompletedTodo that = (CompletedTodo) o;
 
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+        if (listId != null ? !listId.equals(that.listId) : that.listId != null) return false;
         if (completedTodoId != null ? !completedTodoId.equals(that.completedTodoId) : that.completedTodoId != null)
             return false;
         if (task != null ? !task.equals(that.task) : that.task != null) return false;
@@ -48,6 +59,7 @@ public class CompletedTodo {
     @Override
     public int hashCode() {
         int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (listId != null ? listId.hashCode() : 0);
         result = 31 * result + (completedTodoId != null ? completedTodoId.hashCode() : 0);
         result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (completedAt != null ? completedAt.hashCode() : 0);
@@ -58,6 +70,7 @@ public class CompletedTodo {
     public String toString() {
         return "CompletedTodo{" +
             "userId=" + userId +
+            ", listId=" + listId +
             ", completedTodoId=" + completedTodoId +
             ", task='" + task + '\'' +
             ", completedAt=" + completedAt +

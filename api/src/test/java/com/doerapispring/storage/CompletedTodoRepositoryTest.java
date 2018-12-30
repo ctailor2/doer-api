@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.IdGenerator;
 
 import java.sql.Date;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 
@@ -30,24 +31,40 @@ public class CompletedTodoRepositoryTest {
     @Autowired
     private UserDAO userDAO;
 
+    @Autowired
+    private Clock clock;
+
+    @Autowired
+    private TodoListDao todoListDao;
+
+    @Autowired
+    private IdGenerator idGenerator;
+
+    @Autowired
+    private TodoListFactory todoListFactory;
+
     private UserRepository userRepository;
 
     private CompletedTodoRepository completedTodoRepository;
+    private TodoListRepository todoListRepository;
 
     @Before
     public void setUp() throws Exception {
         completedTodoRepository = new CompletedTodoRepository(completedTodoDAO, userDAO, mock(IdGenerator.class));
         userRepository = new UserRepository(userDAO);
-
+        todoListRepository = new TodoListRepository(userDAO, todoListDao, clock, idGenerator);
     }
 
     @Test
     public void savesCompletedTodos() throws AbnormalModelException {
         UserId userId = new UserId("someUserId");
         userRepository.save(new User(userId));
+        ListId listId = new ListId("someListId");
+        todoListRepository.save(todoListFactory.todoList(userId, listId, "someListName"));
 
         CompletedTodo completedTodo = new CompletedTodo(
             userId,
+            listId,
             new CompletedTodoId("someCompletedTodoId"),
             "someTask",
             Date.from(Instant.now()));

@@ -121,6 +121,7 @@ public class ListServiceTest {
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
         List<CompletedTodo> expectedTodos = singletonList(new CompletedTodo(
             new UserId("someUserId"),
+            new ListId("someListId"),
             new CompletedTodoId("someTodoId"),
             "someTask",
             Date.from(Instant.now())));

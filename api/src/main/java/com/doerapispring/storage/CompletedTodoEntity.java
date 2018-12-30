@@ -28,4 +28,7 @@ class CompletedTodoEntity {
 
     @Column(name = "completed_at")
     public Date completedAt;
+
+    @Column(name = "list_id")
+    public String listId;
 }

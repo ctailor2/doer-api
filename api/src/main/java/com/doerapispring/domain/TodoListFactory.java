@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 @Component
-class TodoListFactory {
+public class TodoListFactory {
     private final Clock clock;
 
     public TodoListFactory(Clock clock) {

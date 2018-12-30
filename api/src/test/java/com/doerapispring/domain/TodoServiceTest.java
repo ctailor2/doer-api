@@ -255,6 +255,7 @@ public class TodoServiceTest {
     public void complete_addsCompletedTaskToCompletedList_savesUsingRepository() throws Exception {
         CompletedTodo completedTodo = new CompletedTodo(
             new UserId("someUserId"),
+            new ListId("someOtherListId"),
             new CompletedTodoId("someIdentifier"),
             "completedTask",
             Date.from(Instant.now()));
@@ -269,6 +270,7 @@ public class TodoServiceTest {
     public void complete_whenCompletedListRepositoryRejectsModel_refusesOperation() throws Exception {
         CompletedTodo completedTodo = new CompletedTodo(
             new UserId("someUserId"),
+            new ListId("someOtherListId"),
             new CompletedTodoId("someIdentifier"),
             "completedTask",
             Date.from(Instant.now()));
