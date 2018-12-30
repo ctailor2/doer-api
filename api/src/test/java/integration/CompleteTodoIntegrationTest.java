@@ -61,7 +61,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         ReadOnlyTodoList newTodoList = listApplicationService.getDefault(new User(new UserId("test@email.com")));
 
         assertThat(newTodoList.getTodos(), hasSize(0));
-        List<CompletedTodo> completedTodos = listApplicationService.getCompleted(new User(new UserId("test@email.com")));
+        List<CompletedTodo> completedTodos = listApplicationService.getCompleted(new User(new UserId("test@email.com")), defaultListId);
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));

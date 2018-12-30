@@ -1,5 +1,9 @@
 package integration;
 
+import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -21,13 +25,19 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
     @Autowired
     private UserSessionsApiService userSessionsApiService;
 
+    @Autowired
+    private ListApplicationService listApplicationService;
+    private ListId defaultListId;
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
+        User user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+        defaultListId = listApplicationService.getDefault(user).getListId();
     }
 
     @Test
@@ -39,7 +49,7 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/history")));
-        assertThat(responseContent, hasJsonPath("$._links.completedList.href", containsString("/v1/completedList")));
+        assertThat(responseContent, hasJsonPath("$._links.completedList.href", containsString("/v1/lists/" + defaultListId.get() + "/completed")));
     }
 
     private void doGet() throws Exception {

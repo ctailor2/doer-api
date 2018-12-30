@@ -46,21 +46,22 @@ class ResourcesController {
     @RequestMapping(value = "/todo", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
-        ReadOnlyTodoList firstList = listApplicationService.getDefault(authenticatedUser.getUser());
+        ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.todoResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.listLink(firstList.getListId().get()).withRel("list"));
+            hateoasLinkGenerator.listLink(defaultList.getListId().get()).withRel("list"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/history", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> history() {
+    ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+        ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.completedListLink().withRel("completedList"));
+            hateoasLinkGenerator.completedListLink(defaultList.getListId().get()).withRel("completedList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 }

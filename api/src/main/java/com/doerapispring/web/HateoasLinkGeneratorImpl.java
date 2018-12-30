@@ -86,7 +86,11 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link historyResourcesLink() {
-        return linkTo(methodOn(ResourcesController.class).history()).withSelfRel();
+        try {
+            return linkTo(methodOn(ResourcesController.class).history(null)).withSelfRel();
+        } catch (InvalidRequestException e) {
+            throw new RuntimeException("Failed to create link", e);
+        }
     }
 
     @Override
@@ -118,8 +122,8 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link completedListLink() {
-        return linkTo(methodOn(ListsController.class).showCompleted(null)).withSelfRel();
+    public Link completedListLink(String listId) {
+        return linkTo(methodOn(ListsController.class).showCompleted(null, listId)).withSelfRel();
     }
 
     @Override

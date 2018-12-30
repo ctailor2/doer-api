@@ -274,44 +274,43 @@ public class ListsControllerTest {
 
     @Test
     public void showCompleted_mapping() throws Exception {
-        mockMvc.perform(get("/v1/completedList"))
+        mockMvc.perform(get("/v1/lists/someListId/completed"))
             .andExpect(status().isOk());
 
-        verify(listApplicationService).getCompleted(user);
+        verify(listApplicationService).getCompleted(user, new ListId("someListId"));
     }
 
     @Test
     public void showCompleted_returnsList() throws InvalidRequestException {
         String task = "someTask";
         Date completedAt = Date.from(Instant.now());
-        when(listApplicationService.getCompleted(any())).thenReturn(singletonList(new CompletedTodo(
+        when(listApplicationService.getCompleted(any(), any())).thenReturn(singletonList(new CompletedTodo(
             new UserId("someUserId"),
             new ListId("someListId"),
             new CompletedTodoId("someTodoId"),
             task,
             completedAt)));
 
-        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
+        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
         assertThat(responseEntity.getBody().getCompletedListDTO()).isNotNull();
         assertThat(responseEntity.getBody().getCompletedListDTO().getTodos()).hasSize(1);
         assertThat(responseEntity.getBody().getCompletedListDTO().getTodos().get(0).getTask()).isEqualTo(task);
         assertThat(responseEntity.getBody().getCompletedListDTO().getTodos().get(0).getCompletedAt()).isEqualTo(completedAt);
-        assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/completedList").withSelfRel());
     }
 
     @Test
     public void showCompleted_includesLinksByDefault() throws Exception {
-        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
+        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
-        assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/completedList").withSelfRel());
+        assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/someListId/completedList").withSelfRel());
     }
 
     @Test
     public void showCompleted_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(listApplicationService.getCompleted(any())).thenThrow(new InvalidRequestException());
+        when(listApplicationService.getCompleted(any(), any())).thenThrow(new InvalidRequestException());
 
-        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser);
+        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

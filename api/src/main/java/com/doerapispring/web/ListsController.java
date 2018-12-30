@@ -103,16 +103,17 @@ class ListsController {
         }
     }
 
-    @GetMapping(value = "/completedList")
+    @GetMapping(value = "/lists/{listId}/completed")
     @ResponseBody
-    ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                        @PathVariable String listId) {
         try {
             CompletedListDTO completedListDTO = new CompletedListDTO(
-                listApplicationService.getCompleted(authenticatedUser.getUser()).stream()
+                listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).stream()
                     .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
                     .collect(toList()));
             CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
-            completedListResponse.add(hateoasLinkGenerator.completedListLink().withSelfRel());
+            completedListResponse.add(hateoasLinkGenerator.completedListLink(listId).withSelfRel());
             return ResponseEntity.ok(completedListResponse);
         } catch (InvalidRequestException e) {
             return ResponseEntity.badRequest().build();

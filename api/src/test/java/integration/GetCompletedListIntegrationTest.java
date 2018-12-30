@@ -51,8 +51,8 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         todoApplicationService.createDeferred(user, defaultListId, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
-                .get("/v1/completedList")
-                .headers(httpHeaders);
+            .get("/v1/lists/" + defaultListId.get() + "/completed")
+            .headers(httpHeaders);
     }
 
     @Test
@@ -76,11 +76,11 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         Date completedAt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(completedAtString);
         Assertions.assertThat(completedAt).isToday();
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/completedList")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/completed")));
     }
 
     private void doGet() throws Exception {
         mvcResult = mockMvc.perform(mockRequestBuilder)
-                .andReturn();
+            .andReturn();
     }
 }

@@ -35,7 +35,7 @@ interface HateoasLinkGenerator {
 
     Link createDeferredTodoLink(String listId);
 
-    Link completedListLink();
+    Link completedListLink(String listId);
 
     Link listEscalateTodoLink(String listId);
 }

@@ -119,15 +119,16 @@ public class ListServiceTest {
 
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() throws Exception {
+        ListId listId = new ListId("someListId");
         List<CompletedTodo> expectedTodos = singletonList(new CompletedTodo(
             new UserId("someUserId"),
-            new ListId("someListId"),
+            listId,
             new CompletedTodoId("someTodoId"),
             "someTask",
             Date.from(Instant.now())));
         when(mockCompletedTodoRepository.findAll(any(UserId.class))).thenReturn(expectedTodos);
 
-        List<CompletedTodo> actualTodos = listService.getCompleted(new User(new UserId(identifier)));
+        List<CompletedTodo> actualTodos = listService.getCompleted(new User(new UserId(identifier)), listId);
 
         assertThat(actualTodos).isEqualTo(expectedTodos);
     }

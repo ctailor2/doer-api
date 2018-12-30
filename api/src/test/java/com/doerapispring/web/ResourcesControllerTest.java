@@ -26,6 +26,7 @@ public class ResourcesControllerTest {
     private AuthenticatedUser authenticatedUser;
     private ListApplicationService listApplicationService;
     private User user;
+    private ListId defaultListId;
 
     @Before
     public void setUp() throws Exception {
@@ -37,15 +38,17 @@ public class ResourcesControllerTest {
         listApplicationService = mock(ListApplicationService.class);
         resourcesController = new ResourcesController(new MockHateoasLinkGenerator(), listApplicationService);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(resourcesController)
-                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
-                .build();
+            .standaloneSetup(resourcesController)
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+            .build();
+        defaultListId = new ListId("someListId");
+        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, defaultListId));
     }
 
     @Test
     public void base_mapping() throws Exception {
         mockMvc.perform(get("/v1/resources/base"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -53,15 +56,15 @@ public class ResourcesControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.base();
 
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/baseResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/login").withRel("login"),
-                new Link(MOCK_BASE_URL + "/signup").withRel("signup"));
+            new Link(MOCK_BASE_URL + "/baseResources").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/login").withRel("login"),
+            new Link(MOCK_BASE_URL + "/signup").withRel("signup"));
     }
 
     @Test
     public void root_mapping() throws Exception {
         mockMvc.perform(get("/v1/resources/root"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -69,45 +72,40 @@ public class ResourcesControllerTest {
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.root();
 
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/rootResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"),
-                new Link(MOCK_BASE_URL + "/historyResources").withRel("historyResources"));
+            new Link(MOCK_BASE_URL + "/rootResources").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"),
+            new Link(MOCK_BASE_URL + "/historyResources").withRel("historyResources"));
     }
 
     @Test
     public void todo_mapping() throws Exception {
-        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, new ListId("someListId")));
-
         mockMvc.perform(get("/v1/resources/todo"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
 
         verify(listApplicationService).getDefault(user);
     }
 
     @Test
     public void todo_includesLinksByDefault() throws Exception {
-        ListId firstListId = new ListId("firstListId");
-        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, firstListId));
-
         ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-                new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/lists/firstListId").withRel("list"));
+            new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + defaultListId.get()).withRel("list"));
     }
 
     @Test
     public void history_mapping() throws Exception {
         mockMvc.perform(get("/v1/resources/history"))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
     public void history_includesLinks() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.history();
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.history(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).contains(
-                new Link(MOCK_BASE_URL + "/historyResources").withSelfRel(),
-                new Link(MOCK_BASE_URL + "/completedList").withRel("completedList"));
+            new Link(MOCK_BASE_URL + "/historyResources").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + defaultListId.get() + "/completedList").withRel("completedList"));
     }
 }

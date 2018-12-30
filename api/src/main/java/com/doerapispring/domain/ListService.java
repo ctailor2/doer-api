@@ -33,7 +33,7 @@ public class ListService implements ListApplicationService {
             .orElseThrow(InvalidRequestException::new);
     }
 
-    public List<CompletedTodo> getCompleted(User user) throws InvalidRequestException {
+    public List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidRequestException {
         return completedTodoRepository.findAll(user.getUserId());
     }
 
