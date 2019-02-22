@@ -10,11 +10,10 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 public class BaseResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private MvcResult mvcResult;
 
     @Test
     public void baseResources_includesLinkToGetTodos() throws Exception {
-        doGet();
+        MvcResult mvcResult = mockMvc.perform(get("/v1/resources/base")).andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
@@ -25,7 +24,16 @@ public class BaseResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, hasJsonPath("$._links.signup.href", containsString("/v1/signup")));
     }
 
-    private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/resources/base")).andReturn();
+    @Test
+    public void baseResources_isAvailableFromTheRoot() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(get("/")).andReturn();
+
+        String responseContent = mvcResult.getResponse().getContentAsString();
+
+        assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/base")));
+        assertThat(responseContent, hasJsonPath("$._links.login.href", containsString("/v1/login")));
+        assertThat(responseContent, hasJsonPath("$._links.signup.href", containsString("/v1/signup")));
     }
 }

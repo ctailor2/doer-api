@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping(value = "/v1/resources")
 class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final ListApplicationService listApplicationService;
@@ -21,7 +20,7 @@ class ResourcesController {
         this.listApplicationService = listApplicationService;
     }
 
-    @RequestMapping(value = "/base", method = RequestMethod.GET)
+    @RequestMapping(value = {"/v1/resources/base", "/"}, method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> base() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
@@ -32,7 +31,7 @@ class ResourcesController {
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/root", method = RequestMethod.GET)
+    @RequestMapping(value = "/v1/resources/root", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> root() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
@@ -43,7 +42,7 @@ class ResourcesController {
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/todo", method = RequestMethod.GET)
+    @RequestMapping(value = "/v1/resources/todo", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
@@ -54,7 +53,7 @@ class ResourcesController {
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/history", method = RequestMethod.GET)
+    @RequestMapping(value = "/v1/resources/history", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
         ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
