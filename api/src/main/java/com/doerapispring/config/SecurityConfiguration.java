@@ -30,7 +30,7 @@ class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     static final String SESSION_TOKEN_HEADER = "Session-Token";
 
-    private static final String API_ROOT_ENDPOINT = "/v1";
+    private static final String API_ROOT_ENDPOINT = "/v1/";
     private static final String BASE_RESOURCES_ENDPOINT = "/v1/resources/base";
     private static final String SIGNUP_ENDPOINT = "/v1/signup";
     private static final String LOGIN_ENDPOINT = "/v1/login";
