@@ -19,20 +19,20 @@ public class BaseResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/base")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1")));
         assertThat(responseContent, hasJsonPath("$._links.login.href", containsString("/v1/login")));
         assertThat(responseContent, hasJsonPath("$._links.signup.href", containsString("/v1/signup")));
     }
 
     @Test
     public void baseResources_isAvailableFromTheRoot() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(get("/")).andReturn();
+        MvcResult mvcResult = mockMvc.perform(get("/v1")).andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/base")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1")));
         assertThat(responseContent, hasJsonPath("$._links.login.href", containsString("/v1/login")));
         assertThat(responseContent, hasJsonPath("$._links.signup.href", containsString("/v1/signup")));
     }
