@@ -30,6 +30,7 @@ class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     static final String SESSION_TOKEN_HEADER = "Session-Token";
 
+    private static final String API_ROOT_ENDPOINT = "/v1";
     private static final String BASE_RESOURCES_ENDPOINT = "/v1/resources/base";
     private static final String SIGNUP_ENDPOINT = "/v1/signup";
     private static final String LOGIN_ENDPOINT = "/v1/login";
@@ -43,29 +44,30 @@ class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         webSecurity
-                .ignoring()
-                .antMatchers(HttpMethod.OPTIONS);
+            .ignoring()
+            .antMatchers(HttpMethod.OPTIONS);
     }
 
     @Override
     public void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers(BASE_RESOURCES_ENDPOINT).permitAll()
-                .antMatchers(SIGNUP_ENDPOINT).permitAll()
-                .antMatchers(LOGIN_ENDPOINT).permitAll()
-                .and()
-                .authorizeRequests()
-                .antMatchers(TOKEN_AUTH_ENDPOINT).authenticated()
-                .and()
-                .addFilterBefore(buildTokenAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new WebSecurityCorsFilter(), ChannelProcessingFilter.class);
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers(API_ROOT_ENDPOINT).permitAll()
+            .antMatchers(BASE_RESOURCES_ENDPOINT).permitAll()
+            .antMatchers(SIGNUP_ENDPOINT).permitAll()
+            .antMatchers(LOGIN_ENDPOINT).permitAll()
+            .and()
+            .authorizeRequests()
+            .antMatchers(TOKEN_AUTH_ENDPOINT).authenticated()
+            .and()
+            .addFilterBefore(buildTokenAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new WebSecurityCorsFilter(), ChannelProcessingFilter.class);
     }
 
     @Bean
     TokenAuthenticationFilter buildTokenAuthenticationProcessingFilter() {
-        List<String> pathsToSkip = Arrays.asList(BASE_RESOURCES_ENDPOINT, SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
+        List<String> pathsToSkip = Arrays.asList(API_ROOT_ENDPOINT, BASE_RESOURCES_ENDPOINT, SIGNUP_ENDPOINT, LOGIN_ENDPOINT);
         SkipAuthenticationPathRequestMatcher matcher = new SkipAuthenticationPathRequestMatcher(pathsToSkip, TOKEN_AUTH_ENDPOINT);
         TokenAuthenticationFilter filter = new TokenAuthenticationFilter(matcher);
         filter.setAuthenticationManager(this.authenticationManager);
