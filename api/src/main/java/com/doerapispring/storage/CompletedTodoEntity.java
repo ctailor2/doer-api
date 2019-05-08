@@ -1,34 +1,40 @@
 package com.doerapispring.storage;
 
 import lombok.*;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @ToString
-@Entity
-@Table(name = "completed_todos")
-class CompletedTodoEntity {
-    @Id
-    @Column(name = "uuid")
-    public String uuid;
-
-    @Column(name = "user_id")
+@Table(value = "completed_todos")
+class CompletedTodoEntity extends UuidIdentifiable {
+    @Column(value = "user_id")
     public Long userId;
 
-    @Column(name = "task")
+    @Column(value = "task")
     public String task;
 
-    @Column(name = "completed_at")
+    @Column(value = "completed_at")
     public Date completedAt;
 
-    @Column(name = "list_id")
+    @Column(value = "list_id")
     public String listId;
+
+    @Builder
+    public CompletedTodoEntity(String id, Long userId, String task, Date completedAt, String listId) {
+        this.id = id;
+        this.userId = userId;
+        this.task = task;
+        this.completedAt = completedAt;
+        this.listId = listId;
+    }
+
+    CompletedTodoEntity withUuid(String uuid) {
+        this.uuid = uuid;
+        return this;
+    }
 }
