@@ -65,7 +65,9 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.displace(todoId, task);
             todoListRepository.save(todoList);
-        } catch (AbnormalModelException | DuplicateTodoException | ListNotFullException e) {
+        } catch (AbnormalModelException | ListNotFullException e) {
+            throw new InvalidRequestException();
+        } catch (DuplicateTodoException e) {
             throw new InvalidRequestException(e.getMessage());
         }
     }

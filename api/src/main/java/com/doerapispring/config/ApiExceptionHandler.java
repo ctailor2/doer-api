@@ -56,10 +56,11 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ApiException.class})
     protected ResponseEntity<Object> handleApplicationError(Exception exception, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(emptyList(), singletonList(new GlobalError(exception.getMessage())));
+        String message = exception.getMessage() != null ? exception.getMessage() : DEFAULT_GLOBAL_ERROR_MESSAGE;
+        ErrorResponse errorResponse = new ErrorResponse(emptyList(), singletonList(new GlobalError(message)));
         Annotation annotation = AnnotationUtils.findAnnotation(exception.getClass(), ResponseStatus.class);
         HttpStatus httpStatus = (HttpStatus) AnnotationUtils.getValue(annotation);
-        return handleExceptionInternal(exception, errorResponse, null, httpStatus, request);
+        return handleExceptionInternal(exception, errorResponse, null, httpStatus != null ? httpStatus : HttpStatus.BAD_REQUEST, request);
     }
 
     private String buildMessageOrUseDefault(ObjectError objectError, String defaultMessage) {

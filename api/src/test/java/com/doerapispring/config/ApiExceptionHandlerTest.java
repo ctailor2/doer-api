@@ -20,6 +20,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +44,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesFieldErrors_withoutArgs() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -53,7 +54,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesFieldErrors_withArgs() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -63,7 +64,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesFieldErrors_usingADefaultMessage_whenASpecificMessageIsNotDefined() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -73,7 +74,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesGlobalErrors_withoutArgs() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -82,7 +83,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesGlobalErrors_withArgs() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -91,7 +92,7 @@ public class ApiExceptionHandlerTest {
 
     @Test
     public void includesGlobalErrors_usingADefaultMessage_whenASpecificMessageIsNotDefined() throws Exception {
-        mockMvc.perform(post("/testController")
+        mockMvc.perform(post("/testController/validateRequest")
             .content("{}")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
@@ -99,28 +100,38 @@ public class ApiExceptionHandlerTest {
     }
 
     @Test
-    public void includesGlobalErrors_forApiRuntimeExceptions() throws Exception {
-        mockMvc.perform(post("/testController")
-            .content("{\n" +
-                "  \"fieldA\": \"notEmpty\",\n" +
-                "  \"fieldB\": \"notEmpty\",\n" +
-                "  \"fieldC\": \"notEmpty\"\n" +
-                "}")
-            .contentType(MediaType.APPLICATION_JSON))
+    public void includesGlobalErrors_forApiRuntimeExceptions_usingTheSpecifiedMessageAndResponseStatus() throws Exception {
+        mockMvc.perform(get("/testController/apiExceptionWithMessageAndStatus"))
             .andExpect(status().isIAmATeapot())
             .andExpect(jsonPath("$.globalErrors[0].message", equalTo("An api error occurred")));
     }
 
+    @Test
+    public void includesGlobalErrors_forApiRuntimeExceptions_usingADefaultMessageAndResponseStatus() throws Exception {
+        mockMvc.perform(get("/testController/apiException"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.globalErrors[0].message", equalTo("an error occurred")));
+    }
+
     @RestController
+    @RequestMapping("/testController")
     private static class TestController {
         @InitBinder
         public void initBinder(WebDataBinder webDataBinder) {
             webDataBinder.setValidator(new TestValidator());
         }
 
-        @PostMapping("/testController")
-        public ResponseEntity testEndpoint(@Valid @RequestBody TestRequest testRequest) throws ApiException {
+        @PostMapping("/validateRequest")
+        public void validateRequest(@Valid @RequestBody TestRequest testRequest) {}
+
+        @GetMapping("/apiExceptionWithMessageAndStatus")
+        public ResponseEntity apiExceptionWithMessageAndStatus() throws TestApiException {
             throw new TestApiException("An api error occurred");
+        }
+
+        @GetMapping("/apiException")
+        public ResponseEntity apiException() throws ApiException {
+            throw new ApiException();
         }
     }
 
