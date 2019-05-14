@@ -78,16 +78,6 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void unlock_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(listApplicationService).unlock(any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser, "someListId");
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void show_mappings() throws Exception {
         mockMvc.perform(get("/v1/lists/someListId"))
             .andExpect(status().isOk());
@@ -264,15 +254,6 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void show_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(listApplicationService.get(any(), any())).thenThrow(new InvalidRequestException());
-
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void showCompleted_mapping() throws Exception {
         mockMvc.perform(get("/v1/lists/someListId/completed"))
             .andExpect(status().isOk());
@@ -304,14 +285,5 @@ public class ListsControllerTest {
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/someListId/completedList").withSelfRel());
-    }
-
-    @Test
-    public void showCompleted_whenInvalidRequest_throws400BadRequest() throws Exception {
-        when(listApplicationService.getCompleted(any(), any())).thenThrow(new InvalidRequestException());
-
-        ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

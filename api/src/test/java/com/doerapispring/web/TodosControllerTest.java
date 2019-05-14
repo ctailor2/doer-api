@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,16 +64,6 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
             new Link(MOCK_BASE_URL + "/lists/someListId/deleteTodo/someTodoId").withSelfRel(),
             new Link(MOCK_BASE_URL + "/lists/someListId").withRel("list"));
-    }
-
-    @Test
-    public void delete_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).delete(any(), any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, "someListId", "someTodoId");
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -146,16 +135,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void complete_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).complete(any(), any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.complete(authenticatedUser, "someListId", "someId");
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void move_mapping() throws Exception {
         mockMvc.perform(post("/v1/lists/someListId/todos/1/move/3"))
             .andExpect(status().isAccepted());
@@ -178,16 +157,6 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void move_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).move(any(), any(), any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.move(authenticatedUser, "someListId", "localId", "targetLocalId");
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
     public void pull_mapping() throws Exception {
         mockMvc.perform(post("/v1/lists/someListId/pull"))
             .andExpect(status().isAccepted());
@@ -204,16 +173,6 @@ public class TodosControllerTest {
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withSelfRel(),
             new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
-    }
-
-    @Test
-    public void pull_whenInvalidRequest_returns400BadRequest() throws Exception {
-        doThrow(new InvalidRequestException()).when(todoApplicationService).pull(any(), any());
-
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser, "someListId");
-
-        assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test

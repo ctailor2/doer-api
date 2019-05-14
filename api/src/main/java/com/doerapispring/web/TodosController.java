@@ -26,15 +26,11 @@ class TodosController {
     ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId,
                                              @PathVariable String todoId) {
-        try {
-            todoApplicationService.delete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
-            ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, todoId).withSelfRel(),
-                hateoasLinkGenerator.listLink(listId).withRel("list"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        todoApplicationService.delete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, todoId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/lists/{listId}/displace", method = RequestMethod.POST)
@@ -67,16 +63,12 @@ class TodosController {
     ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable String listId,
                                                @PathVariable String todoId) {
-        try {
-            todoApplicationService.complete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
-            ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(
-                hateoasLinkGenerator.completeTodoLink(listId, todoId).withSelfRel(),
-                hateoasLinkGenerator.listLink(listId).withRel("list"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        todoApplicationService.complete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(
+            hateoasLinkGenerator.completeTodoLink(listId, todoId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/lists/{listId}/todos/{todoId}/move/{targetTodoId}", method = RequestMethod.POST)
@@ -85,32 +77,24 @@ class TodosController {
                                            @PathVariable String listId,
                                            @PathVariable String todoId,
                                            @PathVariable String targetTodoId) {
-        try {
-            todoApplicationService.move(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), new TodoId(targetTodoId));
-            ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(
-                hateoasLinkGenerator.moveTodoLink(listId, todoId, targetTodoId).withSelfRel(),
-                hateoasLinkGenerator.listLink(listId).withRel("list"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        todoApplicationService.move(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), new TodoId(targetTodoId));
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(
+            hateoasLinkGenerator.moveTodoLink(listId, todoId, targetTodoId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/lists/{listId}/pull", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                            @PathVariable String listId) {
-        try {
-            todoApplicationService.pull(authenticatedUser.getUser(), new ListId(listId));
-            ResourcesResponse resourcesResponse = new ResourcesResponse();
-            resourcesResponse.add(
-                hateoasLinkGenerator.listPullTodosLink(listId).withSelfRel(),
-                hateoasLinkGenerator.listLink(listId).withRel("list"));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        todoApplicationService.pull(authenticatedUser.getUser(), new ListId(listId));
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(
+            hateoasLinkGenerator.listPullTodosLink(listId).withSelfRel(),
+            hateoasLinkGenerator.listLink(listId).withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
     @RequestMapping(value = "/lists/{listId}/escalate", method = RequestMethod.POST)

@@ -11,11 +11,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     @Override
     public Link todoResourcesLink() {
-        try {
-            return linkTo(methodOn(ResourcesController.class).todo(null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(ResourcesController.class).todo(null)).withSelfRel();
     }
 
     @Override
@@ -48,20 +44,12 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link displaceTodoLink(String listId) {
-        try {
-            return linkTo(methodOn(TodosController.class).displace(null, listId, null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(TodosController.class).displace(null, listId, null)).withSelfRel();
     }
 
     @Override
     public Link updateTodoLink(String listId, String todoId) {
-        try {
-            return linkTo(methodOn(TodosController.class).update(null, listId, todoId, null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(TodosController.class).update(null, listId, todoId, null)).withSelfRel();
     }
 
     @Override
@@ -86,11 +74,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link historyResourcesLink() {
-        try {
-            return linkTo(methodOn(ResourcesController.class).history(null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(ResourcesController.class).history(null)).withSelfRel();
     }
 
     @Override
@@ -105,20 +89,12 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link createTodoLink(String listId) {
-        try {
-            return linkTo(methodOn(TodosController.class).create(null, listId, null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(TodosController.class).create(null, listId, null)).withSelfRel();
     }
 
     @Override
     public Link createDeferredTodoLink(String listId) {
-        try {
-            return linkTo(methodOn(TodosController.class).createDeferred(null, listId, null)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(TodosController.class).createDeferred(null, listId, null)).withSelfRel();
     }
 
     @Override
@@ -128,10 +104,6 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link listEscalateTodoLink(String listId) {
-        try {
-            return linkTo(methodOn(TodosController.class).escalate(null, listId)).withSelfRel();
-        } catch (InvalidRequestException e) {
-            throw new RuntimeException("Failed to create link", e);
-        }
+        return linkTo(methodOn(TodosController.class).escalate(null, listId)).withSelfRel();
     }
 }
