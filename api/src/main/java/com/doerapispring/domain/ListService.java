@@ -22,7 +22,7 @@ public class ListService implements ListApplicationService {
         try {
             todoList.unlock();
             todoListRepository.save(todoList);
-        } catch (LockTimerNotExpiredException | AbnormalModelException e) {
+        } catch (LockTimerNotExpiredException e) {
             throw new InvalidRequestException();
         }
     }

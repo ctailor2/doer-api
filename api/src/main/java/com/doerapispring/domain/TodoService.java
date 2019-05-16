@@ -26,7 +26,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.add(todoId, task);
             todoListRepository.save(todoList);
-        } catch (ListSizeExceededException | AbnormalModelException e) {
+        } catch (ListSizeExceededException e) {
             throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
             throw new InvalidRequestException(e.getMessage());
@@ -40,8 +40,6 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.addDeferred(todoId, task);
             todoListRepository.save(todoList);
-        } catch (AbnormalModelException e) {
-            throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
             throw new InvalidRequestException(e.getMessage());
         }
@@ -53,7 +51,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.delete(todoId);
             todoListRepository.save(todoList);
-        } catch (TodoNotFoundException | AbnormalModelException e) {
+        } catch (TodoNotFoundException e) {
             throw new InvalidRequestException();
         }
     }
@@ -65,7 +63,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.displace(todoId, task);
             todoListRepository.save(todoList);
-        } catch (AbnormalModelException | ListNotFullException e) {
+        } catch (ListNotFullException e) {
             throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
             throw new InvalidRequestException(e.getMessage());
@@ -78,7 +76,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.update(todoId, task);
             todoListRepository.save(todoList);
-        } catch (TodoNotFoundException | AbnormalModelException e) {
+        } catch (TodoNotFoundException e) {
             throw new InvalidRequestException();
         } catch (DuplicateTodoException e) {
             throw new InvalidRequestException(e.getMessage());
@@ -92,7 +90,7 @@ public class TodoService implements TodoApplicationService {
             CompletedTodo completedTodo = todoList.complete(todoId);
             todoListRepository.save(todoList);
             completedTodoRepository.save(completedTodo);
-        } catch (TodoNotFoundException | AbnormalModelException e) {
+        } catch (TodoNotFoundException e) {
             throw new InvalidRequestException();
         }
     }
@@ -103,7 +101,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.move(todoId, targetTodoId);
             todoListRepository.save(todoList);
-        } catch (TodoNotFoundException | AbnormalModelException e) {
+        } catch (TodoNotFoundException e) {
             throw new InvalidRequestException();
         }
     }
@@ -111,12 +109,8 @@ public class TodoService implements TodoApplicationService {
     public void pull(User user, ListId listId) throws InvalidRequestException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
             .orElseThrow(InvalidRequestException::new);
-        try {
-            todoList.pull();
-            todoListRepository.save(todoList);
-        } catch (AbnormalModelException e) {
-            throw new InvalidRequestException();
-        }
+        todoList.pull();
+        todoListRepository.save(todoList);
     }
 
     @Override
@@ -126,7 +120,7 @@ public class TodoService implements TodoApplicationService {
         try {
             todoList.escalate();
             todoListRepository.save(todoList);
-        } catch (AbnormalModelException | EscalateNotAllowException e) {
+        } catch (EscalateNotAllowException e) {
             throw new InvalidRequestException();
         }
     }

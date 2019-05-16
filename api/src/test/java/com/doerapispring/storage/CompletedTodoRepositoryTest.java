@@ -56,7 +56,7 @@ public class CompletedTodoRepositoryTest {
     }
 
     @Test
-    public void savesCompletedTodos() throws AbnormalModelException {
+    public void savesCompletedTodos() {
         UserId userId = new UserId("someUserId");
         userRepository.save(new User(userId));
         ListId listId = new ListId("someListId");

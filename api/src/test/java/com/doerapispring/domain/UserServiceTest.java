@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Optional;
 
@@ -18,7 +17,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(org.mockito.junit.MockitoJUnitRunner.class)
 public class UserServiceTest {
     private UserService userService;
 
@@ -72,32 +71,12 @@ public class UserServiceTest {
     }
 
     @Test
-    public void create_whenRepositoryRejectsDefaultTodoList_refusesOperation() throws Exception {
-        TodoList newTodoList = mock(TodoList.class);
-        when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoList);
-        doThrow(new AbnormalModelException()).when(todoListRepository).save(any());
-
-        String identifier = "soUnique";
-        assertThatThrownBy(() -> userService.create(identifier))
-            .isInstanceOf(InvalidRequestException.class);
-    }
-
-    @Test
     public void create_whenIdentifierTaken_refusesCreation_doesNotCreateDefaultTodoList() throws Exception {
         String identifier = "soUnique";
 
         when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier))));
 
         assertThatThrownBy(() -> userService.create(identifier))
-            .isInstanceOf(InvalidRequestException.class);
-        verifyZeroInteractions(todoListFactory);
-    }
-
-    @Test
-    public void create_whenRepositoryRejectsModel_refusesCreation_doesNotCreateDefaultTodoList() throws Exception {
-        doThrow(new AbnormalModelException()).when(userRepository).save(any(User.class));
-
-        assertThatThrownBy(() -> userService.create("soUnique"))
             .isInstanceOf(InvalidRequestException.class);
         verifyZeroInteractions(todoListFactory);
     }

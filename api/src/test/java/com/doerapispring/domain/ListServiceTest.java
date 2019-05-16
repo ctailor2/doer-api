@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -19,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(org.mockito.junit.MockitoJUnitRunner.class)
 public class ListServiceTest {
     private ListService listService;
 
@@ -49,14 +48,6 @@ public class ListServiceTest {
 
         verify(todoList).unlock();
         verify(mockTodoListRepository).save(todoList);
-    }
-
-    @Test
-    public void unlock_whenTodoListFound_whenRepositoryRejectsModels_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
     @Test

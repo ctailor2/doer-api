@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -16,7 +15,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(org.mockito.junit.MockitoJUnitRunner.class)
 public class TodoServiceTest {
     private TodoService todoService;
 
@@ -88,14 +87,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void create_whenTodoListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.create(user, new ListId("someListId"), "some things");
-    }
-
-    @Test
     public void createDeferred_whenTodoListFound_addsTodoToRepository() throws Exception {
         String task = "some things";
         todoService.createDeferred(user, new ListId("someListId"), task);
@@ -124,28 +115,12 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void createDeferred_whenTodoListFound_whenRepositoryRejectsModels_refusesCreate() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.createDeferred(user, new ListId("someListId"), "some things");
-    }
-
-    @Test
     public void delete_whenTodoListFound_whenTodoFound_deletesTodoUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
         todoService.delete(user, new ListId("someListId"), todoId);
 
         verify(todoList).delete(todoId);
         verify(mockTodoListRepository).save(todoList);
-    }
-
-    @Test
-    public void delete_whenTodoListFound_whenTodoFound_whenRepositoryRejectsModels_refusesDelete() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.delete(user, new ListId("someListId"), new TodoId("someTodoId"));
     }
 
     @Test
@@ -191,14 +166,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void displace_whenTodoListFound_whenTodoFound_whenRepositoryRejectsModel_refusesDisplace() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.displace(user, new ListId("someListId"), "someTask");
-    }
-
-    @Test
     public void update_whenTodoListFound_whenTodoFound_updatesUsingRepository() throws Exception {
         String updatedTask = "someOtherTask";
         TodoId todoId = new TodoId("someIdentifier");
@@ -206,14 +173,6 @@ public class TodoServiceTest {
 
         verify(todoList).update(todoId, updatedTask);
         verify(mockTodoListRepository).save(todoList);
-    }
-
-    @Test
-    public void update_whenTodoListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.update(user, new ListId("someListId"), new TodoId("someIdentifier"), "someOtherTask");
     }
 
     @Test
@@ -267,29 +226,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void complete_whenCompletedListRepositoryRejectsModel_refusesOperation() throws Exception {
-        CompletedTodo completedTodo = new CompletedTodo(
-            new UserId("someUserId"),
-            new ListId("someOtherListId"),
-            new CompletedTodoId("someIdentifier"),
-            "completedTask",
-            Date.from(Instant.now()));
-        when(todoList.complete(any(TodoId.class))).thenReturn(completedTodo);
-        doThrow(new AbnormalModelException()).when(mockCompletedTodoRepository).save(any(CompletedTodo.class));
-
-        exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
-    }
-
-    @Test
-    public void complete_whenTodoListFound_whenTodoFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
-    }
-
-    @Test
     public void complete_whenTodoListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         doThrow(new TodoNotFoundException()).when(todoList).complete(any());
 
@@ -313,14 +249,6 @@ public class TodoServiceTest {
 
         verify(todoList).move(sourceIdentifier, destinationIdentifier);
         verify(mockTodoListRepository).save(todoList);
-    }
-
-    @Test
-    public void move_whenTodoListFound_whenTodosFound_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.move(user, new ListId("someListId"), new TodoId("sourceIdentifier"), new TodoId("destinationIdentifier"));
     }
 
     @Test
@@ -348,14 +276,6 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void pull_whenTodoListFound_whenTodosPulled_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
-
-        exception.expect(InvalidRequestException.class);
-        todoService.pull(user, new ListId("someListId"));
-    }
-
-    @Test
     public void escalate_escalatesList_andSavesIt() throws Exception {
         todoService.escalate(user, new ListId("someListId"));
 
@@ -366,14 +286,6 @@ public class TodoServiceTest {
     @Test
     public void escalate_whenEscalateNotAllowed_refusesOperation() throws Exception {
         doThrow(new EscalateNotAllowException()).when(todoList).escalate();
-
-        exception.expect(InvalidRequestException.class);
-        todoService.escalate(user, new ListId("someListId"));
-    }
-
-    @Test
-    public void escalate_whenRepositoryRejectsModel_refusesOperation() throws Exception {
-        doThrow(new AbnormalModelException()).when(mockTodoListRepository).save(any());
 
         exception.expect(InvalidRequestException.class);
         todoService.escalate(user, new ListId("someListId"));

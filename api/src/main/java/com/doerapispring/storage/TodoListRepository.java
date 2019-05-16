@@ -31,9 +31,9 @@ class TodoListRepository implements
     }
 
     @Override
-    public void save(TodoList todoList) throws AbnormalModelException {
+    public void save(TodoList todoList) {
         UserEntity userEntity = userDAO.findByEmail(todoList.getUserId().get());
-        if (userEntity == null) throw new AbnormalModelException();
+        if (userEntity == null) throw new RuntimeException("TodoList must userId must correspond with an existing user");
         TodoListEntity todoListEntity = new TodoListEntity();
         todoListEntity.userEntity = userEntity;
         todoListEntity.name = todoList.getName();

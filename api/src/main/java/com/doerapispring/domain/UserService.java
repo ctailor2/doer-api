@@ -24,16 +24,12 @@ public class UserService {
         Optional<User> userOptional = userRepository.find(userId);
         if (userOptional.isPresent()) throw new InvalidRequestException();
         User user = new User(userId);
-        try {
-            userRepository.save(user);
-            TodoList todoList = todoListFactory.todoList(
-                userId,
-                todoListRepository.nextIdentifier(),
-                "default");
-            todoListRepository.save(todoList);
-        } catch (AbnormalModelException e) {
-            throw new InvalidRequestException();
-        }
+        userRepository.save(user);
+        TodoList todoList = todoListFactory.todoList(
+            userId,
+            todoListRepository.nextIdentifier(),
+            "default");
+        todoListRepository.save(todoList);
         return user;
     }
 }
