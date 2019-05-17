@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,31 +15,31 @@ public class ListService implements ListApplicationService {
         this.completedTodoRepository = completedTodoRepository;
     }
 
-    public void unlock(User user, ListId listId) throws InvalidRequestException {
+    public void unlock(User user, ListId listId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             todoList.unlock();
             todoListRepository.save(todoList);
         } catch (LockTimerNotExpiredException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         }
     }
 
-    public ReadOnlyTodoList getDefault(User user) throws InvalidRequestException {
+    public ReadOnlyTodoList getDefault(User user) throws InvalidCommandException {
         return todoListRepository.findFirst(user.getUserId())
             .map(TodoList::read)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
     }
 
-    public List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidRequestException {
+    public List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidCommandException {
         return completedTodoRepository.findAll(user.getUserId());
     }
 
     @Override
-    public ReadOnlyTodoList get(User user, ListId listId) throws InvalidRequestException {
+    public ReadOnlyTodoList get(User user, ListId listId) throws InvalidCommandException {
         return todoListRepository.find(user.getUserId(), listId)
             .map(TodoList::read)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
     }
 }

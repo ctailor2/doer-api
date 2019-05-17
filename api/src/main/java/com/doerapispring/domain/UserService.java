@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,10 +18,10 @@ public class UserService {
         this.todoListRepository = todoListRepository;
     }
 
-    public User create(String identifier) throws InvalidRequestException {
+    public User create(String identifier) throws UserAlreadyExistsException {
         UserId userId = new UserId(identifier);
         Optional<User> userOptional = userRepository.find(userId);
-        if (userOptional.isPresent()) throw new InvalidRequestException();
+        if (userOptional.isPresent()) throw new UserAlreadyExistsException();
         User user = new User(userId);
         userRepository.save(user);
         TodoList todoList = todoListFactory.todoList(

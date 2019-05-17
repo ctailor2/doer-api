@@ -37,7 +37,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable String listId,
-                                               @RequestBody TodoForm todoForm) throws InvalidRequestException {
+                                               @RequestBody TodoForm todoForm) {
         todoApplicationService.displace(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink(listId).withSelfRel(),
@@ -50,7 +50,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId,
                                              @PathVariable String todoId,
-                                             @RequestBody TodoForm todoForm) throws InvalidRequestException {
+                                             @RequestBody TodoForm todoForm) {
         todoApplicationService.update(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(listId, todoId).withSelfRel(),
@@ -100,7 +100,7 @@ class TodosController {
     @RequestMapping(value = "/lists/{listId}/escalate", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<ResourcesResponse> escalate(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                               @PathVariable String listId) throws InvalidRequestException {
+                                               @PathVariable String listId) {
         todoApplicationService.escalate(authenticatedUser.getUser(), new ListId(listId));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withSelfRel());
@@ -113,7 +113,7 @@ class TodosController {
     ResponseEntity<ResourcesResponse> create(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId,
                                              @RequestBody TodoForm todoForm
-    ) throws InvalidRequestException {
+    ) {
         todoApplicationService.create(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
@@ -126,7 +126,7 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @PathVariable String listId,
-                                                     @RequestBody TodoForm todoForm) throws InvalidRequestException {
+                                                     @RequestBody TodoForm todoForm) {
         todoApplicationService.createDeferred(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(

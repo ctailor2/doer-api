@@ -1,8 +1,7 @@
-package com.doerapispring.api;
+package com.doerapispring.authentication;
 
-import com.doerapispring.authentication.*;
+import com.doerapispring.domain.UserAlreadyExistsException;
 import com.doerapispring.domain.UserService;
-import com.doerapispring.web.InvalidRequestException;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.springframework.stereotype.Service;
@@ -13,9 +12,9 @@ public class UserSessionsApiServiceImpl implements UserSessionsApiService {
     private final AuthenticationTokenService authenticationTokenService;
     private final BasicAuthenticationService authenticationService;
 
-    public UserSessionsApiServiceImpl(UserService userService,
-                                      AuthenticationTokenService authenticationTokenService,
-                                      BasicAuthenticationService authenticationService) {
+    UserSessionsApiServiceImpl(UserService userService,
+                               AuthenticationTokenService authenticationTokenService,
+                               BasicAuthenticationService authenticationService) {
         this.userService = userService;
         this.authenticationTokenService = authenticationTokenService;
         this.authenticationService = authenticationService;
@@ -28,7 +27,7 @@ public class UserSessionsApiServiceImpl implements UserSessionsApiService {
             userService.create(identifier);
             authenticationService.registerCredentials(identifier, credentials);
             transientAccessToken = authenticationTokenService.grant(identifier);
-        } catch (InvalidRequestException | CredentialsInvalidException | TokenRefusedException e) {
+        } catch (UserAlreadyExistsException | CredentialsInvalidException | TokenRefusedException e) {
             throw new AccessDeniedException(e.getMessage());
         }
         return new SessionTokenDTO(transientAccessToken.getAccessToken(),

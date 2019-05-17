@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,7 +65,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.create(user, new ListId("someListId"), "some things"))
-            .isInstanceOf(InvalidRequestException.class)
+            .isInstanceOf(InvalidCommandException.class)
             .hasMessageContaining("already exists");
     }
 
@@ -74,7 +73,7 @@ public class TodoServiceTest {
     public void create_whenTodoListFound_whenListFull_refusesCreate() throws Exception {
         doThrow(new ListSizeExceededException()).when(todoList).add(any(TodoId.class), any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.create(user, new ListId("someListId"), "some things");
     }
 
@@ -82,7 +81,7 @@ public class TodoServiceTest {
     public void create_whenTodoListNotFound_refusesCreate() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.create(user, new ListId("someListId"), "some things");
     }
 
@@ -101,7 +100,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.createDeferred(user, new ListId("someListId"), "some things"))
-            .isInstanceOf(InvalidRequestException.class)
+            .isInstanceOf(InvalidCommandException.class)
             .hasMessageContaining("already exists");
 
     }
@@ -110,7 +109,7 @@ public class TodoServiceTest {
     public void createDeferred_whenTodoListNotFound_refusesCreate() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.createDeferred(user, new ListId("someListId"), "some things");
     }
 
@@ -127,7 +126,7 @@ public class TodoServiceTest {
     public void delete_whenTodoListFound_whenTodoNotFound_refusesDelete() throws Exception {
         doThrow(new TodoNotFoundException()).when(todoList).delete(any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.delete(user, new ListId("someListId"), new TodoId("someTodoId"));
     }
 
@@ -143,7 +142,7 @@ public class TodoServiceTest {
     public void displace_whenTodoListNotFound_refusesDisplace() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.displace(user, new ListId("someListId"), "someTask");
     }
 
@@ -153,7 +152,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.displace(user, new ListId("someListId"), "someTask"))
-            .isInstanceOf(InvalidRequestException.class)
+            .isInstanceOf(InvalidCommandException.class)
             .hasMessageContaining("already exists");
     }
 
@@ -161,7 +160,7 @@ public class TodoServiceTest {
     public void displace_whenTodoListFound_whenTodoFound_whenListIsNotFull_refusesDisplace() throws Exception {
         doThrow(new ListNotFullException()).when(todoList).displace(any(TodoId.class), any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.displace(user, new ListId("someListId"), "someTask");
     }
 
@@ -181,7 +180,7 @@ public class TodoServiceTest {
 
         assertThatThrownBy(() ->
             todoService.update(user, new ListId("someListId"), new TodoId("someIdentifier"), "someTask"))
-            .isInstanceOf(InvalidRequestException.class)
+            .isInstanceOf(InvalidCommandException.class)
             .hasMessageContaining("already exists");
     }
 
@@ -189,7 +188,7 @@ public class TodoServiceTest {
     public void update_whenTodoListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         doThrow(new TodoNotFoundException()).when(todoList).update(any(), any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.update(user, new ListId("someListId"), new TodoId("someId"), "someTask");
     }
 
@@ -197,7 +196,7 @@ public class TodoServiceTest {
     public void update_whenTodoListNotFound_refusesUpdate() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.update(user, new ListId("someListId"), new TodoId("someId"), "someTask");
     }
 
@@ -229,7 +228,7 @@ public class TodoServiceTest {
     public void complete_whenTodoListFound_whenTodoNotFound_refusesUpdate() throws Exception {
         doThrow(new TodoNotFoundException()).when(todoList).complete(any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.complete(user, new ListId("someListId"), new TodoId("someId"));
     }
 
@@ -237,7 +236,7 @@ public class TodoServiceTest {
     public void complete_whenTodoListNotFound_refusesUpdate() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.complete(user, new ListId("someListId"), new TodoId("someId"));
     }
 
@@ -255,7 +254,7 @@ public class TodoServiceTest {
     public void move_whenTodoListFound_whenTodosNotFound_refusesOperation() throws Exception {
         doThrow(new TodoNotFoundException()).when(todoList).move(any(), any());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.move(user, new ListId("someListId"), new TodoId("idOne"), new TodoId("idTwo"));
     }
 
@@ -263,7 +262,7 @@ public class TodoServiceTest {
     public void move_whenTodoListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.move(user, new ListId("someListId"), new TodoId("idOne"), new TodoId("idTwo"));
     }
 
@@ -287,7 +286,7 @@ public class TodoServiceTest {
     public void escalate_whenEscalateNotAllowed_refusesOperation() throws Exception {
         doThrow(new EscalateNotAllowException()).when(todoList).escalate();
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.escalate(user, new ListId("someListId"));
     }
 
@@ -295,7 +294,7 @@ public class TodoServiceTest {
     public void escalate_whenListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         todoService.escalate(user, new ListId("someListId"));
     }
 }

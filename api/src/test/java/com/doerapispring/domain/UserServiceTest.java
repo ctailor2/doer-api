@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +76,7 @@ public class UserServiceTest {
         when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier))));
 
         assertThatThrownBy(() -> userService.create(identifier))
-            .isInstanceOf(InvalidRequestException.class);
+            .isInstanceOf(UserAlreadyExistsException.class);
         verifyZeroInteractions(todoListFactory);
     }
 }

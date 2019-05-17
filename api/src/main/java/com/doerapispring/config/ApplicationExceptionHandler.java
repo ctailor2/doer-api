@@ -1,5 +1,6 @@
 package com.doerapispring.config;
 
+import com.doerapispring.domain.DomainException;
 import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
@@ -23,12 +24,12 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 @RestControllerAdvice
-class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String DEFAULT_FIELD_ERROR_MESSAGE = "value was rejected";
     private static final String DEFAULT_GLOBAL_ERROR_MESSAGE = "an error occurred";
     private final MessageSource messageSource;
 
-    ApiExceptionHandler(MessageSource messageSource) {
+    ApplicationExceptionHandler(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 
@@ -54,7 +55,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(fieldErrors, globalErrors), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(value = {ApiException.class})
+    @ExceptionHandler(value = {ApplicationException.class, DomainException.class})
     protected ResponseEntity<Object> handleApplicationError(Exception exception, WebRequest request) {
         String message = exception.getMessage() != null ? exception.getMessage() : DEFAULT_GLOBAL_ERROR_MESSAGE;
         ErrorResponse errorResponse = new ErrorResponse(emptyList(), singletonList(new GlobalError(message)));

@@ -1,5 +1,6 @@
 package com.doerapispring.config;
 
+import com.doerapispring.domain.DomainException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Before;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ApiExceptionHandlerTest {
+public class ApplicationExceptionHandlerTest {
 
     private MockMvc mockMvc;
 
@@ -38,7 +39,7 @@ public class ApiExceptionHandlerTest {
         messageSource.addMessage("globalCodeB", Locale.getDefault(), "message with arguments {0} and {1} from source for global code B");
 
         mockMvc = MockMvcBuilders.standaloneSetup(new TestController())
-            .setControllerAdvice(new ApiExceptionHandler(messageSource))
+            .setControllerAdvice(new ApplicationExceptionHandler(messageSource))
             .build();
     }
 
@@ -100,15 +101,29 @@ public class ApiExceptionHandlerTest {
     }
 
     @Test
-    public void includesGlobalErrors_forApiRuntimeExceptions_usingTheSpecifiedMessageAndResponseStatus() throws Exception {
-        mockMvc.perform(get("/testController/apiExceptionWithMessageAndStatus"))
+    public void includesGlobalErrors_forApplicationExceptions_usingTheSpecifiedMessageAndResponseStatus() throws Exception {
+        mockMvc.perform(get("/testController/applicationExceptionWithMessageAndStatus"))
             .andExpect(status().isIAmATeapot())
             .andExpect(jsonPath("$.globalErrors[0].message", equalTo("An api error occurred")));
     }
 
     @Test
-    public void includesGlobalErrors_forApiRuntimeExceptions_usingADefaultMessageAndResponseStatus() throws Exception {
-        mockMvc.perform(get("/testController/apiException"))
+    public void includesGlobalErrors_forApplicationExceptions_usingADefaultMessageAndResponseStatus() throws Exception {
+        mockMvc.perform(get("/testController/applicationException"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.globalErrors[0].message", equalTo("an error occurred")));
+    }
+
+    @Test
+    public void includesGlobalErrors_forDomainExceptions_usingTheSpecifiedMessage() throws Exception {
+        mockMvc.perform(get("/testController/domainExceptionWithMessageAndStatus"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.globalErrors[0].message", equalTo("An api error occurred")));
+    }
+
+    @Test
+    public void includesGlobalErrors_forDomainExceptions_usingADefaultMessageAndResponseStatus() throws Exception {
+        mockMvc.perform(get("/testController/domainException"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.globalErrors[0].message", equalTo("an error occurred")));
     }
@@ -124,20 +139,36 @@ public class ApiExceptionHandlerTest {
         @PostMapping("/validateRequest")
         public void validateRequest(@Valid @RequestBody TestRequest testRequest) {}
 
-        @GetMapping("/apiExceptionWithMessageAndStatus")
-        public ResponseEntity apiExceptionWithMessageAndStatus() throws TestApiException {
-            throw new TestApiException("An api error occurred");
+        @GetMapping("/applicationExceptionWithMessageAndStatus")
+        public ResponseEntity applicationExceptionWithMessageAndStatus() {
+            throw new TestApplicationException("An api error occurred");
         }
 
-        @GetMapping("/apiException")
-        public ResponseEntity apiException() throws ApiException {
-            throw new ApiException();
+        @GetMapping("/applicationException")
+        public ResponseEntity applicationException() {
+            throw new ApplicationException();
+        }
+
+        @GetMapping("/domainExceptionWithMessageAndStatus")
+        public ResponseEntity domainExceptionWithMessageAndStatus() {
+            throw new TestDomainException("An api error occurred");
+        }
+
+        @GetMapping("/domainException")
+        public ResponseEntity domainException() {
+            throw new DomainException();
         }
     }
 
     @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
-    private static class TestApiException extends ApiException {
-        TestApiException(String message) {
+    private static class TestApplicationException extends ApplicationException {
+        TestApplicationException(String message) {
+            super(message);
+        }
+    }
+
+    private static class TestDomainException extends DomainException {
+        TestDomainException(String message) {
             super(message);
         }
     }

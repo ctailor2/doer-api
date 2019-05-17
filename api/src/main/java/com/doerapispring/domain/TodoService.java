@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,109 +18,109 @@ public class TodoService implements TodoApplicationService {
         this.completedTodoRepository = completedTodoRepository;
     }
 
-    public void create(User user, ListId listId, String task) throws InvalidRequestException {
+    public void create(User user, ListId listId, String task) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
             todoList.add(todoId, task);
             todoListRepository.save(todoList);
         } catch (ListSizeExceededException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         } catch (DuplicateTodoException e) {
-            throw new InvalidRequestException(e.getMessage());
+            throw new InvalidCommandException(e.getMessage());
         }
     }
 
-    public void createDeferred(User user, ListId listId, String task) throws InvalidRequestException {
+    public void createDeferred(User user, ListId listId, String task) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
             todoList.addDeferred(todoId, task);
             todoListRepository.save(todoList);
         } catch (DuplicateTodoException e) {
-            throw new InvalidRequestException(e.getMessage());
+            throw new InvalidCommandException(e.getMessage());
         }
     }
 
-    public void delete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
+    public void delete(User user, ListId listId, TodoId todoId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             todoList.delete(todoId);
             todoListRepository.save(todoList);
         } catch (TodoNotFoundException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         }
     }
 
-    public void displace(User user, ListId listId, String task) throws InvalidRequestException {
+    public void displace(User user, ListId listId, String task) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         TodoId todoId = todoRepository.nextIdentifier();
         try {
             todoList.displace(todoId, task);
             todoListRepository.save(todoList);
         } catch (ListNotFullException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         } catch (DuplicateTodoException e) {
-            throw new InvalidRequestException(e.getMessage());
+            throw new InvalidCommandException(e.getMessage());
         }
     }
 
-    public void update(User user, ListId listId, TodoId todoId, String task) throws InvalidRequestException {
+    public void update(User user, ListId listId, TodoId todoId, String task) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             todoList.update(todoId, task);
             todoListRepository.save(todoList);
         } catch (TodoNotFoundException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         } catch (DuplicateTodoException e) {
-            throw new InvalidRequestException(e.getMessage());
+            throw new InvalidCommandException(e.getMessage());
         }
     }
 
-    public void complete(User user, ListId listId, TodoId todoId) throws InvalidRequestException {
+    public void complete(User user, ListId listId, TodoId todoId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             CompletedTodo completedTodo = todoList.complete(todoId);
             todoListRepository.save(todoList);
             completedTodoRepository.save(completedTodo);
         } catch (TodoNotFoundException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         }
     }
 
-    public void move(User user, ListId listId, TodoId todoId, TodoId targetTodoId) throws InvalidRequestException {
+    public void move(User user, ListId listId, TodoId todoId, TodoId targetTodoId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             todoList.move(todoId, targetTodoId);
             todoListRepository.save(todoList);
         } catch (TodoNotFoundException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         }
     }
 
-    public void pull(User user, ListId listId) throws InvalidRequestException {
+    public void pull(User user, ListId listId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         todoList.pull();
         todoListRepository.save(todoList);
     }
 
     @Override
-    public void escalate(User user, ListId listId) throws InvalidRequestException {
+    public void escalate(User user, ListId listId) throws InvalidCommandException {
         TodoList todoList = todoListRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidRequestException::new);
+            .orElseThrow(InvalidCommandException::new);
         try {
             todoList.escalate();
             todoListRepository.save(todoList);
         } catch (EscalateNotAllowException e) {
-            throw new InvalidRequestException();
+            throw new InvalidCommandException();
         }
     }
 }

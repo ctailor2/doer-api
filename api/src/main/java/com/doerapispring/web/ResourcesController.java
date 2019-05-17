@@ -44,7 +44,7 @@ class ResourcesController {
 
     @RequestMapping(value = "/v1/resources/todo", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
@@ -55,7 +55,7 @@ class ResourcesController {
 
     @RequestMapping(value = "/v1/resources/history", method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) throws InvalidRequestException {
+    ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         ReadOnlyTodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(

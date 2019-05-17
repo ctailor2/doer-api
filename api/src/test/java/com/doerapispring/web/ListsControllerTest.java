@@ -262,7 +262,7 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void showCompleted_returnsList() throws InvalidRequestException {
+    public void showCompleted_returnsList() {
         String task = "someTask";
         Date completedAt = Date.from(Instant.now());
         when(listApplicationService.getCompleted(any(), any())).thenReturn(singletonList(new CompletedTodo(

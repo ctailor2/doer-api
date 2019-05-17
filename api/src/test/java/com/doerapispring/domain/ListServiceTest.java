@@ -1,6 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.web.InvalidRequestException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public class ListServiceTest {
     public void unlock_whenTodoListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
         doThrow(new LockTimerNotExpiredException()).when(todoList).unlock();
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
@@ -62,7 +61,7 @@ public class ListServiceTest {
     public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
@@ -83,7 +82,7 @@ public class ListServiceTest {
     public void getDefault_whenTodoListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         listService.getDefault(new User(new UserId(identifier)));
     }
 
@@ -104,7 +103,7 @@ public class ListServiceTest {
     public void get_whenTodoListNotFound_refusesOperation() throws Exception {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidRequestException.class);
+        exception.expect(InvalidCommandException.class);
         listService.get(new User(new UserId(identifier)), new ListId("someListId"));
     }
 
