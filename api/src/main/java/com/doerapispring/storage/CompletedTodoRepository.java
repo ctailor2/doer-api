@@ -1,13 +1,11 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.CompletedTodo;
+import com.doerapispring.domain.CompletedTodoId;
+import com.doerapispring.domain.OwnedObjectRepository;
+import com.doerapispring.domain.UserId;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.IdGenerator;
-
-import java.sql.Date;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 @Repository
 public class CompletedTodoRepository implements OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> {
@@ -34,20 +32,6 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
             .build()
             .withUuid(completedTodo.getCompletedTodoId().get());
         completedTodoDAO.save(completedTodoEntity);
-    }
-
-    @Override
-    public List<CompletedTodo> findAll(UserId userId) {
-        UserEntity userEntity = userDAO.findByEmail(userId.get());
-        return completedTodoDAO.findByUserIdOrderByCompletedAtDesc(userEntity.id).stream()
-            .map(completedTodoEntity ->
-                new CompletedTodo(
-                    new UserId(userEntity.email),
-                    new ListId(completedTodoEntity.listId),
-                    new CompletedTodoId(completedTodoEntity.id),
-                    completedTodoEntity.task,
-                    Date.from(completedTodoEntity.completedAt.toInstant())))
-            .collect(toList());
     }
 
     @Override

@@ -2,17 +2,18 @@ package com.doerapispring.domain;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class ListService implements ListApplicationService {
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
-    private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
+    private final OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoListRepository;
 
     ListService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
-                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
+                OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoListRepository) {
         this.todoListRepository = todoListRepository;
-        this.completedTodoRepository = completedTodoRepository;
+        this.completedTodoListRepository = completedTodoListRepository;
     }
 
     public void unlock(User user, ListId listId) throws InvalidCommandException {
@@ -33,7 +34,9 @@ public class ListService implements ListApplicationService {
     }
 
     public List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidCommandException {
-        return completedTodoRepository.findAll(user.getUserId());
+        return completedTodoListRepository.find(user.getUserId(), listId)
+            .map(CompletedTodoList::getCompletedTodos)
+            .orElse(Collections.emptyList());
     }
 
     @Override

@@ -33,19 +33,21 @@ public class CompletedTodoDAOTest {
 
     private CompletedTodoEntity.CompletedTodoEntityBuilder baseCompletedTodoBuilder;
 
-    private Long userId;
+    private String listId;
+
+    private String email;
 
     @Before
     public void setUp() throws Exception {
+        email = "some@email.com";
         UserEntity savedUserEntity = userDAO.save(
             UserEntity.builder()
-                .email("some@email.com")
+                .email(email)
                 .passwordDigest("somePasswordDigest")
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build());
-        userId = savedUserEntity.id;
-        String listId = "listId";
+        listId = "listId";
         todoListDao.save(TodoListEntity.builder()
             .uuid(listId)
             .name("someName")
@@ -71,7 +73,7 @@ public class CompletedTodoDAOTest {
         completedTodoDAO.save(newerCompletedTodo);
 
         assertThat(completedTodoDAO.count()).isEqualTo(2);
-        assertThat(completedTodoDAO.findByUserIdOrderByCompletedAtDesc(userId).stream()
+        assertThat(completedTodoDAO.findByUserIdOrderByCompletedAtDesc(email, listId).stream()
             .map(completedTodoEntity -> completedTodoEntity.id))
             .containsExactly(
                 newerCompletedTodo.id,

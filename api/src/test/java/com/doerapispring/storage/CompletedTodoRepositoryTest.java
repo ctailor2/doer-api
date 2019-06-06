@@ -11,10 +11,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.IdGenerator;
 
-import java.sql.Date;
 import java.time.Clock;
-import java.time.Instant;
-import java.util.List;
+import java.util.Date;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -46,13 +45,17 @@ public class CompletedTodoRepositoryTest {
     private UserRepository userRepository;
 
     private CompletedTodoRepository completedTodoRepository;
+
     private TodoListRepository todoListRepository;
+
+    private CompletedTodoListRepository completedTodoListRepository;
 
     @Before
     public void setUp() throws Exception {
         completedTodoRepository = new CompletedTodoRepository(completedTodoDAO, userDAO, mock(IdGenerator.class));
         userRepository = new UserRepository(userDAO);
         todoListRepository = new TodoListRepository(userDAO, todoListDao, clock, idGenerator);
+        completedTodoListRepository = new CompletedTodoListRepository(completedTodoDAO);
     }
 
     @Test
@@ -62,15 +65,35 @@ public class CompletedTodoRepositoryTest {
         ListId listId = new ListId("someListId");
         todoListRepository.save(todoListFactory.todoList(userId, listId, "someListName"));
 
+        UserId differentUserId = new UserId("differentUserId");
+        userRepository.save(new User(differentUserId));
+        completedTodoRepository.save(
+            new CompletedTodo(
+                differentUserId,
+                listId,
+                new CompletedTodoId("2"),
+                "someTask",
+                new Date()));
         CompletedTodo completedTodo = new CompletedTodo(
             userId,
             listId,
             new CompletedTodoId("someCompletedTodoId"),
             "someTask",
-            Date.from(Instant.now()));
+            new Date());
         completedTodoRepository.save(completedTodo);
+        ListId differentListId = new ListId("differentListId");
+        todoListRepository.save(todoListFactory.todoList(userId, differentListId, "someListName"));
+        completedTodoRepository.save(
+            new CompletedTodo(
+                userId,
+                differentListId,
+                new CompletedTodoId("3"),
+                "someTask",
+                new Date()));
 
-        List<CompletedTodo> completedTodos = completedTodoRepository.findAll(userId);
-        assertThat(completedTodos).contains(completedTodo);
+        Optional<CompletedTodoList> completedTodoList = completedTodoListRepository.find(userId, listId);
+        assertThat(completedTodoList).isPresent();
+        assertThat(completedTodoList.get().getListId()).isEqualTo(listId);
+        assertThat(completedTodoList.get().getCompletedTodos()).containsExactly(completedTodo);
     }
 }
