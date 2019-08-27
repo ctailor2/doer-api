@@ -46,6 +46,13 @@ test {
     exclude 'integration/**'
 }
 
+task customCompileJava(type: JavaCompile) {
+    source = compileJava.source
+    includes = ["com/doerapispring/DoerApiSpringApplication.java"]
+    classpath = compileJava.classpath
+    destinationDir = compileJava.destinationDir
+}
+
 task integrationTest(type: Test) {
     include 'integration/**'
 }
