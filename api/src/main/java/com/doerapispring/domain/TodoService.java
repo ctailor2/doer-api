@@ -3,19 +3,24 @@ package com.doerapispring.domain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.lang.Thread.currentThread;
+
 @Service
 @Transactional
 public class TodoService implements TodoApplicationService {
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final IdentityGeneratingRepository<TodoId> todoRepository;
     private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
     TodoService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
                 IdentityGeneratingRepository<TodoId> todoRepository,
-                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
+                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository,
+                DomainEventPublisher domainEventPublisher) {
         this.todoListRepository = todoListRepository;
         this.todoRepository = todoRepository;
         this.completedTodoRepository = completedTodoRepository;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     public void create(User user, ListId listId, String task) throws InvalidCommandException {
@@ -88,7 +93,11 @@ public class TodoService implements TodoApplicationService {
         try {
             CompletedTodo completedTodo = todoList.complete(todoId);
             todoListRepository.save(todoList);
-            completedTodoRepository.save(completedTodo);
+            domainEventPublisher.publish(todoList.getDomainEvents());
+            todoList.clearDomainEvents();
+            Thread thread = currentThread();
+            System.out.println("---clearing domain events on thread: " + thread.getId() + "---");
+//            completedTodoRepository.save(completedTodo);
         } catch (TodoNotFoundException e) {
             throw new InvalidCommandException();
         }

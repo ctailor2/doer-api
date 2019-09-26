@@ -1,10 +1,11 @@
 package com.doerapispring.domain;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class TodoList {
+public class TodoList implements DomainModel {
     private final Clock clock;
     private final UserId userId;
     private final List<Todo> todos;
@@ -12,6 +13,7 @@ public class TodoList {
     private final String name;
     private Date lastUnlockedAt;
     private Integer demarcationIndex;
+    private List<DomainEvent> domainEvents = new ArrayList<>();
 
     public TodoList(
         Clock clock,
@@ -83,12 +85,20 @@ public class TodoList {
     public CompletedTodo complete(TodoId todoId) throws TodoNotFoundException {
         Todo todo = getByTodoId(todoId);
         delete(todoId);
+        CompletedTodoId completedTodoId = new CompletedTodoId(todoId.getIdentifier());
+        Date completedAt = Date.from(clock.instant());
+        domainEvents.add(new TodoCompleted(
+            userId,
+            listId,
+            completedTodoId,
+            todo.getTask(),
+            completedAt));
         return new CompletedTodo(
             userId,
             listId,
-            new CompletedTodoId(todoId.getIdentifier()),
+            completedTodoId,
             todo.getTask(),
-            Date.from(clock.instant()));
+            completedAt);
     }
 
     public void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException {
@@ -152,5 +162,15 @@ public class TodoList {
         Todo firstDeferredTodo = todos.get(demarcationIndex);
         todos.remove(firstDeferredTodo);
         todos.add(demarcationIndex - 1, firstDeferredTodo);
+    }
+
+    @Override
+    public List<DomainEvent> getDomainEvents() {
+        return domainEvents;
+    }
+
+    @Override
+    public void clearDomainEvents() {
+        domainEvents.clear();
     }
 }

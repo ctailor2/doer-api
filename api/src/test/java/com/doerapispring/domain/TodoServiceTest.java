@@ -5,10 +5,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,6 +30,9 @@ public class TodoServiceTest {
     @Mock
     private IdentityGeneratingRepository<TodoId> mockTodoRepository;
 
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -41,7 +47,8 @@ public class TodoServiceTest {
         todoService = new TodoService(
             mockTodoListRepository,
             mockTodoRepository,
-            mockCompletedTodoRepository
+            mockCompletedTodoRepository,
+            domainEventPublisher
         );
         user = new User(new UserId("userId"));
         todoList = mock(TodoList.class);
@@ -222,6 +229,18 @@ public class TodoServiceTest {
         todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
 
         verify(mockCompletedTodoRepository).save(completedTodo);
+    }
+
+    @Test
+    public void complete_publishesDomainEvents_andClearsThem() {
+        List<DomainEvent> domainEvents = Collections.singletonList(mock(DomainEvent.class));
+        when(todoList.getDomainEvents()).thenReturn(domainEvents);
+
+        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
+
+        InOrder inOrder = inOrder(domainEventPublisher, todoList);
+        inOrder.verify(domainEventPublisher).publish(domainEvents);
+        inOrder.verify(todoList).clearDomainEvents();
     }
 
     @Test
