@@ -20,7 +20,7 @@ import java.util.List;
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

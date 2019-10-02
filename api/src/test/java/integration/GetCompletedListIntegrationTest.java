@@ -4,7 +4,7 @@ import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
-import org.fest.assertions.api.Assertions;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
