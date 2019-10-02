@@ -25,6 +25,7 @@ public class TodoListTest {
     private TodoList todoList;
     private Clock mockClock;
     private UserId userId;
+    private ListId listId;
 
     @Before
     public void setUp() throws Exception {
@@ -34,10 +35,11 @@ public class TodoListTest {
         when(mockClock.instant()).thenAnswer(invocation -> Instant.now());
 
         userId = new UserId("something");
+        listId = new ListId("someListId");
         todoList = new TodoList(
             mockClock,
             userId,
-            new ListId("someListId"),
+            listId,
             "someName",
             Date.from(Instant.EPOCH),
             new ArrayList<>(),
@@ -211,13 +213,29 @@ public class TodoListTest {
         TodoId todoId = new TodoId("someId");
         todoList.add(todoId, "someTask");
 
-        CompletedTodo completedTodo = todoList.complete(todoId);
+        todoList.complete(todoId);
 
         assertThat(todoList.read().getTodos()).isEmpty();
-        assertThat(completedTodo.getUserId()).isEqualTo(userId);
-        assertThat(completedTodo.getCompletedTodoId()).isEqualTo(new CompletedTodoId("someId"));
-        assertThat(completedTodo.getTask()).isEqualTo("someTask");
-        assertThat(completedTodo.getCompletedAt()).isEqualTo(Date.from(now));
+    }
+
+    @Test
+    public void complete_addsTodoCompletedEvent() throws Exception {
+        Instant now = Instant.now();
+        when(mockClock.instant()).thenReturn(now);
+
+        TodoId todoId = new TodoId("someId");
+        todoList.add(todoId, "someTask");
+
+        todoList.complete(todoId);
+        List<DomainEvent> domainEvents = todoList.getDomainEvents();
+
+        assertThat(todoList.read().getTodos()).isEmpty();
+        assertThat(domainEvents).contains(new TodoCompletedEvent(
+            userId,
+            listId,
+            new CompletedTodoId("someId"),
+            "someTask",
+            Date.from(now)));
     }
 
     @Test

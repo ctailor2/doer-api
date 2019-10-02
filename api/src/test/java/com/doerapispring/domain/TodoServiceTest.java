@@ -5,10 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 
-import java.sql.Date;
-import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,13 +18,13 @@ public class TodoServiceTest {
     private TodoService todoService;
 
     @Mock
-    private OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> mockCompletedTodoRepository;
-
-    @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
     @Mock
     private IdentityGeneratingRepository<TodoId> mockTodoRepository;
+
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -41,7 +40,7 @@ public class TodoServiceTest {
         todoService = new TodoService(
             mockTodoListRepository,
             mockTodoRepository,
-            mockCompletedTodoRepository
+            domainEventPublisher
         );
         user = new User(new UserId("userId"));
         todoList = mock(TodoList.class);
@@ -210,18 +209,12 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void complete_addsCompletedTaskToCompletedList_savesUsingRepository() throws Exception {
-        CompletedTodo completedTodo = new CompletedTodo(
-            new UserId("someUserId"),
-            new ListId("someOtherListId"),
-            new CompletedTodoId("someIdentifier"),
-            "completedTask",
-            Date.from(Instant.now()));
-        when(todoList.complete(any(TodoId.class))).thenReturn(completedTodo);
-
+    public void complete_publishesDomainEvents_afterCompleting() throws Exception {
         todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
 
-        verify(mockCompletedTodoRepository).save(completedTodo);
+        InOrder inOrder = inOrder(domainEventPublisher, todoList);
+        inOrder.verify(todoList).complete(any());
+        inOrder.verify(domainEventPublisher).publish(todoList);
     }
 
     @Test
