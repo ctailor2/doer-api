@@ -29,6 +29,9 @@ jobs:
   - stage: e2etest
     addons:
       chrome: stable
+      apt:
+        packages:
+        - libgconf-2-4
     before_install:
     - git clone https://github.com/ctailor2/doer-e2e-tests.git
     - cd doer-e2e-tests
