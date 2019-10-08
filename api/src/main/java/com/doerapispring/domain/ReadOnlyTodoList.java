@@ -16,18 +16,18 @@ public class ReadOnlyTodoList {
     private final Clock clock;
     private final List<Todo> todos;
     private final ListId listId;
-    private final String name;
+    private final String profileName;
     private final Date lastUnlockedAt;
     private final Integer demarcationIndex;
 
     public ReadOnlyTodoList(Clock clock,
-                            String name,
+                            String profileName,
                             Date lastUnlockedAt,
                             List<Todo> todos,
                             Integer demarcationIndex,
                             ListId listId) {
         this.clock = clock;
-        this.name = name;
+        this.profileName = profileName;
         this.lastUnlockedAt = lastUnlockedAt;
         this.demarcationIndex = demarcationIndex;
         this.todos = todos;
@@ -38,8 +38,8 @@ public class ReadOnlyTodoList {
         return listId;
     }
 
-    public String getName() {
-        return name;
+    public String getProfileName() {
+        return profileName;
     }
 
     public String getSectionName() {

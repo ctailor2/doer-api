@@ -71,6 +71,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list", not(isEmptyString())));
+        assertThat(responseContent, hasJsonPath("$.list.profileName", equalTo("default")));
         assertThat(responseContent, hasJsonPath("$.list.name", equalTo("now")));
         assertThat(responseContent, hasJsonPath("$.list.deferredName", equalTo("later")));
         assertThat(responseContent, hasJsonPath("$.list.unlockDuration", not(Matchers.isEmptyString())));

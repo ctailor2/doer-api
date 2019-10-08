@@ -41,6 +41,7 @@ class ListsController {
                                           @PathVariable String listId) {
         ReadOnlyTodoList readOnlyTodoList = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
         TodoListDTO todoListDTO = new TodoListDTO(
+            readOnlyTodoList.getProfileName(),
             readOnlyTodoList.getSectionName(),
             readOnlyTodoList.getDeferredSectionName(),
             readOnlyTodoList.getTodos().stream()

@@ -87,6 +87,8 @@ public class ListsControllerTest {
 
     @Test
     public void show_returnsList() throws Exception {
+        String profileName = "someProfileName";
+        when(readOnlyTodoList.getProfileName()).thenReturn(profileName);
         String name = "someName";
         when(readOnlyTodoList.getSectionName()).thenReturn(name);
         String deferredName = "someDeferredName";
@@ -102,6 +104,7 @@ public class ListsControllerTest {
 
         TodoListDTO todoListDTO = responseEntity.getBody().getTodoListDTO();
         assertThat(todoListDTO).isNotNull();
+        assertThat(todoListDTO.getProfileName()).isEqualTo(profileName);
         assertThat(todoListDTO.getName()).isEqualTo(name);
         assertThat(todoListDTO.getDeferredName()).isEqualTo(deferredName);
         assertThat(todoListDTO.getTodos()).hasSize(1);
