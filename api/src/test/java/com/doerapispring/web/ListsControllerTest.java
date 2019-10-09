@@ -19,6 +19,7 @@ import java.util.List;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -288,5 +289,49 @@ public class ListsControllerTest {
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/someListId/completedList").withSelfRel());
+    }
+
+    @Test
+    public void showListOverviews_mapping() throws Exception {
+        mockMvc.perform(get("/v1/lists"))
+            .andExpect(status().isOk());
+
+        verify(listApplicationService).getOverviews(user);
+    }
+
+    @Test
+    public void showListOverviews_returnsListOverviews() {
+        String listName = "someName";
+        when(listApplicationService.getOverviews(any()))
+            .thenReturn(singletonList(new ListOverview(new ListId("someId"), listName)));
+
+        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getLists()).hasSize(1);
+        assertThat(responseEntity.getBody().getLists().get(0).getName()).isEqualTo(listName);
+    }
+
+    @Test
+    public void showListOverviews_includesLinksByDefault() {
+        when(listApplicationService.getOverviews(any())).thenReturn(emptyList());
+
+        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/lists").withSelfRel());
+    }
+
+    @Test
+    public void showListOverviews_includesLinksForEachList() {
+        String listName = "someName";
+        String listId = "someId";
+        when(listApplicationService.getOverviews(any()))
+            .thenReturn(singletonList(new ListOverview(new ListId(listId), listName)));
+
+        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+
+        assertThat(responseEntity.getBody().getLists()).hasSize(1);
+        assertThat(responseEntity.getBody().getLists().get(0).getLinks())
+            .contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
     }
 }

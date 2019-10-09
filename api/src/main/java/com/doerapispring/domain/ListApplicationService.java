@@ -10,4 +10,6 @@ public interface ListApplicationService {
     List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidCommandException;
 
     ReadOnlyTodoList get(User user, ListId listId) throws InvalidCommandException;
+
+    List<ListOverview> getOverviews(User user);
 }

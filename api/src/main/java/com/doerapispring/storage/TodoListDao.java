@@ -18,4 +18,8 @@ interface TodoListDao extends JpaRepository<TodoListEntity, Long> {
         "AND tl.uuid = ?2 " +
         "ORDER BY t.position")
     TodoListEntity findByEmailAndListId(String email, String listId);
+
+    @Query("SELECT tl FROM TodoListEntity tl " +
+        "WHERE tl.userEntity.email = ?1")
+    List<TodoListEntity> findAllOverviews(String email);
 }

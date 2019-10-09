@@ -8,11 +8,14 @@ import java.util.List;
 public class ListService implements ListApplicationService {
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
+    private final OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository;
 
     ListService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
-                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
+                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository,
+                OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository) {
         this.todoListRepository = todoListRepository;
         this.completedTodoRepository = completedTodoRepository;
+        this.listOverviewRepository = listOverviewRepository;
     }
 
     public void unlock(User user, ListId listId) throws InvalidCommandException {
@@ -41,5 +44,10 @@ public class ListService implements ListApplicationService {
         return todoListRepository.find(user.getUserId(), listId)
             .map(TodoList::read)
             .orElseThrow(InvalidCommandException::new);
+    }
+
+    @Override
+    public List<ListOverview> getOverviews(User user) {
+        return listOverviewRepository.findAll(user.getUserId());
     }
 }

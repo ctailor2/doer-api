@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static java.util.stream.Collectors.toList;
 
 @RestController
@@ -107,5 +109,20 @@ class ListsController {
         CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
         completedListResponse.add(hateoasLinkGenerator.completedListLink(listId).withSelfRel());
         return ResponseEntity.ok(completedListResponse);
+    }
+
+    @GetMapping(value = "/lists")
+    @ResponseBody
+    ResponseEntity<ListOverviewsResponse> showOverviews(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        List<ListOverviewDTO> listOverviewDTOs = listApplicationService.getOverviews(authenticatedUser.getUser()).stream()
+            .map(listOverview -> {
+                ListOverviewDTO listOverviewDTO = new ListOverviewDTO(listOverview.getName());
+                listOverviewDTO.add(hateoasLinkGenerator.listLink(listOverview.getListId().get()).withRel("list"));
+                return listOverviewDTO;
+            })
+            .collect(toList());
+        ListOverviewsResponse listOverviewsResponse = new ListOverviewsResponse(listOverviewDTOs);
+        listOverviewsResponse.add(hateoasLinkGenerator.listsLink());
+        return ResponseEntity.ok(listOverviewsResponse);
     }
 }

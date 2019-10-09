@@ -106,4 +106,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     public Link listEscalateTodoLink(String listId) {
         return linkTo(methodOn(TodosController.class).escalate(null, listId)).withSelfRel();
     }
+
+    @Override
+    public Link listsLink() {
+        return linkTo(methodOn(ListsController.class).showOverviews(null)).withSelfRel();
+    }
 }

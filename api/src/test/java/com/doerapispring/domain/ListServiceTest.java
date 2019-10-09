@@ -27,6 +27,9 @@ public class ListServiceTest {
     @Mock
     private OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> mockCompletedTodoRepository;
 
+    @Mock
+    private OwnedObjectRepository<ListOverview, UserId, ListId> mockListOverviewRepository;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private TodoList todoList;
@@ -34,7 +37,7 @@ public class ListServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockTodoListRepository, mockCompletedTodoRepository);
+        listService = new ListService(mockTodoListRepository, mockCompletedTodoRepository, mockListOverviewRepository);
         identifier = "userId";
         todoList = mock(TodoList.class);
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoList));
@@ -121,5 +124,17 @@ public class ListServiceTest {
         List<CompletedTodo> actualTodos = listService.getCompleted(new User(new UserId(identifier)), listId);
 
         assertThat(actualTodos).isEqualTo(expectedTodos);
+    }
+
+    @Test
+    public void getOverviews_getsOverviewsFromRepository() {
+        UserId userId = new UserId(identifier);
+        List<ListOverview> expectedListOverviews = singletonList(new ListOverview(new ListId("someId"), "someName"));
+        when(mockListOverviewRepository.findAll(userId))
+            .thenReturn(expectedListOverviews);
+
+        List<ListOverview> actualListOverviews = listService.getOverviews(new User(userId));
+
+        assertThat(actualListOverviews).isEqualTo(expectedListOverviews);
     }
 }
