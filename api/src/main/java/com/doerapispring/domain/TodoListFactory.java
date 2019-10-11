@@ -15,7 +15,7 @@ public class TodoListFactory {
         this.clock = clock;
     }
 
-    public TodoList todoList(UserId userId, ListId listId, String name) {
+    TodoList todoList(UserId userId, ListId listId, String name) {
         return new TodoList(
             clock,
             userId,
@@ -24,5 +24,14 @@ public class TodoListFactory {
             Date.from(Instant.EPOCH),
             new ArrayList<>(),
             0);
+    }
+
+    ListOverview listOverview(UserId userId, ListId listId, String name) {
+        return new ListOverview(
+            userId,
+            listId,
+            name,
+            0,
+            Date.from(Instant.EPOCH));
     }
 }

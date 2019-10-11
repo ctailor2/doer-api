@@ -35,9 +35,15 @@ public class ListServiceTest {
     private TodoList todoList;
     private String identifier;
 
+    private TodoListFactory mockTodoListFactory = mock(TodoListFactory.class);
+
     @Before
     public void setUp() throws Exception {
-        listService = new ListService(mockTodoListRepository, mockCompletedTodoRepository, mockListOverviewRepository);
+        listService = new ListService(
+            mockTodoListRepository,
+            mockCompletedTodoRepository,
+            mockListOverviewRepository,
+            mockTodoListFactory);
         identifier = "userId";
         todoList = mock(TodoList.class);
         when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoList));
@@ -129,12 +135,27 @@ public class ListServiceTest {
     @Test
     public void getOverviews_getsOverviewsFromRepository() {
         UserId userId = new UserId(identifier);
-        List<ListOverview> expectedListOverviews = singletonList(new ListOverview(new ListId("someId"), "someName"));
+        List<ListOverview> expectedListOverviews = singletonList(
+            new ListOverview(new UserId("someUserId"), new ListId("someListId"), "someName", 0, java.util.Date.from(Instant.EPOCH)));
         when(mockListOverviewRepository.findAll(userId))
             .thenReturn(expectedListOverviews);
 
         List<ListOverview> actualListOverviews = listService.getOverviews(new User(userId));
 
         assertThat(actualListOverviews).isEqualTo(expectedListOverviews);
+    }
+
+    @Test
+    public void create_createsListOverview() {
+        UserId userId = new UserId(identifier);
+        ListId listId = new ListId("someId");
+        String listName = "someName";
+        when(mockListOverviewRepository.nextIdentifier()).thenReturn(listId);
+        ListOverview listOverview = mock(ListOverview.class);
+        when(mockTodoListFactory.listOverview(userId, listId, listName)).thenReturn(listOverview);
+
+        listService.create(new User(userId), listName);
+
+        verify(mockListOverviewRepository).save(listOverview);
     }
 }

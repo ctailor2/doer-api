@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
@@ -303,7 +304,7 @@ public class ListsControllerTest {
     public void showListOverviews_returnsListOverviews() {
         String listName = "someName";
         when(listApplicationService.getOverviews(any()))
-            .thenReturn(singletonList(new ListOverview(new ListId("someId"), listName)));
+            .thenReturn(singletonList(new ListOverview(new UserId("someUserId"), new ListId("someListId"), listName, 0, Date.from(Instant.EPOCH))));
 
         ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
 
@@ -324,14 +325,35 @@ public class ListsControllerTest {
     @Test
     public void showListOverviews_includesLinksForEachList() {
         String listName = "someName";
-        String listId = "someId";
+        String listId = "someListId";
         when(listApplicationService.getOverviews(any()))
-            .thenReturn(singletonList(new ListOverview(new ListId(listId), listName)));
+            .thenReturn(singletonList(new ListOverview(new UserId("someUserId"), new ListId(listId), listName, 0, Date.from(Instant.EPOCH))));
 
         ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLists()).hasSize(1);
         assertThat(responseEntity.getBody().getLists().get(0).getLinks())
             .contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
+    }
+
+    @Test
+    public void create_mapping() throws Exception {
+        String listName = "someName";
+        mockMvc.perform(post("/v1/lists")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"name\": \"" + listName + "\"}"))
+            .andExpect(status().isCreated());
+
+        verify(listApplicationService).create(user, listName);
+    }
+
+    @Test
+    public void create_includesLinksByDefault() {
+        ResponseEntity<ResourcesResponse> responseEntity = listsController.create(
+            authenticatedUser,
+            new ListForm("someName"));
+
+        assertThat(responseEntity.getBody().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/lists").withSelfRel());
     }
 }

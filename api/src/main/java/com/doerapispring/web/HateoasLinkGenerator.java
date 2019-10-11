@@ -39,5 +39,7 @@ interface HateoasLinkGenerator {
 
     Link listEscalateTodoLink(String listId);
 
-    Link listsLink();
+    Link showListsLink();
+
+    Link createListsLink();
 }

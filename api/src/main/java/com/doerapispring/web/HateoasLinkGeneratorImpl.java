@@ -108,7 +108,12 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link listsLink() {
+    public Link showListsLink() {
         return linkTo(methodOn(ListsController.class).showOverviews(null)).withSelfRel();
+    }
+
+    @Override
+    public Link createListsLink() {
+        return linkTo(methodOn(ListsController.class).create(null, null)).withSelfRel();
     }
 }

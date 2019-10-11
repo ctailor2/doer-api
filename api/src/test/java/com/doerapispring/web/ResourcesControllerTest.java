@@ -42,7 +42,7 @@ public class ResourcesControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         defaultListId = new ListId("someListId");
-        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, defaultListId));
+        when(listApplicationService.getDefault(any())).thenReturn(new ReadOnlyTodoList(null, null, null, emptyList(), null, defaultListId, user.getUserId()));
     }
 
     @Test

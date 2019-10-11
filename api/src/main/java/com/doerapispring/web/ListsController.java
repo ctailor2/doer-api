@@ -122,7 +122,18 @@ class ListsController {
             })
             .collect(toList());
         ListOverviewsResponse listOverviewsResponse = new ListOverviewsResponse(listOverviewDTOs);
-        listOverviewsResponse.add(hateoasLinkGenerator.listsLink());
+        listOverviewsResponse.add(hateoasLinkGenerator.showListsLink());
         return ResponseEntity.ok(listOverviewsResponse);
+    }
+
+    @PostMapping(value = "/lists")
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> create(
+        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+        @RequestBody ListForm listForm) {
+        listApplicationService.create(authenticatedUser.getUser(), listForm.getName());
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.createListsLink().withSelfRel());
+        return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 }

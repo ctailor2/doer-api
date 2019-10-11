@@ -1,6 +1,9 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.ListOverview;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +16,6 @@ import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -37,34 +39,43 @@ public class ListOverviewRepositoryTest {
 
     private ListOverviewRepository listOverviewRepository;
 
-    private TodoListRepository todoListRepository;
-
     private UserRepository userRepository;
 
     @Before
     public void setUp() throws Exception {
         clock = Clock.systemDefaultZone();
-        todoListRepository = new TodoListRepository(userDao, todoListDao, clock, mock(IdGenerator.class));
         userRepository = new UserRepository(userDao);
-        listOverviewRepository = new ListOverviewRepository(todoListDao);
+        listOverviewRepository = new ListOverviewRepository(userDao, todoListDao, mock(IdGenerator.class));
     }
 
     @Test
-    public void     readsAllListOverviews() {
+    public void readsAllListOverviews() {
         UserId userId = new UserId("someIdentifier");
         userRepository.save(new User(userId));
         UserId otherUserId = new UserId("someOtherIdentifier");
         userRepository.save(new User(otherUserId));
         ListId listId = new ListId("someListIdentifier");
         String listName = "someName";
-        TodoList userTodoList = new TodoList(clock, userId, listId, listName, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
-        todoListRepository.save(userTodoList);
+        ListOverview userTodoList = new ListOverview(userId, listId, listName, 0, Date.from(Instant.EPOCH));
+        listOverviewRepository.save(userTodoList);
         ListId otherListId = new ListId("someOtherListIdentifier");
         String otherListName = "someName";
-        TodoList otherUserTodoList = new TodoList(clock, otherUserId, otherListId, otherListName, Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
-        todoListRepository.save(otherUserTodoList);
+        ListOverview otherUserTodoList = new ListOverview(otherUserId, otherListId, otherListName, 0, Date.from(Instant.EPOCH));
+        listOverviewRepository.save(otherUserTodoList);
 
         List<ListOverview> listOverviews = listOverviewRepository.findAll(userId);
-        assertThat(listOverviews).containsOnly(new ListOverview(listId, listName));
+        assertThat(listOverviews).containsOnly(new ListOverview(userId, listId, listName, 0, Date.from(Instant.EPOCH)));
+    }
+
+    @Test
+    public void savesListOverview() {
+        UserId userId = new UserId("someUserId");
+        userRepository.save(new User(userId));
+        ListOverview savedListOverview = new ListOverview(userId, new ListId("someListId"), "someName", 0, Date.from(Instant.EPOCH));
+
+        listOverviewRepository.save(savedListOverview);
+
+        List<ListOverview> listOverviews = listOverviewRepository.findAll(userId);
+        assertThat(listOverviews).contains(savedListOverview);
     }
 }

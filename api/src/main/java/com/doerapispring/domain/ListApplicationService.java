@@ -12,4 +12,6 @@ public interface ListApplicationService {
     ReadOnlyTodoList get(User user, ListId listId) throws InvalidCommandException;
 
     List<ListOverview> getOverviews(User user);
+
+    void create(User user, String name);
 }

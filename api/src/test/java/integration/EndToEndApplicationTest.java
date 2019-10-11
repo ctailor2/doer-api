@@ -5,7 +5,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +41,17 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
         List<ListOverview> listOverviews = listService.getOverviews(user);
 
-        assertThat(listOverviews).contains(new ListOverview(list.getListId(), list.getProfileName()));
+        assertThat(listOverviews).contains(new ListOverview(list.getUserId(), list.getListId(), list.getProfileName(), 0, Date.from(Instant.EPOCH)));
+    }
+
+    @Test
+    public void createsAList() {
+        String listName = "someName";
+        listService.create(user, listName);
+
+        List<ListOverview> listOverviews = listService.getOverviews(user);
+
+        List<String> listNames = listOverviews.stream().map(ListOverview::getName).collect(Collectors.toList());
+        assertThat(listNames).contains(listName);
     }
 }

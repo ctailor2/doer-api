@@ -14,6 +14,7 @@ import org.springframework.util.IdGenerator;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +61,15 @@ public class CompletedTodoRepositoryTest {
         UserId userId = new UserId("someUserId");
         userRepository.save(new User(userId));
         ListId listId = new ListId("someListId");
-        todoListRepository.save(todoListFactory.todoList(userId, listId, "someListName"));
+        todoListRepository.save(
+            new TodoList(
+                mock(Clock.class),
+                userId,
+                listId,
+                "someListName",
+                Date.from(Instant.EPOCH),
+                new ArrayList<>(),
+                0));
 
         CompletedTodo completedTodo = new CompletedTodo(
             userId,

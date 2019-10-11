@@ -144,7 +144,7 @@ public class TodoList implements DomainModel {
     }
 
     ReadOnlyTodoList read() {
-        return new ReadOnlyTodoList(clock, name, lastUnlockedAt, todos, demarcationIndex, listId);
+        return new ReadOnlyTodoList(clock, name, lastUnlockedAt, todos, demarcationIndex, listId, userId);
     }
 
     void escalate() throws EscalateNotAllowException {

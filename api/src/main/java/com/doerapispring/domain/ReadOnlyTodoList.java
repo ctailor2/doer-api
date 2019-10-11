@@ -16,6 +16,7 @@ public class ReadOnlyTodoList {
     private final Clock clock;
     private final List<Todo> todos;
     private final ListId listId;
+    private final UserId userId;
     private final String profileName;
     private final Date lastUnlockedAt;
     private final Integer demarcationIndex;
@@ -25,13 +26,19 @@ public class ReadOnlyTodoList {
                             Date lastUnlockedAt,
                             List<Todo> todos,
                             Integer demarcationIndex,
-                            ListId listId) {
+                            ListId listId,
+                            UserId userId) {
         this.clock = clock;
         this.profileName = profileName;
         this.lastUnlockedAt = lastUnlockedAt;
         this.demarcationIndex = demarcationIndex;
         this.todos = todos;
         this.listId = listId;
+        this.userId = userId;
+    }
+
+    public UserId getUserId() {
+        return userId;
     }
 
     public ListId getListId() {
