@@ -46,7 +46,6 @@ public class ListServiceTest {
             mockTodoListFactory);
         identifier = "userId";
         todoListCommandModel = mock(TodoListCommandModel.class);
-        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.of(todoListCommandModel));
         when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.of(todoListCommandModel));
     }
 
@@ -76,20 +75,18 @@ public class ListServiceTest {
 
     @Test
     public void getDefault_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
-        TodoListCommandModel mockTodoListCommandModel = mock(TodoListCommandModel.class);
-        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.of(mockTodoListCommandModel));
-        TodoListReadModel mockTodoListReadModel = mock(TodoListReadModel.class);
-        when(mockTodoListCommandModel.read()).thenReturn(mockTodoListReadModel);
+        TodoList mockTodoList = mock(TodoList.class);
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(mockTodoList));
         User user = new User(new UserId(identifier));
 
-        TodoListReadModel actual = listService.getDefault(user);
+        TodoList actual = listService.getDefault(user);
 
-        assertThat(actual).isEqualTo(mockTodoListReadModel);
+        assertThat(actual).isEqualTo(mockTodoList);
     }
 
     @Test
     public void getDefault_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
         listService.getDefault(new User(new UserId(identifier)));

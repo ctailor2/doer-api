@@ -44,7 +44,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void update() throws Exception {
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.getDefault(user);
+        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo = todoList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(put("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
@@ -54,7 +54,7 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        TodoListReadModel newTodoList = listApplicationService.getDefault(new User(new UserId("test@email.com")));
+        TodoListReadModel newTodoList = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .contains("do the things");

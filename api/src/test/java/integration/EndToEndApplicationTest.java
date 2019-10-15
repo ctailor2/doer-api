@@ -1,12 +1,13 @@
 package integration;
 
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListService;
+import com.doerapispring.domain.TodoList;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,18 +31,18 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void hasTheDefaultListSet() {
-        TodoListReadModel list = listService.getDefault(user);
+        TodoList list = listService.getDefault(user);
 
-        assertThat(list.getProfileName()).isEqualTo("default");
+        assertThat(list.getName()).isEqualTo("default");
     }
 
     @Test
     public void includesTheDefaultList() {
-        TodoListReadModel list = listService.getDefault(user);
+        TodoList list = listService.getDefault(user);
 
         List<TodoList> todoLists = listService.getAll(user);
 
-        assertThat(todoLists).contains(new TodoList(list.getUserId(), list.getListId(), list.getProfileName(), 0, Date.from(Instant.EPOCH)));
+        assertThat(todoLists).contains(list);
     }
 
     @Test

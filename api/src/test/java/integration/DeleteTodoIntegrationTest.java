@@ -44,7 +44,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void delete_removesTodo() throws Exception {
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.getDefault(user);
+        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo = todoList.getTodos().get(0);
 
         MvcResult mvcResult = mockMvc.perform(delete("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
@@ -52,7 +52,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        TodoListReadModel newTodoList = listApplicationService.getDefault(new User(new UserId("test@email.com")));
+        TodoListReadModel newTodoList = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId);
 
         assertThat(newTodoList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());

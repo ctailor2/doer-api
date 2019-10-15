@@ -47,7 +47,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todoApplicationService.create(user, defaultListId, "some other task");
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.getDefault(user);
+        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo1 = todoList.getTodos().get(0);
         Todo todo2 = todoList.getTodos().get(1);
 
@@ -58,7 +58,7 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        TodoListReadModel newTodoList = listApplicationService.getDefault(new User(new UserId("test@email.com")));
+        TodoListReadModel newTodoList = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId);
 
         assertThat(newTodoList.getTodos(), hasSize(0));
         List<CompletedTodo> completedTodos = listApplicationService.getCompleted(new User(new UserId("test@email.com")), defaultListId);

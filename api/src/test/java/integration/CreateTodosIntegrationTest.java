@@ -52,7 +52,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        List<Todo> todos = listApplicationService.getDefault(new User(new UserId("test@email.com"))).getTodos();
+        List<Todo> todos = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId).getTodos();
 
         assertThat(todos.size(), equalTo(1));
 
@@ -73,7 +73,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
         User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
-        List<Todo> todos = listApplicationService.getDefault(user).getDeferredTodos();
+        List<Todo> todos = listApplicationService.get(user, defaultListId).getDeferredTodos();
 
         assertThat(todos.size(), equalTo(1));
 

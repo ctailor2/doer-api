@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -42,7 +41,7 @@ public class ResourcesControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         defaultListId = new ListId("someListId");
-        when(listApplicationService.getDefault(any())).thenReturn(new TodoListReadModel(null, null, null, emptyList(), null, defaultListId, user.getUserId()));
+        when(listApplicationService.getDefault(any())).thenReturn(new TodoList(user.getUserId(), defaultListId, null, null, null));
     }
 
     @Test
