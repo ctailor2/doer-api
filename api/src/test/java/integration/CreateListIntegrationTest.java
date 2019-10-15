@@ -59,7 +59,7 @@ public class CreateListIntegrationTest extends AbstractWebAppJUnit4SpringContext
         MvcResult mvcResult = mockMvc.perform(mockRequestBuilder)
             .andReturn();
 
-        Assertions.assertThat(listApplicationService.getOverviews(user)).hasSize(2);
+        Assertions.assertThat(listApplicationService.getAll(user)).hasSize(2);
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());

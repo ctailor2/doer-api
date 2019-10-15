@@ -39,9 +39,9 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
     public void includesTheDefaultList() {
         TodoListReadModel list = listService.getDefault(user);
 
-        List<ListOverview> listOverviews = listService.getOverviews(user);
+        List<TodoList> todoLists = listService.getAll(user);
 
-        assertThat(listOverviews).contains(new ListOverview(list.getUserId(), list.getListId(), list.getProfileName(), 0, Date.from(Instant.EPOCH)));
+        assertThat(todoLists).contains(new TodoList(list.getUserId(), list.getListId(), list.getProfileName(), 0, Date.from(Instant.EPOCH)));
     }
 
     @Test
@@ -49,9 +49,9 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
         String listName = "someName";
         listService.create(user, listName);
 
-        List<ListOverview> listOverviews = listService.getOverviews(user);
+        List<TodoList> todoLists = listService.getAll(user);
 
-        List<String> listNames = listOverviews.stream().map(ListOverview::getName).collect(Collectors.toList());
+        List<String> listNames = todoLists.stream().map(TodoList::getName).collect(Collectors.toList());
         assertThat(listNames).contains(listName);
     }
 }

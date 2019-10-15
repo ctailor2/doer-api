@@ -1,17 +1,17 @@
 package com.doerapispring.web;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.hateoas.ResourceSupport;
 
-class TodoListResponse extends ResourceSupport {
-    @JsonProperty("list")
-    private final TodoListDTO todoListDTO;
+import java.util.List;
 
-    TodoListResponse(TodoListDTO todoListDTO) {
-        this.todoListDTO = todoListDTO;
+class TodoListResponse extends ResourceSupport {
+    private List<TodoListDTO> lists;
+
+    TodoListResponse(List<TodoListDTO> lists) {
+        this.lists = lists;
     }
 
-    TodoListDTO getTodoListDTO() {
-        return todoListDTO;
+    public List<TodoListDTO> getLists() {
+        return lists;
     }
 }

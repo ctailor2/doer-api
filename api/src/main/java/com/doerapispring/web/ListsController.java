@@ -39,10 +39,10 @@ class ListsController {
 
     @RequestMapping("/lists/{listId}")
     @ResponseBody
-    ResponseEntity<TodoListResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-                                          @PathVariable String listId) {
+    ResponseEntity<TodoListReadModelResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+                                                   @PathVariable String listId) {
         TodoListReadModel todoListReadModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
-        TodoListDTO todoListDTO = new TodoListDTO(
+        TodoListReadModelDTO todoListReadModelDTO = new TodoListReadModelDTO(
             todoListReadModel.getProfileName(),
             todoListReadModel.getSectionName(),
             todoListReadModel.getDeferredSectionName(),
@@ -58,44 +58,44 @@ class ListsController {
                 .collect(toList()),
             todoListReadModel.unlockDuration()
         );
-        todoListDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"));
+        todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"));
         if (todoListReadModel.isAbleToBeUnlocked()) {
-            todoListDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"));
+            todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"));
         }
         if (todoListReadModel.isFull()) {
-            todoListDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"));
+            todoListReadModelDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"));
         } else {
-            todoListDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"));
+            todoListReadModelDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"));
         }
         if (todoListReadModel.isAbleToBeReplenished()) {
-            todoListDTO.add(hateoasLinkGenerator.listPullTodosLink(listId).withRel("pull"));
+            todoListReadModelDTO.add(hateoasLinkGenerator.listPullTodosLink(listId).withRel("pull"));
         }
         if (todoListReadModel.isAbleToBeEscalated()) {
-            todoListDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"));
+            todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"));
         }
-        todoListDTO.getTodos().forEach(todoDTO -> {
+        todoListReadModelDTO.getTodos().forEach(todoDTO -> {
             todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, todoDTO.getIdentifier()).withRel("delete"));
             todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, todoDTO.getIdentifier()).withRel("update"));
             todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, todoDTO.getIdentifier()).withRel("complete"));
 
-            todoListDTO.getTodos().forEach(targetTodoDTO ->
+            todoListReadModelDTO.getTodos().forEach(targetTodoDTO ->
                 todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                     listId,
                     todoDTO.getIdentifier(), targetTodoDTO.getIdentifier()).withRel("move")));
         });
-        todoListDTO.getDeferredTodos().forEach(todoDTO -> {
+        todoListReadModelDTO.getDeferredTodos().forEach(todoDTO -> {
             todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, todoDTO.getIdentifier()).withRel("delete"));
             todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, todoDTO.getIdentifier()).withRel("update"));
             todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, todoDTO.getIdentifier()).withRel("complete"));
 
-            todoListDTO.getDeferredTodos().forEach(targetTodoDTO ->
+            todoListReadModelDTO.getDeferredTodos().forEach(targetTodoDTO ->
                 todoDTO.add(hateoasLinkGenerator.moveTodoLink(
                     listId,
                     todoDTO.getIdentifier(), targetTodoDTO.getIdentifier()).withRel("move")));
         });
-        TodoListResponse todoListResponse = new TodoListResponse(todoListDTO);
-        todoListResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
-        return ResponseEntity.ok(todoListResponse);
+        TodoListReadModelResponse todoListReadModelResponse = new TodoListReadModelResponse(todoListReadModelDTO);
+        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
+        return ResponseEntity.ok(todoListReadModelResponse);
     }
 
     @GetMapping(value = "/lists/{listId}/completed")
@@ -113,17 +113,17 @@ class ListsController {
 
     @GetMapping(value = "/lists")
     @ResponseBody
-    ResponseEntity<ListOverviewsResponse> showOverviews(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        List<ListOverviewDTO> listOverviewDTOs = listApplicationService.getOverviews(authenticatedUser.getUser()).stream()
-            .map(listOverview -> {
-                ListOverviewDTO listOverviewDTO = new ListOverviewDTO(listOverview.getName());
-                listOverviewDTO.add(hateoasLinkGenerator.listLink(listOverview.getListId().get()).withRel("list"));
-                return listOverviewDTO;
+    ResponseEntity<TodoListResponse> showAll(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        List<TodoListDTO> todoListDTOS = listApplicationService.getAll(authenticatedUser.getUser()).stream()
+            .map(todoList -> {
+                TodoListDTO todoListDTO = new TodoListDTO(todoList.getName());
+                todoListDTO.add(hateoasLinkGenerator.listLink(todoList.getListId().get()).withRel("list"));
+                return todoListDTO;
             })
             .collect(toList());
-        ListOverviewsResponse listOverviewsResponse = new ListOverviewsResponse(listOverviewDTOs);
-        listOverviewsResponse.add(hateoasLinkGenerator.showListsLink());
-        return ResponseEntity.ok(listOverviewsResponse);
+        TodoListResponse todoListResponse = new TodoListResponse(todoListDTOS);
+        todoListResponse.add(hateoasLinkGenerator.showListsLink());
+        return ResponseEntity.ok(todoListResponse);
     }
 
     @PostMapping(value = "/lists")

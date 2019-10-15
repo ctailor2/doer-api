@@ -11,7 +11,7 @@ public interface ListApplicationService {
 
     TodoListReadModel get(User user, ListId listId) throws InvalidCommandException;
 
-    List<ListOverview> getOverviews(User user);
+    List<TodoList> getAll(User user);
 
     void create(User user, String name);
 }

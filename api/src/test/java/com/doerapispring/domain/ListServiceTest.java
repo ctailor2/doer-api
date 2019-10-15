@@ -22,13 +22,13 @@ public class ListServiceTest {
     private ListService listService;
 
     @Mock
-    private OwnedObjectRepository<TodoListCommandModel, UserId, ListId> mockTodoListRepository;
+    private OwnedObjectRepository<TodoListCommandModel, UserId, ListId> mockTodoListCommandModelRepository;
 
     @Mock
     private OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> mockCompletedTodoRepository;
 
     @Mock
-    private OwnedObjectRepository<ListOverview, UserId, ListId> mockListOverviewRepository;
+    private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -40,14 +40,14 @@ public class ListServiceTest {
     @Before
     public void setUp() throws Exception {
         listService = new ListService(
-            mockTodoListRepository,
+            mockTodoListCommandModelRepository,
             mockCompletedTodoRepository,
-            mockListOverviewRepository,
+            mockTodoListRepository,
             mockTodoListFactory);
         identifier = "userId";
         todoListCommandModel = mock(TodoListCommandModel.class);
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(todoListCommandModel));
-        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(todoListCommandModel));
+        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.of(todoListCommandModel));
+        when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.of(todoListCommandModel));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class ListServiceTest {
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
 
         verify(todoListCommandModel).unlock();
-        verify(mockTodoListRepository).save(todoListCommandModel);
+        verify(mockTodoListCommandModelRepository).save(todoListCommandModel);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ListServiceTest {
 
     @Test
     public void unlock_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
+        when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
         listService.unlock(new User(new UserId(identifier)), new ListId("someListId"));
@@ -77,7 +77,7 @@ public class ListServiceTest {
     @Test
     public void getDefault_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
         TodoListCommandModel mockTodoListCommandModel = mock(TodoListCommandModel.class);
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.of(mockTodoListCommandModel));
+        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.of(mockTodoListCommandModel));
         TodoListReadModel mockTodoListReadModel = mock(TodoListReadModel.class);
         when(mockTodoListCommandModel.read()).thenReturn(mockTodoListReadModel);
         User user = new User(new UserId(identifier));
@@ -89,7 +89,7 @@ public class ListServiceTest {
 
     @Test
     public void getDefault_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.findFirst(any())).thenReturn(Optional.empty());
+        when(mockTodoListCommandModelRepository.findFirst(any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
         listService.getDefault(new User(new UserId(identifier)));
@@ -98,7 +98,7 @@ public class ListServiceTest {
     @Test
     public void get_whenTodoListFound_returnsTodoListFromRepository() throws Exception {
         TodoListCommandModel mockTodoListCommandModel = mock(TodoListCommandModel.class);
-        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(mockTodoListCommandModel));
+        when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.of(mockTodoListCommandModel));
         TodoListReadModel mockTodoListReadModel = mock(TodoListReadModel.class);
         when(mockTodoListCommandModel.read()).thenReturn(mockTodoListReadModel);
         User user = new User(new UserId(identifier));
@@ -110,7 +110,7 @@ public class ListServiceTest {
 
     @Test
     public void get_whenTodoListNotFound_refusesOperation() throws Exception {
-        when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
+        when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
         listService.get(new User(new UserId(identifier)), new ListId("someListId"));
@@ -133,29 +133,29 @@ public class ListServiceTest {
     }
 
     @Test
-    public void getOverviews_getsOverviewsFromRepository() {
+    public void getAll_getsTodoListsFromRepository() {
         UserId userId = new UserId(identifier);
-        List<ListOverview> expectedListOverviews = singletonList(
-            new ListOverview(new UserId("someUserId"), new ListId("someListId"), "someName", 0, java.util.Date.from(Instant.EPOCH)));
-        when(mockListOverviewRepository.findAll(userId))
-            .thenReturn(expectedListOverviews);
+        List<TodoList> expectedTodoLists = singletonList(
+            new TodoList(new UserId("someUserId"), new ListId("someListId"), "someName", 0, java.util.Date.from(Instant.EPOCH)));
+        when(mockTodoListRepository.findAll(userId))
+            .thenReturn(expectedTodoLists);
 
-        List<ListOverview> actualListOverviews = listService.getOverviews(new User(userId));
+        List<TodoList> actualTodoLists = listService.getAll(new User(userId));
 
-        assertThat(actualListOverviews).isEqualTo(expectedListOverviews);
+        assertThat(actualTodoLists).isEqualTo(expectedTodoLists);
     }
 
     @Test
-    public void create_createsListOverview() {
+    public void create_createsTodoList() {
         UserId userId = new UserId(identifier);
         ListId listId = new ListId("someId");
         String listName = "someName";
-        when(mockListOverviewRepository.nextIdentifier()).thenReturn(listId);
-        ListOverview listOverview = mock(ListOverview.class);
-        when(mockTodoListFactory.listOverview(userId, listId, listName)).thenReturn(listOverview);
+        when(mockTodoListRepository.nextIdentifier()).thenReturn(listId);
+        TodoList todoList = mock(TodoList.class);
+        when(mockTodoListFactory.todoList(userId, listId, listName)).thenReturn(todoList);
 
         listService.create(new User(userId), listName);
 
-        verify(mockListOverviewRepository).save(listOverview);
+        verify(mockTodoListRepository).save(todoList);
     }
 }

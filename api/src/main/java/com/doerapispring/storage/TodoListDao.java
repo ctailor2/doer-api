@@ -21,5 +21,5 @@ interface TodoListDao extends JpaRepository<TodoListEntity, Long> {
 
     @Query("SELECT tl FROM TodoListEntity tl " +
         "WHERE tl.userEntity.email = ?1")
-    List<TodoListEntity> findAllOverviews(String email);
+    List<TodoListEntity> findByEmailWithoutTodos(String email);
 }

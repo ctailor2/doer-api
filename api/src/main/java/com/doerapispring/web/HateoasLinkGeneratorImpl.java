@@ -109,7 +109,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
 
     @Override
     public Link showListsLink() {
-        return linkTo(methodOn(ListsController.class).showOverviews(null)).withSelfRel();
+        return linkTo(methodOn(ListsController.class).showAll(null)).withSelfRel();
     }
 
     @Override

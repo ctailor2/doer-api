@@ -102,28 +102,28 @@ public class ListsControllerTest {
         long unlockDuration = 123213L;
         when(todoListReadModel.unlockDuration()).thenReturn(unlockDuration);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        TodoListDTO todoListDTO = responseEntity.getBody().getTodoListDTO();
-        assertThat(todoListDTO).isNotNull();
-        assertThat(todoListDTO.getProfileName()).isEqualTo(profileName);
-        assertThat(todoListDTO.getName()).isEqualTo(name);
-        assertThat(todoListDTO.getDeferredName()).isEqualTo(deferredName);
-        assertThat(todoListDTO.getTodos()).hasSize(1);
-        assertThat(todoListDTO.getTodos().get(0).getIdentifier()).isEqualTo(todo.getTodoId().getIdentifier());
-        assertThat(todoListDTO.getTodos().get(0).getTask()).isEqualTo(todo.getTask());
-        assertThat(todoListDTO.getDeferredTodos()).hasSize(1);
-        assertThat(todoListDTO.getDeferredTodos().get(0).getIdentifier()).isEqualTo(deferredTodo.getTodoId().getIdentifier());
-        assertThat(todoListDTO.getDeferredTodos().get(0).getTask()).isEqualTo(deferredTodo.getTask());
-        assertThat(todoListDTO.getUnlockDuration()).isEqualTo(unlockDuration);
+        TodoListReadModelDTO todoListReadModelDTO = responseEntity.getBody().getTodoListReadModelDTO();
+        assertThat(todoListReadModelDTO).isNotNull();
+        assertThat(todoListReadModelDTO.getProfileName()).isEqualTo(profileName);
+        assertThat(todoListReadModelDTO.getName()).isEqualTo(name);
+        assertThat(todoListReadModelDTO.getDeferredName()).isEqualTo(deferredName);
+        assertThat(todoListReadModelDTO.getTodos()).hasSize(1);
+        assertThat(todoListReadModelDTO.getTodos().get(0).getIdentifier()).isEqualTo(todo.getTodoId().getIdentifier());
+        assertThat(todoListReadModelDTO.getTodos().get(0).getTask()).isEqualTo(todo.getTask());
+        assertThat(todoListReadModelDTO.getDeferredTodos()).hasSize(1);
+        assertThat(todoListReadModelDTO.getDeferredTodos().get(0).getIdentifier()).isEqualTo(deferredTodo.getTodoId().getIdentifier());
+        assertThat(todoListReadModelDTO.getDeferredTodos().get(0).getTask()).isEqualTo(deferredTodo.getTask());
+        assertThat(todoListReadModelDTO.getUnlockDuration()).isEqualTo(unlockDuration);
     }
 
     @Test
     public void show_includesLinks_byDefault() throws Exception {
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withSelfRel());
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"));
     }
 
@@ -138,38 +138,38 @@ public class ListsControllerTest {
             new Todo(new TodoId("twoLaterId"), "twoLaterTask"));
         when(todoListReadModel.getDeferredTodos()).thenReturn(deferredTodos);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getTodos()).hasSize(2);
-        assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getTodos()).hasSize(2);
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneNowId").withRel("delete"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneNowId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneNowId").withRel("complete"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneNowId").withRel("delete"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneNowId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneNowId").withRel("complete"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(0).getLinks()).containsSequence(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getTodos().get(0).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneNowId/moveTodo/oneNowId").withRel("move"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneNowId/moveTodo/twoNowId").withRel("move"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getTodos().get(1).getLinks()).containsSequence(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getTodos().get(1).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoNowId/moveTodo/oneNowId").withRel("move"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoNowId/moveTodo/twoNowId").withRel("move"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos()).hasSize(2);
-        assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getDeferredTodos()).hasSize(2);
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getDeferredTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneLaterId").withRel("delete"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneLaterId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneLaterId").withRel("complete"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getDeferredTodos().get(0).getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/oneLaterId").withRel("delete"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/oneLaterId").withRel("update"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/oneLaterId").withRel("complete"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(0).getLinks()).containsSequence(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getDeferredTodos().get(0).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneLaterId/moveTodo/oneLaterId").withRel("move"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/oneLaterId/moveTodo/twoLaterId").withRel("move"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getDeferredTodos().get(1).getLinks()).containsSequence(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getDeferredTodos().get(1).getLinks()).containsSequence(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoLaterId/moveTodo/oneLaterId").withRel("move"),
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/twoLaterId/moveTodo/twoLaterId").withRel("move"));
     }
@@ -178,11 +178,11 @@ public class ListsControllerTest {
     public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() throws Exception {
         when(todoListReadModel.isFull()).thenReturn(false);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createTodo").withRel("create"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/list/displaceTodo").withRel("displace"));
     }
 
@@ -190,11 +190,11 @@ public class ListsControllerTest {
     public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() throws Exception {
         when(todoListReadModel.isFull()).thenReturn(true);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createTodo").withRel("create"));
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/displaceTodo").withRel("displace"));
     }
 
@@ -202,9 +202,9 @@ public class ListsControllerTest {
     public void show_whenListIsAbleToBeReplenished_includesPullLink() throws Exception {
         when(todoListReadModel.isAbleToBeReplenished()).thenReturn(true);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
     }
 
@@ -212,9 +212,9 @@ public class ListsControllerTest {
     public void show_whenListIsNotAbleToBeReplenished_doesNotIncludePullLink() throws Exception {
         when(todoListReadModel.isAbleToBeReplenished()).thenReturn(false);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
     }
 
@@ -222,9 +222,9 @@ public class ListsControllerTest {
     public void show_whenListIsAbleToBeUnlocked_includesUnlockLink() throws Exception {
         when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(true);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
     }
 
@@ -232,9 +232,9 @@ public class ListsControllerTest {
     public void show_whenListIsNotAbleToBeUnlocked_doesNotIncludeUnlockLink() throws Exception {
         when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(false);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
     }
 
@@ -242,9 +242,9 @@ public class ListsControllerTest {
     public void show_whenListIsAbleToBeEscalated_includesEscalateLink() throws Exception {
         when(todoListReadModel.isAbleToBeEscalated()).thenReturn(true);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).contains(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/escalateTodo").withRel("escalate"));
     }
 
@@ -252,9 +252,9 @@ public class ListsControllerTest {
     public void show_whenListIsNotAbleToBeEscalated_doesNotIncludeEscalateLink() throws Exception {
         when(todoListReadModel.isAbleToBeEscalated()).thenReturn(false);
 
-        ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
-        assertThat(responseEntity.getBody().getTodoListDTO().getLinks()).doesNotContain(
+        assertThat(responseEntity.getBody().getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/list/escalateTodo").withRel("escalate"));
     }
 
@@ -293,43 +293,43 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void showListOverviews_mapping() throws Exception {
+    public void showAll_mapping() throws Exception {
         mockMvc.perform(get("/v1/lists"))
             .andExpect(status().isOk());
 
-        verify(listApplicationService).getOverviews(user);
+        verify(listApplicationService).getAll(user);
     }
 
     @Test
-    public void showListOverviews_returnsListOverviews() {
+    public void showAll_returnsTodoLists() {
         String listName = "someName";
-        when(listApplicationService.getOverviews(any()))
-            .thenReturn(singletonList(new ListOverview(new UserId("someUserId"), new ListId("someListId"), listName, 0, Date.from(Instant.EPOCH))));
+        when(listApplicationService.getAll(any()))
+            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId("someListId"), listName, 0, Date.from(Instant.EPOCH))));
 
-        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+        ResponseEntity<TodoListResponse> responseEntity = listsController.showAll(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLists()).hasSize(1);
         assertThat(responseEntity.getBody().getLists().get(0).getName()).isEqualTo(listName);
     }
 
     @Test
-    public void showListOverviews_includesLinksByDefault() {
-        when(listApplicationService.getOverviews(any())).thenReturn(emptyList());
+    public void showAll_includesLinksByDefault() {
+        when(listApplicationService.getAll(any())).thenReturn(emptyList());
 
-        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+        ResponseEntity<TodoListResponse> responseEntity = listsController.showAll(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks())
             .contains(new Link(MOCK_BASE_URL + "/lists").withSelfRel());
     }
 
     @Test
-    public void showListOverviews_includesLinksForEachList() {
+    public void showAll_includesLinksForEachList() {
         String listName = "someName";
         String listId = "someListId";
-        when(listApplicationService.getOverviews(any()))
-            .thenReturn(singletonList(new ListOverview(new UserId("someUserId"), new ListId(listId), listName, 0, Date.from(Instant.EPOCH))));
+        when(listApplicationService.getAll(any()))
+            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId(listId), listName, 0, Date.from(Instant.EPOCH))));
 
-        ResponseEntity<ListOverviewsResponse> responseEntity = listsController.showOverviews(authenticatedUser);
+        ResponseEntity<TodoListResponse> responseEntity = listsController.showAll(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLists()).hasSize(1);
         assertThat(responseEntity.getBody().getLists().get(0).getLinks())

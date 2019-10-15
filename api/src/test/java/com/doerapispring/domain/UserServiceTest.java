@@ -24,7 +24,7 @@ public class UserServiceTest {
     private ObjectRepository<User, UserId> userRepository;
 
     @Mock
-    private OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository;
+    private OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
     private TodoListFactory todoListFactory = mock(TodoListFactory.class);
 
@@ -57,16 +57,16 @@ public class UserServiceTest {
 
     @Test
     public void create_whenIdentifierNotTaken_createsDefaultTodoListForUser_andSavesIt() throws Exception {
-        TodoListCommandModel newTodoListCommandModel = mock(TodoListCommandModel.class);
+        TodoList newTodoList = mock(TodoList.class);
         ListId listId = new ListId("someListId");
         when(todoListRepository.nextIdentifier()).thenReturn(listId);
-        when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoListCommandModel);
+        when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoList);
         String identifier = "soUnique";
 
         userService.create(identifier);
 
         verify(todoListFactory).todoList(new UserId(identifier), listId, "default");
-        verify(todoListRepository).save(newTodoListCommandModel);
+        verify(todoListRepository).save(newTodoList);
     }
 
     @Test

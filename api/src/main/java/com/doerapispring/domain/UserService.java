@@ -8,11 +8,11 @@ import java.util.Optional;
 public class UserService {
     private final ObjectRepository<User, UserId> userRepository;
     private final TodoListFactory todoListFactory;
-    private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository;
+    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
     UserService(ObjectRepository<User, UserId> userRepository,
                 TodoListFactory todoListFactory,
-                OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository) {
+                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository) {
         this.userRepository = userRepository;
         this.todoListFactory = todoListFactory;
         this.todoListRepository = todoListRepository;
@@ -24,11 +24,11 @@ public class UserService {
         if (userOptional.isPresent()) throw new UserAlreadyExistsException();
         User user = new User(userId);
         userRepository.save(user);
-        TodoListCommandModel todoListCommandModel = todoListFactory.todoList(
+        TodoList todoList = todoListFactory.todoList(
             userId,
             todoListRepository.nextIdentifier(),
             "default");
-        todoListRepository.save(todoListCommandModel);
+        todoListRepository.save(todoList);
         return user;
     }
 }

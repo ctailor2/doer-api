@@ -2,14 +2,14 @@ package com.doerapispring.domain;
 
 import java.util.Date;
 
-public class ListOverview {
+public class TodoList {
     private final UserId userId;
     private final ListId listId;
     private final String name;
     private final Integer demarcationIndex;
     private final Date lastUnlockedAt;
 
-    public ListOverview(UserId userId, ListId listId, String name, Integer demarcationIndex, Date lastUnlockedAt) {
+    public TodoList(UserId userId, ListId listId, String name, Integer demarcationIndex, Date lastUnlockedAt) {
         this.userId = userId;
         this.listId = listId;
         this.name = name;
@@ -42,7 +42,7 @@ public class ListOverview {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ListOverview that = (ListOverview) o;
+        TodoList that = (TodoList) o;
 
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (listId != null ? !listId.equals(that.listId) : that.listId != null) return false;
@@ -64,7 +64,7 @@ public class ListOverview {
 
     @Override
     public String toString() {
-        return "ListOverview{" +
+        return "TodoList{" +
             "userId=" + userId +
             ", listId=" + listId +
             ", name='" + name + '\'' +

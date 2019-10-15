@@ -6,34 +6,34 @@ import java.util.List;
 
 @Service
 public class ListService implements ListApplicationService {
-    private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository;
+    private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListCommandModelRepository;
     private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
-    private final OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository;
+    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final TodoListFactory todoListFactory;
 
-    ListService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository,
+    ListService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListCommandModelRepository,
                 OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository,
-                OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository,
+                OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
                 TodoListFactory todoListFactory) {
-        this.todoListRepository = todoListRepository;
+        this.todoListCommandModelRepository = todoListCommandModelRepository;
         this.completedTodoRepository = completedTodoRepository;
-        this.listOverviewRepository = listOverviewRepository;
+        this.todoListRepository = todoListRepository;
         this.todoListFactory = todoListFactory;
     }
 
     public void unlock(User user, ListId listId) throws InvalidCommandException {
-        TodoListCommandModel todoListCommandModel = todoListRepository.find(user.getUserId(), listId)
+        TodoListCommandModel todoListCommandModel = todoListCommandModelRepository.find(user.getUserId(), listId)
             .orElseThrow(InvalidCommandException::new);
         try {
             todoListCommandModel.unlock();
-            todoListRepository.save(todoListCommandModel);
+            todoListCommandModelRepository.save(todoListCommandModel);
         } catch (LockTimerNotExpiredException e) {
             throw new InvalidCommandException();
         }
     }
 
     public TodoListReadModel getDefault(User user) throws InvalidCommandException {
-        return todoListRepository.findFirst(user.getUserId())
+        return todoListCommandModelRepository.findFirst(user.getUserId())
             .map(TodoListCommandModel::read)
             .orElseThrow(InvalidCommandException::new);
     }
@@ -44,20 +44,20 @@ public class ListService implements ListApplicationService {
 
     @Override
     public TodoListReadModel get(User user, ListId listId) throws InvalidCommandException {
-        return todoListRepository.find(user.getUserId(), listId)
+        return todoListCommandModelRepository.find(user.getUserId(), listId)
             .map(TodoListCommandModel::read)
             .orElseThrow(InvalidCommandException::new);
     }
 
     @Override
-    public List<ListOverview> getOverviews(User user) {
-        return listOverviewRepository.findAll(user.getUserId());
+    public List<TodoList> getAll(User user) {
+        return todoListRepository.findAll(user.getUserId());
     }
 
     @Override
     public void create(User user, String name) {
-        ListId listId = listOverviewRepository.nextIdentifier();
-        ListOverview listOverview = todoListFactory.listOverview(user.getUserId(), listId, name);
-        listOverviewRepository.save(listOverview);
+        ListId listId = todoListRepository.nextIdentifier();
+        TodoList todoList = todoListFactory.todoList(user.getUserId(), listId, name);
+        todoListRepository.save(todoList);
     }
 }
