@@ -6,12 +6,12 @@ import java.util.List;
 
 @Service
 public class ListService implements ListApplicationService {
-    private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
+    private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository;
     private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
     private final OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository;
     private final TodoListFactory todoListFactory;
 
-    ListService(OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
+    ListService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository,
                 OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository,
                 OwnedObjectRepository<ListOverview, UserId, ListId> listOverviewRepository,
                 TodoListFactory todoListFactory) {
@@ -22,19 +22,19 @@ public class ListService implements ListApplicationService {
     }
 
     public void unlock(User user, ListId listId) throws InvalidCommandException {
-        TodoList todoList = todoListRepository.find(user.getUserId(), listId)
+        TodoListCommandModel todoListCommandModel = todoListRepository.find(user.getUserId(), listId)
             .orElseThrow(InvalidCommandException::new);
         try {
-            todoList.unlock();
-            todoListRepository.save(todoList);
+            todoListCommandModel.unlock();
+            todoListRepository.save(todoListCommandModel);
         } catch (LockTimerNotExpiredException e) {
             throw new InvalidCommandException();
         }
     }
 
-    public ReadOnlyTodoList getDefault(User user) throws InvalidCommandException {
+    public TodoListReadModel getDefault(User user) throws InvalidCommandException {
         return todoListRepository.findFirst(user.getUserId())
-            .map(TodoList::read)
+            .map(TodoListCommandModel::read)
             .orElseThrow(InvalidCommandException::new);
     }
 
@@ -43,9 +43,9 @@ public class ListService implements ListApplicationService {
     }
 
     @Override
-    public ReadOnlyTodoList get(User user, ListId listId) throws InvalidCommandException {
+    public TodoListReadModel get(User user, ListId listId) throws InvalidCommandException {
         return todoListRepository.find(user.getUserId(), listId)
-            .map(TodoList::read)
+            .map(TodoListCommandModel::read)
             .orElseThrow(InvalidCommandException::new);
     }
 

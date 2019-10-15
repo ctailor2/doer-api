@@ -44,7 +44,7 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        ReadOnlyTodoList todoList = listApplicationService.getDefault(user);
+        TodoListReadModel todoList = listApplicationService.getDefault(user);
 
         assertThat(todoList.isAbleToBeUnlocked(), equalTo(false));
 

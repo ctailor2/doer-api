@@ -54,7 +54,7 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
-        ReadOnlyTodoList newTodoList = listApplicationService.getDefault(user);
+        TodoListReadModel newTodoList = listApplicationService.getDefault(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("will get pulled", "will also get pulled");

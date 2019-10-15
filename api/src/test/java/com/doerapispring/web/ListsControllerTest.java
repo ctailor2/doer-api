@@ -36,7 +36,7 @@ public class ListsControllerTest {
 
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
-    private ReadOnlyTodoList readOnlyTodoList;
+    private TodoListReadModel todoListReadModel;
     private User user;
     private String listId = "someListId";
 
@@ -53,10 +53,10 @@ public class ListsControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
 
-        readOnlyTodoList = mock(ReadOnlyTodoList.class);
-        when(readOnlyTodoList.getListId()).thenReturn(new ListId(listId));
-        when(listApplicationService.getDefault(any())).thenReturn(readOnlyTodoList);
-        when(listApplicationService.get(any(), any())).thenReturn(readOnlyTodoList);
+        todoListReadModel = mock(TodoListReadModel.class);
+        when(todoListReadModel.getListId()).thenReturn(new ListId(listId));
+        when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
+        when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);
     }
 
     @Test
@@ -90,17 +90,17 @@ public class ListsControllerTest {
     @Test
     public void show_returnsList() throws Exception {
         String profileName = "someProfileName";
-        when(readOnlyTodoList.getProfileName()).thenReturn(profileName);
+        when(todoListReadModel.getProfileName()).thenReturn(profileName);
         String name = "someName";
-        when(readOnlyTodoList.getSectionName()).thenReturn(name);
+        when(todoListReadModel.getSectionName()).thenReturn(name);
         String deferredName = "someDeferredName";
-        when(readOnlyTodoList.getDeferredSectionName()).thenReturn(deferredName);
+        when(todoListReadModel.getDeferredSectionName()).thenReturn(deferredName);
         Todo todo = new Todo(new TodoId("oneNowId"), "oneNowTask");
-        when(readOnlyTodoList.getTodos()).thenReturn(singletonList(todo));
+        when(todoListReadModel.getTodos()).thenReturn(singletonList(todo));
         Todo deferredTodo = new Todo(new TodoId("oneLaterId"), "oneLaterTask");
-        when(readOnlyTodoList.getDeferredTodos()).thenReturn(singletonList(deferredTodo));
+        when(todoListReadModel.getDeferredTodos()).thenReturn(singletonList(deferredTodo));
         long unlockDuration = 123213L;
-        when(readOnlyTodoList.unlockDuration()).thenReturn(unlockDuration);
+        when(todoListReadModel.unlockDuration()).thenReturn(unlockDuration);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -132,11 +132,11 @@ public class ListsControllerTest {
         List<Todo> todos = asList(
             new Todo(new TodoId("oneNowId"), "oneNowTask"),
             new Todo(new TodoId("twoNowId"), "twoNowTask"));
-        when(readOnlyTodoList.getTodos()).thenReturn(todos);
+        when(todoListReadModel.getTodos()).thenReturn(todos);
         List<Todo> deferredTodos = asList(
             new Todo(new TodoId("oneLaterId"), "oneLaterTask"),
             new Todo(new TodoId("twoLaterId"), "twoLaterTask"));
-        when(readOnlyTodoList.getDeferredTodos()).thenReturn(deferredTodos);
+        when(todoListReadModel.getDeferredTodos()).thenReturn(deferredTodos);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -176,7 +176,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() throws Exception {
-        when(readOnlyTodoList.isFull()).thenReturn(false);
+        when(todoListReadModel.isFull()).thenReturn(false);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -188,7 +188,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() throws Exception {
-        when(readOnlyTodoList.isFull()).thenReturn(true);
+        when(todoListReadModel.isFull()).thenReturn(true);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -200,7 +200,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeReplenished_includesPullLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeReplenished()).thenReturn(true);
+        when(todoListReadModel.isAbleToBeReplenished()).thenReturn(true);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -210,7 +210,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeReplenished_doesNotIncludePullLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeReplenished()).thenReturn(false);
+        when(todoListReadModel.isAbleToBeReplenished()).thenReturn(false);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -220,7 +220,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeUnlocked_includesUnlockLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeUnlocked()).thenReturn(true);
+        when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(true);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -230,7 +230,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeUnlocked_doesNotIncludeUnlockLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeUnlocked()).thenReturn(false);
+        when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(false);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -240,7 +240,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsAbleToBeEscalated_includesEscalateLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeEscalated()).thenReturn(true);
+        when(todoListReadModel.isAbleToBeEscalated()).thenReturn(true);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 
@@ -250,7 +250,7 @@ public class ListsControllerTest {
 
     @Test
     public void show_whenListIsNotAbleToBeEscalated_doesNotIncludeEscalateLink() throws Exception {
-        when(readOnlyTodoList.isAbleToBeEscalated()).thenReturn(false);
+        when(todoListReadModel.isAbleToBeEscalated()).thenReturn(false);
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.show(authenticatedUser, listId);
 

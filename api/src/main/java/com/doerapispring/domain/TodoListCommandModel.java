@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class TodoList implements DomainModel {
+public class TodoListCommandModel implements DomainModel {
     private final Clock clock;
     private final UserId userId;
     private final List<Todo> todos;
@@ -15,7 +15,7 @@ public class TodoList implements DomainModel {
     private Integer demarcationIndex;
     private List<DomainEvent> domainEvents = new ArrayList<>();
 
-    public TodoList(
+    public TodoListCommandModel(
         Clock clock,
         UserId userId,
         ListId listId,
@@ -143,8 +143,8 @@ public class TodoList implements DomainModel {
         return lastUnlockedAt;
     }
 
-    ReadOnlyTodoList read() {
-        return new ReadOnlyTodoList(clock, name, lastUnlockedAt, todos, demarcationIndex, listId, userId);
+    TodoListReadModel read() {
+        return new TodoListReadModel(clock, name, lastUnlockedAt, todos, demarcationIndex, listId, userId);
     }
 
     void escalate() throws EscalateNotAllowException {

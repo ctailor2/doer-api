@@ -57,7 +57,7 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         String responseContent = mvcResult.getResponse().getContentAsString();
         User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
-        ReadOnlyTodoList newTodoList = listApplicationService.getDefault(user);
+        TodoListReadModel newTodoList = listApplicationService.getDefault(user);
 
         Assertions.assertThat(newTodoList.getTodos()).extracting("task")
             .containsExactly("do the things", "some task");

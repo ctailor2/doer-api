@@ -47,13 +47,13 @@ public class CompletedTodoRepositoryTest {
     private UserRepository userRepository;
 
     private CompletedTodoRepository completedTodoRepository;
-    private TodoListRepository todoListRepository;
+    private TodoListCommandModelRepository todoListRepository;
 
     @Before
     public void setUp() throws Exception {
         completedTodoRepository = new CompletedTodoRepository(completedTodoDAO, userDAO, mock(IdGenerator.class));
         userRepository = new UserRepository(userDAO);
-        todoListRepository = new TodoListRepository(userDAO, todoListDao, clock, idGenerator);
+        todoListRepository = new TodoListCommandModelRepository(userDAO, todoListDao, clock, idGenerator);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class CompletedTodoRepositoryTest {
         userRepository.save(new User(userId));
         ListId listId = new ListId("someListId");
         todoListRepository.save(
-            new TodoList(
+            new TodoListCommandModel(
                 mock(Clock.class),
                 userId,
                 listId,

@@ -15,8 +15,8 @@ public class TodoListFactory {
         this.clock = clock;
     }
 
-    TodoList todoList(UserId userId, ListId listId, String name) {
-        return new TodoList(
+    TodoListCommandModel todoList(UserId userId, ListId listId, String name) {
+        return new TodoListCommandModel(
             clock,
             userId,
             listId,

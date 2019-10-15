@@ -30,14 +30,14 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void hasTheDefaultListSet() {
-        ReadOnlyTodoList list = listService.getDefault(user);
+        TodoListReadModel list = listService.getDefault(user);
 
         assertThat(list.getProfileName()).isEqualTo("default");
     }
 
     @Test
     public void includesTheDefaultList() {
-        ReadOnlyTodoList list = listService.getDefault(user);
+        TodoListReadModel list = listService.getDefault(user);
 
         List<ListOverview> listOverviews = listService.getOverviews(user);
 

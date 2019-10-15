@@ -12,14 +12,14 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-class TodoListRepository implements
-    OwnedObjectRepository<TodoList, UserId, ListId> {
+class TodoListCommandModelRepository implements
+    OwnedObjectRepository<TodoListCommandModel, UserId, ListId> {
     private final UserDAO userDAO;
     private final TodoListDao todoListDao;
     private final Clock clock;
     private final IdGenerator idGenerator;
 
-    TodoListRepository(
+    TodoListCommandModelRepository(
         UserDAO userDAO,
         TodoListDao todoListDao,
         Clock clock,
@@ -31,15 +31,15 @@ class TodoListRepository implements
     }
 
     @Override
-    public void save(TodoList todoList) {
-        UserEntity userEntity = userDAO.findByEmail(todoList.getUserId().get());
+    public void save(TodoListCommandModel todoListCommandModel) {
+        UserEntity userEntity = userDAO.findByEmail(todoListCommandModel.getUserId().get());
         if (userEntity == null) throw new RuntimeException("TodoList must userId must correspond with an existing user");
         TodoListEntity todoListEntity = new TodoListEntity();
         todoListEntity.userEntity = userEntity;
-        todoListEntity.name = todoList.getName();
-        todoListEntity.uuid = todoList.getListId().get();
-        todoListEntity.demarcationIndex = todoList.getDemarcationIndex();
-        List<Todo> allTodos = todoList.getAllTodos();
+        todoListEntity.name = todoListCommandModel.getName();
+        todoListEntity.uuid = todoListCommandModel.getListId().get();
+        todoListEntity.demarcationIndex = todoListCommandModel.getDemarcationIndex();
+        List<Todo> allTodos = todoListCommandModel.getAllTodos();
         for (int i = 0; i < allTodos.size(); i++) {
             Todo todo = allTodos.get(i);
             todoListEntity.todoEntities.add(
@@ -49,18 +49,18 @@ class TodoListRepository implements
                     .position(i)
                     .build());
         }
-        todoListEntity.lastUnlockedAt = todoList.getLastUnlockedAt();
+        todoListEntity.lastUnlockedAt = todoListCommandModel.getLastUnlockedAt();
         todoListDao.save(todoListEntity);
     }
 
     @Override
-    public Optional<TodoList> find(UserId userId, ListId listId) {
+    public Optional<TodoListCommandModel> find(UserId userId, ListId listId) {
         TodoListEntity todoListEntity = todoListDao.findByEmailAndListId(userId.get(), listId.get());
         return Optional.of(mapToTodoList(userId, todoListEntity));
     }
 
     @Override
-    public List<TodoList> findAll(UserId userId) {
+    public List<TodoListCommandModel> findAll(UserId userId) {
         List<TodoListEntity> todoListEntities = todoListDao.findByEmail(userId.get());
         return todoListEntities.stream()
             .map(todoListEntity -> mapToTodoList(userId, todoListEntity))
@@ -72,13 +72,13 @@ class TodoListRepository implements
         return new ListId(idGenerator.generateId().toString());
     }
 
-    private TodoList mapToTodoList(UserId userId, TodoListEntity todoListEntity) {
+    private TodoListCommandModel mapToTodoList(UserId userId, TodoListEntity todoListEntity) {
         List<Todo> todos = todoListEntity.todoEntities.stream()
             .map(todoEntity -> new Todo(
                 new TodoId(todoEntity.uuid),
                 todoEntity.task))
             .collect(toList());
-        return new TodoList(
+        return new TodoListCommandModel(
             clock,
             userId,
             new ListId(todoListEntity.uuid),
