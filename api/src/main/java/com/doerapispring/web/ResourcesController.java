@@ -37,18 +37,18 @@ class ResourcesController {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.todoResourcesLink().withRel("todoResources"),
+            hateoasLinkGenerator.listResourcesLink().withRel("listResources"),
             hateoasLinkGenerator.historyResourcesLink().withRel("historyResources"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
-    @RequestMapping(value = "/v1/resources/todo", method = RequestMethod.GET)
+    @RequestMapping(value = {"/v1/resources/list", "/v1/resources/list"}, method = RequestMethod.GET)
     @ResponseBody
-    ResponseEntity<ResourcesResponse> todo(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+    ResponseEntity<ResourcesResponse> list(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         TodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.todoResourcesLink().withSelfRel(),
+            hateoasLinkGenerator.listResourcesLink().withSelfRel(),
             hateoasLinkGenerator.listLink(defaultList.getListId().get()).withRel("list"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }

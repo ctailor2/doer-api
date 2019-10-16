@@ -29,7 +29,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void retrieving_creating_updating_moving_andDeletingTodos() throws Exception {
-        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
@@ -110,7 +110,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .headers(httpHeaders))
             .andExpect(jsonPath("$.list.todos", hasSize(0)));
 
-        jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
@@ -153,7 +153,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void unlocking_andRetrievingDeferredTodos() throws Exception {
-        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
@@ -186,7 +186,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void pullingDeferredTodos() throws Exception {
-        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
@@ -236,7 +236,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void escalatingDeferredTodos() throws Exception {
-        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 
@@ -295,7 +295,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void displacingTodos_defersTodos() throws Exception {
-        String jsonResponse = mockMvc.perform(get("/v1/resources/todo")
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
             .headers(httpHeaders))
             .andReturn().getResponse().getContentAsString();
 

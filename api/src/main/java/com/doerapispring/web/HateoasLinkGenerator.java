@@ -13,7 +13,7 @@ interface HateoasLinkGenerator {
 
     Link historyResourcesLink();
 
-    Link todoResourcesLink();
+    Link listResourcesLink();
 
     Link deleteTodoLink(String listId, String todoId);
 

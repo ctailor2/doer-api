@@ -39,7 +39,7 @@ public class RootResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/root")));
-        assertThat(responseContent, hasJsonPath("$._links.todoResources.href", containsString("/v1/resources/todo")));
+        assertThat(responseContent, hasJsonPath("$._links.listResources.href", containsString("/v1/resources/list")));
         assertThat(responseContent, hasJsonPath("$._links.historyResources.href", containsString("/v1/resources/history")));
     }
 

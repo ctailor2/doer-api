@@ -72,13 +72,13 @@ public class ResourcesControllerTest {
 
         assertThat(responseEntity.getBody().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/rootResources").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/todoResources").withRel("todoResources"),
+            new Link(MOCK_BASE_URL + "/listResources").withRel("listResources"),
             new Link(MOCK_BASE_URL + "/historyResources").withRel("historyResources"));
     }
 
     @Test
     public void todo_mapping() throws Exception {
-        mockMvc.perform(get("/v1/resources/todo"))
+        mockMvc.perform(get("/v1/resources/list"))
             .andExpect(status().isOk());
 
         verify(listApplicationService).getDefault(user);
@@ -86,10 +86,10 @@ public class ResourcesControllerTest {
 
     @Test
     public void todo_includesLinksByDefault() throws Exception {
-        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.todo(authenticatedUser);
+        ResponseEntity<ResourcesResponse> responseEntity = resourcesController.list(authenticatedUser);
 
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
-            new Link(MOCK_BASE_URL + "/todoResources").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/listResources").withSelfRel(),
             new Link(MOCK_BASE_URL + "/lists/" + defaultListId.get()).withRel("list"));
     }
 
