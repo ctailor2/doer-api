@@ -20,7 +20,7 @@ class ResourcesController {
         this.listApplicationService = listApplicationService;
     }
 
-    @RequestMapping(value = {"/v1/"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/v1/", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> base() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
@@ -38,7 +38,6 @@ class ResourcesController {
         resourcesResponse.add(
             hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
             hateoasLinkGenerator.listResourcesLink().withRel("listResources"),
-            hateoasLinkGenerator.listResourcesLink().withRel("todoResources"),
             hateoasLinkGenerator.historyResourcesLink().withRel("historyResources"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
