@@ -38,11 +38,12 @@ class ResourcesController {
         resourcesResponse.add(
             hateoasLinkGenerator.rootResourcesLink().withSelfRel(),
             hateoasLinkGenerator.listResourcesLink().withRel("listResources"),
+            hateoasLinkGenerator.listResourcesLink().withRel("todoResources"),
             hateoasLinkGenerator.historyResourcesLink().withRel("historyResources"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
-    @RequestMapping(value = {"/v1/resources/list", "/v1/resources/list"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/v1/resources/list", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> list(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         TodoList defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
