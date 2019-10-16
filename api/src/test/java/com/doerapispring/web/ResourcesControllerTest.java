@@ -46,7 +46,7 @@ public class ResourcesControllerTest {
 
     @Test
     public void base_mapping() throws Exception {
-        mockMvc.perform(get("/v1/resources/base"))
+        mockMvc.perform(get("/v1/"))
             .andExpect(status().isOk());
     }
 

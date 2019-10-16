@@ -20,7 +20,7 @@ class ResourcesController {
         this.listApplicationService = listApplicationService;
     }
 
-    @RequestMapping(value = {"/v1/", "/v1/resources/base"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/v1/"}, method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> base() {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
