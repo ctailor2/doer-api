@@ -41,7 +41,8 @@ public class ResourcesControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         defaultListId = new ListId("someListId");
-        when(listApplicationService.getDefault(any())).thenReturn(new TodoList(user.getUserId(), defaultListId, null, null, null));
+        when(listApplicationService.getDefault(any())).thenReturn(
+            new TodoList(user.getUserId(), defaultListId, null, null, null));
     }
 
     @Test
@@ -90,7 +91,9 @@ public class ResourcesControllerTest {
 
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
             new Link(MOCK_BASE_URL + "/listResources").withSelfRel(),
-            new Link(MOCK_BASE_URL + "/lists/" + defaultListId.get()).withRel("list"));
+            new Link(MOCK_BASE_URL + "/lists/" + defaultListId.get()).withRel("list"),
+            new Link(MOCK_BASE_URL + "/lists").withRel("lists"),
+            new Link(MOCK_BASE_URL + "/lists").withRel("createList"));
     }
 
     @Test

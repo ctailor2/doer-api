@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private final HttpHeaders httpHeaders = new HttpHeaders();
@@ -25,6 +26,37 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         super.setUp();
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup("test@email.com", "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+    }
+
+    @Test
+    public void createAListAndSelectIt() throws Exception {
+        String jsonResponse = mockMvc.perform(get("/v1/resources/list")
+            .headers(httpHeaders))
+            .andReturn().getResponse().getContentAsString();
+
+        String createListHref = JsonPath.parse(jsonResponse).read("$._links.createList.href", String.class);
+        String listsHref = JsonPath.parse(jsonResponse).read("$._links.lists.href", String.class);
+        mockMvc.perform(
+            post(createListHref)
+                .headers(httpHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"someName\"}"))
+            .andExpect(status().isCreated());
+
+        jsonResponse = mockMvc.perform(
+            get(listsHref)
+                .headers(httpHeaders))
+            .andExpect(jsonPath("$.lists", hasSize(2)))
+            .andExpect(jsonPath("$.lists[0].name", equalTo("default")))
+            .andExpect(jsonPath("$.lists[1].name", equalTo("someName")))
+            .andReturn().getResponse().getContentAsString();
+
+        String getListHref = JsonPath.parse(jsonResponse).read("$.lists[1]._links.list.href", String.class);
+        mockMvc.perform(
+            get(getListHref)
+                .headers(httpHeaders))
+            .andExpect(jsonPath("$.list.todos", hasSize(0)))
+            .andExpect(jsonPath("$.list.profileName", equalTo("someName")));
     }
 
     @Test

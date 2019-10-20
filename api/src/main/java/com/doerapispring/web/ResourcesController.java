@@ -49,7 +49,9 @@ class ResourcesController {
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.listResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.listLink(defaultList.getListId().get()).withRel("list"));
+            hateoasLinkGenerator.listLink(defaultList.getListId().get()).withRel("list"),
+            hateoasLinkGenerator.showListsLink().withRel("lists"),
+            hateoasLinkGenerator.createListsLink().withRel("createList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 
