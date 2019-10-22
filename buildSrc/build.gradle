@@ -1,0 +1,10 @@
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.squareup:javapoet:1.11.1'
+}

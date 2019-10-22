@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id "org.flywaydb.flyway" version "5.2.4"
     id 'org.springframework.boot' version '2.1.4.RELEASE'
+    id 'com.codegenerator.poc'
 }
 
 sourceCompatibility = 1.8
@@ -9,6 +10,8 @@ targetCompatibility = 1.8
 
 archivesBaseName = 'api'
 version = '0.0.1-SNAPSHOT'
+
+sourceSets.main.java.srcDirs = ['src/main/java', 'build/generatedSources']
 
 repositories {
     mavenCentral()
@@ -60,3 +63,9 @@ task stage(dependsOn: build) {
         }
     }
 }
+
+codeGenerator {
+    packageName = 'com.doerapispring.constants'
+}
+
+compileJava.dependsOn(generateSources)

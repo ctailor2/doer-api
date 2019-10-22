@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.constants.AttributeName;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.TodoList;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 class ResourcesController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final ListApplicationService listApplicationService;
+    private final AttributeName attributeName = AttributeName.FAT;
 
     ResourcesController(HateoasLinkGenerator hateoasLinkGenerator,
                         ListApplicationService listApplicationService) {
