@@ -134,6 +134,7 @@ class ListsController {
         listApplicationService.create(authenticatedUser.getUser(), listForm.getName());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.createListsLink().withSelfRel());
+        resourcesResponse.add(hateoasLinkGenerator.showListsLink().withRel("lists"));
         return ResponseEntity.status(HttpStatus.CREATED).body(resourcesResponse);
     }
 }

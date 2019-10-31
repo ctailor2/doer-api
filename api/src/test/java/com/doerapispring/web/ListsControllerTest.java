@@ -354,6 +354,7 @@ public class ListsControllerTest {
             new ListForm("someName"));
 
         assertThat(responseEntity.getBody().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/lists").withSelfRel());
+            new Link(MOCK_BASE_URL + "/lists").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists").withRel("lists"));
     }
 }

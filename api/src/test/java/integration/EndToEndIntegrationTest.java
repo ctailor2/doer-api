@@ -35,14 +35,15 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             .andReturn().getResponse().getContentAsString();
 
         String createListHref = JsonPath.parse(jsonResponse).read("$._links.createList.href", String.class);
-        String listsHref = JsonPath.parse(jsonResponse).read("$._links.lists.href", String.class);
-        mockMvc.perform(
+        jsonResponse = mockMvc.perform(
             post(createListHref)
                 .headers(httpHeaders)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"someName\"}"))
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
 
+        String listsHref = JsonPath.parse(jsonResponse).read("$._links.lists.href", String.class);
         jsonResponse = mockMvc.perform(
             get(listsHref)
                 .headers(httpHeaders))
