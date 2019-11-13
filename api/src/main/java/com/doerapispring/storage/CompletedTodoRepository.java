@@ -27,12 +27,12 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
     public void save(CompletedTodo completedTodo) {
         UserEntity userEntity = userDAO.findByEmail(completedTodo.getUserId().get());
         CompletedTodoEntity completedTodoEntity = CompletedTodoEntity.builder()
+            .uuid(completedTodo.getCompletedTodoId().get())
             .listId(completedTodo.getListId().get())
             .userId(userEntity.id)
             .task(completedTodo.getTask())
             .completedAt(completedTodo.getCompletedAt())
-            .build()
-            .withUuid(completedTodo.getCompletedTodoId().get());
+            .build();
         completedTodoDAO.save(completedTodoEntity);
     }
 
@@ -44,7 +44,7 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
                 new CompletedTodo(
                     new UserId(userEntity.email),
                     new ListId(completedTodoEntity.listId),
-                    new CompletedTodoId(completedTodoEntity.id),
+                    new CompletedTodoId(completedTodoEntity.uuid),
                     completedTodoEntity.task,
                     Date.from(completedTodoEntity.completedAt.toInstant())))
             .collect(toList());

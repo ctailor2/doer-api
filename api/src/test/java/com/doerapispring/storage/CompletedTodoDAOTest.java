@@ -62,19 +62,21 @@ public class CompletedTodoDAOTest {
     @Test
     public void shouldGetCompletedTodosInDescendingOrderByCompletedAt() {
         CompletedTodoEntity olderCompletedTodo = baseCompletedTodoBuilder
+            .uuid("firstId")
             .completedAt(new Date(1800000))
-            .build().withUuid("firstId");
+            .build();
         CompletedTodoEntity newerCompletedTodo = baseCompletedTodoBuilder
+            .uuid("secondId")
             .completedAt(new Date(3600000))
-            .build().withUuid("secondId");
+            .build();
         completedTodoDAO.save(olderCompletedTodo);
         completedTodoDAO.save(newerCompletedTodo);
 
         assertThat(completedTodoDAO.count()).isEqualTo(2);
         assertThat(completedTodoDAO.findByUserIdOrderByCompletedAtDesc(userId).stream()
-            .map(completedTodoEntity -> completedTodoEntity.id))
+            .map(completedTodoEntity -> completedTodoEntity.uuid))
             .containsExactly(
-                newerCompletedTodo.id,
-                olderCompletedTodo.id);
+                newerCompletedTodo.uuid,
+                olderCompletedTodo.uuid);
     }
 }

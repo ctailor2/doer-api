@@ -1,6 +1,8 @@
 package com.doerapispring.storage;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -8,10 +10,15 @@ import java.util.Date;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @ToString
+@Builder
 @Table(value = "completed_todos")
-class CompletedTodoEntity extends UuidIdentifiable {
+class CompletedTodoEntity implements Persistable<String> {
+    @Id
+    @Column(value = "uuid")
+    public String uuid;
+
     @Column(value = "user_id")
     public Long userId;
 
@@ -24,17 +31,13 @@ class CompletedTodoEntity extends UuidIdentifiable {
     @Column(value = "list_id")
     public String listId;
 
-    @Builder
-    public CompletedTodoEntity(String id, Long userId, String task, Date completedAt, String listId) {
-        this.id = id;
-        this.userId = userId;
-        this.task = task;
-        this.completedAt = completedAt;
-        this.listId = listId;
+    @Override
+    public String getId() {
+        return uuid;
     }
 
-    CompletedTodoEntity withUuid(String uuid) {
-        this.uuid = uuid;
-        return this;
+    @Override
+    public boolean isNew() {
+        return true;
     }
 }
