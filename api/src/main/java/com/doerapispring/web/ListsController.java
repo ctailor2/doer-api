@@ -41,12 +41,20 @@ class ListsController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
+    @RequestMapping("/lists/default")
+    @ResponseBody
+    ResponseEntity<TodoListReadModelResponse> showDefault(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        TodoListReadModel todoListReadModel = listApplicationService.getDefault(authenticatedUser.getUser());
+        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.transform(todoListReadModel);
+        return ResponseEntity.ok(todoListReadModelResponse);
+    }
+
     @RequestMapping("/lists/{listId}")
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @PathVariable String listId) {
         TodoListReadModel todoListReadModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
-        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.transform(todoListReadModel);
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 

@@ -45,7 +45,7 @@ public class TodoListReadModelResourceTransformerTest {
         long unlockDuration = 123213L;
         when(todoListReadModel.unlockDuration()).thenReturn(unlockDuration);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         TodoListReadModelDTO todoListReadModelDTO = responseEntity.getTodoListReadModelDTO();
         assertThat(todoListReadModelDTO).isNotNull();
@@ -63,7 +63,7 @@ public class TodoListReadModelResourceTransformerTest {
 
     @Test
     public void show_includesLinks_byDefault() {
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withSelfRel());
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
@@ -81,7 +81,7 @@ public class TodoListReadModelResourceTransformerTest {
             new Todo(new TodoId("twoLaterId"), "twoLaterTask"));
         when(todoListReadModel.getDeferredTodos()).thenReturn(deferredTodos);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"));
@@ -121,7 +121,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsNotFull_includesCreateLink_doesNotIncludeDisplaceLink() {
         when(todoListReadModel.isFull()).thenReturn(false);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createTodo").withRel("create"));
@@ -133,7 +133,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsFull_doesNotIncludeCreateLink_includesDisplaceLink() {
         when(todoListReadModel.isFull()).thenReturn(true);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/createTodo").withRel("create"));
@@ -145,7 +145,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsAbleToBeReplenished_includesPullLink() {
         when(todoListReadModel.isAbleToBeReplenished()).thenReturn(true);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
@@ -155,7 +155,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsNotAbleToBeReplenished_doesNotIncludePullLink() {
         when(todoListReadModel.isAbleToBeReplenished()).thenReturn(false);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"));
@@ -165,7 +165,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsAbleToBeUnlocked_includesUnlockLink() {
         when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(true);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
@@ -175,7 +175,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsNotAbleToBeUnlocked_doesNotIncludeUnlockLink() {
         when(todoListReadModel.isAbleToBeUnlocked()).thenReturn(false);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/unlockTodos").withRel("unlock"));
@@ -185,7 +185,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsAbleToBeEscalated_includesEscalateLink() {
         when(todoListReadModel.isAbleToBeEscalated()).thenReturn(true);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
             new Link(MOCK_BASE_URL + "/lists/" + listId + "/escalateTodo").withRel("escalate"));
@@ -195,7 +195,7 @@ public class TodoListReadModelResourceTransformerTest {
     public void show_whenListIsNotAbleToBeEscalated_doesNotIncludeEscalateLink() {
         when(todoListReadModel.isAbleToBeEscalated()).thenReturn(false);
 
-        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
+        TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).doesNotContain(
             new Link(MOCK_BASE_URL + "/list/escalateTodo").withRel("escalate"));

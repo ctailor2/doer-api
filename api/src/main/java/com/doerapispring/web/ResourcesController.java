@@ -45,11 +45,10 @@ class ResourcesController {
     @RequestMapping(value = "/v1/resources/list", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> list(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        TodoListReadModel defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.listResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.listLink(defaultList.getListId().get()).withRel("list"),
+            hateoasLinkGenerator.defaultListLink().withRel("list"),
             hateoasLinkGenerator.showListsLink().withRel("lists"),
             hateoasLinkGenerator.createListsLink().withRel("createList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);

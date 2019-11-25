@@ -42,4 +42,6 @@ interface HateoasLinkGenerator {
     Link showListsLink();
 
     Link createListsLink();
+
+    Link defaultListLink();
 }

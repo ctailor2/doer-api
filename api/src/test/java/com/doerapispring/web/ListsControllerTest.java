@@ -59,7 +59,7 @@ public class ListsControllerTest {
         when(todoListReadModel.getListId()).thenReturn(new ListId(listId));
         when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
         when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);
-        when(todoListResourceTransformer.getTodoListReadModelResponse(any())).thenReturn(todoListReadModelResponse);
+        when(todoListResourceTransformer.transform(any())).thenReturn(todoListReadModelResponse);
     }
 
     @Test
@@ -94,12 +94,34 @@ public class ListsControllerTest {
     public void show_transformsTheListToAResource() {
         listsController.show(authenticatedUser, listId);
 
-        verify(todoListResourceTransformer).getTodoListReadModelResponse(todoListReadModel);
+        verify(todoListResourceTransformer).transform(todoListReadModel);
     }
 
     @Test
     public void show_returnsTheListResource() {
         ResponseEntity<TodoListReadModelResponse> actual = listsController.show(authenticatedUser, listId);
+
+        assertThat(actual.getBody()).isEqualTo(todoListReadModelResponse);
+    }
+
+    @Test
+    public void showDefault_mappings() throws Exception {
+        mockMvc.perform(get("/v1/lists/default"))
+            .andExpect(status().isOk());
+
+        verify(listApplicationService).getDefault(user);
+    }
+
+    @Test
+    public void showDefault_transformsTheListToAResource() {
+        listsController.showDefault(authenticatedUser);
+
+        verify(todoListResourceTransformer).transform(todoListReadModel);
+    }
+
+    @Test
+    public void showDefault_returnsTheListResource() {
+        ResponseEntity<TodoListReadModelResponse> actual = listsController.showDefault(authenticatedUser);
 
         assertThat(actual.getBody()).isEqualTo(todoListReadModelResponse);
     }

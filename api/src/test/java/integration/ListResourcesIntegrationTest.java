@@ -41,7 +41,7 @@ public class ListResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
     }
 
     @Test
-    public void     listResources() throws Exception {
+    public void listResources() throws Exception {
         doGet();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
@@ -49,7 +49,7 @@ public class ListResourcesIntegrationTest extends AbstractWebAppJUnit4SpringCont
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", endsWith("/v1/resources/list")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId)));
+        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/default")));
         assertThat(responseContent, hasJsonPath("$._links.lists.href", endsWith("/v1/lists")));
         assertThat(responseContent, hasJsonPath("$._links.createList.href", endsWith("/v1/lists")));
     }

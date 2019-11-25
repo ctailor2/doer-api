@@ -1,0 +1,41 @@
+package integration;
+
+import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.web.SessionTokenDTO;
+import com.doerapispring.web.UserSessionsApiService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
+    private final HttpHeaders httpHeaders = new HttpHeaders();
+
+    @Autowired
+    private UserSessionsApiService userSessionsApiService;
+
+    @Autowired
+    private ListApplicationService listApplicationService;
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        String identifier = "test@email.com";
+        SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        httpHeaders.add("Session-Token", signupSessionToken.getToken());
+    }
+
+    @Test
+    public void list() throws Exception {
+        mockMvc.perform(get("/v1/lists/default")
+            .headers(httpHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.list.profileName", equalTo("default")));
+    }
+}

@@ -104,4 +104,9 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link createListsLink() {
         return new Link(MOCK_BASE_URL + "/lists");
     }
+
+    @Override
+    public Link defaultListLink() {
+        return new Link(MOCK_BASE_URL + "/lists/defaultList");
+    }
 }

@@ -13,7 +13,7 @@ class TodoListReadModelResourceTransformer {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
     }
 
-    TodoListReadModelResponse getTodoListReadModelResponse(TodoListReadModel todoListReadModel) {
+    TodoListReadModelResponse transform(TodoListReadModel todoListReadModel) {
         TodoListReadModelDTO todoListReadModelDTO = new TodoListReadModelDTO(
             todoListReadModel.getProfileName(),
             todoListReadModel.getSectionName(),
