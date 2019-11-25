@@ -19,10 +19,14 @@ import static java.util.stream.Collectors.toList;
 class ListsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final ListApplicationService listApplicationService;
+    private final TodoListReadModelResourceTransformer todoListReadModelResourceTransformer;
 
-    ListsController(HateoasLinkGenerator hateoasLinkGenerator, ListApplicationService listApplicationService) {
+    ListsController(HateoasLinkGenerator hateoasLinkGenerator,
+                    ListApplicationService listApplicationService,
+                    TodoListReadModelResourceTransformer todoListReadModelResourceTransformer) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.listApplicationService = listApplicationService;
+        this.todoListReadModelResourceTransformer = todoListReadModelResourceTransformer;
     }
 
     @PostMapping(value = "/lists/{listId}/unlock")
@@ -42,59 +46,7 @@ class ListsController {
     ResponseEntity<TodoListReadModelResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @PathVariable String listId) {
         TodoListReadModel todoListReadModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
-        TodoListReadModelDTO todoListReadModelDTO = new TodoListReadModelDTO(
-            todoListReadModel.getProfileName(),
-            todoListReadModel.getSectionName(),
-            todoListReadModel.getDeferredSectionName(),
-            todoListReadModel.getTodos().stream()
-                .map(todo -> new TodoDTO(
-                    todo.getTodoId().getIdentifier(),
-                    todo.getTask()))
-                .collect(toList()),
-            todoListReadModel.getDeferredTodos().stream()
-                .map(todo -> new TodoDTO(
-                    todo.getTodoId().getIdentifier(),
-                    todo.getTask()))
-                .collect(toList()),
-            todoListReadModel.unlockDuration()
-        );
-        todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"));
-        if (todoListReadModel.isAbleToBeUnlocked()) {
-            todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"));
-        }
-        if (todoListReadModel.isFull()) {
-            todoListReadModelDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"));
-        } else {
-            todoListReadModelDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"));
-        }
-        if (todoListReadModel.isAbleToBeReplenished()) {
-            todoListReadModelDTO.add(hateoasLinkGenerator.listPullTodosLink(listId).withRel("pull"));
-        }
-        if (todoListReadModel.isAbleToBeEscalated()) {
-            todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"));
-        }
-        todoListReadModelDTO.getTodos().forEach(todoDTO -> {
-            todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, todoDTO.getIdentifier()).withRel("delete"));
-            todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, todoDTO.getIdentifier()).withRel("update"));
-            todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, todoDTO.getIdentifier()).withRel("complete"));
-
-            todoListReadModelDTO.getTodos().forEach(targetTodoDTO ->
-                todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                    listId,
-                    todoDTO.getIdentifier(), targetTodoDTO.getIdentifier()).withRel("move")));
-        });
-        todoListReadModelDTO.getDeferredTodos().forEach(todoDTO -> {
-            todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, todoDTO.getIdentifier()).withRel("delete"));
-            todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, todoDTO.getIdentifier()).withRel("update"));
-            todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, todoDTO.getIdentifier()).withRel("complete"));
-
-            todoListReadModelDTO.getDeferredTodos().forEach(targetTodoDTO ->
-                todoDTO.add(hateoasLinkGenerator.moveTodoLink(
-                    listId,
-                    todoDTO.getIdentifier(), targetTodoDTO.getIdentifier()).withRel("move")));
-        });
-        TodoListReadModelResponse todoListReadModelResponse = new TodoListReadModelResponse(todoListReadModelDTO);
-        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
+        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.getTodoListReadModelResponse(todoListReadModel);
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 
