@@ -1,16 +1,13 @@
 package integration;
 
-import com.doerapispring.domain.ListService;
-import com.doerapispring.domain.TodoList;
-import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserService;
+import com.doerapispring.domain.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTests {
@@ -31,18 +28,20 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void hasTheDefaultListSet() {
-        TodoList list = listService.getDefault(user);
+        TodoListReadModel list = listService.getDefault(user);
 
-        assertThat(list.getName()).isEqualTo("default");
+        assertThat(list.getProfileName()).isEqualTo("default");
     }
 
     @Test
     public void includesTheDefaultList() {
-        TodoList list = listService.getDefault(user);
+        TodoListReadModel list = listService.getDefault(user);
 
-        List<TodoList> todoLists = listService.getAll(user);
+        List<ListId> todoListIds = listService.getAll(user).stream()
+            .map(TodoList::getListId)
+            .collect(toList());
 
-        assertThat(todoLists).contains(list);
+        assertThat(todoListIds).contains(list.getListId());
     }
 
     @Test
@@ -52,7 +51,7 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
         List<TodoList> todoLists = listService.getAll(user);
 
-        List<String> listNames = todoLists.stream().map(TodoList::getName).collect(Collectors.toList());
+        List<String> listNames = todoLists.stream().map(TodoList::getName).collect(toList());
         assertThat(listNames).contains(listName);
     }
 }

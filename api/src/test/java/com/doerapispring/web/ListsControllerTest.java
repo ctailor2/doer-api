@@ -55,7 +55,7 @@ public class ListsControllerTest {
 
         todoListReadModel = mock(TodoListReadModel.class);
         when(todoListReadModel.getListId()).thenReturn(new ListId(listId));
-        when(listApplicationService.getDefault(any())).thenReturn(mock(TodoList.class));
+        when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
         when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);
     }
 

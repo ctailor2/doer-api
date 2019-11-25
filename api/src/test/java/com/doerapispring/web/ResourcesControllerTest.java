@@ -12,6 +12,9 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Clock;
+import java.util.Collections;
+
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -42,7 +45,7 @@ public class ResourcesControllerTest {
             .build();
         defaultListId = new ListId("someListId");
         when(listApplicationService.getDefault(any())).thenReturn(
-            new TodoList(user.getUserId(), defaultListId, null, null, null));
+            new TodoListReadModel(mock(Clock.class), "someName", null, Collections.emptyList(), null, defaultListId, user.getUserId()));
     }
 
     @Test
