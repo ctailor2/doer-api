@@ -53,8 +53,8 @@ public class TodoListCommandModelRepositoryTest {
     @Test
     public void savesTodoList() throws Exception {
         UserId userId = new UserId("someIdentifier");
-        userRepository.save(new User(userId));
         ListId listId = new ListId("someListIdentifier");
+        userRepository.save(new User(userId, listId));
         TodoListCommandModel todoListCommandModel = new TodoListCommandModel(clock, userId, listId, "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         todoListCommandModel.addDeferred(new TodoId("1"), "firstTask");
         todoListCommandModel.add(new TodoId("2"), "secondTask");
@@ -71,9 +71,9 @@ public class TodoListCommandModelRepositoryTest {
     }
 
     @Test
-    public void findsAllSavedTodoLists() throws Exception {
+    public void findsAllSavedTodoLists() {
         UserId userId = new UserId("someIdentifier");
-        userRepository.save(new User(userId));
+        userRepository.save(new User(userId, new ListId("someListId")));
         TodoListCommandModel firstTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("firstListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         TodoListCommandModel secondTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("secondListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         todoListCommandModelRepository.save(firstTodoListCommandModel);
@@ -86,11 +86,11 @@ public class TodoListCommandModelRepositoryTest {
     }
 
     @Test
-    public void findsTheMatchingList() throws Exception {
+    public void findsTheMatchingList() {
         UserId userId = new UserId("someIdentifier");
-        userRepository.save(new User(userId));
-        TodoListCommandModel firstTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("someListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         ListId listId = new ListId("anotherListIdentifier");
+        userRepository.save(new User(userId, listId));
+        TodoListCommandModel firstTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("someListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         TodoListCommandModel secondTodoListCommandModel = new TodoListCommandModel(clock, userId, listId, "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         TodoListCommandModel thirdTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("yetAnotherListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
         todoListCommandModelRepository.save(firstTodoListCommandModel);

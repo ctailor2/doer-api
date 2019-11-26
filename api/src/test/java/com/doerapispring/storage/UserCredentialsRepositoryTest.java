@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class UserCredentialsRepositoryTest {
@@ -27,7 +27,7 @@ public class UserCredentialsRepositoryTest {
     }
 
     @Test
-    public void add_callsUserDAO_findsUser_setsPassword() throws Exception {
+    public void add_callsUserDAO_findsUser_setsPassword() {
         when(userDAO.findByEmail(any())).thenReturn(UserEntity.builder().build());
 
         userCredentialsRepository.add(new Credentials("test@id.com", "soSecret", new Date()));
@@ -39,14 +39,14 @@ public class UserCredentialsRepositoryTest {
     }
 
     @Test
-    public void findLatest_callsUserDAO() throws Exception {
+    public void findLatest_callsUserDAO() {
         userCredentialsRepository.findLatest("test");
 
         verify(userDAO).findByEmail("test");
     }
 
     @Test
-    public void findLatest_whenUserFound_returnsOptionalWithCredentials() throws Exception {
+    public void findLatest_whenUserFound_returnsOptionalWithCredentials() {
         UserEntity userEntity = UserEntity.builder()
                 .passwordDigest("securePassword")
                 .build();
@@ -61,7 +61,7 @@ public class UserCredentialsRepositoryTest {
     }
 
     @Test
-    public void findLatest_whenUserNotFound_returnsNull() throws Exception {
+    public void findLatest_whenUserNotFound_returnsNull() {
         when(userDAO.findByEmail(any())).thenReturn(null);
 
         Optional<Credentials> credentialsOptional = userCredentialsRepository.findLatest("test");

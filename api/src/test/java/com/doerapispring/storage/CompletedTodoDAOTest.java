@@ -37,15 +37,16 @@ public class CompletedTodoDAOTest {
 
     @Before
     public void setUp() throws Exception {
+        String listId = "listId";
         UserEntity savedUserEntity = userDAO.save(
             UserEntity.builder()
                 .email("some@email.com")
                 .passwordDigest("somePasswordDigest")
+                .defaultListId(listId)
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .build());
         userId = savedUserEntity.id;
-        String listId = "listId";
         todoListDao.save(TodoListEntity.builder()
             .uuid(listId)
             .name("someName")

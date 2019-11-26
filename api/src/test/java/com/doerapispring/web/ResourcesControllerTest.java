@@ -17,7 +17,7 @@ import java.util.Collections;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,7 +33,7 @@ public class ResourcesControllerTest {
     public void setUp() throws Exception {
         String identifier = "test@email.com";
         authenticatedUser = mock(AuthenticatedUser.class);
-        User user = new User(new UserId(identifier));
+        User user = new User(new UserId(identifier), new ListId("someListId"));
         when(authenticatedUser.getUser()).thenReturn(user);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         ListApplicationService listApplicationService = mock(ListApplicationService.class);

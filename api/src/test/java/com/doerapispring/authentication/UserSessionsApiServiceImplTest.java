@@ -11,7 +11,7 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class UserSessionsApiServiceImplTest {
@@ -52,7 +52,7 @@ public class UserSessionsApiServiceImplTest {
     }
 
     @Test
-    public void signup_whenUserCreationRefused_deniesAccess() throws Exception {
+    public void signup_whenUserCreationRefused_deniesAccess() {
         when(mockUserService.create(any())).thenThrow(new UserAlreadyExistsException());
 
         assertThatThrownBy(() -> userSessionsApiServiceImpl.signup("soUnique", "soSecure"))
@@ -84,7 +84,7 @@ public class UserSessionsApiServiceImplTest {
     }
 
     @Test
-    public void login_whenAuthenticationFails_deniesAccess() throws Exception {
+    public void login_whenAuthenticationFails_deniesAccess() {
         when(mockBasicAuthenticationService.authenticate(any(), any())).thenReturn(false);
 
         assertThatThrownBy(() -> userSessionsApiServiceImpl.login("test@email.com", "password"))

@@ -22,13 +22,17 @@ public class UserService {
         UserId userId = new UserId(identifier);
         Optional<User> userOptional = userRepository.find(userId);
         if (userOptional.isPresent()) throw new UserAlreadyExistsException();
-        User user = new User(userId);
-        userRepository.save(user);
         TodoList todoList = todoListFactory.todoList(
             userId,
             todoListRepository.nextIdentifier(),
             "default");
+        User user = new User(userId, todoList.getListId());
+        userRepository.save(user);
         todoListRepository.save(todoList);
         return user;
+    }
+
+    public Optional<User> find(String identifier) {
+        return userRepository.find(new UserId(identifier));
     }
 }

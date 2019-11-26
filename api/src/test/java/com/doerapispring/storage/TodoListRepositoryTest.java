@@ -51,14 +51,14 @@ public class TodoListRepositoryTest {
     @Test
     public void readsAllTodoLists() {
         UserId userId = new UserId("someIdentifier");
-        userRepository.save(new User(userId));
-        UserId otherUserId = new UserId("someOtherIdentifier");
-        userRepository.save(new User(otherUserId));
         ListId listId = new ListId("someListIdentifier");
+        userRepository.save(new User(userId, listId));
+        UserId otherUserId = new UserId("someOtherIdentifier");
+        ListId otherListId = new ListId("someOtherListIdentifier");
+        userRepository.save(new User(otherUserId, otherListId));
         String listName = "someName";
         TodoList userTodoList = new TodoList(userId, listId, listName, 0, Date.from(Instant.EPOCH));
         todoListRepository.save(userTodoList);
-        ListId otherListId = new ListId("someOtherListIdentifier");
         String otherListName = "someName";
         TodoList otherUserTodoList = new TodoList(otherUserId, otherListId, otherListName, 0, Date.from(Instant.EPOCH));
         todoListRepository.save(otherUserTodoList);
@@ -70,8 +70,9 @@ public class TodoListRepositoryTest {
     @Test
     public void savesTodoList() {
         UserId userId = new UserId("someUserId");
-        userRepository.save(new User(userId));
-        TodoList savedTodoList = new TodoList(userId, new ListId("someListId"), "someName", 0, Date.from(Instant.EPOCH));
+        ListId listId = new ListId("someListId");
+        userRepository.save(new User(userId, listId));
+        TodoList savedTodoList = new TodoList(userId, listId, "someName", 0, Date.from(Instant.EPOCH));
 
         todoListRepository.save(savedTodoList);
 

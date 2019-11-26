@@ -1,66 +1,54 @@
 package com.doerapispring.storage;
 
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserId;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@ActiveProfiles(value = "test")
+@RunWith(SpringRunner.class)
 public class UserRepositoryTest {
     private ObjectRepository<User, UserId> userRepository;
 
+    @Autowired
     private UserDAO userDAO;
 
     private final ArgumentCaptor<UserEntity> userEntityArgumentCaptor = ArgumentCaptor.forClass(UserEntity.class);
 
     @Before
     public void setUp() throws Exception {
-        userDAO = mock(UserDAO.class);
         userRepository = new UserRepository(userDAO);
     }
 
     @Test
-    public void saveUser_callsUserDao_savesFields_setsAuditingData_addsEmptyPassword_returnsUser() throws Exception {
-        User user = new User(new UserId("soUnique"));
-
+    public void savesUser() {
+        UserId userId = new UserId("soUnique");
+        User user = new User(userId, new ListId("someListId"));
         userRepository.save(user);
 
-        verify(userDAO).save(userEntityArgumentCaptor.capture());
-        UserEntity userEntity = userEntityArgumentCaptor.getValue();
-        assertThat(userEntity.email).isEqualTo("soUnique");
-        assertThat(userEntity.passwordDigest).isEmpty();
-        assertThat(userEntity.createdAt).isToday();
-        assertThat(userEntity.updatedAt).isToday();
+        assertThat(userRepository.find(userId)).contains(user);
     }
 
     @Test
-    public void find_callsUserDao_whenUserFound_returnsOptionalWithUser() throws Exception {
-        UserEntity userEntity = UserEntity.builder().build();
-        when(userDAO.findByEmail(any())).thenReturn(userEntity);
+    public void find_returnsAnEmptyOptionalWhenUserNotFound() {
+        Optional<User> userOptional = userRepository.find(new UserId("doesNotExist"));
 
-        UserId userId = new UserId("soUnique");
-        Optional<User> userOptional = userRepository.find(userId);
-
-        verify(userDAO).findByEmail("soUnique");
-        assertThat(userOptional.isPresent()).isTrue();
-        assertThat(userOptional.get().getUserId()).isEqualTo(userId);
-    }
-
-    @Test
-    public void find_callsUserDao_whenUserNotFound_returnsEmptyOptional() throws Exception {
-        when(userDAO.findByEmail(any())).thenReturn(null);
-
-        Optional<User> userOptional = userRepository.find(new UserId("soUnique"));
-
-        verify(userDAO).findByEmail("soUnique");
-        assertThat(userOptional.isPresent()).isFalse();
-
+        assertThat(userOptional).isEmpty();
     }
 }

@@ -33,7 +33,11 @@ public class GetListsIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     @Autowired
     private ListApplicationService listApplicationService;
 
+    @Autowired
+    private UserService userService;
+
     private User user;
+
     private ListId defaultListId;
 
     @Override
@@ -41,9 +45,9 @@ public class GetListsIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
             .get("/v1/lists")

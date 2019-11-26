@@ -21,6 +21,9 @@ class UserEntity {
     @Column(name = "email", unique = true)
     public String email;
 
+    @Column(name = "default_list_id")
+    public String defaultListId;
+
     @Column(name = "passwordDigest")
     public String passwordDigest;
 

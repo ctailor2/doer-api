@@ -30,6 +30,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
 
     @Override
@@ -37,9 +41,9 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -58,10 +62,10 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
 
-        TodoListReadModel newTodoList = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId);
+        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
 
         assertThat(newTodoList.getTodos(), hasSize(0));
-        List<CompletedTodo> completedTodos = listApplicationService.getCompleted(new User(new UserId("test@email.com")), defaultListId);
+        List<CompletedTodo> completedTodos = listApplicationService.getCompleted(user, defaultListId);
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));

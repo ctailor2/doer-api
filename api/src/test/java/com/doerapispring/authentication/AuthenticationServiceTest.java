@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class AuthenticationServiceTest {
@@ -31,7 +31,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void registerCredentials_callsPasswordEncoder_callsUserCredentialsRepository() throws Exception {
+    public void registerCredentials_callsPasswordEncoder_callsUserCredentialsRepository() {
         String userIdentifier = "someId";
         String credentials = "soSecret";
         String encodedCredentials = "encodedSecretPassword";
@@ -46,7 +46,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void authenticate_whenUserCredentialsExist_callsPasswordEncoder() throws Exception {
+    public void authenticate_whenUserCredentialsExist_callsPasswordEncoder() {
         String userIdentifier = "someId";
         Credentials credentials = new Credentials(userIdentifier, "encodedSecretPassword", new Date());
         when(credentialsStore.findLatest(any())).thenReturn(Optional.of(credentials));
@@ -58,7 +58,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void authenticate_whenUserCredentialsDoNotExist_returnsFalse() throws Exception {
+    public void authenticate_whenUserCredentialsDoNotExist_returnsFalse() {
         when(credentialsStore.findLatest(any())).thenReturn(Optional.empty());
 
         String userIdentifier = "someId";

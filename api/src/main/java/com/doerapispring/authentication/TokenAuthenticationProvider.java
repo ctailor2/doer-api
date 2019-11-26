@@ -1,5 +1,7 @@
 package com.doerapispring.authentication;
 
+import com.doerapispring.domain.UserService;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -12,9 +14,12 @@ import java.util.Optional;
 class TokenAuthenticationProvider implements AuthenticationProvider {
 
     private final AuthenticationTokenService authenticationTokenService;
+    private final UserService userService;
 
-    public TokenAuthenticationProvider(AuthenticationTokenService authenticationTokenService) {
+    public TokenAuthenticationProvider(AuthenticationTokenService authenticationTokenService,
+                                       UserService userService) {
         this.authenticationTokenService = authenticationTokenService;
+        this.userService = userService;
     }
 
     @Override
@@ -23,8 +28,14 @@ class TokenAuthenticationProvider implements AuthenticationProvider {
         String accessToken = preAuthenticatedAuthenticationToken.getCredentials();
         Optional<TransientAccessToken> tokenOptional = authenticationTokenService.retrieve(accessToken);
         if (tokenOptional.isPresent()) {
-            AuthenticatedUser authenticatedUser = AuthenticatedUser.identifiedWith(tokenOptional.get().getAuthenticatedEntityIdentifier());
-            return new AuthenticatedAuthenticationToken(authenticatedUser);
+            Optional<AuthenticatedAuthenticationToken> authenticatedAuthenticationToken = userService.find(tokenOptional.get().getAuthenticatedEntityIdentifier())
+                .map(user -> new AuthenticatedUser(user.getUserId().get(), user.getDefaultListId().get()))
+                .map(AuthenticatedAuthenticationToken::new);
+            if (authenticatedAuthenticationToken.isPresent()) {
+                return authenticatedAuthenticationToken.get();
+            } else {
+                throw new AccountExpiredException("Account has expired.");
+            }
         } else {
             throw new AuthenticationCredentialsNotFoundException("Authentication required");
         }

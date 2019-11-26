@@ -33,6 +33,10 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
 
     @Override
@@ -40,10 +44,10 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
     }
 
     @Test

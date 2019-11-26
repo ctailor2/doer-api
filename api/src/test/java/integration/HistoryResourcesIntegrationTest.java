@@ -3,7 +3,7 @@ package integration;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserId;
+import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -27,6 +27,10 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
 
     @Override
@@ -34,10 +38,10 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        User user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        User user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
     }
 
     @Test

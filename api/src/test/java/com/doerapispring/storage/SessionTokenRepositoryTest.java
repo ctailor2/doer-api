@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class SessionTokenRepositoryTest {
@@ -66,7 +66,7 @@ public class SessionTokenRepositoryTest {
     }
 
     @Test
-    public void find_callsSessionTokenDao_whenSessionTokenFound_withUser_returnsOptionalWithSessionToken() throws Exception {
+    public void find_callsSessionTokenDao_whenSessionTokenFound_withUser_returnsOptionalWithSessionToken() {
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .token("bananas")
                 .expiresAt(new Date())
@@ -85,7 +85,7 @@ public class SessionTokenRepositoryTest {
     }
 
     @Test
-    public void find_callsSessionTokenDao_whenSessionTokenFound_withoutUser_returnsEmptyOptional() throws Exception {
+    public void find_callsSessionTokenDao_whenSessionTokenFound_withoutUser_returnsEmptyOptional() {
         SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
                 .token("bananas")
                 .expiresAt(new Date())
@@ -100,7 +100,7 @@ public class SessionTokenRepositoryTest {
     }
 
     @Test
-    public void find_callsSessionTokenDao_whenSessionTokenNotFound_returnsEmptyOptional() throws Exception {
+    public void find_callsSessionTokenDao_whenSessionTokenNotFound_returnsEmptyOptional() {
         when(sessionTokenDAO.findByToken(any())).thenReturn(null);
 
         Optional<TransientAccessToken> tokenOptional = sessionTokenRepository.find("suchSecretToken");

@@ -1,5 +1,6 @@
 package com.doerapispring.storage;
 
+import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.ObjectRepository;
 import com.doerapispring.domain.User;
 import com.doerapispring.domain.UserId;
@@ -21,11 +22,12 @@ class UserRepository implements ObjectRepository<User, UserId> {
     @Override
     public void save(User user) {
         UserEntity userEntity = UserEntity.builder()
-                .email(user.getUserId().get())
-                .passwordDigest("")
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
+            .email(user.getUserId().get())
+            .defaultListId(user.getDefaultListId().get())
+            .passwordDigest("")
+            .createdAt(new Date())
+            .updatedAt(new Date())
+            .build();
         userDAO.save(userEntity);
     }
 
@@ -33,6 +35,9 @@ class UserRepository implements ObjectRepository<User, UserId> {
     public Optional<User> find(UserId userId) {
         UserEntity userEntity = userDAO.findByEmail(userId.get());
         if (userEntity == null) return Optional.empty();
-        return Optional.of(new User(userId));
+        User user = new User(
+            new UserId(userEntity.email),
+            new ListId(userEntity.defaultListId));
+        return Optional.of(user);
     }
 }

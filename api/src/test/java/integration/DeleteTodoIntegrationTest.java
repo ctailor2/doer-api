@@ -28,6 +28,10 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
 
     @Override
@@ -35,9 +39,9 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -52,7 +56,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        TodoListReadModel newTodoList = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId);
+        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
 
         assertThat(newTodoList.getTodos(), hasSize(0));
         assertThat(responseContent, isJson());

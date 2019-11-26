@@ -26,16 +26,15 @@ public class TodoListDaoTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private Long userId;
     private String listId;
 
     @Before
     public void setUp() throws Exception {
-        jdbcTemplate.update("INSERT INTO " +
-            "users (email, password_digest, created_at, updated_at) " +
-            "VALUES ('someEmail', 'somePasswordDigest', now(), now())");
-        userId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE email = 'someEmail'", Long.class);
         listId = "someUuid";
+        jdbcTemplate.update("INSERT INTO " +
+            "users (email, password_digest, default_list_id, created_at, updated_at) " +
+            "VALUES ('someEmail', 'somePasswordDigest', '" + listId + "', now(), now())");
+        Long userId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE email = 'someEmail'", Long.class);
         jdbcTemplate.update("INSERT INTO " +
             "lists (uuid, name, user_id, last_unlocked_at, demarcation_index) " +
             "VALUES ('" + listId + "', 'someName'," + userId + ", now(), 0)");

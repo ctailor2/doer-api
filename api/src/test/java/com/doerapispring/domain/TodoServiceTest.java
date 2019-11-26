@@ -42,7 +42,7 @@ public class TodoServiceTest {
             mockTodoRepository,
             domainEventPublisher
         );
-        user = new User(new UserId("userId"));
+        user = new User(new UserId("userId"), new ListId("someListId"));
         todoListCommandModel = mock(TodoListCommandModel.class);
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.of(todoListCommandModel));
         todoIdentifier = "todoId";
@@ -77,7 +77,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void create_whenTodoListNotFound_refusesCreate() throws Exception {
+    public void create_whenTodoListNotFound_refusesCreate() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -105,7 +105,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void createDeferred_whenTodoListNotFound_refusesCreate() throws Exception {
+    public void createDeferred_whenTodoListNotFound_refusesCreate() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -138,7 +138,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void displace_whenTodoListNotFound_refusesDisplace() throws Exception {
+    public void displace_whenTodoListNotFound_refusesDisplace() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -192,7 +192,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void update_whenTodoListNotFound_refusesUpdate() throws Exception {
+    public void update_whenTodoListNotFound_refusesUpdate() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -226,7 +226,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void complete_whenTodoListNotFound_refusesUpdate() throws Exception {
+    public void complete_whenTodoListNotFound_refusesUpdate() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -252,7 +252,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void move_whenTodoListNotFound_refusesOperation() throws Exception {
+    public void move_whenTodoListNotFound_refusesOperation() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);
@@ -260,7 +260,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void pull_whenTodoListFound_whenTodosPulled_updatesPulledTodosUsingRepository() throws Exception {
+    public void pull_whenTodoListFound_whenTodosPulled_updatesPulledTodosUsingRepository() {
         todoService.pull(user, new ListId("someListId"));
 
         verify(todoListCommandModel).pull();
@@ -284,7 +284,7 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void escalate_whenListNotFound_refusesOperation() throws Exception {
+    public void escalate_whenListNotFound_refusesOperation() {
         when(mockTodoListRepository.find(any(), any())).thenReturn(Optional.empty());
 
         exception.expect(InvalidCommandException.class);

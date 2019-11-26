@@ -59,8 +59,8 @@ public class CompletedTodoRepositoryTest {
     @Test
     public void savesCompletedTodos() {
         UserId userId = new UserId("someUserId");
-        userRepository.save(new User(userId));
         ListId listId = new ListId("someListId");
+        userRepository.save(new User(userId, listId));
         todoListRepository.save(
             new TodoListCommandModel(
                 mock(Clock.class),

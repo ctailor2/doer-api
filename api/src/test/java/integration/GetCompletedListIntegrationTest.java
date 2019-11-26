@@ -37,7 +37,11 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     @Autowired
     private ListApplicationService listApplicationService;
 
+    @Autowired
+    private UserService userService;
+
     private User user;
+
     private ListId defaultListId;
 
     @Override
@@ -45,9 +49,9 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
         todoApplicationService.createDeferred(user, defaultListId, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders

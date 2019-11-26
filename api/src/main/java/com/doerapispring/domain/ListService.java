@@ -33,7 +33,7 @@ public class ListService implements ListApplicationService {
     }
 
     public TodoListReadModel getDefault(User user) throws InvalidCommandException {
-        return todoListCommandModelRepository.findFirst(user.getUserId())
+        return todoListCommandModelRepository.find(user.getUserId(), user.getDefaultListId())
             .map(TodoListCommandModel::read)
             .orElseThrow(InvalidCommandException::new);
     }

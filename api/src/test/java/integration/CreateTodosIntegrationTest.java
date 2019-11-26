@@ -31,16 +31,22 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
+
+    private User user;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        User user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
@@ -52,7 +58,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        List<Todo> todos = listApplicationService.get(new User(new UserId("test@email.com")), defaultListId).getTodos();
+        List<Todo> todos = listApplicationService.get(user, defaultListId).getTodos();
 
         assertThat(todos.size(), equalTo(1));
 
@@ -71,7 +77,6 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
         List<Todo> todos = listApplicationService.get(user, defaultListId).getDeferredTodos();
 

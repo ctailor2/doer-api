@@ -35,7 +35,7 @@ public class AuthenticatedControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        authenticatedUser = new AuthenticatedUser("someIdentifier");
+        authenticatedUser = new AuthenticatedUser("someIdentifier", "someListId");
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
         authenticatedController = new AuthenticatedController();
         mockMvc = MockMvcBuilders

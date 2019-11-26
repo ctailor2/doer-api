@@ -21,7 +21,7 @@ import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,7 +71,7 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void unlock_callsTodoService_returns202() throws Exception {
+    public void unlock_callsTodoService_returns202() {
         String listId = "someListId";
         ResponseEntity<ResourcesResponse> responseEntity = listsController.unlock(authenticatedUser, listId);
 
@@ -154,7 +154,7 @@ public class ListsControllerTest {
     }
 
     @Test
-    public void showCompleted_includesLinksByDefault() throws Exception {
+    public void showCompleted_includesLinksByDefault() {
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 
         assertThat(responseEntity.getBody().getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/someListId/completedList").withSelfRel());

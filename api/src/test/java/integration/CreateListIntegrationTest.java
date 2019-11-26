@@ -3,7 +3,7 @@ package integration;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.TodoApplicationService;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserId;
+import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -34,6 +34,9 @@ public class CreateListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Autowired
     private ListApplicationService listApplicationService;
 
+    @Autowired
+    private UserService userService;
+
     private User user;
 
     @Override
@@ -41,8 +44,8 @@ public class CreateListIntegrationTest extends AbstractWebAppJUnit4SpringContext
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
         baseMockRequestBuilder = MockMvcRequestBuilders
             .post("/v1/lists")

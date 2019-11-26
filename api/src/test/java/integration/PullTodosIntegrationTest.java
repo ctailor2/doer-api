@@ -29,6 +29,10 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     @Autowired
     private ListApplicationService listApplicationService;
+
+    @Autowired
+    private UserService userService;
+
     private ListId defaultListId;
 
     @Override
@@ -36,10 +40,10 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
     public void setUp() throws Exception {
         super.setUp();
         String identifier = "test@email.com";
-        user = new User(new UserId(identifier));
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        defaultListId = listApplicationService.getDefault(user).getListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
+        defaultListId = user.getDefaultListId();
     }
 
     @Test
@@ -52,7 +56,6 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        User user = new User(new UserId("test@email.com"));
         listApplicationService.unlock(user, defaultListId);
         TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
 

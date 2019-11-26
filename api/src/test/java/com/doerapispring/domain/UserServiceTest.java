@@ -13,7 +13,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(org.mockito.junit.MockitoJUnitRunner.class)
@@ -33,34 +33,21 @@ public class UserServiceTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+    private TodoList newTodoList;
 
     @Before
     public void setUp() throws Exception {
         userService = new UserService(userRepository, todoListFactory, todoListRepository);
 
         when(userRepository.find(any(UserId.class))).thenReturn(Optional.empty());
+        newTodoList = mock(TodoList.class);
+        when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoList);
     }
 
     @Test
-    public void create_whenIdentifierNotTaken_addsUserToRepository_returnsUser() throws Exception {
-        String identifier = "soUnique";
-
-        User createdUser = userService.create(identifier);
-
-        UserId userId = new UserId(identifier);
-        verify(userRepository).find(userId);
-        verify(userRepository).save(userArgumentCaptor.capture());
-        User addedUser = userArgumentCaptor.getValue();
-        assertThat(addedUser.getUserId()).isEqualTo(userId);
-        assertThat(createdUser).isNotNull();
-    }
-
-    @Test
-    public void create_whenIdentifierNotTaken_createsDefaultTodoListForUser_andSavesIt() throws Exception {
-        TodoList newTodoList = mock(TodoList.class);
+    public void create_whenIdentifierNotTaken_createsDefaultTodoListForUser_andSavesIt() {
         ListId listId = new ListId("someListId");
         when(todoListRepository.nextIdentifier()).thenReturn(listId);
-        when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoList);
         String identifier = "soUnique";
 
         userService.create(identifier);
@@ -70,10 +57,28 @@ public class UserServiceTest {
     }
 
     @Test
-    public void create_whenIdentifierTaken_refusesCreation_doesNotCreateDefaultTodoList() throws Exception {
+    public void create_whenIdentifierNotTaken_addsUserToRepository() {
+        ListId listId = new ListId("someListId");
+        when(todoListRepository.nextIdentifier()).thenReturn(listId);
+        String identifier = "soUnique";
+        UserId userId = new UserId(identifier);
+        when(todoListFactory.todoList(userId, listId, "default")).thenReturn(new TodoList(userId, listId, null, null, null));
+
+        User returnedUser = userService.create(identifier);
+
+        verify(userRepository).find(userId);
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User addedUser = userArgumentCaptor.getValue();
+        assertThat(addedUser.getUserId()).isEqualTo(userId);
+        assertThat(addedUser.getDefaultListId()).isEqualTo(listId);
+        assertThat(returnedUser).isNotNull();
+    }
+
+    @Test
+    public void create_whenIdentifierTaken_refusesCreation_doesNotCreateDefaultTodoList() {
         String identifier = "soUnique";
 
-        when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier))));
+        when(userRepository.find(any(UserId.class))).thenReturn(Optional.of(new User(new UserId(identifier), new ListId("someListId"))));
 
         assertThatThrownBy(() -> userService.create(identifier))
             .isInstanceOf(UserAlreadyExistsException.class);
