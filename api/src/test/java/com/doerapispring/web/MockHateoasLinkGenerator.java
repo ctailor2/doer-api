@@ -109,9 +109,4 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     public Link defaultListLink() {
         return new Link(MOCK_BASE_URL + "/lists/defaultList");
     }
-
-    @Override
-    public Link listHistoryLink(String listId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/listHistory");
-    }
 }
