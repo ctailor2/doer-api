@@ -7,12 +7,12 @@ import java.util.List;
 @Service
 public class ListService implements ListApplicationService {
     private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListCommandModelRepository;
-    private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
+    private final OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoRepository;
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final TodoListFactory todoListFactory;
 
     ListService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListCommandModelRepository,
-                OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository,
+                OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoRepository,
                 OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
                 TodoListFactory todoListFactory) {
         this.todoListCommandModelRepository = todoListCommandModelRepository;
@@ -38,8 +38,10 @@ public class ListService implements ListApplicationService {
             .orElseThrow(InvalidCommandException::new);
     }
 
-    public List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidCommandException {
-        return completedTodoRepository.findAll(user.getUserId());
+    @Override
+    public CompletedTodoList getCompleted(User user, ListId listId) throws InvalidCommandException {
+        return completedTodoRepository.find(user.getUserId(), listId)
+            .orElseThrow(InvalidCommandException::new);
     }
 
     @Override

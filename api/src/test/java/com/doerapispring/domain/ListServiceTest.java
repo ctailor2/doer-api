@@ -25,7 +25,7 @@ public class ListServiceTest {
     private OwnedObjectRepository<TodoListCommandModel, UserId, ListId> mockTodoListCommandModelRepository;
 
     @Mock
-    private OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> mockCompletedTodoRepository;
+    private OwnedObjectRepository<CompletedTodoList, UserId, ListId> mockCompletedTodoRepository;
 
     @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
@@ -125,15 +125,16 @@ public class ListServiceTest {
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() {
         ListId listId = new ListId("someListId");
+        UserId userId = new UserId(identifier);
         List<CompletedTodo> expectedTodos = singletonList(new CompletedTodo(
             new UserId("someUserId"),
             listId,
             new CompletedTodoId("someTodoId"),
             "someTask",
             Date.from(Instant.now())));
-        when(mockCompletedTodoRepository.findAll(any(UserId.class))).thenReturn(expectedTodos);
+        when(mockCompletedTodoRepository.find(userId, listId)).thenReturn(Optional.of(new CompletedTodoList(expectedTodos)));
 
-        List<CompletedTodo> actualTodos = listService.getCompleted(new User(new UserId(identifier), listId), listId);
+        List<CompletedTodo> actualTodos = listService.getCompleted(new User(userId, listId), listId).getTodos();
 
         assertThat(actualTodos).isEqualTo(expectedTodos);
     }

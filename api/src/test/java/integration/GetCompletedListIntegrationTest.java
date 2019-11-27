@@ -10,8 +10,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,12 +19,10 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private MvcResult mvcResult;
     private final HttpHeaders httpHeaders = new HttpHeaders();
-    private MockHttpServletRequestBuilder baseMockRequestBuilder;
-    private MockHttpServletRequestBuilder mockRequestBuilder;
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
@@ -52,39 +48,33 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         user = userService.find(identifier).orElseThrow(RuntimeException::new);
         defaultListId = user.getDefaultListId();
-        todoApplicationService.createDeferred(user, defaultListId, "someTask");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        baseMockRequestBuilder = MockMvcRequestBuilders
-            .get("/v1/lists/" + defaultListId.get() + "/completed")
-            .headers(httpHeaders);
     }
 
     @Test
     public void list() throws Exception {
-        mockRequestBuilder = baseMockRequestBuilder;
-        todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = todoList.getTodos().get(0);
-        todoApplicationService.complete(user, defaultListId, new TodoId(todo.getTodoId().getIdentifier()));
+        listApplicationService.create(user, "someOtherList");
+        listApplicationService.getAll(user).forEach(todoList -> {
+            todoApplicationService.create(user, todoList.getListId(), todoList.getName().concat(" task"));
+            Todo todo = listApplicationService.get(user, todoList.getListId()).getTodos().get(0);
+            todoApplicationService.complete(user, todoList.getListId(), new TodoId(todo.getTodoId().getIdentifier()));
+        });
 
-        doGet();
+        MvcResult mvcResult = mockMvc.perform(get("/v1/lists/" + defaultListId.get() + "/completed")
+            .headers(httpHeaders))
+            .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
 
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$.list", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(1)));
-        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("some task")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("default task")));
         String completedAtString = JsonPath.parse(responseContent).read("$.list.todos[0].completedAt", String.class);
         Assertions.assertThat(completedAtString).matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{4}");
         Date completedAt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(completedAtString);
         Assertions.assertThat(completedAt).isToday();
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/completed")));
-    }
-
-    private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(mockRequestBuilder)
-            .andReturn();
     }
 }

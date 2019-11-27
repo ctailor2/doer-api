@@ -7,7 +7,7 @@ public interface ListApplicationService {
 
     TodoListReadModel getDefault(User user) throws InvalidCommandException;
 
-    List<CompletedTodo> getCompleted(User user, ListId listId) throws InvalidCommandException;
+    CompletedTodoList getCompleted(User user, ListId listId) throws InvalidCommandException;
 
     TodoListReadModel get(User user, ListId listId) throws InvalidCommandException;
 

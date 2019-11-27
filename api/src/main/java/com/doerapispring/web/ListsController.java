@@ -63,7 +63,7 @@ class ListsController {
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                         @PathVariable String listId) {
         CompletedListDTO completedListDTO = new CompletedListDTO(
-            listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).stream()
+            listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).getTodos().stream()
                 .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
                 .collect(toList()));
         CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
