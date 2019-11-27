@@ -32,6 +32,7 @@ class TodoListReadModelResourceTransformer {
         );
         String listId = todoListReadModel.getListId().get();
         todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"));
+        todoListReadModelDTO.add(hateoasLinkGenerator.listHistoryLink(listId).withRel("history"));
         if (todoListReadModel.isAbleToBeUnlocked()) {
             todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"));
         }

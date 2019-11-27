@@ -66,8 +66,10 @@ public class TodoListReadModelResourceTransformerTest {
         TodoListReadModelResponse responseEntity = todoListReadModelResourceTransformer.transform(todoListReadModel);
 
         assertThat(responseEntity.getLinks()).contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withSelfRel());
-        assertThat(responseEntity.getTodoListReadModelDTO().getLinks()).contains(
-            new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"));
+        List<Link> links = responseEntity.getTodoListReadModelDTO().getLinks();
+        assertThat(links).contains(
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"),
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/listHistory").withRel("history"));
     }
 
     @Test
