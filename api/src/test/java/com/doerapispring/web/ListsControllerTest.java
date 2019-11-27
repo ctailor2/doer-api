@@ -59,7 +59,7 @@ public class ListsControllerTest {
         when(todoListReadModel.getListId()).thenReturn(new ListId(listId));
         when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
         when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);
-        when(listApplicationService.getCompleted(any(), any())).thenReturn(new CompletedTodoList(emptyList()));
+        when(listApplicationService.getCompleted(any(), any())).thenReturn(new CompletedTodoList(new UserId("someUserId"), new ListId(listId), emptyList()));
         when(todoListResourceTransformer.transform(any())).thenReturn(todoListReadModelResponse);
     }
 
@@ -139,13 +139,17 @@ public class ListsControllerTest {
     public void showCompleted_returnsList() {
         String task = "someTask";
         Date completedAt = Date.from(Instant.now());
-        when(listApplicationService.getCompleted(any(), any())).thenReturn(new CompletedTodoList(singletonList(
-            new CompletedTodo(
-                new UserId("someUserId"),
-                new ListId("someListId"),
-                new CompletedTodoId("someTodoId"),
-                task,
-                completedAt))));
+        UserId userId = new UserId("someUserId");
+        ListId listId = new ListId("someListId");
+        when(listApplicationService.getCompleted(any(), any())).thenReturn(
+            new CompletedTodoList(
+                userId,
+                listId,
+                singletonList(
+                    new CompletedTodoReadModel(
+                        new CompletedTodoId("someTodoId"),
+                        task,
+                        completedAt))));
 
         ResponseEntity<CompletedListResponse> responseEntity = listsController.showCompleted(authenticatedUser, "someListId");
 

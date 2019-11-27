@@ -56,20 +56,20 @@ public class CompletedTodoListRepositoryTest {
         UserId otherUserId = new UserId("someOtherUserId");
         userRepository.save(new User(otherUserId, otherListId));
         todoListRepository.save(new TodoList(otherUserId, otherListId, "someName", 0, Date.from(Instant.EPOCH)));
-        CompletedTodo matchingCompletedTodo = new CompletedTodo(
+        CompletedTodoWriteModel matchingCompletedTodo = new CompletedTodoWriteModel(
             userId,
             listId,
             new CompletedTodoId("someCompletedTodoId"),
             "someTask",
             Date.from(Instant.EPOCH));
         completedTodoRepository.save(matchingCompletedTodo);
-        completedTodoRepository.save(new CompletedTodo(
+        completedTodoRepository.save(new CompletedTodoWriteModel(
             userId,
             otherListId,
             new CompletedTodoId("someOtherCompletedTodoId"),
             "someTask",
             Date.from(Instant.EPOCH)));
-        completedTodoRepository.save(new CompletedTodo(
+        completedTodoRepository.save(new CompletedTodoWriteModel(
             otherUserId,
             listId,
             new CompletedTodoId("yetAnotherCompletedTodoId"),
@@ -78,19 +78,23 @@ public class CompletedTodoListRepositoryTest {
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
-        assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(matchingCompletedTodo);
+        assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(
+            new CompletedTodoReadModel(
+                matchingCompletedTodo.getCompletedTodoId(),
+                matchingCompletedTodo.getTask(),
+                matchingCompletedTodo.getCompletedAt()));
     }
 
     @Test
     public void retrievesCompletedTodoListWithTodosInDescendingOrderByCompletedAt() {
         Instant now = Instant.now();
-        CompletedTodo earlierCompletedTodo = new CompletedTodo(
+        CompletedTodoWriteModel earlierCompletedTodo = new CompletedTodoWriteModel(
             userId,
             listId,
             new CompletedTodoId("earlierId"),
             "earlierTask",
             Date.from(now.minusSeconds(20)));
-        CompletedTodo laterCompletedTodo = new CompletedTodo(
+        CompletedTodoWriteModel laterCompletedTodo = new CompletedTodoWriteModel(
             userId,
             listId,
             new CompletedTodoId("laterId"),
@@ -101,6 +105,14 @@ public class CompletedTodoListRepositoryTest {
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
-        assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(laterCompletedTodo, earlierCompletedTodo);
+        assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(
+            new CompletedTodoReadModel(
+                laterCompletedTodo.getCompletedTodoId(),
+                laterCompletedTodo.getTask(),
+                laterCompletedTodo.getCompletedAt()),
+            new CompletedTodoReadModel(
+                earlierCompletedTodo.getCompletedTodoId(),
+                earlierCompletedTodo.getTask(),
+                earlierCompletedTodo.getCompletedAt()));
     }
 }

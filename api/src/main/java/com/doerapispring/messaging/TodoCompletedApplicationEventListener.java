@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TodoCompletedApplicationEventListener implements ApplicationListener<PayloadApplicationEvent<TodoCompletedEvent>> {
-    private final OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository;
+    private final OwnedObjectRepository<CompletedTodoWriteModel, UserId, CompletedTodoId> completedTodoRepository;
 
     public TodoCompletedApplicationEventListener(
-        OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> completedTodoRepository) {
+        OwnedObjectRepository<CompletedTodoWriteModel, UserId, CompletedTodoId> completedTodoRepository) {
         this.completedTodoRepository = completedTodoRepository;
     }
 
@@ -18,7 +18,7 @@ public class TodoCompletedApplicationEventListener implements ApplicationListene
     public void onApplicationEvent(PayloadApplicationEvent<TodoCompletedEvent> event) {
         TodoCompletedEvent todoCompletedEvent = event.getPayload();
         completedTodoRepository.save(
-            new CompletedTodo(
+            new CompletedTodoWriteModel(
                 todoCompletedEvent.getUserId(),
                 todoCompletedEvent.getListId(),
                 todoCompletedEvent.getCompletedTodoId(),

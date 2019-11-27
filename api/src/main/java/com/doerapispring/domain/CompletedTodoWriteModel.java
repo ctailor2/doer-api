@@ -2,18 +2,18 @@ package com.doerapispring.domain;
 
 import java.util.Date;
 
-public class CompletedTodo {
+public class CompletedTodoWriteModel {
     private final UserId userId;
     private final ListId listId;
     private final CompletedTodoId completedTodoId;
     private final String task;
     private final Date completedAt;
 
-    public CompletedTodo(UserId userId,
-                         ListId listId,
-                         CompletedTodoId completedTodoId,
-                         String task,
-                         Date completedAt) {
+    public CompletedTodoWriteModel(UserId userId,
+                                   ListId listId,
+                                   CompletedTodoId completedTodoId,
+                                   String task,
+                                   Date completedAt) {
         this.userId = userId;
         this.listId = listId;
         this.completedTodoId = completedTodoId;
@@ -46,7 +46,7 @@ public class CompletedTodo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CompletedTodo that = (CompletedTodo) o;
+        CompletedTodoWriteModel that = (CompletedTodoWriteModel) o;
 
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (listId != null ? !listId.equals(that.listId) : that.listId != null) return false;

@@ -26,16 +26,14 @@ public class CompletedTodoListRepository implements OwnedObjectRepository<Comple
     @Override
     public Optional<CompletedTodoList> find(UserId userId, ListId listId) {
         UserEntity userEntity = userDAO.findByEmail(userId.get());
-        List<CompletedTodo> completedTodos = completedTodoDAO.findByUserIdAndListIdOrderByCompletedAtDesc(userEntity.id, listId.get()).stream()
+        List<CompletedTodoReadModel> completedTodos = completedTodoDAO.findByUserIdAndListIdOrderByCompletedAtDesc(userEntity.id, listId.get()).stream()
             .map(completedTodoEntity ->
-                new CompletedTodo(
-                    new UserId(userEntity.email),
-                    new ListId(completedTodoEntity.listId),
+                new CompletedTodoReadModel(
                     new CompletedTodoId(completedTodoEntity.uuid),
                     completedTodoEntity.task,
                     Date.from(completedTodoEntity.completedAt.toInstant())))
             .collect(toList());
-        return Optional.of(new CompletedTodoList(completedTodos));
+        return Optional.of(new CompletedTodoList(userId, listId, completedTodos));
     }
 
     @Override

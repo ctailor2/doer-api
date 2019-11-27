@@ -1,13 +1,13 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.CompletedTodo;
 import com.doerapispring.domain.CompletedTodoId;
+import com.doerapispring.domain.CompletedTodoWriteModel;
 import com.doerapispring.domain.OwnedObjectRepository;
 import com.doerapispring.domain.UserId;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class CompletedTodoRepository implements OwnedObjectRepository<CompletedTodo, UserId, CompletedTodoId> {
+public class CompletedTodoRepository implements OwnedObjectRepository<CompletedTodoWriteModel, UserId, CompletedTodoId> {
     private final CompletedTodoDAO completedTodoDAO;
     private final UserDAO userDAO;
 
@@ -18,7 +18,7 @@ public class CompletedTodoRepository implements OwnedObjectRepository<CompletedT
     }
 
     @Override
-    public void save(CompletedTodo completedTodo) {
+    public void save(CompletedTodoWriteModel completedTodo) {
         UserEntity userEntity = userDAO.findByEmail(completedTodo.getUserId().get());
         CompletedTodoEntity completedTodoEntity = CompletedTodoEntity.builder()
             .uuid(completedTodo.getCompletedTodoId().get())
