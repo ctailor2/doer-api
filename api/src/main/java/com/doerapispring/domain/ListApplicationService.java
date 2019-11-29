@@ -14,4 +14,6 @@ public interface ListApplicationService {
     List<TodoList> getAll(User user);
 
     void create(User user, String name);
+
+    void setDefault(User user, ListId listId);
 }

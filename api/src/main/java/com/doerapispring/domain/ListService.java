@@ -10,15 +10,18 @@ public class ListService implements ListApplicationService {
     private final OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoRepository;
     private final OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
     private final TodoListFactory todoListFactory;
+    private final ObjectRepository<User, UserId> userRepository;
 
     ListService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListCommandModelRepository,
                 OwnedObjectRepository<CompletedTodoList, UserId, ListId> completedTodoRepository,
                 OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository,
-                TodoListFactory todoListFactory) {
+                TodoListFactory todoListFactory,
+                ObjectRepository<User, UserId> userRepository) {
         this.todoListCommandModelRepository = todoListCommandModelRepository;
         this.completedTodoRepository = completedTodoRepository;
         this.todoListRepository = todoListRepository;
         this.todoListFactory = todoListFactory;
+        this.userRepository = userRepository;
     }
 
     public void unlock(User user, ListId listId) throws InvalidCommandException {
@@ -61,5 +64,10 @@ public class ListService implements ListApplicationService {
         ListId listId = todoListRepository.nextIdentifier();
         TodoList todoList = todoListFactory.todoList(user.getUserId(), listId, name);
         todoListRepository.save(todoList);
+    }
+
+    @Override
+    public void setDefault(User user, ListId listId) {
+        userRepository.save(new User(user.getUserId(), listId));
     }
 }

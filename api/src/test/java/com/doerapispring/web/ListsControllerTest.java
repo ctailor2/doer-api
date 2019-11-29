@@ -231,4 +231,23 @@ public class ListsControllerTest {
             new Link(MOCK_BASE_URL + "/lists").withSelfRel(),
             new Link(MOCK_BASE_URL + "/lists").withRel("lists"));
     }
+
+    @Test
+    public void setDefault_mapping() throws Exception {
+        mockMvc.perform(post("/v1/lists/someListId/default"))
+            .andExpect(status().isAccepted());
+
+        verify(listApplicationService).setDefault(user, new ListId("someListId"));
+    }
+
+    @Test
+    public void setDefault_callsTodoService_returns202() {
+        ResponseEntity<ResourcesResponse> responseEntity = listsController.setDefault(authenticatedUser, listId);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().getLinks()).contains(
+            new Link(MOCK_BASE_URL + "/lists/" + listId + "/setDefaultList").withSelfRel(),
+            new Link(MOCK_BASE_URL + "/lists/" + listId).withRel("list"));
+    }
 }

@@ -44,4 +44,6 @@ interface HateoasLinkGenerator {
     Link createListsLink();
 
     Link defaultListLink();
+
+    Link setDefaultListLink(String listId);
 }

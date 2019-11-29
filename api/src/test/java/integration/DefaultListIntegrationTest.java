@@ -1,6 +1,9 @@
 package integration;
 
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.User;
+import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -10,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +26,11 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
     @Autowired
     private ListApplicationService listApplicationService;
 
+    @Autowired
+    private UserService userService;
+
+    private User user;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -29,6 +38,7 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
         String identifier = "test@email.com";
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
+        user = userService.find(identifier).orElseThrow(RuntimeException::new);
     }
 
     @Test
@@ -37,5 +47,18 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.list.profileName", equalTo("default")));
+
+        String otherListName = "someListName";
+        listApplicationService.create(user, otherListName);
+        ListId otherListId = listApplicationService.getAll(user).get(1).getListId();
+
+        mockMvc.perform(post("/v1/lists/" + otherListId.get() + "/default")
+            .headers(httpHeaders))
+            .andExpect(status().isAccepted());
+
+        mockMvc.perform(get("/v1/lists/default")
+            .headers(httpHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.list.profileName", equalTo(otherListName)));
     }
 }

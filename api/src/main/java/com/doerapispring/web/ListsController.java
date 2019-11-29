@@ -86,6 +86,16 @@ class ListsController {
         return ResponseEntity.ok(todoListResponse);
     }
 
+    @PostMapping(value = "/lists/{listId}/default")
+    @ResponseBody
+    ResponseEntity<ResourcesResponse> setDefault(@AuthenticationPrincipal AuthenticatedUser authenticatedUser, @PathVariable String listId) {
+        listApplicationService.setDefault(authenticatedUser.getUser(), new ListId(listId));
+        ResourcesResponse resourcesResponse = new ResourcesResponse();
+        resourcesResponse.add(hateoasLinkGenerator.setDefaultListLink(listId).withSelfRel());
+        resourcesResponse.add(hateoasLinkGenerator.listLink(listId).withRel("list"));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
+    }
+
     @PostMapping(value = "/lists")
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(

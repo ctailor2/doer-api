@@ -121,4 +121,9 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     public Link defaultListLink() {
         return linkTo(methodOn(ListsController.class).showDefault(null)).withSelfRel();
     }
+
+    @Override
+    public Link setDefaultListLink(String listId) {
+        return linkTo(methodOn(ListsController.class).setDefault(null, listId)).withSelfRel();
+    }
 }

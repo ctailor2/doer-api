@@ -21,14 +21,20 @@ class UserRepository implements ObjectRepository<User, UserId> {
 
     @Override
     public void save(User user) {
-        UserEntity userEntity = UserEntity.builder()
-            .email(user.getUserId().get())
-            .defaultListId(user.getDefaultListId().get())
-            .passwordDigest("")
-            .createdAt(new Date())
-            .updatedAt(new Date())
-            .build();
-        userDAO.save(userEntity);
+        UserEntity userEntity = userDAO.findByEmail(user.getUserId().get());
+        if (userEntity == null) {
+            userDAO.save(
+                UserEntity.builder()
+                    .email(user.getUserId().get())
+                    .defaultListId(user.getDefaultListId().get())
+                    .passwordDigest("")
+                    .createdAt(new Date())
+                    .updatedAt(new Date())
+                    .build());
+        } else {
+            userEntity.defaultListId = user.getDefaultListId().get();
+            userDAO.save(userEntity);
+        }
     }
 
     @Override

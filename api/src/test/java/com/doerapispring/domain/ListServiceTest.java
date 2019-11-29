@@ -30,6 +30,9 @@ public class ListServiceTest {
     @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> mockTodoListRepository;
 
+    @Mock
+    private ObjectRepository<User, UserId> mockUserRepository;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
     private TodoListCommandModel todoListCommandModel;
@@ -43,7 +46,8 @@ public class ListServiceTest {
             mockTodoListCommandModelRepository,
             mockCompletedTodoRepository,
             mockTodoListRepository,
-            mockTodoListFactory);
+            mockTodoListFactory,
+            mockUserRepository);
         identifier = "userId";
         todoListCommandModel = mock(TodoListCommandModel.class);
         when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.of(todoListCommandModel));
@@ -163,5 +167,16 @@ public class ListServiceTest {
         listService.create(new User(userId, listId), listName);
 
         verify(mockTodoListRepository).save(todoList);
+    }
+
+    @Test
+    public void setDefault_setsTheDefaultListIdForTheUser() {
+        UserId userId = new UserId(identifier);
+        ListId existingListId = new ListId("someId");
+        ListId newListId = new ListId("otherListId");
+
+        listService.setDefault(new User(userId, existingListId), newListId);
+
+        verify(mockUserRepository).save(new User(userId, newListId));
     }
 }
