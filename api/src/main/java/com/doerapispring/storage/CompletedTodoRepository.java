@@ -9,21 +9,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CompletedTodoRepository implements OwnedObjectRepository<CompletedTodoWriteModel, UserId, CompletedTodoId> {
     private final CompletedTodoDAO completedTodoDAO;
-    private final UserDAO userDAO;
 
-    CompletedTodoRepository(CompletedTodoDAO completedTodoDAO,
-                            UserDAO userDAO) {
+    CompletedTodoRepository(CompletedTodoDAO completedTodoDAO) {
         this.completedTodoDAO = completedTodoDAO;
-        this.userDAO = userDAO;
     }
 
     @Override
     public void save(CompletedTodoWriteModel completedTodo) {
-        UserEntity userEntity = userDAO.findByEmail(completedTodo.getUserId().get());
         CompletedTodoEntity completedTodoEntity = CompletedTodoEntity.builder()
             .uuid(completedTodo.getCompletedTodoId().get())
             .listId(completedTodo.getListId().get())
-            .userId(userEntity.id)
+            .userIdentifier(completedTodo.getUserId().get())
             .task(completedTodo.getTask())
             .completedAt(completedTodo.getCompletedAt())
             .build();

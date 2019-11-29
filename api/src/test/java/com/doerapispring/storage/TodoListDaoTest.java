@@ -34,10 +34,9 @@ public class TodoListDaoTest {
         jdbcTemplate.update("INSERT INTO " +
             "users (email, password_digest, default_list_id, created_at, updated_at) " +
             "VALUES ('someEmail', 'somePasswordDigest', '" + listId + "', now(), now())");
-        Long userId = jdbcTemplate.queryForObject("SELECT id FROM users WHERE email = 'someEmail'", Long.class);
         jdbcTemplate.update("INSERT INTO " +
-            "lists (uuid, name, user_id, last_unlocked_at, demarcation_index) " +
-            "VALUES ('" + listId + "', 'someName'," + userId + ", now(), 0)");
+            "lists (uuid, name, user_identifier, last_unlocked_at, demarcation_index) " +
+            "VALUES ('" + listId + "', 'someName','someEmail', now(), 0)");
     }
 
     @Test

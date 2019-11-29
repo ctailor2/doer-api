@@ -24,7 +24,7 @@ public class TodoListEntity implements Serializable {
     public String name;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_identifier", nullable = false)
     public UserEntity userEntity;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

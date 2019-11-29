@@ -7,12 +7,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 interface CompletedTodoDAO extends CrudRepository<CompletedTodoEntity, String> {
-    @Query("SELECT uuid, user_id, task, completed_at, list_id " +
+    @Query("SELECT uuid, user_identifier, task, completed_at, list_id " +
         "FROM completed_todos " +
-        "WHERE user_id = :userId " +
+        "WHERE user_identifier = :userIdentifier " +
         "AND list_id = :listId " +
         "ORDER BY completed_at DESC")
     List<CompletedTodoEntity> findByUserIdAndListIdOrderByCompletedAtDesc(
-        @Param("userId") Long userId,
+        @Param("userIdentifier") String userIdentifier,
         @Param("listId") String listId);
 }

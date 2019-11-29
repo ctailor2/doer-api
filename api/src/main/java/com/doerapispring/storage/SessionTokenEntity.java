@@ -31,6 +31,6 @@ class SessionTokenEntity {
     public Date updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_identifier")
     public UserEntity userEntity;
 }

@@ -19,8 +19,8 @@ class CompletedTodoEntity implements Persistable<String> {
     @Column(value = "uuid")
     public String uuid;
 
-    @Column(value = "user_id")
-    public Long userId;
+    @Column(value = "user_identifier")
+    public String userIdentifier;
 
     @Column(value = "task")
     public String task;

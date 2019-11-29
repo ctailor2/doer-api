@@ -32,18 +32,13 @@ public class CompletedTodoListRepositoryTest {
     private TodoListRepository todoListRepository;
 
     @Autowired
-    private UserDAO userDAO;
-
-    @Autowired
-    private CompletedTodoDAO completedTodoDAO;
-
     private CompletedTodoListRepository completedTodoListRepository;
+
     private UserId userId;
     private ListId listId;
 
     @Before
     public void setUp() throws Exception {
-        completedTodoListRepository = new CompletedTodoListRepository(userDAO, completedTodoDAO);
         userId = new UserId("someUserId");
         listId = new ListId("someListId");
         userRepository.save(new User(userId, listId));
