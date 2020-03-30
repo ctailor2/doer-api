@@ -15,6 +15,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly('org.projectlombok:lombok:1.16.10')
+    annotationProcessor('org.projectlombok:lombok:1.16.10')
+
     compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jdbc:${springBootVersion}")
@@ -24,7 +27,6 @@ dependencies {
     compile('org.springframework.hateoas:spring-hateoas:0.23.0.RELEASE')
     compile('org.postgresql:postgresql:9.4-1206-jdbc42')
     compile('org.flywaydb:flyway-core:5.2.4')
-    compileOnly('org.projectlombok:lombok:1.16.10')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
     testCompile('com.jayway.jsonpath:json-path:2.2.0')
