@@ -27,16 +27,23 @@ jobs:
         secure: rQxcNZl0RcIuiWW2rS/uXr6Y9YbGbOK75XdEyedsPdScCBxxqbWLsTtEhLRlwjxYmDClLBUq+Z5MwdbBuOSTTywV4NaC3yP4wblMpjcd3giNLdTb+CVKsuEkjpwVDsWenJ/qVMwi1FCZjc2fRM3vP7VTMuL+o4rVsc2aAqSe3EeqihLr9wddnrpeHJgKuwcdHVDZpb6tatPQ0l3Adp939vPLSt8g2vtgF+MZpU6b5q5KyqjOdo+wgToexcrNiBBgHVy7jbcKtOv8qAqdaCCuMDVX7/gACfnG/8Io7NFszITl8W8fjJgRqFzN4cIYdohlWTYIRYagxm0C1b5M+w+udSDQKJ61iTjmFxHbYEOKbkiXSqX+8qmTlCzAR5S+F6LM7p4HVQaUMpsW7YsWvTXR4cWi+wtlGDCFCcqu22ur61J3kMFVeoKfgb4puJfCK+9jp9eVb0PVrl05c3vx4gHpbmJhTFhXuK1GvtnvrnCQTF819tEX8Re4AZ3YJDdBfTdAvXopPaaS22rFGo9N8tl47h2fwB0W5uFdhXjTRy6dlxh4lSm0VVq+apYhjMCJSTytaKfLE1hlj8ne/L2UXL3UDKJSTjzbhqCdPgHTDj34JTiBQD/EhWIfb7hcZ6aZeKBKToGt09rlNtq61Tadyxex2sr87/kRTXdLniNESks43dg=
       app: doer-api-staging
   - stage: e2etest
+    language: node_js
+    node_js:
+      - 10
     addons:
       chrome: stable
       apt:
         packages:
         - libgconf-2-4
+    cache:
+      npm: true
+      directories:
+        - ~/.cache
     before_install:
     - git clone https://github.com/ctailor2/doer-e2e-tests.git
     - cd doer-e2e-tests
     install:
-    - npm install
+    - npm ci
     script:
     - "./node_modules/.bin/cypress run -b chrome"
   - stage: promote-to-prod
