@@ -1,5 +1,7 @@
 package com.doerapispring.domain;
 
+import com.doerapispring.domain.events.TodoCompletedEvent;
+import com.doerapispring.domain.events.TodoListEvent;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,13 +39,13 @@ public class TodoListCommandModelTest {
         userId = new UserId("something");
         listId = new ListId("someListId");
         todoListCommandModel = new TodoListCommandModel(
-            mockClock,
-            userId,
-            listId,
-            "someName",
-            Date.from(Instant.EPOCH),
-            new ArrayList<>(),
-            0);
+                mockClock,
+                userId,
+                listId,
+                "someName",
+                Date.from(Instant.EPOCH),
+                new ArrayList<>(),
+                0);
     }
 
     @Test
@@ -59,7 +61,7 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(new TodoId("someId"), "someOtherTask");
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .containsExactly("someOtherTask", "someTask");
+                .containsExactly("someOtherTask", "someTask");
     }
 
     @Test
@@ -94,7 +96,7 @@ public class TodoListCommandModelTest {
 
         todoListCommandModel.unlock();
         assertThat(todoListCommandModel.read().getDeferredTodos()).extracting("task")
-            .containsExactly("someTask", "someOtherTask");
+                .containsExactly("someTask", "someOtherTask");
     }
 
     @Test
@@ -135,7 +137,7 @@ public class TodoListCommandModelTest {
     @Test
     public void displace_whenListIsNotFull_throwsListNotFullException() throws Exception {
         exception.expect(ListNotFullException.class);
-        todoListCommandModel.displace(null, "someTask");
+        todoListCommandModel.displace(new TodoId("whateverTodoId"), "someTask");
     }
 
     @Test
@@ -155,11 +157,11 @@ public class TodoListCommandModelTest {
         todoListCommandModel.displace(new TodoId("3"), "displace it");
 
         assertThat(todoListCommandModel.read().getTodos()).containsExactly(
-            new Todo(new TodoId("3"), "displace it"),
-            new Todo(new TodoId("2"), "someOtherNowTask"));
+                new Todo(new TodoId("3"), "displace it"),
+                new Todo(new TodoId("2"), "someOtherNowTask"));
         todoListCommandModel.unlock();
         assertThat(todoListCommandModel.read().getDeferredTodos()).containsExactly(
-            new Todo(new TodoId("1"), "someNowTask"));
+                new Todo(new TodoId("1"), "someNowTask"));
     }
 
     @Test
@@ -171,12 +173,12 @@ public class TodoListCommandModelTest {
         todoListCommandModel.displace(new TodoId("4"), "displace it");
 
         assertThat(todoListCommandModel.read().getTodos()).containsExactly(
-            new Todo(new TodoId("4"), "displace it"),
-            new Todo(new TodoId("2"), "someOtherNowTask"));
+                new Todo(new TodoId("4"), "displace it"),
+                new Todo(new TodoId("2"), "someOtherNowTask"));
         todoListCommandModel.unlock();
         assertThat(todoListCommandModel.read().getDeferredTodos()).containsExactly(
-            new Todo(new TodoId("1"), "someNowTask"),
-            new Todo(new TodoId("3"), "someLaterTask"));
+                new Todo(new TodoId("1"), "someNowTask"),
+                new Todo(new TodoId("3"), "someLaterTask"));
     }
 
     @Test
@@ -227,14 +229,14 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(todoId, "someTask");
 
         todoListCommandModel.complete(todoId);
-        List<DomainEvent> domainEvents = todoListCommandModel.getDomainEvents();
+        List<TodoListEvent> todoListEvents = todoListCommandModel.getDomainEvents();
 
         assertThat(todoListCommandModel.read().getTodos()).isEmpty();
-        assertThat(domainEvents).contains(new TodoCompletedEvent(
-            userId,
-            listId,
-            new CompletedTodoId("someId"),
-            "someTask",
+        assertThat(todoListEvents).contains(new TodoCompletedEvent(
+            userId.get(),
+            listId.get(),
+                "someId",
+                "someTask",
             Date.from(now)));
     }
 
@@ -256,10 +258,10 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(new TodoId("someId"), "now2");
 
         List<String> tasks = Arrays.asList(
-            "someTask",
-            "anotherTask",
-            "yetAnotherTask",
-            "evenYetAnotherTask");
+                "someTask",
+                "anotherTask",
+                "yetAnotherTask",
+                "evenYetAnotherTask");
 
         for (int i = 0; i < tasks.size(); i++) {
             todoListCommandModel.addDeferred(new TodoId(String.valueOf(i)), tasks.get(i));
@@ -269,10 +271,10 @@ public class TodoListCommandModelTest {
         todoListCommandModel.move(new TodoId("0"), new TodoId("2"));
 
         assertThat(todoListCommandModel.read().getDeferredTodos()).extracting("task").containsExactly(
-            "anotherTask",
-            "yetAnotherTask",
-            "someTask",
-            "evenYetAnotherTask");
+                "anotherTask",
+                "yetAnotherTask",
+                "someTask",
+                "evenYetAnotherTask");
     }
 
     @Test
@@ -281,10 +283,10 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(new TodoId("someId"), "now2");
 
         List<String> tasks = asList(
-            "someTask",
-            "anotherTask",
-            "yetAnotherTask",
-            "evenYetAnotherTask");
+                "someTask",
+                "anotherTask",
+                "yetAnotherTask",
+                "evenYetAnotherTask");
 
         for (int i = 0; i < tasks.size(); i++) {
             todoListCommandModel.addDeferred(new TodoId(String.valueOf(i)), tasks.get(i));
@@ -294,19 +296,19 @@ public class TodoListCommandModelTest {
         todoListCommandModel.move(new TodoId("3"), new TodoId("1"));
 
         assertThat(todoListCommandModel.read().getDeferredTodos()).extracting("task").containsExactly(
-            "someTask",
-            "evenYetAnotherTask",
-            "anotherTask",
-            "yetAnotherTask");
+                "someTask",
+                "evenYetAnotherTask",
+                "anotherTask",
+                "yetAnotherTask");
     }
 
     @Test
     public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
         List<String> tasks = asList(
-            "someTask",
-            "anotherTask",
-            "yetAnotherTask",
-            "evenYetAnotherTask"
+                "someTask",
+                "anotherTask",
+                "yetAnotherTask",
+                "evenYetAnotherTask"
         );
 
         for (int i = 0; i < tasks.size(); i++) {
@@ -320,7 +322,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeUnlocked_whenThereAreNoListUnlocks_returnsTrue() throws Exception {
+    public void isAbleToBeUnlocked_whenThereAreNoListUnlocks_returnsTrue() {
         Boolean ableToBeUnlocked = todoListCommandModel.read().isAbleToBeUnlocked();
 
         assertThat(ableToBeUnlocked).isTrue();
@@ -411,7 +413,7 @@ public class TodoListCommandModelTest {
         todoListCommandModel.pull();
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .containsExactly("firstLater", "secondLater");
+                .containsExactly("firstLater", "secondLater");
     }
 
     @Test
@@ -421,7 +423,7 @@ public class TodoListCommandModelTest {
         todoListCommandModel.pull();
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .containsExactly("firstLater");
+                .containsExactly("firstLater");
     }
 
     @Test
@@ -434,7 +436,7 @@ public class TodoListCommandModelTest {
         todoListCommandModel.pull();
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .containsExactly("firstNow", "firstLater");
+                .containsExactly("firstNow", "firstLater");
     }
 
     @Test
@@ -446,11 +448,11 @@ public class TodoListCommandModelTest {
         todoListCommandModel.pull();
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .containsExactly("someOtherTask", "someTask");
+                .containsExactly("someOtherTask", "someTask");
     }
 
     @Test
-    public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() throws Exception {
+    public void pull_whenThereIsASourceList_whenThereAreLessTodosThanMaxSize_whenSourceListIsEmpty_doesNotFillListFromSource() {
         todoListCommandModel.pull();
 
         assertThat(todoListCommandModel.read().getTodos()).isEmpty();
@@ -461,7 +463,7 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
-            .contains("someTask");
+                .contains("someTask");
     }
 
     @Test
@@ -477,7 +479,7 @@ public class TodoListCommandModelTest {
 
         todoListCommandModel.unlock();
         assertThat(todoListCommandModel.read().getDeferredTodos()).extracting("task")
-            .contains("someTask");
+                .contains("someTask");
     }
 
     @Test
@@ -507,7 +509,7 @@ public class TodoListCommandModelTest {
 
         when(mockClock.instant()).thenReturn(unlockInstant.plusSeconds(1799L));
         assertThat(todoListCommandModel.read().getDeferredTodos()).extracting("task")
-            .contains("someTask");
+                .contains("someTask");
     }
 
     @Test
@@ -519,7 +521,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() throws Exception {
+    public void isFull_whenCountOfTodos_isLessThanMaxSize_returnsFalse() {
         assertThat(todoListCommandModel.read().isFull()).isEqualTo(false);
     }
 
@@ -563,10 +565,10 @@ public class TodoListCommandModelTest {
 
         TodoListReadModel todoListReadModel = todoListCommandModel.read();
         assertThat(todoListReadModel.getTodos()).containsExactly(
-            new Todo(new TodoId("someId"), "some task"),
-            new Todo(new TodoId("someId"), "will no longer be deferred after escalate"));
+                new Todo(new TodoId("someId"), "some task"),
+                new Todo(new TodoId("someId"), "will no longer be deferred after escalate"));
         assertThat(todoListReadModel.getDeferredTodos()).containsExactly(
-            new Todo(new TodoId("someId"), "will be deferred after escalate"));
+                new Todo(new TodoId("someId"), "will be deferred after escalate"));
     }
 
     @Test

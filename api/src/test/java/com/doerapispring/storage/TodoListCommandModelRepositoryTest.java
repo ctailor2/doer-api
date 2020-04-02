@@ -11,17 +11,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 @SpringBootTest
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -46,7 +43,7 @@ public class TodoListCommandModelRepositoryTest {
     @Before
     public void setUp() throws Exception {
         clock = Clock.systemDefaultZone();
-        todoListCommandModelRepository = new TodoListCommandModelRepository(userDao, todoListDao, clock, mock(IdGenerator.class));
+        todoListCommandModelRepository = new TodoListCommandModelRepository(userDao, todoListDao, clock);
         userRepository = new UserRepository(userDao);
     }
 
@@ -64,25 +61,10 @@ public class TodoListCommandModelRepositoryTest {
 
         todoListCommandModelRepository.save(todoListCommandModel);
 
-        Optional<TodoListCommandModel> todoListOptional = todoListCommandModelRepository.findFirst(userId);
+        Optional<TodoListCommandModel> todoListOptional = todoListCommandModelRepository.find(userId, listId);
 
         TodoListCommandModel retrievedTodoListCommandModel = todoListOptional.get();
-        assertThat(retrievedTodoListCommandModel).isEqualToComparingFieldByField(todoListCommandModel);
-    }
-
-    @Test
-    public void findsAllSavedTodoLists() {
-        UserId userId = new UserId("someIdentifier");
-        userRepository.save(new User(userId, new ListId("someListId")));
-        TodoListCommandModel firstTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("firstListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
-        TodoListCommandModel secondTodoListCommandModel = new TodoListCommandModel(clock, userId, new ListId("secondListIdentifier"), "someName", Date.from(Instant.parse("2007-12-03T10:15:30.00Z")), new ArrayList<>(), 0);
-        todoListCommandModelRepository.save(firstTodoListCommandModel);
-        todoListCommandModelRepository.save(secondTodoListCommandModel);
-
-        List<TodoListCommandModel> todoListCommandModels = todoListCommandModelRepository.findAll(userId);
-
-        assertThat(todoListCommandModels).usingFieldByFieldElementComparator()
-            .containsExactlyInAnyOrder(firstTodoListCommandModel, secondTodoListCommandModel);
+        assertThat(retrievedTodoListCommandModel).isEqualToIgnoringGivenFields(todoListCommandModel, "domainEvents", "version");
     }
 
     @Test

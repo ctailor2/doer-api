@@ -200,20 +200,13 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository() throws Exception {
+    public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository_publishesDomainEvents() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
         todoService.complete(user, new ListId("someListId"), todoId);
 
-        verify(todoListCommandModel).complete(todoId);
-        verify(mockTodoListRepository).save(todoListCommandModel);
-    }
-
-    @Test
-    public void complete_publishesDomainEvents_afterCompleting() throws Exception {
-        todoService.complete(user, new ListId("someListId"), new TodoId("someIdentifier"));
-
-        InOrder inOrder = inOrder(domainEventPublisher, todoListCommandModel);
-        inOrder.verify(todoListCommandModel).complete(any());
+        InOrder inOrder = inOrder(mockTodoListRepository, domainEventPublisher, todoListCommandModel);
+        inOrder.verify(todoListCommandModel).complete(todoId);
+        inOrder.verify(mockTodoListRepository).save(todoListCommandModel);
         inOrder.verify(domainEventPublisher).publish(todoListCommandModel);
     }
 

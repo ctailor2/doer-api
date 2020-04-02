@@ -1,8 +1,6 @@
 package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
-import org.springframework.stereotype.Repository;
-import org.springframework.util.IdGenerator;
 
 import java.sql.Date;
 import java.time.Clock;
@@ -11,23 +9,19 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
-@Repository
 class TodoListCommandModelRepository implements
     OwnedObjectRepository<TodoListCommandModel, UserId, ListId> {
     private final UserDAO userDAO;
     private final TodoListDao todoListDao;
     private final Clock clock;
-    private final IdGenerator idGenerator;
 
     TodoListCommandModelRepository(
-        UserDAO userDAO,
-        TodoListDao todoListDao,
-        Clock clock,
-        IdGenerator idGenerator) {
+            UserDAO userDAO,
+            TodoListDao todoListDao,
+            Clock clock) {
         this.userDAO = userDAO;
         this.todoListDao = todoListDao;
         this.clock = clock;
-        this.idGenerator = idGenerator;
     }
 
     @Override
@@ -60,16 +54,8 @@ class TodoListCommandModelRepository implements
     }
 
     @Override
-    public List<TodoListCommandModel> findAll(UserId userId) {
-        List<TodoListEntity> todoListEntities = todoListDao.findByEmail(userId.get());
-        return todoListEntities.stream()
-            .map(todoListEntity -> mapToTodoList(userId, todoListEntity))
-            .collect(toList());
-    }
-
-    @Override
     public ListId nextIdentifier() {
-        return new ListId(idGenerator.generateId().toString());
+        return null;
     }
 
     private TodoListCommandModel mapToTodoList(UserId userId, TodoListEntity todoListEntity) {
