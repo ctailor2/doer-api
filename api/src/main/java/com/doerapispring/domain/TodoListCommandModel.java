@@ -3,6 +3,7 @@ package com.doerapispring.domain;
 import com.doerapispring.domain.events.*;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,8 +44,8 @@ public class TodoListCommandModel implements DomainModel {
         this.userId = todoList.getUserId();
         this.listId = todoList.getListId();
         this.name = todoList.getName();
-        this.demarcationIndex = todoList.getDemarcationIndex();
-        this.lastUnlockedAt = todoList.getLastUnlockedAt();
+        this.demarcationIndex = 0;
+        this.lastUnlockedAt = Date.from(Instant.EPOCH);
         this.todos = new ArrayList<>();
         this.version = 0;
     }

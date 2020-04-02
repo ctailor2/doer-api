@@ -10,7 +10,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 class TodoListCommandModelRepository implements
-    OwnedObjectRepository<TodoListCommandModel, UserId, ListId> {
+        OwnedObjectRepository<TodoListCommandModel, UserId, ListId> {
     private final UserDAO userDAO;
     private final TodoListDao todoListDao;
     private final Clock clock;
@@ -27,7 +27,8 @@ class TodoListCommandModelRepository implements
     @Override
     public void save(TodoListCommandModel todoListCommandModel) {
         UserEntity userEntity = userDAO.findByEmail(todoListCommandModel.getUserId().get());
-        if (userEntity == null) throw new RuntimeException("TodoList must userId must correspond with an existing user");
+        if (userEntity == null)
+            throw new RuntimeException("TodoList must userId must correspond with an existing user");
         TodoListEntity todoListEntity = new TodoListEntity();
         todoListEntity.userEntity = userEntity;
         todoListEntity.name = todoListCommandModel.getName();
@@ -37,11 +38,11 @@ class TodoListCommandModelRepository implements
         for (int i = 0; i < allTodos.size(); i++) {
             Todo todo = allTodos.get(i);
             todoListEntity.todoEntities.add(
-                TodoEntity.builder()
-                    .uuid(todo.getTodoId().getIdentifier())
-                    .task(todo.getTask())
-                    .position(i)
-                    .build());
+                    TodoEntity.builder()
+                            .uuid(todo.getTodoId().getIdentifier())
+                            .task(todo.getTask())
+                            .position(i)
+                            .build());
         }
         todoListEntity.lastUnlockedAt = todoListCommandModel.getLastUnlockedAt();
         todoListDao.save(todoListEntity);
@@ -60,17 +61,17 @@ class TodoListCommandModelRepository implements
 
     private TodoListCommandModel mapToTodoList(UserId userId, TodoListEntity todoListEntity) {
         List<Todo> todos = todoListEntity.todoEntities.stream()
-            .map(todoEntity -> new Todo(
-                new TodoId(todoEntity.uuid),
-                todoEntity.task))
-            .collect(toList());
+                .map(todoEntity -> new Todo(
+                        new TodoId(todoEntity.uuid),
+                        todoEntity.task))
+                .collect(toList());
         return new TodoListCommandModel(
-            clock,
-            userId,
-            new ListId(todoListEntity.uuid),
-            todoListEntity.name,
-            Date.from(todoListEntity.lastUnlockedAt.toInstant()),
-            todos,
-            todoListEntity.demarcationIndex);
+                clock,
+                userId,
+                new ListId(todoListEntity.uuid),
+                todoListEntity.name,
+                Date.from(todoListEntity.lastUnlockedAt.toInstant()),
+                todos,
+                todoListEntity.demarcationIndex);
     }
 }
