@@ -23,9 +23,6 @@ public class TodoServiceTest {
     @Mock
     private IdentityGeneratingRepository<TodoId> mockTodoRepository;
 
-    @Mock
-    private DomainEventPublisher domainEventPublisher;
-
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -39,8 +36,7 @@ public class TodoServiceTest {
     public void setUp() throws Exception {
         todoService = new TodoService(
             mockTodoListRepository,
-            mockTodoRepository,
-            domainEventPublisher
+            mockTodoRepository
         );
         user = new User(new UserId("userId"), new ListId("someListId"));
         todoListCommandModel = mock(TodoListCommandModel.class);
@@ -200,14 +196,13 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository_publishesDomainEvents() throws Exception {
+    public void complete_whenTodoListFound_whenTodoFound_completesTodo_savesUsingRepository() throws Exception {
         TodoId todoId = new TodoId("someIdentifier");
         todoService.complete(user, new ListId("someListId"), todoId);
 
-        InOrder inOrder = inOrder(mockTodoListRepository, domainEventPublisher, todoListCommandModel);
+        InOrder inOrder = inOrder(mockTodoListRepository, todoListCommandModel);
         inOrder.verify(todoListCommandModel).complete(todoId);
         inOrder.verify(mockTodoListRepository).save(todoListCommandModel);
-        inOrder.verify(domainEventPublisher).publish(todoListCommandModel);
     }
 
     @Test

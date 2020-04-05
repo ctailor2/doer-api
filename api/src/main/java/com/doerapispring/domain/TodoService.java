@@ -8,14 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class TodoService implements TodoApplicationService {
     private final OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository;
     private final IdentityGeneratingRepository<TodoId> todoRepository;
-    private final DomainEventPublisher domainEventPublisher;
 
     TodoService(OwnedObjectRepository<TodoListCommandModel, UserId, ListId> todoListRepository,
-                IdentityGeneratingRepository<TodoId> todoRepository,
-                DomainEventPublisher domainEventPublisher) {
+                IdentityGeneratingRepository<TodoId> todoRepository) {
         this.todoListRepository = todoListRepository;
         this.todoRepository = todoRepository;
-        this.domainEventPublisher = domainEventPublisher;
     }
 
     public void create(User user, ListId listId, String task) throws InvalidCommandException {
@@ -88,7 +85,6 @@ public class TodoService implements TodoApplicationService {
         try {
             todoListCommandModel.complete(todoId);
             todoListRepository.save(todoListCommandModel);
-            domainEventPublisher.publish(todoListCommandModel);
         } catch (TodoNotFoundException e) {
             throw new InvalidCommandException();
         }

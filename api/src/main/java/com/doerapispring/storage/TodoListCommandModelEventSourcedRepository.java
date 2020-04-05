@@ -67,8 +67,9 @@ public class TodoListCommandModelEventSourcedRepository implements OwnedObjectRe
                 todoListEntity.name,
                 todoListEntity.demarcationIndex,
                 Date.from(todoListEntity.lastUnlockedAt.toInstant()));
+        List<TodoListEventStoreEntity> eventStoreEntities = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get(), listId.get());
         List<DomainEvent> domainEvents =
-                todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get(), listId.get()).stream()
+                eventStoreEntities.stream()
                         .map(this::mapToDomainEvent)
                         .collect(toList());
         return Optional.of(TodoListCommandModel.newInstance(clock, todoList).withEvents(domainEvents));
