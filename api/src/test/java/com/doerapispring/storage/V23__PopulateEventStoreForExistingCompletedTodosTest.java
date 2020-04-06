@@ -103,6 +103,38 @@ public class V23__PopulateEventStoreForExistingCompletedTodosTest {
     private CompletedTodoListEventSourcedRepository completedTodoListEventSourcedRepository;
 
     @Test
+    public void butShouldImportCompletedTodosForUsersWhoAlreadyHaveTodoCompletedEventsIfTheyHaveNotBeenImportedYet() throws Exception {
+        TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
+        TodoId todoId = new TodoId("someId");
+        String task = "existingCompletedTask";
+        todoListCommandModel.add(todoId, task);
+        todoListCommandModel.complete(todoId);
+        todoListCommandModelEventSourcedRepository.save(todoListCommandModel);
+
+        CompletedTodoId otherId = new CompletedTodoId("someOtherId");
+        Date completedAt = Date.from(Instant.now());
+        String otherTask = "someOtherTask";
+        completedTodoRepository.save(
+                new CompletedTodoWriteModel(
+                        userId,
+                        listId,
+                        otherId,
+                        otherTask,
+                        completedAt));
+
+        migration.migrate(flywayContext);
+
+        CompletedTodoList completedTodoList = completedTodoListEventSourcedRepository.find(userId, listId).get();
+
+        assertThat(completedTodoList.getTodos()).usingElementComparatorIgnoringFields("completedAt")
+                .contains(
+                        new CompletedTodoReadModel(new CompletedTodoId(todoId.getIdentifier()), task, completedAt),
+                        new CompletedTodoReadModel(otherId, otherTask, completedAt));
+
+        assertThat(todoListCommandModelEventSourcedRepository.find(userId, listId)).isPresent();
+    }
+
+    @Test
     public void shouldNotReimportCompletedTodosWhoseEventsAreAlreadyPopulated() throws Exception {
         TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
         TodoId todoId = new TodoId("someId");

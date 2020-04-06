@@ -41,12 +41,12 @@ public class V23__PopulateEventStoreForExistingCompletedTodos extends BaseJavaMi
                         "                task\n" +
                         "            FROM completed_todos\n" +
                         "            LEFT JOIN (\n" +
-                        "                SELECT user_id, list_id, data\n" +
+                        "                SELECT user_id, list_id, data::json->>'completedTodoId' AS todo_id\n" +
                         "                FROM list_events\n" +
                         "                WHERE event_class = 'com.doerapispring.domain.events.TodoCompletedEvent'\n" +
                         "            ) AS completed_events\n" +
-                        "            ON completed_todos.user_identifier = completed_events.user_id AND completed_todos.list_id = completed_events.list_id\n" +
-                        "            WHERE data IS NULL\n" +
+                        "            ON completed_todos.user_identifier = completed_events.user_id AND completed_todos.list_id = completed_events.list_id AND completed_todos.uuid = completed_events.todo_id\n" +
+                        "            WHERE todo_id IS NULL\n" +
                         "        ) AS completedTodosAsEvents\n" +
                         "        UNION ALL\n" +
                         "        SELECT\n" +
@@ -64,12 +64,12 @@ public class V23__PopulateEventStoreForExistingCompletedTodos extends BaseJavaMi
                         "                task\n" +
                         "            FROM completed_todos\n" +
                         "            LEFT JOIN (\n" +
-                        "                SELECT user_id, list_id, data\n" +
+                        "                SELECT user_id, list_id, data::json->>'completedTodoId' AS todo_id\n" +
                         "                FROM list_events\n" +
                         "                WHERE event_class = 'com.doerapispring.domain.events.TodoCompletedEvent'\n" +
                         "            ) AS completed_events\n" +
-                        "            ON completed_todos.user_identifier = completed_events.user_id AND completed_todos.list_id = completed_events.list_id\n" +
-                        "            WHERE data IS NULL\n" +
+                        "            ON completed_todos.user_identifier = completed_events.user_id AND completed_todos.list_id = completed_events.list_id AND completed_todos.uuid = completed_events.todo_id\n" +
+                        "            WHERE todo_id IS NULL\n" +
                         "        ) AS completedTodosAsEvents\n" +
                         "    ) AS allCompletedTodoEvents\n" +
                         "    LEFT JOIN (\n" +
