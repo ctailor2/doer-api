@@ -128,7 +128,7 @@ public class ListServiceTest {
 
     @Test
     public void get_whenCompletedListFound_returnsCompletedListFromRepository() {
-        List<CompletedTodoReadModel> expectedTodos = singletonList(new CompletedTodoReadModel(
+        List<CompletedTodo> expectedTodos = singletonList(new CompletedTodo(
             new CompletedTodoId("someTodoId"),
             "someTask",
             Date.from(Instant.now())));
@@ -137,7 +137,7 @@ public class ListServiceTest {
         when(mockCompletedTodoRepository.find(userId, listId))
             .thenReturn(Optional.of(new CompletedTodoList(userId, listId, expectedTodos)));
 
-        List<CompletedTodoReadModel> actualTodos = listService.getCompleted(new User(userId, listId), listId).getTodos();
+        List<CompletedTodo> actualTodos = listService.getCompleted(new User(userId, listId), listId).getTodos();
 
         assertThat(actualTodos).isEqualTo(expectedTodos);
     }

@@ -28,10 +28,10 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
     @Override
     public Optional<CompletedTodoList> find(UserId userId, ListId listId) {
         List<TodoListEventStoreEntity> eventStoreEntities = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdAndEventClassOrderByKeyVersionDesc(userId.get(), listId.get(), TodoCompletedEvent.class);
-        List<CompletedTodoReadModel> completedTodos = eventStoreEntities.stream()
+        List<CompletedTodo> completedTodos = eventStoreEntities.stream()
                 .map(this::deserializeEvent)
                 .map(todoCompletedEvent ->
-                        new CompletedTodoReadModel(
+                        new CompletedTodo(
                                 new CompletedTodoId(todoCompletedEvent.getCompletedTodoId()),
                                 todoCompletedEvent.getTask(),
                                 todoCompletedEvent.getCompletedAt()))

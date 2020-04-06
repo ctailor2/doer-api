@@ -6,17 +6,17 @@ import java.util.Objects;
 public class CompletedTodoList {
     private final UserId userId;
     private final ListId listId;
-    private List<CompletedTodoReadModel> todos;
+    private List<CompletedTodo> todos;
 
     public CompletedTodoList(UserId userId,
                              ListId listId,
-                             List<CompletedTodoReadModel> todos) {
+                             List<CompletedTodo> todos) {
         this.userId = userId;
         this.listId = listId;
         this.todos = todos;
     }
 
-    public List<CompletedTodoReadModel> getTodos() {
+    public List<CompletedTodo> getTodos() {
         return todos;
     }
 

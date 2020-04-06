@@ -225,10 +225,6 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(todoMovedEvent);
     }
 
-    public Integer getDemarcationIndex() {
-        return demarcationIndex;
-    }
-
     public void pull() {
         handleEvent(new PulledEvent(userId.get(), listId.get()));
     }
@@ -265,14 +261,6 @@ public class TodoListCommandModel implements DomainModel {
 
     private boolean alreadyExists(String task) {
         return todos.stream().anyMatch(todo -> todo.getTask().equals(task));
-    }
-
-    public List<Todo> getAllTodos() {
-        return todos;
-    }
-
-    public Date getLastUnlockedAt() {
-        return lastUnlockedAt;
     }
 
     TodoListReadModel read() {

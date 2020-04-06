@@ -146,7 +146,7 @@ public class ListsControllerTest {
                 userId,
                 listId,
                 singletonList(
-                    new CompletedTodoReadModel(
+                    new CompletedTodo(
                         new CompletedTodoId("someTodoId"),
                         task,
                         completedAt))));

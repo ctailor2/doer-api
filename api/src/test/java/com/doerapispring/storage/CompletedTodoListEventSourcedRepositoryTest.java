@@ -26,9 +26,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = "test")
 public class CompletedTodoListEventSourcedRepositoryTest {
     @Autowired
-    private CompletedTodoRepository completedTodoRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -79,7 +76,7 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
         assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(
-                new CompletedTodoReadModel(
+                new CompletedTodo(
                         new CompletedTodoId(todoId1.getIdentifier()),
                         "someTask",
                         Date.from(Instant.EPOCH)));
@@ -107,11 +104,11 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         assertThat(optionalCompletedTodoList.get().getTodos())
                 .usingElementComparatorIgnoringFields("completedAt")
                 .containsExactly(
-                new CompletedTodoReadModel(
+                new CompletedTodo(
                         new CompletedTodoId(todoId2.getIdentifier()),
                         "laterTask",
                         Date.from(laterInstant)),
-                new CompletedTodoReadModel(
+                new CompletedTodo(
                         new CompletedTodoId(todoId1.getIdentifier()),
                         "earlierTask",
                         Date.from(earlierInstant)));
