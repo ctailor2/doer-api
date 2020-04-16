@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-class LockTimerNotExpiredException extends Exception {
+class LockTimerNotExpiredException extends DomainException {
 }

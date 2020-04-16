@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-class ListSizeExceededException extends Exception {
+class ListSizeExceededException extends DomainException {
 }

@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-class ListNotFullException extends Exception {
+class ListNotFullException extends DomainException {
 }

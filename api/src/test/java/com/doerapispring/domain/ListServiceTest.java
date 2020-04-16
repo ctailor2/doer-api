@@ -54,7 +54,7 @@ public class ListServiceTest {
     }
 
     @Test
-    public void unlock_whenTodoListFound_unlocksTodoList_andSavesIt() throws Exception {
+    public void unlock_whenTodoListFound_unlocksTodoList_andSavesIt() {
         ListId listId = new ListId("someListId");
         listService.unlock(new User(new UserId(identifier), listId), listId);
 
@@ -63,19 +63,10 @@ public class ListServiceTest {
     }
 
     @Test
-    public void unlock_whenTodoListFound_whenLockTimerNotExpired_refusesOperation() throws Exception {
-        doThrow(new LockTimerNotExpiredException()).when(todoListCommandModel).unlock();
-
-        exception.expect(InvalidCommandException.class);
-        ListId listId = new ListId("someListId");
-        listService.unlock(new User(new UserId(identifier), listId), listId);
-    }
-
-    @Test
     public void unlock_whenTodoListNotFound_refusesOperation() {
         when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidCommandException.class);
+        exception.expect(ListNotFoundException.class);
         ListId listId = new ListId("someListId");
         listService.unlock(new User(new UserId(identifier), listId), listId);
     }
@@ -99,7 +90,7 @@ public class ListServiceTest {
     public void getDefault_whenTodoListNotFound_refusesOperation() {
         when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidCommandException.class);
+        exception.expect(ListNotFoundException.class);
         listService.getDefault(new User(new UserId(identifier), new ListId("someListId")));
     }
 
@@ -121,7 +112,7 @@ public class ListServiceTest {
     public void get_whenTodoListNotFound_refusesOperation() {
         when(mockTodoListCommandModelRepository.find(any(), any())).thenReturn(Optional.empty());
 
-        exception.expect(InvalidCommandException.class);
+        exception.expect(ListNotFoundException.class);
         ListId listId = new ListId("someListId");
         listService.get(new User(new UserId(identifier), listId), listId);
     }

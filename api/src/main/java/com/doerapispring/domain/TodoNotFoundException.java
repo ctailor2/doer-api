@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-class TodoNotFoundException extends Exception {
+class TodoNotFoundException extends DomainException {
 }

@@ -103,11 +103,11 @@ public class TodoListCommandModel implements DomainModel {
         }
     }
 
-    public void add(TodoId todoId, String task) throws ListSizeExceededException, DuplicateTodoException {
+    public void add(TodoId todoId, String task) {
         handleEvent(new TodoAddedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
     }
 
-    private void handleEvent(TodoAddedEvent todoAddedEvent) throws DuplicateTodoException, ListSizeExceededException {
+    private void handleEvent(TodoAddedEvent todoAddedEvent) {
         if (alreadyExists(todoAddedEvent.getTask())) {
             throw new DuplicateTodoException();
         }
@@ -120,11 +120,11 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(todoAddedEvent);
     }
 
-    public void addDeferred(TodoId todoId, String task) throws DuplicateTodoException {
+    public void addDeferred(TodoId todoId, String task) {
         handleEvent(new DeferredTodoAddedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
     }
 
-    private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) throws DuplicateTodoException {
+    private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) {
         if (alreadyExists(deferredTodoAddedEvent.getTask())) {
             throw new DuplicateTodoException();
         }
@@ -133,14 +133,14 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(deferredTodoAddedEvent);
     }
 
-    public void unlock() throws LockTimerNotExpiredException {
+    public void unlock() {
         handleEvent(new UnlockedEvent(
                 userId.get(),
                 listId.get(),
                 Date.from(clock.instant())));
     }
 
-    private void handleEvent(UnlockedEvent unlockedEvent) throws LockTimerNotExpiredException {
+    private void handleEvent(UnlockedEvent unlockedEvent) {
         if (!read().isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
@@ -148,17 +148,17 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(unlockedEvent);
     }
 
-    public void delete(TodoId todoId) throws TodoNotFoundException {
+    public void delete(TodoId todoId) {
         handleEvent(new TodoDeletedEvent(userId.get(), listId.get(), todoId.getIdentifier()));
     }
 
-    private void handleEvent(TodoDeletedEvent todoDeletedEvent) throws TodoNotFoundException {
+    private void handleEvent(TodoDeletedEvent todoDeletedEvent) {
         String todoId = todoDeletedEvent.getTodoId();
         doDelete(todoId);
         this.domainEvents.add(todoDeletedEvent);
     }
 
-    private void doDelete(String todoId) throws TodoNotFoundException {
+    private void doDelete(String todoId) {
         Todo todoToDelete = getByTodoId(new TodoId(todoId));
         if (todos.indexOf(todoToDelete) < demarcationIndex) {
             demarcationIndex--;
@@ -166,11 +166,11 @@ public class TodoListCommandModel implements DomainModel {
         todos.remove(todoToDelete);
     }
 
-    public void displace(TodoId todoId, String task) throws DuplicateTodoException, ListNotFullException {
+    public void displace(TodoId todoId, String task) {
         handleEvent(new TodoDisplacedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
     }
 
-    private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) throws ListNotFullException, DuplicateTodoException {
+    private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) {
         if (!read().isFull()) throw new ListNotFullException();
         if (alreadyExists(todoDisplacedEvent.getTask())) throw new DuplicateTodoException();
         Todo todo = new Todo(new TodoId(todoDisplacedEvent.getTodoId()), todoDisplacedEvent.getTask());
@@ -178,11 +178,11 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(todoDisplacedEvent);
     }
 
-    public void update(TodoId todoId, String task) throws TodoNotFoundException, DuplicateTodoException {
+    public void update(TodoId todoId, String task) {
         handleEvent(new TodoUpdatedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
     }
 
-    private void handleEvent(TodoUpdatedEvent todoUpdatedEvent) throws TodoNotFoundException, DuplicateTodoException {
+    private void handleEvent(TodoUpdatedEvent todoUpdatedEvent) {
         if (alreadyExists(todoUpdatedEvent.getTask())) {
             throw new DuplicateTodoException();
         }
@@ -191,7 +191,7 @@ public class TodoListCommandModel implements DomainModel {
         this.domainEvents.add(todoUpdatedEvent);
     }
 
-    public void complete(TodoId todoId) throws TodoNotFoundException {
+    public void complete(TodoId todoId) {
         Todo todo = getByTodoId(todoId);
         TodoCompletedEvent todoCompletedEvent = new TodoCompletedEvent(
                 userId.get(),
@@ -202,12 +202,12 @@ public class TodoListCommandModel implements DomainModel {
         handleEvent(todoCompletedEvent);
     }
 
-    private void handleEvent(TodoCompletedEvent todoCompletedEvent) throws TodoNotFoundException {
+    private void handleEvent(TodoCompletedEvent todoCompletedEvent) {
         doDelete(todoCompletedEvent.getCompletedTodoId());
         domainEvents.add(todoCompletedEvent);
     }
 
-    public void move(TodoId todoId, TodoId targetTodoId) throws TodoNotFoundException {
+    public void move(TodoId todoId, TodoId targetTodoId) {
         handleEvent(new TodoMovedEvent(
                 userId.get(),
                 listId.get(),
@@ -215,7 +215,7 @@ public class TodoListCommandModel implements DomainModel {
                 targetTodoId.getIdentifier()));
     }
 
-    private void handleEvent(TodoMovedEvent todoMovedEvent) throws TodoNotFoundException {
+    private void handleEvent(TodoMovedEvent todoMovedEvent) {
         Todo todo = getByTodoId(new TodoId(todoMovedEvent.getTodoId()));
         Todo targetTodo = getByTodoId(new TodoId(todoMovedEvent.getTargetTodoId()));
         int targetIndex = todos.indexOf(targetTodo);
@@ -252,7 +252,7 @@ public class TodoListCommandModel implements DomainModel {
         return version;
     }
 
-    private Todo getByTodoId(TodoId todoId) throws TodoNotFoundException {
+    private Todo getByTodoId(TodoId todoId) {
         return todos.stream()
                 .filter(todo -> todoId.equals(todo.getTodoId()))
                 .findFirst()
@@ -267,11 +267,11 @@ public class TodoListCommandModel implements DomainModel {
         return new TodoListReadModel(clock, name, lastUnlockedAt, todos, demarcationIndex, listId, userId);
     }
 
-    public void escalate() throws EscalateNotAllowException {
+    public void escalate() {
         handleEvent(new EscalatedEvent(userId.get(), listId.get()));
     }
 
-    private void handleEvent(EscalatedEvent escalatedEvent) throws EscalateNotAllowException {
+    private void handleEvent(EscalatedEvent escalatedEvent) {
         if (!read().isAbleToBeEscalated()) {
             throw new EscalateNotAllowException();
         }

@@ -24,34 +24,30 @@ public class ListService implements ListApplicationService {
         this.userRepository = userRepository;
     }
 
-    public void unlock(User user, ListId listId) throws InvalidCommandException {
+    public void unlock(User user, ListId listId) {
         TodoListCommandModel todoListCommandModel = todoListCommandModelRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidCommandException::new);
-        try {
-            todoListCommandModel.unlock();
-            todoListCommandModelRepository.save(todoListCommandModel);
-        } catch (LockTimerNotExpiredException e) {
-            throw new InvalidCommandException();
-        }
+            .orElseThrow(ListNotFoundException::new);
+        todoListCommandModel.unlock();
+        todoListCommandModelRepository.save(todoListCommandModel);
     }
 
-    public TodoListReadModel getDefault(User user) throws InvalidCommandException {
+    public TodoListReadModel getDefault(User user) {
         return todoListCommandModelRepository.find(user.getUserId(), user.getDefaultListId())
             .map(TodoListCommandModel::read)
-            .orElseThrow(InvalidCommandException::new);
+            .orElseThrow(ListNotFoundException::new);
     }
 
     @Override
-    public CompletedTodoList getCompleted(User user, ListId listId) throws InvalidCommandException {
+    public CompletedTodoList getCompleted(User user, ListId listId) {
         return completedTodoRepository.find(user.getUserId(), listId)
-            .orElseThrow(InvalidCommandException::new);
+            .orElseThrow(ListNotFoundException::new);
     }
 
     @Override
-    public TodoListReadModel get(User user, ListId listId) throws InvalidCommandException {
+    public TodoListReadModel get(User user, ListId listId) {
         return todoListCommandModelRepository.find(user.getUserId(), listId)
             .map(TodoListCommandModel::read)
-            .orElseThrow(InvalidCommandException::new);
+            .orElseThrow(ListNotFoundException::new);
     }
 
     @Override

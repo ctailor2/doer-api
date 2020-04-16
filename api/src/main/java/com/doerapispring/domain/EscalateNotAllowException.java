@@ -1,4 +1,4 @@
 package com.doerapispring.domain;
 
-class EscalateNotAllowException extends Exception {
+class EscalateNotAllowException extends DomainException {
 }
