@@ -19,8 +19,6 @@ dependencies {
     compileOnly('org.projectlombok:lombok:1.16.10')
     annotationProcessor('org.projectlombok:lombok:1.16.10')
 
-//    compile files("$sourceSets.main.scala.outputDir")
-
     compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jdbc:${springBootVersion}")
@@ -63,6 +61,14 @@ sourceSets {
         }
         scala {
             srcDirs = ['src/main/java', 'src/main/scala']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        scala {
+            srcDirs = ['src/test/scala']
         }
     }
 }
