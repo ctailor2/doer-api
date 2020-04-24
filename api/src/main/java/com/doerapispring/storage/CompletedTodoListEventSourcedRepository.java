@@ -3,6 +3,7 @@ package com.doerapispring.storage;
 import com.doerapispring.domain.*;
 import com.doerapispring.domain.events.TodoCompletedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -18,7 +19,9 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
 
     public CompletedTodoListEventSourcedRepository(TodoListEventStoreRepository todoListEventStoreRepository) {
         this.todoListEventStoreRepository = todoListEventStoreRepository;
-        this.objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new DefaultScalaModule());
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -32,9 +35,9 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
                 .map(this::deserializeEvent)
                 .map(todoCompletedEvent ->
                         new CompletedTodo(
-                                new CompletedTodoId(todoCompletedEvent.getCompletedTodoId()),
-                                todoCompletedEvent.getTask(),
-                                todoCompletedEvent.getCompletedAt()))
+                                new CompletedTodoId(todoCompletedEvent.completedTodoId()),
+                                todoCompletedEvent.task(),
+                                todoCompletedEvent.completedAt()))
                 .collect(toList());
         return Optional.of(new CompletedTodoList(userId, listId, completedTodos));
     }

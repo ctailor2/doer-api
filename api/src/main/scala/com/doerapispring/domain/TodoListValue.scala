@@ -3,6 +3,8 @@ package com.doerapispring.domain
 import java.time.Clock
 import java.util.{Calendar, Date, TimeZone}
 
+import com.doerapispring.domain.events._
+
 case class TodoListValue(clock: Clock,
                          userId: UserId,
                          todos: List[Todo],
@@ -13,6 +15,23 @@ case class TodoListValue(clock: Clock,
 
 object TodoListValue {
   val MaxSize: Int = 2
+
+  def applyEvent(todoList: TodoListValue, todoListEvent: TodoListEvent): TodoListValue = {
+    todoListEvent match {
+      case TodoUpdatedEvent(_, _, todoId, task) => update(todoList, new TodoId(todoId), task)
+//        TODO: Remove task and completedAt from this event. Should be able to get this by matching up
+      case TodoCompletedEvent(_, _, completedTodoId, task, completedAt) => complete(todoList, new TodoId(completedTodoId))
+      case TodoDisplacedEvent(_, _, todoId, task) => displace(todoList, new TodoId(todoId), task)
+      case TodoDeletedEvent(_, _, todoId) => delete(todoList, new TodoId(todoId))
+      case TodoAddedEvent(_, _, todoId, task) => add(todoList, new TodoId(todoId), task)
+      case EscalatedEvent(_, _) => escalate(todoList)
+      case DeferredTodoAddedEvent(_, _, todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
+      case TodoMovedEvent(_, _, todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
+      case PulledEvent(_, _) => pull(todoList)
+//        TODO: Make unlockedAt a parameter to the unlock method and function
+      case UnlockedEvent(_, _, unlockedAt) => unlock(todoList)
+    }
+  }
 
   def add(todoList: TodoListValue, todoId: TodoId, task: String): TodoListValue = {
     if (alreadyExists(todoList, task)) {
@@ -86,7 +105,7 @@ object TodoListValue {
 
   def unlock(todoList: TodoListValue): TodoListValue = {
     if (!isAbleToBeUnlocked(todoList)) throw new LockTimerNotExpiredException
-    todoList.copy(lastUnlockedAt = Date.from(todoList.clock.instant()))
+    todoList.copy(lastUnlockedAt = Date.from(todoList.clock.instant))
   }
 
   def pull(todoList: TodoListValue): TodoListValue = {
@@ -127,7 +146,7 @@ object TodoListValue {
   }
 
   private def isLocked(todoList: TodoListValue) = {
-    todoList.lastUnlockedAt.before(Date.from(todoList.clock.instant().minusSeconds(1800L)))
+    todoList.lastUnlockedAt.before(Date.from(todoList.clock.instant.minusSeconds(1800L)))
   }
 
   private def alreadyExists(todoList: TodoListValue, task: String): Boolean = {

@@ -63,40 +63,40 @@ public class TodoListCommandModel implements DomainModel {
 
     private void applyEvent(DomainEvent domainEvent) {
         try {
-            DomainEventType domainEventType = domainEvent.type();
-            switch (domainEventType) {
-                case TODO_ADDED:
+            String domainEventClassName = domainEvent.getClass().getName();
+            switch (domainEventClassName) {
+                case "com.doerapispring.domain.events.TodoAddedEvent":
                     handleEvent((TodoAddedEvent) domainEvent);
                     break;
-                case DEFERRED_TODO_ADDED:
+                case "com.doerapispring.domain.events.DeferredTodoAddedEvent":
                     handleEvent((DeferredTodoAddedEvent) domainEvent);
                     break;
-                case TODO_DELETED:
+                case "com.doerapispring.domain.events.TodoDeletedEvent":
                     handleEvent((TodoDeletedEvent) domainEvent);
                     break;
-                case PULLED:
+                case "com.doerapispring.domain.events.PulledEvent":
                     handleEvent((PulledEvent) domainEvent);
                     break;
-                case ESCALATED:
+                case "com.doerapispring.domain.events.EscalatedEvent":
                     handleEvent((EscalatedEvent) domainEvent);
                     break;
-                case TODO_DISPLACED:
+                case "com.doerapispring.domain.events.TodoDisplacedEvent":
                     handleEvent((TodoDisplacedEvent) domainEvent);
                     break;
-                case TODO_MOVED:
+                case "com.doerapispring.domain.events.TodoMovedEvent":
                     handleEvent((TodoMovedEvent) domainEvent);
                     break;
-                case TODO_COMPLETED:
+                case "com.doerapispring.domain.events.TodoCompletedEvent":
                     handleEvent((TodoCompletedEvent) domainEvent);
                     break;
-                case TODO_UPDATED:
+                case "com.doerapispring.domain.events.TodoUpdatedEvent":
                     handleEvent((TodoUpdatedEvent) domainEvent);
                     break;
-                case UNLOCKED:
+                case "com.doerapispring.domain.events.UnlockedEvent":
                     handleEvent((UnlockedEvent) domainEvent);
                     break;
                 default:
-                    throw new IllegalArgumentException(format("Received unhandled domain event with type: %s", domainEvent.type()));
+                    throw new IllegalArgumentException(format("Received unhandled domain event with class name: %s", domainEventClassName));
             }
         } catch (DuplicateTodoException | ListSizeExceededException | TodoNotFoundException | EscalateNotAllowException | ListNotFullException | LockTimerNotExpiredException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -108,13 +108,13 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(TodoAddedEvent todoAddedEvent) {
-        if (alreadyExists(todoAddedEvent.getTask())) {
+        if (alreadyExists(todoAddedEvent.task())) {
             throw new DuplicateTodoException();
         }
         if (read().isFull()) {
             throw new ListSizeExceededException();
         }
-        Todo todo = new Todo(new TodoId(todoAddedEvent.getTodoId()), todoAddedEvent.getTask());
+        Todo todo = new Todo(new TodoId(todoAddedEvent.todoId()), todoAddedEvent.task());
         todos.add(0, todo);
         demarcationIndex++;
         this.domainEvents.add(todoAddedEvent);
@@ -125,10 +125,10 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) {
-        if (alreadyExists(deferredTodoAddedEvent.getTask())) {
+        if (alreadyExists(deferredTodoAddedEvent.task())) {
             throw new DuplicateTodoException();
         }
-        Todo todo = new Todo(new TodoId(deferredTodoAddedEvent.getTodoId()), deferredTodoAddedEvent.getTask());
+        Todo todo = new Todo(new TodoId(deferredTodoAddedEvent.todoId()), deferredTodoAddedEvent.task());
         todos.add(todo);
         this.domainEvents.add(deferredTodoAddedEvent);
     }
@@ -144,7 +144,7 @@ public class TodoListCommandModel implements DomainModel {
         if (!read().isAbleToBeUnlocked()) {
             throw new LockTimerNotExpiredException();
         }
-        lastUnlockedAt = unlockedEvent.getUnlockedAt();
+        lastUnlockedAt = unlockedEvent.unlockedAt();
         this.domainEvents.add(unlockedEvent);
     }
 
@@ -153,7 +153,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(TodoDeletedEvent todoDeletedEvent) {
-        String todoId = todoDeletedEvent.getTodoId();
+        String todoId = todoDeletedEvent.todoId();
         doDelete(todoId);
         this.domainEvents.add(todoDeletedEvent);
     }
@@ -172,8 +172,8 @@ public class TodoListCommandModel implements DomainModel {
 
     private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) {
         if (!read().isFull()) throw new ListNotFullException();
-        if (alreadyExists(todoDisplacedEvent.getTask())) throw new DuplicateTodoException();
-        Todo todo = new Todo(new TodoId(todoDisplacedEvent.getTodoId()), todoDisplacedEvent.getTask());
+        if (alreadyExists(todoDisplacedEvent.task())) throw new DuplicateTodoException();
+        Todo todo = new Todo(new TodoId(todoDisplacedEvent.todoId()), todoDisplacedEvent.task());
         todos.add(0, todo);
         this.domainEvents.add(todoDisplacedEvent);
     }
@@ -183,11 +183,11 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(TodoUpdatedEvent todoUpdatedEvent) {
-        if (alreadyExists(todoUpdatedEvent.getTask())) {
+        if (alreadyExists(todoUpdatedEvent.task())) {
             throw new DuplicateTodoException();
         }
-        Todo todo = getByTodoId(new TodoId(todoUpdatedEvent.getTodoId()));
-        todo.setTask(todoUpdatedEvent.getTask());
+        Todo todo = getByTodoId(new TodoId(todoUpdatedEvent.todoId()));
+        todo.setTask(todoUpdatedEvent.task());
         this.domainEvents.add(todoUpdatedEvent);
     }
 
@@ -203,7 +203,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(TodoCompletedEvent todoCompletedEvent) {
-        doDelete(todoCompletedEvent.getCompletedTodoId());
+        doDelete(todoCompletedEvent.completedTodoId());
         domainEvents.add(todoCompletedEvent);
     }
 
@@ -216,8 +216,8 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     private void handleEvent(TodoMovedEvent todoMovedEvent) {
-        Todo todo = getByTodoId(new TodoId(todoMovedEvent.getTodoId()));
-        Todo targetTodo = getByTodoId(new TodoId(todoMovedEvent.getTargetTodoId()));
+        Todo todo = getByTodoId(new TodoId(todoMovedEvent.todoId()));
+        Todo targetTodo = getByTodoId(new TodoId(todoMovedEvent.targetTodoId()));
         int targetIndex = todos.indexOf(targetTodo);
 
         todos.remove(todo);
