@@ -1,7 +1,10 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.TodoCompletedEvent;
+import com.doerapispring.domain.CompletedTodoList;
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.OwnedObjectRepository;
+import com.doerapispring.domain.UserId;
+import com.doerapispring.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import org.springframework.stereotype.Repository;
@@ -9,8 +12,9 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
 
 @Repository
 public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepository<CompletedTodoList, UserId, ListId> {
@@ -30,21 +34,22 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
 
     @Override
     public Optional<CompletedTodoList> find(UserId userId, ListId listId) {
-        List<TodoListEventStoreEntity> eventStoreEntities = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdAndEventClassOrderByKeyVersionDesc(userId.get(), listId.get(), TodoCompletedEvent.class);
-        List<CompletedTodo> completedTodos = eventStoreEntities.stream()
+        List<TodoListEventStoreEntity> eventStoreEntities = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdAndEventClassInOrderByKeyVersion(
+                userId.get(),
+                listId.get(),
+                asList(TodoAddedEvent.class,
+                        DeferredTodoAddedEvent.class,
+                        TodoCompletedEvent.class));
+        List<TimestampedDomainEvent> timestampedDomainEvents = eventStoreEntities.stream()
                 .map(this::deserializeEvent)
-                .map(todoCompletedEvent ->
-                        new CompletedTodo(
-                                new CompletedTodoId(todoCompletedEvent.completedTodoId()),
-                                todoCompletedEvent.task(),
-                                todoCompletedEvent.completedAt()))
-                .collect(toList());
-        return Optional.of(new CompletedTodoList(userId, listId, completedTodos));
+                .collect(Collectors.toList());
+        return Optional.of(new CompletedTodoList(userId, listId).withEvents(timestampedDomainEvents));
     }
 
-    private TodoCompletedEvent deserializeEvent(TodoListEventStoreEntity eventStoreEntity) {
+    private TimestampedDomainEvent deserializeEvent(TodoListEventStoreEntity eventStoreEntity) {
         try {
-            return objectMapper.readValue(eventStoreEntity.data, TodoCompletedEvent.class);
+            DomainEvent domainEvent = objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass);
+            return new TimestampedDomainEvent(domainEvent, eventStoreEntity.createdAt);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

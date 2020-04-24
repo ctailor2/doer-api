@@ -19,8 +19,7 @@ object TodoListValue {
   def applyEvent(todoList: TodoListValue, todoListEvent: TodoListEvent): TodoListValue = {
     todoListEvent match {
       case TodoUpdatedEvent(_, _, todoId, task) => update(todoList, new TodoId(todoId), task)
-//        TODO: Remove task and completedAt from this event. Should be able to get this by matching up
-      case TodoCompletedEvent(_, _, completedTodoId, task, completedAt) => complete(todoList, new TodoId(completedTodoId))
+      case TodoCompletedEvent(_, _, completedTodoId) => complete(todoList, new TodoId(completedTodoId))
       case TodoDisplacedEvent(_, _, todoId, task) => displace(todoList, new TodoId(todoId), task)
       case TodoDeletedEvent(_, _, todoId) => delete(todoList, new TodoId(todoId))
       case TodoAddedEvent(_, _, todoId, task) => add(todoList, new TodoId(todoId), task)

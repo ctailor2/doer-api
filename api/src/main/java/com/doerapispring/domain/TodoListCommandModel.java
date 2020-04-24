@@ -196,9 +196,7 @@ public class TodoListCommandModel implements DomainModel {
         TodoCompletedEvent todoCompletedEvent = new TodoCompletedEvent(
                 userId.get(),
                 listId.get(),
-                todoId.getIdentifier(),
-                todo.getTask(),
-                Date.from(clock.instant()));
+                todo.getTodoId().getIdentifier());
         handleEvent(todoCompletedEvent);
     }
 

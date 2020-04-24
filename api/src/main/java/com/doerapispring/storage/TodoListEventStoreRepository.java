@@ -10,5 +10,5 @@ import java.util.List;
 public interface TodoListEventStoreRepository extends JpaRepository<TodoListEventStoreEntity, TodoListEventStoreEntityKey> {
     List<TodoListEventStoreEntity> findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(String userId, String listId);
 
-    List<TodoListEventStoreEntity> findAllByKeyUserIdAndKeyListIdAndEventClassOrderByKeyVersionDesc(String userId, String listId, Class<? extends DomainEvent> eventClass);
+    List<TodoListEventStoreEntity> findAllByKeyUserIdAndKeyListIdAndEventClassInOrderByKeyVersion(String userId, String listId, List<Class<? extends DomainEvent>> eventClass);
 }

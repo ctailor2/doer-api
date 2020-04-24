@@ -14,9 +14,7 @@ case class TodoUpdatedEvent(userId: String,
 
 case class TodoCompletedEvent(userId: String,
                               listId: String,
-                              completedTodoId: String,
-                              task: String,
-                              completedAt: Date) extends TodoListEvent
+                              completedTodoId: String) extends TodoListEvent
 
 case class TodoDisplacedEvent(userId: String,
                               listId: String,

@@ -40,7 +40,7 @@ public class CompletedTodoListEventSourcedRepositoryTest {
     private Clock clock = mock(Clock.class);
 
     private UserId userId;
-     private ListId listId;
+    private ListId listId;
     private TodoList todoList;
 
     @Before
@@ -54,7 +54,7 @@ public class CompletedTodoListEventSourcedRepositoryTest {
     }
 
     @Test
-    public void retrievesTheCompletedTodoListMatchingTheUserIdAndListId() throws Exception {
+    public void retrievesTheCompletedTodoListMatchingTheUserIdAndListId() {
         ListId otherListId = new ListId("someOtherListId");
         UserId otherUserId = new UserId("someOtherUserId");
         userRepository.save(new User(otherUserId, otherListId));
@@ -69,21 +69,23 @@ public class CompletedTodoListEventSourcedRepositoryTest {
 
         TodoListCommandModel usersOtherTodoListCommandModel = TodoListCommandModel.newInstance(clock, usersOtherList);
         TodoId todoId2 = new TodoId("someOtherCompletedTodoId");
-        usersOtherTodoListCommandModel.add(todoId2, "someTask");
+        usersOtherTodoListCommandModel.add(todoId2, "someOtherTask");
         usersOtherTodoListCommandModel.complete(todoId2);
         todoListCommandModelEventSourcedRepository.save(usersOtherTodoListCommandModel);
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
-        assertThat(optionalCompletedTodoList.get().getTodos()).containsExactly(
-                new CompletedTodo(
-                        new CompletedTodoId(todoId1.getIdentifier()),
-                        "someTask",
-                        Date.from(Instant.EPOCH)));
+        assertThat(optionalCompletedTodoList.get().getTodos())
+                .usingElementComparatorIgnoringFields("completedAt")
+                .containsExactly(
+                        new CompletedTodo(
+                                new CompletedTodoId(todoId1.getIdentifier()),
+                                "someTask",
+                                Date.from(Instant.EPOCH)));
     }
 
     @Test
-    public void retrievesCompletedTodoListWithTodosInDescendingOrderByVersion() throws Exception {
+    public void retrievesCompletedTodoListWithTodosInDescendingOrderByVersion() {
         Instant now = Instant.now();
         Instant earlierInstant = now.minusSeconds(20);
         Instant laterInstant = now.plusSeconds(20);
@@ -104,13 +106,13 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         assertThat(optionalCompletedTodoList.get().getTodos())
                 .usingElementComparatorIgnoringFields("completedAt")
                 .containsExactly(
-                new CompletedTodo(
-                        new CompletedTodoId(todoId2.getIdentifier()),
-                        "laterTask",
-                        Date.from(laterInstant)),
-                new CompletedTodo(
-                        new CompletedTodoId(todoId1.getIdentifier()),
-                        "earlierTask",
-                        Date.from(earlierInstant)));
+                        new CompletedTodo(
+                                new CompletedTodoId(todoId2.getIdentifier()),
+                                "laterTask",
+                                Date.from(laterInstant)),
+                        new CompletedTodo(
+                                new CompletedTodoId(todoId1.getIdentifier()),
+                                "earlierTask",
+                                Date.from(earlierInstant)));
     }
 }
