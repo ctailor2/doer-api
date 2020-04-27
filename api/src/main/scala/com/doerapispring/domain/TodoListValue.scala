@@ -1,12 +1,10 @@
 package com.doerapispring.domain
 
-import java.time.Clock
 import java.util.{Calendar, Date, TimeZone}
 
 import com.doerapispring.domain.events._
 
-case class TodoListValue(clock: Clock,
-                         userId: UserId,
+case class TodoListValue(userId: UserId,
                          todos: List[Todo],
                          listId: ListId,
                          name: String,
@@ -27,8 +25,7 @@ object TodoListValue {
       case DeferredTodoAddedEvent(_, _, todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
       case TodoMovedEvent(_, _, todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
       case PulledEvent(_, _) => pull(todoList)
-//        TODO: Make unlockedAt a parameter to the unlock method and function
-      case UnlockedEvent(_, _, unlockedAt) => unlock(todoList)
+      case UnlockedEvent(_, _, unlockedAt) => unlock(todoList, unlockedAt)
     }
   }
 
@@ -98,13 +95,13 @@ object TodoListValue {
     todoList.todos.slice(0, todoList.demarcationIndex)
   }
 
-  def getDeferredTodos(todoList: TodoListValue): List[Todo] = {
-    if (isLocked(todoList)) List.empty else todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size)
+  def getDeferredTodos(todoList: TodoListValue, unlockTime: Date): List[Todo] = {
+    if (isLocked(todoList, unlockTime)) List.empty else todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size)
   }
 
-  def unlock(todoList: TodoListValue): TodoListValue = {
-    if (!isAbleToBeUnlocked(todoList)) throw new LockTimerNotExpiredException
-    todoList.copy(lastUnlockedAt = Date.from(todoList.clock.instant))
+  def unlock(todoList: TodoListValue, unlockTime: Date): TodoListValue = {
+    if (!isAbleToBeUnlocked(todoList, unlockTime)) throw new LockTimerNotExpiredException
+    todoList.copy(lastUnlockedAt = unlockTime)
   }
 
   def pull(todoList: TodoListValue): TodoListValue = {
@@ -119,17 +116,15 @@ object TodoListValue {
     todoList.copy(todos = first :: third :: second :: rest)
   }
 
-  def isAbleToBeUnlocked(todoList: TodoListValue): Boolean = {
-    val now = Date.from(todoList.clock.instant)
+  def isAbleToBeUnlocked(todoList: TodoListValue, unlockTime: Date): Boolean = {
     val calendar = Calendar.getInstance
-    calendar.setTimeZone(TimeZone.getTimeZone(todoList.clock.getZone))
-    calendar.setTime(now)
+    calendar.setTimeZone(TimeZone.getTimeZone("UTC"))
+    calendar.setTime(unlockTime)
     calendar.set(Calendar.HOUR_OF_DAY, 0)
     calendar.set(Calendar.MINUTE, 0)
     calendar.set(Calendar.SECOND, 0)
     calendar.set(Calendar.MILLISECOND, 0)
-    val beginningOfToday = calendar.getTime
-    isLocked(todoList) && todoList.lastUnlockedAt.before(beginningOfToday)
+    isLocked(todoList, unlockTime) && todoList.lastUnlockedAt.before(calendar.getTime)
   }
 
   def isAbleToBeReplenished(todoList: TodoListValue): Boolean = {
@@ -144,8 +139,8 @@ object TodoListValue {
     isFull(todoListValue) && todoListValue.todos.slice(todoListValue.demarcationIndex, todoListValue.todos.size).nonEmpty
   }
 
-  private def isLocked(todoList: TodoListValue) = {
-    todoList.lastUnlockedAt.before(Date.from(todoList.clock.instant.minusSeconds(1800L)))
+  private def isLocked(todoList: TodoListValue, unlockTime: Date) = {
+    todoList.lastUnlockedAt.before(Date.from(unlockTime.toInstant.minusSeconds(1800)))
   }
 
   private def alreadyExists(todoList: TodoListValue, task: String): Boolean = {

@@ -11,14 +11,14 @@ import org.mockito.Mockito.{mock, when}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 //noinspection AccessorLikeMethodIsUnit
-class TodoListValueTest {
+class  TodoListValueTest {
   private val mockClock: Clock = mock(classOf[Clock])
   private val userId = new UserId("something")
   private val listId = new ListId("someListId")
-  private val todoListValue: TodoListValue = new TodoListValue(mockClock, userId, scala.collection.immutable.List.empty, listId, "someName", Date.from(Instant.EPOCH), 0)
+  private val todoListValue: TodoListValue = new TodoListValue(userId, scala.collection.immutable.List.empty, listId, "someName", Date.from(Instant.EPOCH), 0)
 
   @Before
   def setUp(): Unit = {
@@ -73,21 +73,25 @@ class TodoListValueTest {
 
   @Test
   def addDeferred_addsToLaterList(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.addDeferred(todoList, new TodoId("someId"), "someTask"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).containsExactly(new Todo(new TodoId("someId"), "someTask"))
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).containsExactly(new Todo(new TodoId("someId"), "someTask"))
   }
 
   @Test
   def addDeferred_addsToLaterList_afterLastTodo(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.addDeferred(todoList, new TodoId("someId"), "someTask"))
       .map(todoList => TodoListValue.addDeferred(todoList, new TodoId("someId"), "someOtherTask"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => TodoListValue.unlock(todoList, now))
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).extracting("task").containsExactly("someTask", "someOtherTask")
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).extracting("task").containsExactly("someTask", "someOtherTask")
   }
 
   @Test
@@ -115,13 +119,16 @@ class TodoListValueTest {
 
   @Test
   def delete_whenTodoWithIdentifierExists_removesDeferredTodo(): Unit = {
+    val now = Date.from(Instant.now())
     val todoId = new TodoId("someId")
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, todoId, "someTask"))
       .map(todoList => TodoListValue.delete(todoList, todoId))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).isEmpty()
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).isEmpty()
   }
 
   @Test
@@ -160,31 +167,37 @@ class TodoListValueTest {
 
   @Test
   def displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("1"), "someNowTask"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("2"), "someOtherNowTask"))
       .map(todoList => TodoListValue.displace(todoList, new TodoId("3"), "displace it"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     assertThat(TodoListValue.getTodos(todoListValue).asJavaCollection).containsExactly(
       new Todo(new TodoId("3"), "displace it"),
       new Todo(new TodoId("2"), "someOtherNowTask"))
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).containsExactly(new Todo(new TodoId("1"), "someNowTask"))
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).containsExactly(new Todo(new TodoId("1"), "someNowTask"))
   }
 
   @Test
   def displace_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("1"), "someNowTask"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("2"), "someOtherNowTask"))
       .map(todoList => TodoListValue.addDeferred(todoList, new TodoId("3"), "someLaterTask"))
       .map(todoList => TodoListValue.displace(todoList, new TodoId("4"), "displace it"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     assertThat(TodoListValue.getTodos(todoListValue).asJavaCollection).containsExactly(
       new Todo(new TodoId("4"), "displace it"),
       new Todo(new TodoId("2"), "someOtherNowTask"))
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).containsExactly(
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).containsExactly(
       new Todo(new TodoId("1"), "someNowTask"),
       new Todo(new TodoId("3"), "someLaterTask"))
   }
@@ -234,7 +247,7 @@ class TodoListValueTest {
       .map(todoList => TodoListValue.add(todoList, todoId, "someTask"))
       .map(todoList => TodoListValue.complete(todoList, todoId))
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getTodos(todoListValue).asJavaCollection).isEmpty
+    assertThat(TodoListValue.getTodos(todoListValue).asJavaCollection).isEmpty()
   }
 
   @Test
@@ -255,10 +268,13 @@ class TodoListValueTest {
 
   @Test
   def move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue1 = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now1"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now2"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     val tasks = List("someTask", "anotherTask", "yetAnotherTask", "evenYetAnotherTask")
     val todoListValue2 = tasks.zipWithIndex.foldLeft(todoListValue1) { (todoList: TodoListValue, next) =>
@@ -268,16 +284,19 @@ class TodoListValueTest {
     val todoListValue3 = Option.apply(todoListValue2)
       .map(todoList => TodoListValue.move(todoList, new TodoId("0"), new TodoId("2")))
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue3).asJavaCollection).extracting("task")
+    assertThat(TodoListValue.getDeferredTodos(todoListValue3, now).asJavaCollection).extracting("task")
       .containsExactly("anotherTask", "yetAnotherTask", "someTask", "evenYetAnotherTask")
   }
 
   @Test
   def move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue1 = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now1"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now2"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     val tasks = List("someTask", "anotherTask", "yetAnotherTask", "evenYetAnotherTask")
     val todoListValue2 = tasks.zipWithIndex.foldLeft(todoListValue1) { (todoList: TodoListValue, next) =>
@@ -287,16 +306,19 @@ class TodoListValueTest {
     val todoListValue3 = Option.apply(todoListValue2)
       .map(todoList => TodoListValue.move(todoList, new TodoId("3"), new TodoId("1")))
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue3).asJavaCollection).extracting("task")
+    assertThat(TodoListValue.getDeferredTodos(todoListValue3, now).asJavaCollection).extracting("task")
       .containsExactly("someTask", "evenYetAnotherTask", "anotherTask", "yetAnotherTask")
   }
 
   @Test
   def move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue1 = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now1"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "now2"))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     val tasks = List("someTask", "anotherTask", "yetAnotherTask", "evenYetAnotherTask")
     val todoListValue2 = tasks.zipWithIndex.foldLeft(todoListValue1) { (todoList: TodoListValue, next) =>
@@ -306,7 +328,7 @@ class TodoListValueTest {
     val todoListValue3 = Option.apply(todoListValue2)
       .map(todoList => TodoListValue.move(todoList, new TodoId("0"), new TodoId("0")))
       .getOrElse(throw new RuntimeException)
-    assertThat(TodoListValue.getDeferredTodos(todoListValue3).asJavaCollection).extracting("task").containsExactlyElementsOf(tasks.asJavaCollection)
+    assertThat(TodoListValue.getDeferredTodos(todoListValue3, now).asJavaCollection).extracting("task").containsExactlyElementsOf(tasks.asJavaCollection)
   }
 
   @Test
@@ -364,17 +386,20 @@ class TodoListValueTest {
   @Test
   @throws[Exception]
   def escalate_swapsPositionsOfLastTodoAndFirstDeferredTodo(): Unit = {
+    val now = Date.from(Instant.now())
     val todoListValue = Option.apply(this.todoListValue)
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "will be deferred after escalate"))
       .map(todoList => TodoListValue.add(todoList, new TodoId("someId"), "some task"))
       .map(todoList => TodoListValue.addDeferred(todoList, new TodoId("someId"), "will no longer be deferred after escalate"))
       .map(todoList => TodoListValue.escalate(todoList))
-      .map(todoList => TodoListValue.unlock(todoList))
+      .map(todoList => {
+        TodoListValue.unlock(todoList, now)
+      })
       .getOrElse(throw new RuntimeException)
     assertThat(TodoListValue.getTodos(todoListValue).asJavaCollection).containsExactly(
       new Todo(new TodoId("someId"), "some task"),
       new Todo(new TodoId("someId"), "will no longer be deferred after escalate"))
-    assertThat(TodoListValue.getDeferredTodos(todoListValue).asJavaCollection).containsExactly(
+    assertThat(TodoListValue.getDeferredTodos(todoListValue, now).asJavaCollection).containsExactly(
       new Todo(new TodoId("someId"), "will be deferred after escalate"))
   }
 
@@ -421,40 +446,34 @@ class TodoListValueTest {
   }
 
   @Test def isAbleToBeUnlocked_whenThereAreNoListUnlocks_returnsTrue(): Unit = {
-    assertThat(TodoListValue.isAbleToBeUnlocked(this.todoListValue)).isTrue
+    assertThat(TodoListValue.isAbleToBeUnlocked(this.todoListValue, Date.from(Instant.now()))).isTrue
   }
 
   @Test
   @throws[Exception]
   def isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_returnsFalse(): Unit = {
-    when(mockClock.instant).thenReturn(
-      Instant.ofEpochMilli(618623999999L)) // Tuesday, August 8, 1989 11:59:59 PM
-
     val todoListValue = this.todoListValue.copy(lastUnlockedAt = Date.from(Instant.ofEpochMilli(618537600000L))) // Tuesday, August 8, 1989 12:00:00 AM
 
-    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue)).isFalse
+    val instant = Instant.ofEpochMilli(618623999999L) // Tuesday, August 8, 1989 11:59:59 PM
+    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue, Date.from(instant))).isFalse
   }
 
   @Test
   @throws[Exception]
   def isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsTrue(): Unit = {
-    when(mockClock.instant).thenReturn(
-      Instant.ofEpochMilli(618537600000L)) // Tuesday, August 8, 1989 12:00:00 AM
-
     val todoListValue = this.todoListValue.copy(lastUnlockedAt = Date.from(Instant.ofEpochMilli(618429599999L))) // Monday, August 7, 1989 11:29:59 PM
 
-    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue)).isTrue
+    val instant = Instant.ofEpochMilli(618537600000L) // Tuesday, August 8, 1989 12:00:00 AM
+    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue, Date.from(instant))).isTrue
   }
 
   @Test
   @throws[Exception]
   def isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_butListIsStillUnlocked_returnsFalse(): Unit = {
-    when(mockClock.instant).thenReturn(
-      Instant.ofEpochMilli(618537900000L)) // Tuesday, August 8, 1989 12:05:00 AM
-
     val todoListValue = this.todoListValue.copy(lastUnlockedAt = Date.from(Instant.ofEpochMilli(618536700000L))) // Monday, August 7, 1989 11:45:00 PM
 
-    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue)).isFalse
+    val instant = Instant.ofEpochMilli(618537900000L) // Tuesday, August 8, 1989 12:05:00 AM
+    assertThat(TodoListValue.isAbleToBeUnlocked(todoListValue, Date.from(instant))).isFalse
   }
 
   @Test

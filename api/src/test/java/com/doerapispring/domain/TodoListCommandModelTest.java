@@ -30,7 +30,7 @@ public class TodoListCommandModelTest {
     private ListId listId;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mockClock = mock(Clock.class);
 
         when(mockClock.getZone()).thenReturn(ZoneId.of("UTC"));
@@ -49,14 +49,14 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void add_addsToNowList() throws Exception {
+    public void add_addsToNowList() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
 
         assertThat(todoListCommandModel.read().getTodos()).containsExactly(new Todo(new TodoId("someId"), "someTask"));
     }
 
     @Test
-    public void add_addsToNowList_beforeFirstTodo() throws Exception {
+    public void add_addsToNowList_beforeFirstTodo() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
         todoListCommandModel.add(new TodoId("someId"), "someOtherTask");
 
@@ -65,7 +65,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void add_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() throws Exception {
+    public void add_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() {
         todoListCommandModel.add(new TodoId("someId"), "sameTask");
 
         exception.expect(DuplicateTodoException.class);
@@ -73,7 +73,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() throws Exception {
+    public void add_whenListIsFull_doesNotAdd_throwsListSizeExceededException() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
         todoListCommandModel.add(new TodoId("someId"), "someOtherTask");
 
@@ -82,7 +82,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void addDeferred_addsToLaterList() throws Exception {
+    public void addDeferred_addsToLaterList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
 
         todoListCommandModel.unlock();
@@ -90,7 +90,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void addDeferred_addsToLaterList_afterLastTodo() throws Exception {
+    public void addDeferred_addsToLaterList_afterLastTodo() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
         todoListCommandModel.addDeferred(new TodoId("someId"), "someOtherTask");
 
@@ -100,7 +100,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void addDeferred_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() throws Exception {
+    public void addDeferred_whenListAlreadyContainsTask_doesNotAdd_throwsDuplicateTodoException() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "sameTask");
 
         exception.expect(DuplicateTodoException.class);
@@ -108,7 +108,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void delete_whenTodoWithIdentifierExists_removesTodo() throws Exception {
+    public void delete_whenTodoWithIdentifierExists_removesTodo() {
         TodoId todoId = new TodoId("someId");
         todoListCommandModel.add(todoId, "someTask");
 
@@ -118,7 +118,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void delete_whenTodoWithIdentifierExists_removesDeferredTodo() throws Exception {
+    public void delete_whenTodoWithIdentifierExists_removesDeferredTodo() {
         TodoId todoId = new TodoId("someId");
         todoListCommandModel.addDeferred(todoId, "someTask");
         todoListCommandModel.unlock();
@@ -129,19 +129,19 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+    public void delete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() {
         exception.expect(TodoNotFoundException.class);
         todoListCommandModel.delete(new TodoId("someBogusIdentifier"));
     }
 
     @Test
-    public void displace_whenListIsNotFull_throwsListNotFullException() throws Exception {
+    public void displace_whenListIsNotFull_throwsListNotFullException() {
         exception.expect(ListNotFullException.class);
         todoListCommandModel.displace(new TodoId("whateverTodoId"), "someTask");
     }
 
     @Test
-    public void displace_whenListIsFull_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
+    public void displace_whenListIsFull_whenTaskAlreadyExists_throwsDuplicateTodoException() {
         todoListCommandModel.add(new TodoId("someId"), "task");
         todoListCommandModel.add(new TodoId("someId"), "sameTask");
 
@@ -150,7 +150,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+    public void displace_whenPostponedListIsEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() {
         todoListCommandModel.add(new TodoId("1"), "someNowTask");
         todoListCommandModel.add(new TodoId("2"), "someOtherNowTask");
 
@@ -165,7 +165,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void displace_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() throws Exception {
+    public void displace_whenPostponedIsNotEmpty_replacesTodo_andPushesItIntoPostponedListWithCorrectPositioning() {
         todoListCommandModel.add(new TodoId("1"), "someNowTask");
         todoListCommandModel.add(new TodoId("2"), "someOtherNowTask");
         todoListCommandModel.addDeferred(new TodoId("3"), "someLaterTask");
@@ -182,7 +182,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void update_whenTodoWithIdentifierExists_updatesTodo() throws Exception {
+    public void update_whenTodoWithIdentifierExists_updatesTodo() {
         TodoId todoId = new TodoId("someId");
         todoListCommandModel.add(todoId, "someTask");
 
@@ -193,7 +193,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void update_whenTaskAlreadyExists_throwsDuplicateTodoException() throws Exception {
+    public void update_whenTaskAlreadyExists_throwsDuplicateTodoException() {
         TodoId todoId = new TodoId("someId");
         todoListCommandModel.add(todoId, "sameTask");
 
@@ -202,13 +202,13 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void update_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+    public void update_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() {
         exception.expect(TodoNotFoundException.class);
         todoListCommandModel.update(new TodoId("bananaPudding"), "sameTask");
     }
 
     @Test
-    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() throws Exception {
+    public void complete_whenTodoWithIdentifierExists_removesTodoFromMatchingList_returnsCompletedTodo() {
         Instant now = Instant.now();
         when(mockClock.instant()).thenReturn(now);
 
@@ -221,7 +221,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void complete_addsTodoCompletedEvent() throws Exception {
+    public void complete_addsTodoCompletedEvent() {
         Instant now = Instant.now();
         when(mockClock.instant()).thenReturn(now);
 
@@ -235,25 +235,23 @@ public class TodoListCommandModelTest {
         assertThat(todoListEvents).contains(new TodoCompletedEvent(
             userId.get(),
             listId.get(),
-                "someId",
-                "someTask",
-            Date.from(now)));
+                "someId"));
     }
 
     @Test
-    public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+    public void complete_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() {
         exception.expect(TodoNotFoundException.class);
         todoListCommandModel.complete(new TodoId("someBogusIdentifier"));
     }
 
     @Test
-    public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() throws Exception {
+    public void move_whenTodoWithIdentifierDoesNotExist_throwsNotFoundException() {
         exception.expect(TodoNotFoundException.class);
         todoListCommandModel.move(new TodoId("junk"), new TodoId("bogus"));
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() throws Exception {
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoDown() {
         todoListCommandModel.add(new TodoId("someId"), "now1");
         todoListCommandModel.add(new TodoId("someId"), "now2");
 
@@ -278,7 +276,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() throws Exception {
+    public void move_whenTodoWithIdentifierExists_whenTargetExists_movesTodoUp() {
         todoListCommandModel.add(new TodoId("someId"), "now1");
         todoListCommandModel.add(new TodoId("someId"), "now2");
 
@@ -303,7 +301,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() throws Exception {
+    public void move_beforeOrAfter_whenTodoWithIdentifierExists_whenTargetExists_whenOriginalAndTargetPositionsAreSame_doesNothing() {
         List<String> tasks = asList(
                 "someTask",
                 "anotherTask",
@@ -329,7 +327,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_returnsFalse() throws Exception {
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedToday_returnsFalse() {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618537600000L)); // Tuesday, August 8, 1989 12:00:00 AM
         todoListCommandModel.unlock();
 
@@ -340,7 +338,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsTrue() throws Exception {
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_returnsTrue() {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618429599999L)); // Monday, August 7, 1989 11:29:59 PM
         todoListCommandModel.unlock();
 
@@ -351,7 +349,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_butListIsStillUnlocked_returnsFalse() throws Exception {
+    public void isAbleToBeUnlocked_whenThereAreListUnlocks_whenFirstListUnlockWasCreatedBeforeToday_butListIsStillUnlocked_returnsFalse() {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(618536700000L)); // Monday, August 7, 1989 11:45:00 PM
         todoListCommandModel.unlock();
 
@@ -363,7 +361,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void unlock_whenListIsAbleToBeUnlocked_unlocksTheList() throws Exception {
+    public void unlock_whenListIsAbleToBeUnlocked_unlocksTheList() {
         when(mockClock.instant()).thenReturn(Instant.now());
 
         assertThat(todoListCommandModel.read().isAbleToBeUnlocked()).isTrue();
@@ -374,7 +372,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void unlock_whenListIsUnableToBeUnlocked_throwsLockTimerNotExpiredException() throws Exception {
+    public void unlock_whenListIsUnableToBeUnlocked_throwsLockTimerNotExpiredException() {
         when(mockClock.instant()).thenReturn(Instant.now());
         todoListCommandModel.unlock();
 
@@ -388,7 +386,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void unlockDuration_whenListIsCurrentlyUnlocked_returnsRemainingDurationRelativeToNow_inMs() throws Exception {
+    public void unlockDuration_whenListIsCurrentlyUnlocked_returnsRemainingDurationRelativeToNow_inMs() {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(4900000).plus(Period.ofDays(1)));
         todoListCommandModel.unlock();
 
@@ -397,7 +395,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void unlockDuration_whenListIsCurrentlyLocked_returns0() throws Exception {
+    public void unlockDuration_whenListIsCurrentlyLocked_returns0() {
         when(mockClock.instant()).thenReturn(Instant.ofEpochMilli(3000000L).plus(Period.ofDays(1)));
         todoListCommandModel.unlock();
 
@@ -406,7 +404,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void pull_whenThereAreNoImmediateTodos_fillsFromPostponedList() throws Exception {
+    public void pull_whenThereAreNoImmediateTodos_fillsFromPostponedList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "firstLater");
         todoListCommandModel.addDeferred(new TodoId("someId"), "secondLater");
 
@@ -417,7 +415,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void pull_whenThereAreNoImmediateTodos_andOneDeferredTodo_fillsFromPostponedList() throws Exception {
+    public void pull_whenThereAreNoImmediateTodos_andOneDeferredTodo_fillsFromPostponedList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "firstLater");
 
         todoListCommandModel.pull();
@@ -427,7 +425,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void pull_whenThereAreLessImmediateTodosThanMaxSize_fillsFromPostponedList_withAsManyTodosAsTheDifference() throws Exception {
+    public void pull_whenThereAreLessImmediateTodosThanMaxSize_fillsFromPostponedList_withAsManyTodosAsTheDifference() {
         todoListCommandModel.add(new TodoId("someId"), "firstNow");
         todoListCommandModel.addDeferred(new TodoId("someId"), "firstLater");
         todoListCommandModel.addDeferred(new TodoId("someId"), "secondLater");
@@ -440,7 +438,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void pull_whenThereAreAsManyImmediateTodosAsMaxSize_doesNotFillFromPostponedList() throws Exception {
+    public void pull_whenThereAreAsManyImmediateTodosAsMaxSize_doesNotFillFromPostponedList() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
         todoListCommandModel.add(new TodoId("someId"), "someOtherTask");
         todoListCommandModel.addDeferred(new TodoId("someId"), "firstLater");
@@ -459,7 +457,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void getTodos_getsTodosFromImmediateList() throws Exception {
+    public void getTodos_getsTodosFromImmediateList() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
 
         assertThat(todoListCommandModel.read().getTodos()).extracting("task")
@@ -467,14 +465,14 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void getTodos_doesNotGetTodosFromPostponedList() throws Exception {
+    public void getTodos_doesNotGetTodosFromPostponedList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
 
         assertThat(todoListCommandModel.read().getTodos()).isEmpty();
     }
 
     @Test
-    public void getDeferredTodos_getsTodosFromPostponedList() throws Exception {
+    public void getDeferredTodos_getsTodosFromPostponedList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
 
         todoListCommandModel.unlock();
@@ -483,7 +481,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void getDeferredTodos_doesNotGetTodosFromImmediateList() throws Exception {
+    public void getDeferredTodos_doesNotGetTodosFromImmediateList() {
         todoListCommandModel.add(new TodoId("someId"), "someTask");
 
         todoListCommandModel.unlock();
@@ -491,7 +489,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void getDeferredTodos_whenListIsLocked_returnEmptyList() throws Exception {
+    public void getDeferredTodos_whenListIsLocked_returnEmptyList() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
 
         List<Todo> deferredTodos = todoListCommandModel.read().getDeferredTodos();
@@ -500,7 +498,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void getDeferredTodos_whenListIsNotLocked_getsTodosFromPostponedList() throws Exception {
+    public void getDeferredTodos_whenListIsNotLocked_getsTodosFromPostponedList() {
         Instant unlockInstant = Instant.now();
         when(mockClock.instant()).thenReturn(unlockInstant);
         todoListCommandModel.unlock();
@@ -513,7 +511,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() throws Exception {
+    public void isFull_whenCountOfTodos_isGreaterThanOrEqualToMaxSize_returnsTrue() {
         todoListCommandModel.add(new TodoId("someId"), "todo1");
         todoListCommandModel.add(new TodoId("someId"), "todo2");
 
@@ -526,7 +524,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsNotFull_returnsTrue() throws Exception {
+    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsNotFull_returnsTrue() {
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
 
         boolean hasDeferredTodosAvailable = todoListCommandModel.read().isAbleToBeReplenished();
@@ -535,7 +533,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsFull_returnsFalse() throws Exception {
+    public void isAbleToBeReplenished_whenThereAreDeferredTodos_andTheListIsFull_returnsFalse() {
         todoListCommandModel.add(new TodoId("someId"), "todo1");
         todoListCommandModel.add(new TodoId("someId"), "todo2");
         todoListCommandModel.addDeferred(new TodoId("someId"), "someTask");
@@ -546,7 +544,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeReplenished_whenThereAreNoDeferredTodos_andTheListIsNotFull_returnsFalse() throws Exception {
+    public void isAbleToBeReplenished_whenThereAreNoDeferredTodos_andTheListIsNotFull_returnsFalse() {
         todoListCommandModel.add(new TodoId("someId"), "todo1");
 
         boolean hasDeferredTodosAvailable = todoListCommandModel.read().isAbleToBeReplenished();
@@ -555,7 +553,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void escalate_swapsPositionsOfLastTodoAndFirstDeferredTodo() throws Exception {
+    public void escalate_swapsPositionsOfLastTodoAndFirstDeferredTodo() {
         todoListCommandModel.add(new TodoId("someId"), "will be deferred after escalate");
         todoListCommandModel.add(new TodoId("someId"), "some task");
         todoListCommandModel.addDeferred(new TodoId("someId"), "will no longer be deferred after escalate");
@@ -572,7 +570,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void escalate_whenListIsNotAbleToBeEscalated_throwsEscalateNotAllowedException() throws Exception {
+    public void escalate_whenListIsNotAbleToBeEscalated_throwsEscalateNotAllowedException() {
         todoListCommandModel.add(new TodoId("someId"), "task 2");
 
         exception.expect(EscalateNotAllowException.class);
@@ -580,7 +578,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreDeferredTodos_returnsTrue() throws Exception {
+    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreDeferredTodos_returnsTrue() {
         todoListCommandModel.add(new TodoId("someId"), "task 1");
         todoListCommandModel.add(new TodoId("someId"), "task 2");
         todoListCommandModel.addDeferred(new TodoId("someId"), "task 3");
@@ -589,7 +587,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeEscalated_whenTheListIsNotFull_andThereAreDeferredTodos_returnsFalse() throws Exception {
+    public void isAbleToBeEscalated_whenTheListIsNotFull_andThereAreDeferredTodos_returnsFalse() {
         todoListCommandModel.add(new TodoId("someId"), "task 1");
         todoListCommandModel.addDeferred(new TodoId("someId"), "task 2");
 
@@ -597,7 +595,7 @@ public class TodoListCommandModelTest {
     }
 
     @Test
-    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreNoDeferredTodos_returnsFalse() throws Exception {
+    public void isAbleToBeEscalated_whenTheListIsFull_andThereAreNoDeferredTodos_returnsFalse() {
         todoListCommandModel.add(new TodoId("someId"), "task 1");
         todoListCommandModel.add(new TodoId("someId"), "task 2");
 
