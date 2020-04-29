@@ -1,6 +1,6 @@
 package com.doerapispring.domain
 
-trait OwnedObjectWriteRepository[OwnerId, Id, T] {
+trait OwnedObjectWriteRepository[T, OwnerId, Id] {
     def save(ownerId: OwnerId, id: Id, model: T): Unit = {
         saveAll(ownerId, id, List(model))
     }

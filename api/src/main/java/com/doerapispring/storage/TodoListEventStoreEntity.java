@@ -17,6 +17,13 @@ import java.util.Date;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class TodoListEventStoreEntity {
+
+    public TodoListEventStoreEntity(TodoListEventStoreEntityKey key, Class<? extends TodoListEvent> eventClass, String data) {
+        this.key = key;
+        this.eventClass = eventClass;
+        this.data = data;
+    }
+
     @EmbeddedId
     public TodoListEventStoreEntityKey key;
 
