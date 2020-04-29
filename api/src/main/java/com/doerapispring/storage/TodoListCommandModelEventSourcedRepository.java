@@ -42,8 +42,8 @@ public class TodoListCommandModelEventSourcedRepository implements OwnedObjectRe
                     TodoListEvent todoListEvent = model.getDomainEvents().get(i);
                     return TodoListEventStoreEntity.builder()
                             .key(new TodoListEventStoreEntityKey(
-                                    todoListEvent.userId(),
-                                    todoListEvent.listId(),
+                                    model.getUserId().get(),
+                                    model.getListId().get(),
                                     model.getVersion() + i))
                             .eventClass(todoListEvent.getClass())
                             .data(serializeEvent(todoListEvent))

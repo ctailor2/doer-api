@@ -104,7 +104,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void add(TodoId todoId, String task) {
-        handleEvent(new TodoAddedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
+        handleEvent(new TodoAddedEvent(todoId.getIdentifier(), task));
     }
 
     private void handleEvent(TodoAddedEvent todoAddedEvent) {
@@ -121,7 +121,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void addDeferred(TodoId todoId, String task) {
-        handleEvent(new DeferredTodoAddedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
+        handleEvent(new DeferredTodoAddedEvent(todoId.getIdentifier(), task));
     }
 
     private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) {
@@ -134,10 +134,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void unlock() {
-        handleEvent(new UnlockedEvent(
-                userId.get(),
-                listId.get(),
-                Date.from(clock.instant())));
+        handleEvent(new UnlockedEvent(Date.from(clock.instant())));
     }
 
     private void handleEvent(UnlockedEvent unlockedEvent) {
@@ -149,7 +146,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void delete(TodoId todoId) {
-        handleEvent(new TodoDeletedEvent(userId.get(), listId.get(), todoId.getIdentifier()));
+        handleEvent(new TodoDeletedEvent(todoId.getIdentifier()));
     }
 
     private void handleEvent(TodoDeletedEvent todoDeletedEvent) {
@@ -167,7 +164,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void displace(TodoId todoId, String task) {
-        handleEvent(new TodoDisplacedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
+        handleEvent(new TodoDisplacedEvent(todoId.getIdentifier(), task));
     }
 
     private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) {
@@ -179,7 +176,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void update(TodoId todoId, String task) {
-        handleEvent(new TodoUpdatedEvent(userId.get(), listId.get(), todoId.getIdentifier(), task));
+        handleEvent(new TodoUpdatedEvent(todoId.getIdentifier(), task));
     }
 
     private void handleEvent(TodoUpdatedEvent todoUpdatedEvent) {
@@ -194,8 +191,6 @@ public class TodoListCommandModel implements DomainModel {
     public void complete(TodoId todoId) {
         Todo todo = getByTodoId(todoId);
         TodoCompletedEvent todoCompletedEvent = new TodoCompletedEvent(
-                userId.get(),
-                listId.get(),
                 todo.getTodoId().getIdentifier());
         handleEvent(todoCompletedEvent);
     }
@@ -207,8 +202,6 @@ public class TodoListCommandModel implements DomainModel {
 
     public void move(TodoId todoId, TodoId targetTodoId) {
         handleEvent(new TodoMovedEvent(
-                userId.get(),
-                listId.get(),
                 todoId.getIdentifier(),
                 targetTodoId.getIdentifier()));
     }
@@ -224,7 +217,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void pull() {
-        handleEvent(new PulledEvent(userId.get(), listId.get()));
+        handleEvent(new PulledEvent());
     }
 
     private void handleEvent(PulledEvent pulledEvent) {
@@ -266,7 +259,7 @@ public class TodoListCommandModel implements DomainModel {
     }
 
     public void escalate() {
-        handleEvent(new EscalatedEvent(userId.get(), listId.get()));
+        handleEvent(new EscalatedEvent());
     }
 
     private void handleEvent(EscalatedEvent escalatedEvent) {

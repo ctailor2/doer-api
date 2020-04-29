@@ -1,7 +1,5 @@
 package com.doerapispring.domain;
 
-import com.doerapispring.domain.events.TodoCompletedEvent;
-import com.doerapispring.domain.events.TodoListEvent;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -229,13 +227,8 @@ public class TodoListCommandModelTest {
         todoListCommandModel.add(todoId, "someTask");
 
         todoListCommandModel.complete(todoId);
-        List<TodoListEvent> todoListEvents = todoListCommandModel.getDomainEvents();
 
         assertThat(todoListCommandModel.read().getTodos()).isEmpty();
-        assertThat(todoListEvents).contains(new TodoCompletedEvent(
-            userId.get(),
-            listId.get(),
-                "someId"));
     }
 
     @Test

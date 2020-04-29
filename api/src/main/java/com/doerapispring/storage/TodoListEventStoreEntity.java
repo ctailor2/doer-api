@@ -1,6 +1,6 @@
 package com.doerapispring.storage;
 
-import com.doerapispring.domain.events.DomainEvent;
+import com.doerapispring.domain.events.TodoListEvent;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -21,7 +21,7 @@ public class TodoListEventStoreEntity {
     public TodoListEventStoreEntityKey key;
 
     @Column(name = "event_class")
-    public Class<? extends DomainEvent> eventClass;
+    public Class<? extends TodoListEvent> eventClass;
 
     @Column(name = "data")
     public String data;
