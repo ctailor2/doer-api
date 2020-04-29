@@ -1,6 +1,7 @@
 package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,6 +46,9 @@ public class TodoListCommandModelEventSourcedRepositoryTest {
     @Autowired
     private TodoListRepository todoListRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private TodoList todoList;
     private UserId userId;
     private ListId listId;
@@ -60,7 +64,8 @@ public class TodoListCommandModelEventSourcedRepositoryTest {
         todoListCommandModelRepository = new TodoListCommandModelEventSourcedRepository(
                 clock,
                 todoListDao,
-                todoListEventStoreRepository);
+                todoListEventStoreRepository,
+                objectMapper);
     }
 
     @Test

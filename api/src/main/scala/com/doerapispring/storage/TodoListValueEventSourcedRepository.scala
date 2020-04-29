@@ -5,17 +5,15 @@ import java.util.Date
 import com.doerapispring.domain._
 import com.doerapispring.domain.events.TodoListEvent
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.springframework.stereotype.Repository
 
 import scala.jdk.CollectionConverters._
 
 @Repository
 class TodoListValueEventSourcedRepository(private val todoListDao: TodoListDao,
-                                          private val todoListEventStoreRepository: TodoListEventStoreRepository)
+                                          private val todoListEventStoreRepository: TodoListEventStoreRepository,
+                                          private val objectMapper: ObjectMapper)
   extends OwnedObjectReadRepository[TodoListValue, UserId, ListId] {
-  private val objectMapper: ObjectMapper = new ObjectMapper()
-  objectMapper.registerModule(new DefaultScalaModule)
 
   override def find(userId: UserId, listId: ListId): Option[TodoListValue] = {
     val todoListEntity: TodoListEntity = todoListDao.findByEmailAndListId(userId.get, listId.get)

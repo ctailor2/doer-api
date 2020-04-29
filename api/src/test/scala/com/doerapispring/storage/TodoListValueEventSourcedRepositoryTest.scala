@@ -5,6 +5,7 @@ import java.util.Date
 
 import com.doerapispring.domain._
 import com.doerapispring.domain.events.TodoListEvent
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.runner.RunWith
 import org.junit.{Before, Test}
@@ -37,6 +38,9 @@ class TodoListValueEventSourcedRepositoryTest {
   @Autowired
   private val todoListEventRepository: TodoListEventRepository = null
 
+  @Autowired
+  private val objectMapper: ObjectMapper = null
+
   private var todoList: TodoList = _
 
   private var userId: UserId = _
@@ -53,7 +57,7 @@ class TodoListValueEventSourcedRepositoryTest {
     userRepository.save(new User(userId, listId))
     todoList = new TodoList(userId, listId, "someName", 0, new Date(0L))
     todoListRepository.save(todoList)
-    todoListValueRepository = new TodoListValueEventSourcedRepository(todoListDao, todoListEventStoreRepository)
+    todoListValueRepository = new TodoListValueEventSourcedRepository(todoListDao, todoListEventStoreRepository, objectMapper)
   }
 
   @Test

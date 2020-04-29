@@ -5,7 +5,6 @@ import com.doerapispring.domain.events.DomainEvent;
 import com.doerapispring.domain.events.TodoListEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -26,12 +25,11 @@ public class TodoListCommandModelEventSourcedRepository implements OwnedObjectRe
 
     public TodoListCommandModelEventSourcedRepository(Clock clock,
                                                       TodoListDao todoListDao,
-                                                      TodoListEventStoreRepository todoListEventStoreRepository) {
+                                                      TodoListEventStoreRepository todoListEventStoreRepository,
+                                                      ObjectMapper objectMapper) {
         this.clock = clock;
         this.todoListDao = todoListDao;
         this.todoListEventStoreRepository = todoListEventStoreRepository;
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new DefaultScalaModule());
         this.objectMapper = objectMapper;
     }
 

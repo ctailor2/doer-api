@@ -3,17 +3,15 @@ package com.doerapispring.storage
 import com.doerapispring.domain.events.TodoListEvent
 import com.doerapispring.domain.{ListId, OwnedObjectWriteRepository, UserId}
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.springframework.stereotype.Repository
 
 import scala.jdk.CollectionConverters._
 
 @Repository
 class TodoListEventRepository(private val todoListDao: TodoListDao,
-                              private val todoListEventStoreRepository: TodoListEventStoreRepository)
+                              private val todoListEventStoreRepository: TodoListEventStoreRepository,
+                              private val objectMapper: ObjectMapper)
   extends OwnedObjectWriteRepository[TodoListEvent, UserId, ListId] {
-  private val objectMapper: ObjectMapper = new ObjectMapper()
-  objectMapper.registerModule(new DefaultScalaModule)
 
   override def save(userId: UserId, listId: ListId, todoListEvent: TodoListEvent): Unit = saveAll(userId, listId, List(todoListEvent))
 
