@@ -21,10 +21,9 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
     private final TodoListEventStoreRepository todoListEventStoreRepository;
     private final ObjectMapper objectMapper;
 
-    public CompletedTodoListEventSourcedRepository(TodoListEventStoreRepository todoListEventStoreRepository) {
+    public CompletedTodoListEventSourcedRepository(TodoListEventStoreRepository todoListEventStoreRepository,
+                                                   ObjectMapper objectMapper) {
         this.todoListEventStoreRepository = todoListEventStoreRepository;
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new DefaultScalaModule());
         this.objectMapper = objectMapper;
     }
 
