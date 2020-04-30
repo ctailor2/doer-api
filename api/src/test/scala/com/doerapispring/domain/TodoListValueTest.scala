@@ -12,7 +12,7 @@ import scala.jdk.CollectionConverters._
 
 //noinspection AccessorLikeMethodIsUnit
 class  TodoListValueTest {
-  private val todoListValue: TodoListValue = new TodoListValue(scala.collection.immutable.List.empty, "someName", Date.from(Instant.EPOCH), 0)
+  private val todoListValue: TodoListValue = new TodoListValue(scala.collection.immutable.List.empty, Date.from(Instant.EPOCH), 0)
 
   @Test
   def add_addsToNowList(): Unit = {

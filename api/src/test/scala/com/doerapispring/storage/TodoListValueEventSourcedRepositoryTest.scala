@@ -47,7 +47,7 @@ class TodoListValueEventSourcedRepositoryTest {
 
   private var listId: ListId = _
 
-  private val todoListValue = TodoListValue(List(), "someName", new Date(0L), 0)
+  private val todoListValue = TodoListValue(List(), new Date(0L), 0)
 
   @Before
   @throws[Exception]

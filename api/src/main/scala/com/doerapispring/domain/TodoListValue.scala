@@ -5,7 +5,6 @@ import java.util.{Calendar, Date, TimeZone}
 import com.doerapispring.domain.events._
 
 case class TodoListValue(todos: List[Todo],
-                         name: String,
                          lastUnlockedAt: Date,
                          demarcationIndex: Integer)
 
@@ -125,7 +124,7 @@ object TodoListValue {
   }
 
   def escalate(todoList: TodoListValue): (TodoListValue, TodoListEvent) = {
-    if (!isFull(todoList) || todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size).isEmpty) {
+    if (!isAbleToBeEscalated(todoList)) {
       throw new EscalateNotAllowException
     }
     val first :: second :: third :: rest = todoList.todos

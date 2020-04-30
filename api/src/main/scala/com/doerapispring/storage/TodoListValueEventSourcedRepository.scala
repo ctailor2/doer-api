@@ -17,7 +17,7 @@ class TodoListValueEventSourcedRepository(private val todoListDao: TodoListDao,
 
   override def find(userId: UserId, listId: ListId): Option[TodoListValue] = {
     val todoListEntity: TodoListEntity = todoListDao.findByEmailAndListId(userId.get, listId.get)
-    val todoListValue: TodoListValue = TodoListValue(List(), todoListEntity.name, Date.from(todoListEntity.lastUnlockedAt.toInstant), todoListEntity.demarcationIndex)
+    val todoListValue: TodoListValue = TodoListValue(List(), Date.from(todoListEntity.lastUnlockedAt.toInstant), todoListEntity.demarcationIndex)
     val eventStoreEntities: List[TodoListEventStoreEntity] = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get, listId.get).asScala.toList
     val events: List[TodoListEvent] = {
       eventStoreEntities.map(eventStoreEntity => objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass))
