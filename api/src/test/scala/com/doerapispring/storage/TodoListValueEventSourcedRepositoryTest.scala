@@ -84,7 +84,7 @@ class TodoListValueEventSourcedRepositoryTest {
     )
     val todoListEvents: List[TodoListEvent] = List()
     val (resultingTodoListValue, resultingTodoListEvents) = setupPlan.foldLeft((todoListValue, todoListEvents))((accumTuple, function) => {
-      val (todoListValue, todoListEvent) = function.apply(accumTuple._1)
+      val (todoListValue, todoListEvent) = function.apply(accumTuple._1).get
       (todoListValue, accumTuple._2 :+ todoListEvent)
     })
 
@@ -103,7 +103,7 @@ class TodoListValueEventSourcedRepositoryTest {
     )
     val todoListEvents: List[TodoListEvent] = List()
     val (_, resultingTodoListEvents) = setupPlan.foldLeft((todoListValue, todoListEvents))((accumTuple, function) => {
-      val (todoListValue, todoListEvent) = function.apply(accumTuple._1)
+      val (todoListValue, todoListEvent) = function.apply(accumTuple._1).get
       (todoListValue, accumTuple._2 :+ todoListEvent)
     })
 
@@ -111,7 +111,7 @@ class TodoListValueEventSourcedRepositoryTest {
 
     val retrievedTodoListValue1 = todoListValueRepository.find(userId, listId).get
 
-    val (resultingTodoListValue, event) = TodoListValue.update(retrievedTodoListValue1, todoIdToUpdate, "newTask")
+    val (resultingTodoListValue, event) = TodoListValue.update(retrievedTodoListValue1, todoIdToUpdate, "newTask").get
 
     todoListEventRepository.save(userId, listId, event)
 

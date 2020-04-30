@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Repository
 
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success, Try}
 
 @Repository
 class TodoListValueEventSourcedRepository(private val todoListDao: TodoListDao,
@@ -22,6 +23,9 @@ class TodoListValueEventSourcedRepository(private val todoListDao: TodoListDao,
     val events: List[TodoListEvent] = {
       eventStoreEntities.map(eventStoreEntity => objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass))
     }
-    Option.apply(events.foldLeft(todoListValue)((todoList, event) => TodoListValue.applyEvent(todoList, event)))
+    events.foldLeft(Try(todoListValue)) {
+      case (Success(todoList), event) => TodoListValue.applyEvent(todoList, event)
+      case (Failure(exception), _) => Failure(exception)
+    }.toOption
   }
 }
