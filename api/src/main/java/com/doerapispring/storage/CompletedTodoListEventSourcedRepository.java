@@ -6,7 +6,6 @@ import com.doerapispring.domain.OwnedObjectRepository;
 import com.doerapispring.domain.UserId;
 import com.doerapispring.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -38,7 +37,8 @@ public class CompletedTodoListEventSourcedRepository implements OwnedObjectRepos
                 listId.get(),
                 asList(TodoAddedEvent.class,
                         DeferredTodoAddedEvent.class,
-                        TodoCompletedEvent.class));
+                        TodoCompletedEvent.class,
+                        TodoDisplacedEvent.class));
         List<TimestampedDomainEvent> timestampedDomainEvents = eventStoreEntities.stream()
                 .map(this::deserializeEvent)
                 .collect(Collectors.toList());

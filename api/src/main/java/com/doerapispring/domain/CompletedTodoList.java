@@ -69,6 +69,9 @@ public class CompletedTodoList {
             case "com.doerapispring.domain.events.DeferredTodoAddedEvent":
                 handleEvent((DeferredTodoAddedEvent) domainEvent);
                 break;
+            case "com.doerapispring.domain.events.TodoDisplacedEvent":
+                handleEvent((TodoDisplacedEvent) domainEvent);
+                break;
             case "com.doerapispring.domain.events.TodoCompletedEvent":
                 handleEvent((TodoCompletedEvent) domainEvent, timestampedDomainEvent.date());
                 break;
@@ -83,6 +86,10 @@ public class CompletedTodoList {
                 new CompletedTodoId(todoId),
                 this.addedTodos.get(todoId),
                 date));
+    }
+
+    private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) {
+        this.addedTodos.put(todoDisplacedEvent.todoId(), todoDisplacedEvent.task());
     }
 
     private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) {

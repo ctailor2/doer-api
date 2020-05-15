@@ -85,6 +85,40 @@ public class CompletedTodoListEventSourcedRepositoryTest {
     }
 
     @Test
+    public void includesCompletedTodosFromAllOrigins() {
+        TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
+        todoListCommandModel.add(new TodoId("todoId1"), "task1");
+        TodoId todoId2 = new TodoId("todoId2");
+        todoListCommandModel.add(todoId2, "task2");
+        TodoId displacingTodoId = new TodoId("displacingTodoId");
+        todoListCommandModel.displace(displacingTodoId, "displacingTask");
+        TodoId deferredTodoId = new TodoId("deferredTodoId");
+        todoListCommandModel.addDeferred(deferredTodoId, "deferredTask");
+        todoListCommandModel.complete(todoId2);
+        todoListCommandModel.complete(displacingTodoId);
+        todoListCommandModel.complete(deferredTodoId);
+        todoListCommandModelEventSourcedRepository.save(todoListCommandModel);
+
+        Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
+        assertThat(optionalCompletedTodoList).isNotEmpty();
+        assertThat(optionalCompletedTodoList.get().getTodos())
+                .usingElementComparatorIgnoringFields("completedAt")
+                .contains(
+                        new CompletedTodo(
+                                new CompletedTodoId(todoId2.getIdentifier()),
+                                "task2",
+                                Date.from(Instant.now())),
+                        new CompletedTodo(
+                                new CompletedTodoId(displacingTodoId.getIdentifier()),
+                                "displacingTask",
+                                Date.from(Instant.now())),
+                        new CompletedTodo(
+                                new CompletedTodoId(deferredTodoId.getIdentifier()),
+                                "deferredTask",
+                                Date.from(Instant.now())));
+    }
+
+    @Test
     public void retrievesCompletedTodoListWithTodosInDescendingOrderByVersion() {
         Instant now = Instant.now();
         Instant earlierInstant = now.minusSeconds(20);
