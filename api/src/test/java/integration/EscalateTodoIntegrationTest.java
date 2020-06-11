@@ -9,6 +9,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
+import scala.jdk.javaapi.CollectionConverters;
+
+import java.sql.Date;
+import java.time.Clock;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -32,6 +36,9 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private Clock clock;
 
     private ListId defaultListId;
 
@@ -57,11 +64,11 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         listApplicationService.unlock(user, defaultListId);
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
+        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))
             .containsExactly("will remain", "will no longer be deferred after the escalate");
-        Assertions.assertThat(newTodoList.getDeferredTodos()).extracting("task")
+        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())).map(Todo::getTask)))
             .containsExactly("will become deferred after the escalate");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

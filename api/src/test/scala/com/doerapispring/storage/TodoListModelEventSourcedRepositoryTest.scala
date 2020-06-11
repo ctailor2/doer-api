@@ -20,8 +20,8 @@ import org.springframework.test.context.junit4.SpringRunner
 @Sql(scripts = Array("/cleanup.sql"), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles(value = Array("test"))
 @RunWith(classOf[SpringRunner])
-class TodoListValueEventSourcedRepositoryTest {
-  private var todoListValueRepository: TodoListValueEventSourcedRepository = _
+class TodoListModelEventSourcedRepositoryTest {
+  private var todoListModelRepository: TodoListModelEventSourcedRepository = _
 
   @Autowired
   private val todoListDao: TodoListDao = null
@@ -43,21 +43,19 @@ class TodoListValueEventSourcedRepositoryTest {
 
   private var todoList: TodoList = _
 
-  private var userId: UserId = _
+  private val userId: UserId = new UserId("someUserIdentifier")
 
-  private var listId: ListId = _
+  private val listId: ListId = new ListId("someListIdentifier")
 
-  private val todoListValue = TodoListValue(List(), new Date(0L), 0)
+  private val todoListValue = TodoListModel(listId, "someName", List(), new Date(0L), 0)
 
   @Before
   @throws[Exception]
   def setUp(): Unit = {
-    userId = new UserId("someUserIdentifier")
-    listId = new ListId("someListIdentifier")
     userRepository.save(new User(userId, listId))
     todoList = new TodoList(userId, listId, "someName", 0, new Date(0L))
     todoListRepository.save(todoList)
-    todoListValueRepository = new TodoListValueEventSourcedRepository(todoListDao, todoListEventStoreRepository, objectMapper)
+    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListDao, todoListEventStoreRepository, objectMapper)
   }
 
   @Test
@@ -68,19 +66,19 @@ class TodoListValueEventSourcedRepositoryTest {
     val todoIdToUpdate = new TodoId("updateMe")
     val todoIdToComplete = new TodoId("completeMe")
     val setupPlan = List(
-      (todoListValue: TodoListValue) => TodoListValue.add(todoListValue, new TodoId("someTodoIdentifier"), "someTask"),
-      (todoListValue: TodoListValue) => TodoListValue.addDeferred(todoListValue, todoIdToMove1, "someDeferredTask1"),
-      (todoListValue: TodoListValue) => TodoListValue.addDeferred(todoListValue, todoIdToMove2, "someDeferredTask2"),
-      (todoListValue: TodoListValue) => TodoListValue.move(todoListValue, todoIdToMove1, todoIdToMove2),
-      (todoListValue: TodoListValue) => TodoListValue.addDeferred(todoListValue, todoIdToDelete, "taskToDelete"),
-      (todoListValue: TodoListValue) => TodoListValue.delete(todoListValue, todoIdToDelete),
-      (todoListValue: TodoListValue) => TodoListValue.addDeferred(todoListValue, todoIdToUpdate, "taskToUpdate"),
-      (todoListValue: TodoListValue) => TodoListValue.update(todoListValue, todoIdToUpdate, "updatedTask"),
-      (todoListValue: TodoListValue) => TodoListValue.pull(todoListValue),
-      (todoListValue: TodoListValue) => TodoListValue.escalate(todoListValue),
-      (todoListValue: TodoListValue) => TodoListValue.displace(todoListValue, todoIdToComplete, "someImportantTask"),
-      (todoListValue: TodoListValue) => TodoListValue.complete(todoListValue, todoIdToComplete),
-      (todoListValue: TodoListValue) => TodoListValue.unlock(todoListValue, Date.from(Instant.now()))
+      (todoListValue: TodoListModel) => TodoListModel.add(todoListValue, new TodoId("someTodoIdentifier"), "someTask"),
+      (todoListValue: TodoListModel) => TodoListModel.addDeferred(todoListValue, todoIdToMove1, "someDeferredTask1"),
+      (todoListValue: TodoListModel) => TodoListModel.addDeferred(todoListValue, todoIdToMove2, "someDeferredTask2"),
+      (todoListValue: TodoListModel) => TodoListModel.move(todoListValue, todoIdToMove1, todoIdToMove2),
+      (todoListValue: TodoListModel) => TodoListModel.addDeferred(todoListValue, todoIdToDelete, "taskToDelete"),
+      (todoListValue: TodoListModel) => TodoListModel.delete(todoListValue, todoIdToDelete),
+      (todoListValue: TodoListModel) => TodoListModel.addDeferred(todoListValue, todoIdToUpdate, "taskToUpdate"),
+      (todoListValue: TodoListModel) => TodoListModel.update(todoListValue, todoIdToUpdate, "updatedTask"),
+      (todoListValue: TodoListModel) => TodoListModel.pull(todoListValue),
+      (todoListValue: TodoListModel) => TodoListModel.escalate(todoListValue),
+      (todoListValue: TodoListModel) => TodoListModel.displace(todoListValue, todoIdToComplete, "someImportantTask"),
+      (todoListValue: TodoListModel) => TodoListModel.complete(todoListValue, todoIdToComplete),
+      (todoListValue: TodoListModel) => TodoListModel.unlock(todoListValue, Date.from(Instant.now()))
     )
     val todoListEvents: List[TodoListEvent] = List()
     val (resultingTodoListValue, resultingTodoListEvents) = setupPlan.foldLeft((todoListValue, todoListEvents))((accumTuple, function) => {
@@ -90,16 +88,16 @@ class TodoListValueEventSourcedRepositoryTest {
 
     todoListEventRepository.saveAll(userId, listId, resultingTodoListEvents)
 
-    val retrievedTodoListValue = todoListValueRepository.find(userId, listId).get
-    assertThat(retrievedTodoListValue).isEqualTo(resultingTodoListValue)
+    val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
+    assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)
   }
 
   @Test
   def savesExistingTodoList(): Unit = {
     val todoIdToUpdate = new TodoId("someTodoIdentifier")
     val setupPlan = List(
-      (todoListValue: TodoListValue) => TodoListValue.add(todoListValue, todoIdToUpdate, "someTask"),
-      (todoListValue: TodoListValue) => TodoListValue.addDeferred(todoListValue, new TodoId("someDeferredTodoIdentifier1"), "someDeferredTask1")
+      (todoListValue: TodoListModel) => TodoListModel.add(todoListValue, todoIdToUpdate, "someTask"),
+      (todoListValue: TodoListModel) => TodoListModel.addDeferred(todoListValue, new TodoId("someDeferredTodoIdentifier1"), "someDeferredTask1")
     )
     val todoListEvents: List[TodoListEvent] = List()
     val (_, resultingTodoListEvents) = setupPlan.foldLeft((todoListValue, todoListEvents))((accumTuple, function) => {
@@ -109,13 +107,13 @@ class TodoListValueEventSourcedRepositoryTest {
 
     todoListEventRepository.saveAll(userId, listId, resultingTodoListEvents)
 
-    val retrievedTodoListValue1 = todoListValueRepository.find(userId, listId).get
+    val retrievedTodoListModel1 = todoListModelRepository.find(userId, listId).get
 
-    val (resultingTodoListValue, event) = TodoListValue.update(retrievedTodoListValue1, todoIdToUpdate, "newTask").get
+    val (resultingTodoListModel, event) = TodoListModel.update(retrievedTodoListModel1, todoIdToUpdate, "newTask").get
 
     todoListEventRepository.save(userId, listId, event)
 
-    val retrievedTodoListValue2 = todoListValueRepository.find(userId, listId).get
-    assertThat(retrievedTodoListValue2).isEqualTo(resultingTodoListValue)
+    val retrievedTodoListModel2 = todoListModelRepository.find(userId, listId).get
+    assertThat(retrievedTodoListModel2).isEqualTo(resultingTodoListModel)
   }
 }

@@ -9,6 +9,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
+import scala.jdk.javaapi.CollectionConverters;
+
+import java.time.Clock;
+import java.util.Date;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -35,6 +39,9 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     private ListId defaultListId;
 
+    @Autowired
+    private Clock clock;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -57,11 +64,11 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
         listApplicationService.unlock(user, defaultListId);
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
+        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))
             .containsExactly("will get pulled", "will also get pulled");
-        Assertions.assertThat(newTodoList.getDeferredTodos()).extracting("task")
+        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())).map(Todo::getTask)))
             .containsExactly("keep for later");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

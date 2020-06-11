@@ -6,13 +6,16 @@ import org.springframework.stereotype.Service
 import scala.util.{Failure, Success}
 
 @Service
-class TodoService(private val todoListRepository: OwnedObjectReadRepository[TodoListValue, UserId, ListId],
+class TodoService(private val todoListRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
                   private val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
                   private val todoRepository: IdentityGeneratingRepository[TodoId]) extends TodoApplicationService {
 
   override def create(user: User, listId: ListId, task: String): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.add(todoList, todoRepository.nextIdentifier(), task))
+      .map(todoList => TodoListModel.addCapability(todoList))
+      .map {
+        case Success(func) => func.apply(todoRepository.nextIdentifier(), task)
+      }
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -21,7 +24,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def createDeferred(user: User, listId: ListId, task: String): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.addDeferred(todoList, todoRepository.nextIdentifier(), task))
+      .map(todoList => TodoListModel.addDeferred(todoList, todoRepository.nextIdentifier(), task))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -30,7 +33,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def delete(user: User, listId: ListId, todoId: TodoId): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.delete(todoList, todoId))
+      .map(todoList => TodoListModel.delete(todoList, todoId))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -39,16 +42,18 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def displace(user: User, listId: ListId, task: String): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.displace(todoList, todoRepository.nextIdentifier(), task))
+      .map(todoList => TodoListModel.displaceCapability(todoList))
+      .map {
+        case Success(func) => func.apply(todoRepository.nextIdentifier(), task)
+      }
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
-        case Failure(_) =>
       }
   }
 
   override def update(user: User, listId: ListId, todoId: TodoId, task: String): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.update(todoList, todoId, task))
+      .map(todoList => TodoListModel.update(todoList, todoId, task))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -57,7 +62,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def complete(user: User, listId: ListId, todoId: TodoId): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.complete(todoList, todoId))
+      .map(todoList => TodoListModel.complete(todoList, todoId))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -66,7 +71,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def move(user: User, listId: ListId, todoId: TodoId, targetTodoId: TodoId): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.move(todoList, todoId, targetTodoId))
+      .map(todoList => TodoListModel.move(todoList, todoId, targetTodoId))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -75,7 +80,10 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def pull(user: User, listId: ListId): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.pull(todoList))
+      .map(todoList => TodoListModel.pullCapability(todoList))
+      .map {
+        case Success(func) => func.apply()
+      }
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>
@@ -84,7 +92,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
 
   override def escalate(user: User, listId: ListId): Unit = {
     todoListRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListValue.escalate(todoList))
+      .map(todoList => TodoListModel.escalate(todoList))
       .foreach {
         case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
         case Failure(_) =>

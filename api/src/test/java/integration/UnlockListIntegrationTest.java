@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Clock;
+import java.util.Date;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,6 +34,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     private ListId defaultListId;
 
+    @Autowired
+    private Clock clock;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -48,9 +54,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
+        TodoListModel todoList = listApplicationService.get(user, defaultListId);
 
-        assertThat(todoList.isAbleToBeUnlocked(), equalTo(false));
+        assertThat(TodoListModel.unlockCapability(todoList, Date.from(clock.instant())).isSuccess(), equalTo(false));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());

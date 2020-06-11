@@ -3,12 +3,14 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
-import com.doerapispring.domain.TodoListReadModel;
+import com.doerapispring.domain.TodoListModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Clock;
+import java.util.Date;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -19,14 +21,17 @@ import static java.util.stream.Collectors.toList;
 class ListsController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final ListApplicationService listApplicationService;
-    private final TodoListReadModelResourceTransformer todoListReadModelResourceTransformer;
+    private final TodoListModelResourceTransformer todoListModelResourceTransformer;
+    private final Clock clock;
 
     ListsController(HateoasLinkGenerator hateoasLinkGenerator,
                     ListApplicationService listApplicationService,
-                    TodoListReadModelResourceTransformer todoListReadModelResourceTransformer) {
+                    TodoListModelResourceTransformer todoListModelResourceTransformer,
+                    Clock clock) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.listApplicationService = listApplicationService;
-        this.todoListReadModelResourceTransformer = todoListReadModelResourceTransformer;
+        this.todoListModelResourceTransformer = todoListModelResourceTransformer;
+        this.clock = clock;
     }
 
     @PostMapping(value = "/lists/{listId}/unlock")
@@ -44,8 +49,8 @@ class ListsController {
     @RequestMapping("/lists/default")
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> showDefault(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        TodoListReadModel todoListReadModel = listApplicationService.getDefault(authenticatedUser.getUser());
-        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.transform(todoListReadModel);
+        TodoListModel todoListModel = listApplicationService.getDefault(authenticatedUser.getUser());
+        TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 
@@ -53,8 +58,8 @@ class ListsController {
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @PathVariable String listId) {
-        TodoListReadModel todoListReadModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
-        TodoListReadModelResponse todoListReadModelResponse = todoListReadModelResourceTransformer.transform(todoListReadModel);
+        TodoListModel todoListModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
+        TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 

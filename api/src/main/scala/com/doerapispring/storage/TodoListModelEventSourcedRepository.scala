@@ -11,20 +11,20 @@ import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 @Repository
-class TodoListValueEventSourcedRepository(private val todoListDao: TodoListDao,
+class TodoListModelEventSourcedRepository(private val todoListDao: TodoListDao,
                                           private val todoListEventStoreRepository: TodoListEventStoreRepository,
                                           private val objectMapper: ObjectMapper)
-  extends OwnedObjectReadRepository[TodoListValue, UserId, ListId] {
+  extends OwnedObjectReadRepository[TodoListModel, UserId, ListId] {
 
-  override def find(userId: UserId, listId: ListId): Option[TodoListValue] = {
+  override def find(userId: UserId, listId: ListId): Option[TodoListModel] = {
     val todoListEntity: TodoListEntity = todoListDao.findByEmailAndListId(userId.get, listId.get)
-    val todoListValue: TodoListValue = TodoListValue(List(), Date.from(todoListEntity.lastUnlockedAt.toInstant), todoListEntity.demarcationIndex)
+    val todoListValue: TodoListModel = TodoListModel(listId, todoListEntity.name, List(), Date.from(todoListEntity.lastUnlockedAt.toInstant), todoListEntity.demarcationIndex)
     val eventStoreEntities: List[TodoListEventStoreEntity] = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get, listId.get).asScala.toList
     val events: List[TodoListEvent] = {
       eventStoreEntities.map(eventStoreEntity => objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass))
     }
     events.foldLeft(Try(todoListValue)) {
-      case (Success(todoList), event) => TodoListValue.applyEvent(todoList, event)
+      case (Success(todoList), event) => TodoListModel.applyEvent(todoList, event)
       case (Failure(exception), _) => Failure(exception)
     }.toOption
   }

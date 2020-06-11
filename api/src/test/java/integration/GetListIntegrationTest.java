@@ -12,6 +12,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.Clock;
+import java.util.Date;
+
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -43,6 +46,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
 
     private ListId defaultListId;
 
+    @Autowired
+    private Clock clock;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -64,10 +70,11 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         todoApplicationService.create(user, defaultListId, "this and that");
         todoApplicationService.createDeferred(user, defaultListId, "here and there");
         todoApplicationService.createDeferred(user, defaultListId, "near and far");
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = todoList.getTodos().get(0);
-        Todo firstDeferredTodo = todoList.getDeferredTodos().get(0);
-        Todo secondDeferredTodo = todoList.getDeferredTodos().get(1);
+        TodoListModel todoList = listApplicationService.get(user, defaultListId);
+        Todo todo = TodoListModel.getTodos(todoList).head();
+        Date now = Date.from(clock.instant());
+        Todo firstDeferredTodo = TodoListModel.getDeferredTodos(todoList, now).head();
+        Todo secondDeferredTodo = TodoListModel.getDeferredTodos(todoList, now).last();
 
         doGet();
 

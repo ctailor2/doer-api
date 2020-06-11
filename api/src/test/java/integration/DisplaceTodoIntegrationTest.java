@@ -11,11 +11,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Clock;
+import java.util.Date;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -35,6 +39,9 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     private UserService userService;
 
     private ListId defaultListId;
+
+    @Autowired
+    private Clock clock;
 
     @Override
     @Before
@@ -60,11 +67,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         listApplicationService.unlock(user, defaultListId);
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
+        Assertions.assertThat(asJava(TodoListModel.getTodos(newTodoList))).extracting("task")
             .containsExactly("do the things", "some task");
-        Assertions.assertThat(newTodoList.getDeferredTodos()).extracting("task")
+        Assertions.assertThat(asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())))).extracting("task")
             .containsExactly("some other task");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

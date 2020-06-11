@@ -14,6 +14,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -48,17 +49,17 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void delete_removesTodo() throws Exception {
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = todoList.getTodos().get(0);
+        TodoListModel todoList = listApplicationService.get(user, defaultListId);
+        Todo todo = TodoListModel.getTodos(todoList).head();
 
         MvcResult mvcResult = mockMvc.perform(delete("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
             .headers(httpHeaders))
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        assertThat(newTodoList.getTodos(), hasSize(0));
+        assertThat(asJava(TodoListModel.getTodos(newTodoList)), hasSize(0));
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())));

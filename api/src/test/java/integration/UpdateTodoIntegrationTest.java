@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import scala.jdk.javaapi.CollectionConverters;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -50,8 +51,8 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
     @Test
     public void update() throws Exception {
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = todoList.getTodos().get(0);
+        TodoListModel todoList = listApplicationService.get(user, defaultListId);
+        Todo todo = TodoListModel.getTodos(todoList).head();
 
         MvcResult mvcResult = mockMvc.perform(put("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
             .content("{\"task\":\"do the things\"}")
@@ -60,9 +61,9 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(newTodoList.getTodos()).extracting("task")
+        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))
             .contains("do the things");
         assertThat(responseContent, isJson());
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));

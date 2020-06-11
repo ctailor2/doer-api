@@ -11,8 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import scala.jdk.javaapi.CollectionConverters;
 
-import java.time.Clock;
 import java.util.Collections;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
@@ -43,8 +43,9 @@ public class ResourcesControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         defaultListId = new ListId("someListId");
+        java.util.List<Todo> emptyList = Collections.emptyList();
         when(listApplicationService.getDefault(any())).thenReturn(
-            new TodoListReadModel(mock(Clock.class), "someName", null, Collections.emptyList(), null, defaultListId, user.getUserId()));
+            new TodoListModel(defaultListId, "someName", CollectionConverters.asScala(emptyList).toList(), null, null, null, null));
     }
 
     @Test

@@ -14,6 +14,7 @@ import org.springframework.security.web.method.annotation.AuthenticationPrincipa
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 
@@ -34,10 +35,10 @@ public class ListsControllerTest {
 
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
-    private TodoListReadModel todoListReadModel;
+    private TodoListModel todoListReadModel;
     private User user;
     private String listId = "someListId";
-    private TodoListReadModelResourceTransformer todoListResourceTransformer;
+    private TodoListModelResourceTransformer todoListResourceTransformer;
     private TodoListReadModelResponse todoListReadModelResponse;
 
     @Before
@@ -45,22 +46,22 @@ public class ListsControllerTest {
         listApplicationService = mock(ListApplicationService.class);
         authenticatedUser = mock(AuthenticatedUser.class);
         user = mock(User.class);
-        todoListResourceTransformer = mock(TodoListReadModelResourceTransformer.class);
+        todoListResourceTransformer = mock(TodoListModelResourceTransformer.class);
         todoListReadModelResponse = new TodoListReadModelResponse(new TodoListReadModelDTO("someProfileName", "someName", "someDeferredName", emptyList(), emptyList(), 0L));
         when(authenticatedUser.getUser()).thenReturn(user);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        listsController = new ListsController(new MockHateoasLinkGenerator(), listApplicationService, todoListResourceTransformer);
+        listsController = new ListsController(new MockHateoasLinkGenerator(), listApplicationService, todoListResourceTransformer, Clock.systemUTC());
         mockMvc = MockMvcBuilders
             .standaloneSetup(listsController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
 
-        todoListReadModel = mock(TodoListReadModel.class);
-        when(todoListReadModel.getListId()).thenReturn(new ListId(listId));
+        todoListReadModel = mock(TodoListModel.class);
+        when(todoListReadModel.listId()).thenReturn(new ListId(listId));
         when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
         when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);
         when(listApplicationService.getCompleted(any(), any())).thenReturn(new CompletedTodoList(new UserId("someUserId"), new ListId(listId), emptyList()));
-        when(todoListResourceTransformer.transform(any())).thenReturn(todoListReadModelResponse);
+        when(todoListResourceTransformer.transform(any(), any())).thenReturn(todoListReadModelResponse);
     }
 
     @Test
@@ -95,7 +96,7 @@ public class ListsControllerTest {
     public void show_transformsTheListToAResource() {
         listsController.show(authenticatedUser, listId);
 
-        verify(todoListResourceTransformer).transform(todoListReadModel);
+        verify(todoListResourceTransformer).transform(eq(todoListReadModel), any());
     }
 
     @Test
@@ -117,7 +118,7 @@ public class ListsControllerTest {
     public void showDefault_transformsTheListToAResource() {
         listsController.showDefault(authenticatedUser);
 
-        verify(todoListResourceTransformer).transform(todoListReadModel);
+        verify(todoListResourceTransformer).transform(eq(todoListReadModel), any());
     }
 
     @Test

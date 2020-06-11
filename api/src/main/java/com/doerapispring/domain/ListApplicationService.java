@@ -5,11 +5,11 @@ import java.util.List;
 public interface ListApplicationService {
     void unlock(User user, ListId listId);
 
-    TodoListReadModel getDefault(User user);
+    TodoListModel getDefault(User user);
 
     CompletedTodoList getCompleted(User user, ListId listId);
 
-    TodoListReadModel get(User user, ListId listId);
+    TodoListModel get(User user, ListId listId);
 
     List<TodoList> getAll(User user);
 

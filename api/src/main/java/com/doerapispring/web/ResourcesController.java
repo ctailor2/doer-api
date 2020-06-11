@@ -2,7 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
-import com.doerapispring.domain.TodoListReadModel;
+import com.doerapispring.domain.TodoListModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,11 +57,11 @@ class ResourcesController {
     @RequestMapping(value = "/v1/resources/history", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        TodoListReadModel defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
+        TodoListModel defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.completedListLink(defaultList.getListId().get()).withRel("completedList"));
+            hateoasLinkGenerator.completedListLink(defaultList.listId().get()).withRel("completedList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 }

@@ -16,6 +16,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -51,20 +52,20 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
     public void complete_completesTodo() throws Exception {
         todoApplicationService.create(user, defaultListId, "some other task");
         todoApplicationService.create(user, defaultListId, "some task");
-        TodoListReadModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo1 = todoList.getTodos().get(0);
-        Todo todo2 = todoList.getTodos().get(1);
+        TodoListModel todoList = listApplicationService.get(user, defaultListId);
+        Todo todo1 = TodoListModel.getTodos(todoList).head();
+        Todo todo2 = TodoListModel.getTodos(todoList).last();
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo1.getTodoId().getIdentifier() + "/complete")
-            .headers(httpHeaders))
-            .andReturn();
+                .headers(httpHeaders))
+                .andReturn();
         mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo2.getTodoId().getIdentifier() + "/complete")
-            .headers(httpHeaders))
-            .andReturn();
+                .headers(httpHeaders))
+                .andReturn();
 
-        TodoListReadModel newTodoList = listApplicationService.get(user, defaultListId);
+        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        assertThat(newTodoList.getTodos(), hasSize(0));
+        assertThat(asJava(TodoListModel.getTodos(newTodoList)), hasSize(0));
         List<CompletedTodo> completedTodos = listApplicationService.getCompleted(user, defaultListId).getTodos();
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));

@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import scala.jdk.javaapi.CollectionConverters;
 
+import java.time.Clock;
+import java.util.Date;
 import java.util.List;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
@@ -39,6 +42,9 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     private User user;
 
+    @Autowired
+    private Clock clock;
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -58,7 +64,8 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        List<Todo> todos = listApplicationService.get(user, defaultListId).getTodos();
+        TodoListModel todoListModel = listApplicationService.get(user, defaultListId);
+        List<Todo> todos = CollectionConverters.asJava(TodoListModel.getTodos(todoListModel));
 
         assertThat(todos.size(), equalTo(1));
 
@@ -78,7 +85,8 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .andReturn();
 
         listApplicationService.unlock(user, defaultListId);
-        List<Todo> todos = listApplicationService.get(user, defaultListId).getDeferredTodos();
+        TodoListModel todoListModel = listApplicationService.get(user, defaultListId);
+        List<Todo> todos = CollectionConverters.asJava(TodoListModel.getDeferredTodos(todoListModel, Date.from(clock.instant())));
 
         assertThat(todos.size(), equalTo(1));
 

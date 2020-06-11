@@ -4,37 +4,38 @@ import java.util.{Calendar, Date, TimeZone}
 
 import com.doerapispring.domain.events._
 
-import scala.util.Try
+import scala.util.{Success, Try}
 
-case class TodoListValue(todos: List[Todo],
+case class TodoListModel(listId: ListId,
+                         profileName: String,
+                         todos: List[Todo],
                          lastUnlockedAt: Date,
-                         demarcationIndex: Integer)
+                         demarcationIndex: Integer,
+                         sectionName: String = "now",
+                         deferredSectionName: String = "later")
 
-object TodoListValue {
+object TodoListModel {
   val MaxSize: Int = 2
 
-  def applyEvent(todoList: TodoListValue, todoListEvent: TodoListEvent): Try[TodoListValue] = {
-    val result = todoListEvent match {
+  def applyEvent(todoList: TodoListModel, todoListEvent: TodoListEvent): Try[TodoListModel] = {
+    val result: Try[(TodoListModel, TodoListEvent)] = todoListEvent match {
       case TodoUpdatedEvent(todoId, task) => update(todoList, new TodoId(todoId), task)
       case TodoCompletedEvent(completedTodoId) => complete(todoList, new TodoId(completedTodoId))
-      case TodoDisplacedEvent(todoId, task) => displace(todoList, new TodoId(todoId), task)
+      case TodoDisplacedEvent(todoId, task) => displaceCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
       case TodoDeletedEvent(todoId) => delete(todoList, new TodoId(todoId))
-      case TodoAddedEvent(todoId, task) => add(todoList, new TodoId(todoId), task)
-      case EscalatedEvent() => escalate(todoList)
+      case TodoAddedEvent(todoId, task) => addCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
+      case EscalatedEvent() => escalateCapability(todoList).flatMap(func => func.apply())
       case DeferredTodoAddedEvent(todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
       case TodoMovedEvent(todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
-      case PulledEvent() => pull(todoList)
+      case PulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
       case UnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
     }
     result.map { case (todoList, _) => todoList }
   }
 
-  def add(todoList: TodoListValue, todoId: TodoId, task: String): Try[(TodoListValue, TodoListEvent)] = Try {
+  def add(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
     if (alreadyExists(todoList, task)) {
       throw new DuplicateTodoException
-    }
-    if (isFull(todoList)) {
-      throw new ListSizeExceededException
     }
     val todo = new Todo(todoId, task)
     val result = todoList.copy(todos = todo +: todoList.todos, demarcationIndex = todoList.demarcationIndex + 1)
@@ -42,7 +43,21 @@ object TodoListValue {
     (result, event)
   }
 
-  def addDeferred(todoList: TodoListValue, todoId: TodoId, task: String): Try[(TodoListValue, TodoListEvent)] = Try {
+  def addCapability(todoList: TodoListModel): Try[(TodoId, String) => Try[(TodoListModel, TodoListEvent)]] = Try {
+    if (isFull(todoList)) {
+      throw new ListSizeExceededException
+    }
+    (todoId: TodoId, task: String) => add(todoList, todoId, task)
+  }
+
+  def addCapabilityDeconstructed(todoList: TodoListModel): Try[TodoId => String => Try[(TodoListModel, TodoListEvent)]] = Try {
+    if (isFull(todoList)) {
+      throw new ListSizeExceededException
+    }
+    todoId => task => add(todoList, todoId, task);
+  }
+
+  def addDeferred(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
     if (alreadyExists(todoList, task)) {
       throw new DuplicateTodoException
     }
@@ -52,7 +67,7 @@ object TodoListValue {
     (result, event)
   }
 
-  def delete(todoList: TodoListValue, todoId: TodoId): Try[(TodoListValue, TodoListEvent)] = Try {
+  def delete(todoList: TodoListModel, todoId: TodoId): Try[(TodoListModel, TodoListEvent)] = Try {
     val todoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
     if (!todoList.todos.exists(todoMatches)) throw new TodoNotFoundException
     val indexOfTodo = todoList.todos.indexWhere(todoMatches)
@@ -62,8 +77,7 @@ object TodoListValue {
     (result, event)
   }
 
-  def displace(todoList: TodoListValue, todoId: TodoId, task: String): Try[(TodoListValue, TodoListEvent)] = Try {
-    if (!isFull(todoList)) throw new ListNotFullException
+  def displace(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
     if (alreadyExists(todoList, task)) throw new DuplicateTodoException
     val todo = new Todo(todoId, task)
     val result = todoList.copy(todos = todo +: todoList.todos)
@@ -71,7 +85,12 @@ object TodoListValue {
     (result, event)
   }
 
-  def update(todoList: TodoListValue, todoId: TodoId, task: String): Try[(TodoListValue, TodoListEvent)] = Try {
+  def displaceCapability(todoList: TodoListModel): Try[(TodoId, String) => Try[(TodoListModel, TodoListEvent)]] = Try {
+    if (!isFull(todoList)) throw new ListNotFullException
+    (todoId: TodoId, task: String) => displace(todoList, todoId, task)
+  }
+
+  def update(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
     if (alreadyExists(todoList, task)) throw new DuplicateTodoException
     val todoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
     val todo: Todo = todoList.todos.find(todoMatches).getOrElse(throw new TodoNotFoundException)
@@ -81,13 +100,13 @@ object TodoListValue {
     (result, event)
   }
 
-  def complete(todoList: TodoListValue, todoId: TodoId): Try[(TodoListValue, TodoListEvent)] = {
+  def complete(todoList: TodoListModel, todoId: TodoId): Try[(TodoListModel, TodoListEvent)] = {
     val result = delete(todoList, todoId)
     val event = TodoCompletedEvent(todoId.getIdentifier)
     result.map(tuple => tuple.copy(_2 = event))
   }
 
-  def move(todoList: TodoListValue, todoId: TodoId, targetTodoId: TodoId): Try[(TodoListValue, TodoListEvent)] = Try {
+  def move(todoList: TodoListModel, todoId: TodoId, targetTodoId: TodoId): Try[(TodoListModel, TodoListEvent)] = Try {
     val sourceTodoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
     val targetTodoMatches: Todo => Boolean = todo => todo.getTodoId.equals(targetTodoId)
     val sourceTodo: Todo = todoList.todos.find(sourceTodoMatches).getOrElse(throw new TodoNotFoundException)
@@ -105,38 +124,56 @@ object TodoListValue {
     (result, event)
   }
 
-  def getTodos(todoList: TodoListValue): List[Todo] = {
+  def getTodos(todoList: TodoListModel): List[Todo] = {
     todoList.todos.slice(0, todoList.demarcationIndex)
   }
 
-  def getDeferredTodos(todoList: TodoListValue, unlockTime: Date): List[Todo] = {
+  def getDeferredTodos(todoList: TodoListModel, unlockTime: Date): List[Todo] = {
     if (isLocked(todoList, unlockTime)) List.empty else todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size)
   }
 
-  def unlock(todoList: TodoListValue, unlockTime: Date): Try[(TodoListValue, TodoListEvent)] = Try {
-    if (!isAbleToBeUnlocked(todoList, unlockTime)) throw new LockTimerNotExpiredException
+  def unlock(todoList: TodoListModel, unlockTime: Date): Try[(TodoListModel, TodoListEvent)] = Try {
     val result = todoList.copy(lastUnlockedAt = unlockTime)
     val event = UnlockedEvent(unlockTime)
     (result, event)
   }
 
-  def pull(todoList: TodoListValue): Try[(TodoListValue, TodoListEvent)] = Try {
+  def unlockDurationMs(todoList: TodoListModel, compareTime: Date): Long = {
+    val unlockDuration = 1800000L
+    val duration = todoList.lastUnlockedAt.toInstant.toEpochMilli + unlockDuration - compareTime.toInstant.toEpochMilli
+    if (duration > 0) duration else 0L
+  }
+
+  def pull(todoList: TodoListModel): Try[(TodoListModel, TodoListEvent)] = Try {
     val result = todoList.copy(demarcationIndex = Math.min(todoList.todos.size, MaxSize))
     val event = PulledEvent()
     (result, event)
   }
 
-  def escalate(todoList: TodoListValue): Try[(TodoListValue, TodoListEvent)] = Try {
-    if (!isAbleToBeEscalated(todoList)) {
-      throw new EscalateNotAllowException
+  def pullCapability(todoList: TodoListModel): Try[() => Try[(TodoListModel, TodoListEvent)]] = Try {
+    val isAbleToBeReplenished = !isFull(todoList) && todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size).nonEmpty
+    if (!isAbleToBeReplenished) {
+      throw new PullNotAllowedException
     }
+    () => pull(todoList)
+  }
+
+  def escalate(todoList: TodoListModel): Try[(TodoListModel, TodoListEvent)] = {
     val first :: second :: third :: rest = todoList.todos
     val result = todoList.copy(todos = first :: third :: second :: rest)
     val event = EscalatedEvent()
-    (result, event)
+    Success((result, event))
   }
 
-  def isAbleToBeUnlocked(todoList: TodoListValue, unlockTime: Date): Boolean = {
+  def escalateCapability(todoListValue: TodoListModel): Try[() => Try[(TodoListModel, TodoListEvent)]] = Try {
+    val isAbleToBeEscalated = isFull(todoListValue) && todoListValue.todos.slice(todoListValue.demarcationIndex, todoListValue.todos.size).nonEmpty
+    if (!isAbleToBeEscalated) {
+      throw new EscalateNotAllowException
+    }
+    () => escalate(todoListValue)
+  }
+
+  def unlockCapability(todoList: TodoListModel, unlockTime: Date): Try[Date => Try[(TodoListModel, TodoListEvent)]] = Try {
     val calendar = Calendar.getInstance
     calendar.setTimeZone(TimeZone.getTimeZone("UTC"))
     calendar.setTime(unlockTime)
@@ -144,26 +181,20 @@ object TodoListValue {
     calendar.set(Calendar.MINUTE, 0)
     calendar.set(Calendar.SECOND, 0)
     calendar.set(Calendar.MILLISECOND, 0)
-    isLocked(todoList, unlockTime) && todoList.lastUnlockedAt.before(calendar.getTime)
+    val isAbleToBeUnlocked = isLocked(todoList, unlockTime) && todoList.lastUnlockedAt.before(calendar.getTime)
+    if (!isAbleToBeUnlocked) throw new LockTimerNotExpiredException
+    unlockTime => unlock(todoList, unlockTime);
   }
 
-  def isAbleToBeReplenished(todoList: TodoListValue): Boolean = {
-    !isFull(todoList) && todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size).nonEmpty
-  }
-
-  def isFull(todoList: TodoListValue): Boolean = {
+  private def isFull(todoList: TodoListModel): Boolean = {
     todoList.todos.slice(0, todoList.demarcationIndex).size >= MaxSize
   }
 
-  def isAbleToBeEscalated(todoListValue: TodoListValue): Boolean = {
-    isFull(todoListValue) && todoListValue.todos.slice(todoListValue.demarcationIndex, todoListValue.todos.size).nonEmpty
-  }
-
-  private def isLocked(todoList: TodoListValue, unlockTime: Date) = {
+  private def isLocked(todoList: TodoListModel, unlockTime: Date) = {
     todoList.lastUnlockedAt.before(Date.from(unlockTime.toInstant.minusSeconds(1800)))
   }
 
-  private def alreadyExists(todoList: TodoListValue, task: String): Boolean = {
+  private def alreadyExists(todoList: TodoListModel, task: String): Boolean = {
     todoList.todos
       .map(todo => todo.getTask)
       .contains(task)
