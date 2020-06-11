@@ -25,7 +25,9 @@ class TodoListModelEventSourcedRepository(private val todoListDao: TodoListDao,
     }
     events.foldLeft(Try(todoListValue)) {
       case (Success(todoList), event) => TodoListModel.applyEvent(todoList, event)
-      case (Failure(exception), _) => Failure(exception)
+      case (Failure(exception), _) =>
+        exception.printStackTrace()
+        Failure(exception)
     }.toOption
   }
 }
