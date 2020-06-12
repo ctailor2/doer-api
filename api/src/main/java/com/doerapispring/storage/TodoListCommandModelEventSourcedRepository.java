@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.time.Clock;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -65,9 +64,7 @@ public class TodoListCommandModelEventSourcedRepository implements OwnedObjectRe
         TodoList todoList = new TodoList(
                 new UserId(todoListEntity.userEntity.email),
                 new ListId(todoListEntity.uuid),
-                todoListEntity.name,
-                todoListEntity.demarcationIndex,
-                Date.from(todoListEntity.lastUnlockedAt.toInstant()));
+                todoListEntity.name);
         List<TodoListEventStoreEntity> eventStoreEntities = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get(), listId.get());
         List<DomainEvent> domainEvents =
                 eventStoreEntities.stream()

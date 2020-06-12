@@ -62,7 +62,7 @@ public class UserServiceTest {
         when(todoListRepository.nextIdentifier()).thenReturn(listId);
         String identifier = "soUnique";
         UserId userId = new UserId(identifier);
-        when(todoListFactory.todoList(userId, listId, "default")).thenReturn(new TodoList(userId, listId, null, null, null));
+        when(todoListFactory.todoList(userId, listId, "default")).thenReturn(new TodoList(userId, listId, null));
 
         User returnedUser = userService.create(identifier);
 

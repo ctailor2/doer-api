@@ -53,7 +53,7 @@ class TodoListModelEventSourcedRepositoryTest {
   @throws[Exception]
   def setUp(): Unit = {
     userRepository.save(new User(userId, listId))
-    todoList = new TodoList(userId, listId, "someName", 0, new Date(0L))
+    todoList = new TodoList(userId, listId, "someName")
     todoListRepository.save(todoList)
     todoListModelRepository = new TodoListModelEventSourcedRepository(todoListDao, todoListEventStoreRepository, objectMapper)
   }

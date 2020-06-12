@@ -179,7 +179,7 @@ public class ListsControllerTest {
     public void showAll_returnsTodoLists() {
         String listName = "someName";
         when(listApplicationService.getAll(any()))
-            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId("someListId"), listName, 0, Date.from(Instant.EPOCH))));
+            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId("someListId"), listName)));
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.showAll(authenticatedUser);
 
@@ -202,7 +202,7 @@ public class ListsControllerTest {
         String listName = "someName";
         String listId = "someListId";
         when(listApplicationService.getAll(any()))
-            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId(listId), listName, 0, Date.from(Instant.EPOCH))));
+            .thenReturn(singletonList(new TodoList(new UserId("someUserId"), new ListId(listId), listName)));
 
         ResponseEntity<TodoListResponse> responseEntity = listsController.showAll(authenticatedUser);
 

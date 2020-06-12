@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 @Builder
 @NoArgsConstructor
@@ -24,10 +23,4 @@ public class TodoListEntity implements Serializable {
     @ManyToOne
     @JoinColumn(name = "user_identifier", nullable = false)
     public UserEntity userEntity;
-
-    @Column(name = "last_unlocked_at")
-    public Date lastUnlockedAt;
-
-    @Column(name = "demarcation_index")
-    public Integer demarcationIndex;
 }

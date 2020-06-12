@@ -7,8 +7,6 @@ import com.doerapispring.domain.UserId;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.IdGenerator;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,8 +31,6 @@ public class TodoListRepository implements OwnedObjectRepository<TodoList, UserI
             .userEntity(userEntity)
             .uuid(todoList.getListId().get())
             .name(todoList.getName())
-            .demarcationIndex(todoList.getDemarcationIndex())
-            .lastUnlockedAt(todoList.getLastUnlockedAt())
             .build();
         todoListDao.save(todoListEntity);
     }
@@ -50,9 +46,7 @@ public class TodoListRepository implements OwnedObjectRepository<TodoList, UserI
             .map(todoListEntity -> new TodoList(
                 userId,
                 new ListId(todoListEntity.uuid),
-                todoListEntity.name,
-                0,
-                Date.from(Instant.EPOCH)))
+                todoListEntity.name))
             .collect(Collectors.toList());
     }
 }

@@ -15,8 +15,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.IdGenerator;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,14 +55,14 @@ public class TodoListRepositoryTest {
         ListId otherListId = new ListId("someOtherListIdentifier");
         userRepository.save(new User(otherUserId, otherListId));
         String listName = "someName";
-        TodoList userTodoList = new TodoList(userId, listId, listName, 0, Date.from(Instant.EPOCH));
+        TodoList userTodoList = new TodoList(userId, listId, listName);
         todoListRepository.save(userTodoList);
         String otherListName = "someName";
-        TodoList otherUserTodoList = new TodoList(otherUserId, otherListId, otherListName, 0, Date.from(Instant.EPOCH));
+        TodoList otherUserTodoList = new TodoList(otherUserId, otherListId, otherListName);
         todoListRepository.save(otherUserTodoList);
 
         List<TodoList> todoLists = todoListRepository.findAll(userId);
-        assertThat(todoLists).containsOnly(new TodoList(userId, listId, listName, 0, Date.from(Instant.EPOCH)));
+        assertThat(todoLists).containsOnly(new TodoList(userId, listId, listName));
     }
 
     @Test
@@ -72,7 +70,7 @@ public class TodoListRepositoryTest {
         UserId userId = new UserId("someUserId");
         ListId listId = new ListId("someListId");
         userRepository.save(new User(userId, listId));
-        TodoList savedTodoList = new TodoList(userId, listId, "someName", 0, Date.from(Instant.EPOCH));
+        TodoList savedTodoList = new TodoList(userId, listId, "someName");
 
         todoListRepository.save(savedTodoList);
 
