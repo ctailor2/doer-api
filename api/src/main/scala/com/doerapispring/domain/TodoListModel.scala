@@ -8,9 +8,9 @@ import scala.util.{Success, Try}
 
 case class TodoListModel(listId: ListId,
                          profileName: String,
-                         todos: List[Todo],
-                         lastUnlockedAt: Date,
-                         demarcationIndex: Integer,
+                         todos: List[Todo] = List(),
+                         lastUnlockedAt: Date = new Date(0L),
+                         demarcationIndex: Integer = 0,
                          sectionName: String = "now",
                          deferredSectionName: String = "later")
 
