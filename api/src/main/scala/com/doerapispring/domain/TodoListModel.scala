@@ -30,7 +30,13 @@ object TodoListModel {
       case PulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
       case UnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
     }
-    result.map { case (todoList, _) => todoList }
+    result.recover {
+      case e: DomainException =>
+        val message = String.format("Error applying event %s to todo list %s", todoListEvent, todoList)
+        throw new RuntimeException(message, e)
+    }.map {
+      case (todoList, _) => todoList
+    }
   }
 
   def add(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
