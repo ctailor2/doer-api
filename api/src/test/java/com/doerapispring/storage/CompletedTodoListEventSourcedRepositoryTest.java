@@ -1,6 +1,7 @@
 package com.doerapispring.storage;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,13 +12,12 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.sql.Date;
-import java.time.Clock;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static scala.jdk.javaapi.CollectionConverters.asScala;
 
 @SpringBootTest
 @Sql(scripts = "/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -35,9 +35,7 @@ public class CompletedTodoListEventSourcedRepositoryTest {
     private CompletedTodoListEventSourcedRepository completedTodoListEventSourcedRepository;
 
     @Autowired
-    private TodoListCommandModelEventSourcedRepository todoListCommandModelEventSourcedRepository;
-
-    private Clock clock = mock(Clock.class);
+    private TodoListEventRepository todoListEventRepository;
 
     private UserId userId;
     private ListId listId;
@@ -50,7 +48,6 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         userRepository.save(new User(userId, listId));
         todoList = new TodoList(userId, listId, "someName");
         todoListRepository.save(todoList);
-        when(clock.instant()).thenReturn(Instant.EPOCH);
     }
 
     @Test
@@ -61,17 +58,15 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         TodoList usersOtherList = new TodoList(userId, otherListId, "someName");
         todoListRepository.save(usersOtherList);
 
-        TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
-        TodoId todoId1 = new TodoId("someCompletedTodoId");
-        todoListCommandModel.add(todoId1, "someTask");
-        todoListCommandModel.complete(todoId1);
-        todoListCommandModelEventSourcedRepository.save(todoListCommandModel);
+        String todoId1 = "someCompletedTodoId";
+        todoListEventRepository.saveAll(userId, listId, asScala(Arrays.<TodoListEvent>asList(
+                new TodoAddedEvent(todoId1, "someTask"),
+                new TodoCompletedEvent(todoId1))).toList());
 
-        TodoListCommandModel usersOtherTodoListCommandModel = TodoListCommandModel.newInstance(clock, usersOtherList);
-        TodoId todoId2 = new TodoId("someOtherCompletedTodoId");
-        usersOtherTodoListCommandModel.add(todoId2, "someOtherTask");
-        usersOtherTodoListCommandModel.complete(todoId2);
-        todoListCommandModelEventSourcedRepository.save(usersOtherTodoListCommandModel);
+        String todoId2 = "someOtherCompletedTodoId";
+        todoListEventRepository.saveAll(userId, otherListId, asScala(Arrays.<TodoListEvent>asList(
+                new TodoAddedEvent(todoId2, "someOtherTask"),
+                new TodoCompletedEvent(todoId2))).toList());
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
@@ -79,25 +74,26 @@ public class CompletedTodoListEventSourcedRepositoryTest {
                 .usingElementComparatorIgnoringFields("completedAt")
                 .containsExactly(
                         new CompletedTodo(
-                                new CompletedTodoId(todoId1.getIdentifier()),
+                                new CompletedTodoId(todoId1),
                                 "someTask",
                                 Date.from(Instant.EPOCH)));
     }
 
     @Test
     public void includesCompletedTodosFromAllOrigins() {
-        TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
-        todoListCommandModel.add(new TodoId("todoId1"), "task1");
-        TodoId todoId2 = new TodoId("todoId2");
-        todoListCommandModel.add(todoId2, "task2");
-        TodoId displacingTodoId = new TodoId("displacingTodoId");
-        todoListCommandModel.displace(displacingTodoId, "displacingTask");
-        TodoId deferredTodoId = new TodoId("deferredTodoId");
-        todoListCommandModel.addDeferred(deferredTodoId, "deferredTask");
-        todoListCommandModel.complete(todoId2);
-        todoListCommandModel.complete(displacingTodoId);
-        todoListCommandModel.complete(deferredTodoId);
-        todoListCommandModelEventSourcedRepository.save(todoListCommandModel);
+        String todoId1 = "todoId1";
+        String todoId2 = "todoId2";
+        String displacingTodoId = "displacingTodoId";
+        String deferredTodoId = "deferredTodoId";
+        todoListEventRepository.saveAll(userId, listId, asScala(Arrays.<TodoListEvent>asList(
+                new TodoAddedEvent(todoId1, "task1"),
+                new TodoAddedEvent(todoId2, "task2"),
+                new TodoDisplacedEvent(displacingTodoId, "displacingTask"),
+                new DeferredTodoAddedEvent(deferredTodoId, "deferredTask"),
+                new TodoCompletedEvent(todoId2),
+                new TodoCompletedEvent(displacingTodoId),
+                new TodoCompletedEvent(deferredTodoId)
+        )).toList());
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
@@ -105,35 +101,29 @@ public class CompletedTodoListEventSourcedRepositoryTest {
                 .usingElementComparatorIgnoringFields("completedAt")
                 .contains(
                         new CompletedTodo(
-                                new CompletedTodoId(todoId2.getIdentifier()),
+                                new CompletedTodoId(todoId2),
                                 "task2",
                                 Date.from(Instant.now())),
                         new CompletedTodo(
-                                new CompletedTodoId(displacingTodoId.getIdentifier()),
+                                new CompletedTodoId(displacingTodoId),
                                 "displacingTask",
                                 Date.from(Instant.now())),
                         new CompletedTodo(
-                                new CompletedTodoId(deferredTodoId.getIdentifier()),
+                                new CompletedTodoId(deferredTodoId),
                                 "deferredTask",
                                 Date.from(Instant.now())));
     }
 
     @Test
     public void retrievesCompletedTodoListWithTodosInDescendingOrderByVersion() {
-        Instant now = Instant.now();
-        Instant earlierInstant = now.minusSeconds(20);
-        Instant laterInstant = now.plusSeconds(20);
-        when(clock.instant()).thenReturn(earlierInstant, laterInstant);
-        TodoListCommandModel todoListCommandModel = TodoListCommandModel.newInstance(clock, todoList);
-        TodoId todoId1 = new TodoId("earlierId");
-        todoListCommandModel.add(todoId1, "earlierTask");
-        todoListCommandModel.complete(todoId1);
-        todoListCommandModelEventSourcedRepository.save(todoListCommandModel);
-        TodoListCommandModel updatedTodoListCommandModel = todoListCommandModelEventSourcedRepository.find(userId, listId).get();
-        TodoId todoId2 = new TodoId("laterId");
-        updatedTodoListCommandModel.add(todoId2, "laterTask");
-        updatedTodoListCommandModel.complete(todoId2);
-        todoListCommandModelEventSourcedRepository.save(updatedTodoListCommandModel);
+        String todoId1 = "earlierId";
+        String todoId2 = "laterId";
+        todoListEventRepository.saveAll(userId, listId, asScala(Arrays.<TodoListEvent>asList(
+                new TodoAddedEvent(todoId1, "earlierTask"),
+                new TodoCompletedEvent(todoId1),
+                new TodoAddedEvent(todoId2, "laterTask"),
+                new TodoCompletedEvent(todoId2)
+        )).toList());
 
         Optional<CompletedTodoList> optionalCompletedTodoList = completedTodoListEventSourcedRepository.find(userId, listId);
         assertThat(optionalCompletedTodoList).isNotEmpty();
@@ -141,12 +131,12 @@ public class CompletedTodoListEventSourcedRepositoryTest {
                 .usingElementComparatorIgnoringFields("completedAt")
                 .containsExactly(
                         new CompletedTodo(
-                                new CompletedTodoId(todoId2.getIdentifier()),
+                                new CompletedTodoId(todoId2),
                                 "laterTask",
-                                Date.from(laterInstant)),
+                                Date.from(Instant.now())),
                         new CompletedTodo(
-                                new CompletedTodoId(todoId1.getIdentifier()),
+                                new CompletedTodoId(todoId1),
                                 "earlierTask",
-                                Date.from(earlierInstant)));
+                                Date.from(Instant.now())));
     }
 }
