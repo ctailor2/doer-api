@@ -14,7 +14,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Clock;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +58,7 @@ public class TodoListCommandModelEventSourcedRepositoryTest {
         userId = new UserId("someUserIdentifier");
         listId = new ListId("someListIdentifier");
         userRepository.save(new User(userId, listId));
-        todoList = new TodoList(userId, listId, "someName", 0, new Date(0L));
+        todoList = new TodoList(userId, listId, "someName");
         todoListRepository.save(todoList);
         todoListCommandModelRepository = new TodoListCommandModelEventSourcedRepository(
                 clock,

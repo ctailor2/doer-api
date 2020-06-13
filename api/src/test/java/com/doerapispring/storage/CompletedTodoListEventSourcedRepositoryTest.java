@@ -48,7 +48,7 @@ public class CompletedTodoListEventSourcedRepositoryTest {
         userId = new UserId("someUserId");
         listId = new ListId("someListId");
         userRepository.save(new User(userId, listId));
-        TodoList todoList = new TodoList(userId, listId, "someName");
+        todoList = new TodoList(userId, listId, "someName");
         todoListRepository.save(todoList);
         when(clock.instant()).thenReturn(Instant.EPOCH);
     }
