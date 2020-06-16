@@ -50,8 +50,8 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void complete_completesTodo() throws Exception {
-        todoApplicationService.create(user, defaultListId, "some other task");
-        todoApplicationService.create(user, defaultListId, "some task");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some other task"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
         TodoListModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo1 = TodoListModel.getTodos(todoList).head();
         Todo todo2 = TodoListModel.getTodos(todoList).last();

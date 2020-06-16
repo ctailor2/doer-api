@@ -52,8 +52,8 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void move() throws Exception {
-        todoApplicationService.create(user, defaultListId, "some task");
-        todoApplicationService.create(user, defaultListId, "some other task");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some other task"));
 
         String todosResponse = mockMvc.perform(get("/v1/lists/" + defaultListId.get())
             .headers(httpHeaders))

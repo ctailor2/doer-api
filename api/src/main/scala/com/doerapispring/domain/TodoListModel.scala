@@ -56,13 +56,6 @@ object TodoListModel {
     (todoId: TodoId, task: String) => add(todoList, todoId, task)
   }
 
-  def addCapabilityDeconstructed(todoList: TodoListModel): Try[TodoId => String => Try[(TodoListModel, TodoListEvent)]] = Try {
-    if (isFull(todoList)) {
-      throw new ListSizeExceededException
-    }
-    todoId => task => add(todoList, todoId, task);
-  }
-
   def addDeferred(todoList: TodoListModel, todoId: TodoId, task: String): Try[(TodoListModel, TodoListEvent)] = Try {
     if (alreadyExists(todoList, task)) {
       throw new DuplicateTodoException

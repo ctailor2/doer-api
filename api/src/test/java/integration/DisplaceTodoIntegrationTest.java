@@ -56,8 +56,8 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void displace_replacesImmediatelyScheduledTodo_bumpsItToPostponedList() throws Exception {
-        todoApplicationService.create(user, defaultListId, "some other task");
-        todoApplicationService.create(user, defaultListId, "some task");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some other task"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/displace")
             .content("{\"task\":\"do the things\"}")

@@ -67,9 +67,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
         listApplicationService.unlock(user, defaultListId);
-        todoApplicationService.create(user, defaultListId, "this and that");
-        todoApplicationService.createDeferred(user, defaultListId, "here and there");
-        todoApplicationService.createDeferred(user, defaultListId, "near and far");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "this and that"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "here and there"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "near and far"));
         TodoListModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo = TodoListModel.getTodos(todoList).head();
         Date now = Date.from(clock.instant());
@@ -126,8 +126,8 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void listActions_whenListHasCapacity() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todoApplicationService.create(user, defaultListId, "this and that");
-        todoApplicationService.createDeferred(user, defaultListId, "here and there");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "this and that"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "here and there"));
 
         doGet();
 
@@ -142,9 +142,9 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void listActions_whenListDoesNotHaveCapacity() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        todoApplicationService.create(user, defaultListId, "this and that");
-        todoApplicationService.create(user, defaultListId, "one and two");
-        todoApplicationService.createDeferred(user, defaultListId, "here and there");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "this and that"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "one and two"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "here and there"));
 
         doGet();
 

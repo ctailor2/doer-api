@@ -48,7 +48,7 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Test
     public void delete_removesTodo() throws Exception {
-        todoApplicationService.create(user, defaultListId, "some task");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
         TodoListModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo = TodoListModel.getTodos(todoList).head();
 

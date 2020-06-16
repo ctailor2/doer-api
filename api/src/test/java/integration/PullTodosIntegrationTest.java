@@ -55,9 +55,9 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     @Test
     public void pull() throws Exception {
-        todoApplicationService.createDeferred(user, defaultListId, "will get pulled");
-        todoApplicationService.createDeferred(user, defaultListId, "will also get pulled");
-        todoApplicationService.createDeferred(user, defaultListId, "keep for later");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will get pulled"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will also get pulled"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "keep for later"));
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
             .headers(httpHeaders))

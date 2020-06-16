@@ -2,9 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
-import com.doerapispring.domain.TodoId;
 import com.doerapispring.domain.User;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +17,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,12 +52,9 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void delete_callsTodoService_returns202() throws Exception {
-        String listId = "someListId";
-        String todoId = "someTodoId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, listId, todoId);
+    public void delete_returns202() {
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, "someListId", "someTodoId");
 
-        verify(todoApplicationService).delete(user, new ListId(listId), new TodoId(todoId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -75,13 +71,11 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void displace_callsTodoService_returns202() throws Exception {
-        String task = "some task";
+    public void displace_callsTodoService_returns202() {
         String listId = "someListId";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.displace(authenticatedUser, listId, new TodoForm(task));
+            todosController.displace(authenticatedUser, listId, new TodoForm("some task"));
 
-        verify(todoApplicationService).displace(user, new ListId(listId), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -98,14 +92,11 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void update_callsTodoService_returns202() throws Exception {
+    public void update_callsTodoService_returns202() {
         String listId = "someListId";
-        String todoId = "someId";
-        String task = "some task";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.update(authenticatedUser, listId, todoId, new TodoForm(task));
+            todosController.update(authenticatedUser, listId, "someId", new TodoForm("some task"));
 
-        verify(todoApplicationService).update(user, new ListId(listId), new TodoId(todoId), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).contains(
@@ -120,13 +111,10 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void complete_callsTodoService_returns202() throws Exception {
-        String listId = "someListId";
-        String todoId = "someTodoId";
+    public void complete_returns202() {
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.complete(authenticatedUser, listId, todoId);
+            todosController.complete(authenticatedUser, "someListId", "someTodoId");
 
-        verify(todoApplicationService).complete(user, new ListId(listId), new TodoId(todoId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -141,14 +129,12 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void move_callsTodoService_returns202() throws Exception {
+    public void move_returns202() {
         String listId = "someListId";
-        String todoId = "todoId";
         String targetTodoId = "targetTodoId";
         ResponseEntity<ResourcesResponse> responseEntity =
-            todosController.move(authenticatedUser, listId, todoId, targetTodoId);
+            todosController.move(authenticatedUser, listId, "todoId", targetTodoId);
 
-        verify(todoApplicationService).move(user, new ListId(listId), new TodoId(todoId), new TodoId(targetTodoId));
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -160,12 +146,10 @@ public class TodosControllerTest {
     public void pull_mapping() throws Exception {
         mockMvc.perform(post("/v1/lists/someListId/pull"))
             .andExpect(status().isAccepted());
-
-        verify(todoApplicationService).pull(user, new ListId("someListId"));
     }
 
     @Test
-    public void pull_responseIncludesLinks() throws Exception {
+    public void pull_responseIncludesLinks() {
         String listId = "someListId";
         ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser, listId);
 
@@ -179,12 +163,10 @@ public class TodosControllerTest {
     public void escalate_mapping() throws Exception {
         mockMvc.perform(post("/v1/lists/someListId/escalate"))
             .andExpect(status().isAccepted());
-
-        verify(todoApplicationService).escalate(user, new ListId("someListId"));
     }
 
     @Test
-    public void escalate_responseIncludesLinks() throws Exception {
+    public void escalate_responseIncludesLinks() {
         String listId = "someListId";
         ResponseEntity<ResourcesResponse> responseEntity = todosController.escalate(authenticatedUser, listId);
 
@@ -203,13 +185,10 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void create_callsTodoService_returns201() throws Exception {
-        String task = "some task";
-        TodoForm todoForm = new TodoForm(task);
+    public void create_returns201() {
         String listIdPathVariable = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, listIdPathVariable, todoForm);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
 
-        verify(todoApplicationService).create(user, new ListId(listIdPathVariable), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -226,13 +205,10 @@ public class TodosControllerTest {
     }
 
     @Test
-    public void createDeferred_callsTodoService_returns201() throws Exception {
-        String task = "some task";
-        TodoForm todoForm = new TodoForm(task);
+    public void createDeferred_returns201() {
         String listIdPathVariable = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, listIdPathVariable, todoForm);
+        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
 
-        verify(todoApplicationService).createDeferred(user, new ListId(listIdPathVariable), task);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(

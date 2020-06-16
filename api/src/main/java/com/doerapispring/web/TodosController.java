@@ -4,10 +4,12 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
 import com.doerapispring.domain.TodoId;
+import com.doerapispring.domain.TodoListModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import scala.Function0;
 
 @RestController
 @CrossOrigin
@@ -16,7 +18,8 @@ class TodosController {
     private final HateoasLinkGenerator hateoasLinkGenerator;
     private final TodoApplicationService todoApplicationService;
 
-    TodosController(HateoasLinkGenerator hateoasLinkGenerator, TodoApplicationService todoApplicationService) {
+    TodosController(HateoasLinkGenerator hateoasLinkGenerator,
+                    TodoApplicationService todoApplicationService) {
         this.hateoasLinkGenerator = hateoasLinkGenerator;
         this.todoApplicationService = todoApplicationService;
     }
@@ -26,10 +29,13 @@ class TodosController {
     ResponseEntity<ResourcesResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId,
                                              @PathVariable String todoId) {
-        todoApplicationService.delete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                todoList -> TodoListModel.delete(todoList, new TodoId(todoId)));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, todoId).withSelfRel(),
-            hateoasLinkGenerator.listLink(listId).withRel("list"));
+                hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
@@ -38,7 +44,12 @@ class TodosController {
     ResponseEntity<ResourcesResponse> displace(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable String listId,
                                                @RequestBody TodoForm todoForm) {
-        todoApplicationService.displace(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                (todoList, todoId) ->
+                        TodoListModel.displaceCapability(todoList)
+                                .flatMap(capability -> capability.apply(todoId, todoForm.getTask())));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.displaceTodoLink(listId).withSelfRel(),
             hateoasLinkGenerator.listLink(listId).withRel("list"));
@@ -51,7 +62,10 @@ class TodosController {
                                              @PathVariable String listId,
                                              @PathVariable String todoId,
                                              @RequestBody TodoForm todoForm) {
-        todoApplicationService.update(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), todoForm.getTask());
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                todoList -> TodoListModel.update(todoList, new TodoId(todoId), todoForm.getTask()));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.updateTodoLink(listId, todoId).withSelfRel(),
             hateoasLinkGenerator.listLink(listId).withRel("list"));
@@ -63,7 +77,10 @@ class TodosController {
     ResponseEntity<ResourcesResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable String listId,
                                                @PathVariable String todoId) {
-        todoApplicationService.complete(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId));
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                todoList -> TodoListModel.complete(todoList, new TodoId(todoId)));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.completeTodoLink(listId, todoId).withSelfRel(),
@@ -77,7 +94,10 @@ class TodosController {
                                            @PathVariable String listId,
                                            @PathVariable String todoId,
                                            @PathVariable String targetTodoId) {
-        todoApplicationService.move(authenticatedUser.getUser(), new ListId(listId), new TodoId(todoId), new TodoId(targetTodoId));
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                todoList -> TodoListModel.move(todoList, new TodoId(todoId), new TodoId(targetTodoId)));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.moveTodoLink(listId, todoId, targetTodoId).withSelfRel(),
@@ -89,7 +109,12 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> pull(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                            @PathVariable String listId) {
-        todoApplicationService.pull(authenticatedUser.getUser(), new ListId(listId));
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                (todoList, todoId) ->
+                        TodoListModel.pullCapability(todoList)
+                                .flatMap(Function0::apply));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.listPullTodosLink(listId).withSelfRel(),
@@ -101,7 +126,12 @@ class TodosController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> escalate(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                @PathVariable String listId) {
-        todoApplicationService.escalate(authenticatedUser.getUser(), new ListId(listId));
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                (todoList, todoId) ->
+                        TodoListModel.escalateCapability(todoList)
+                                .flatMap(Function0::apply));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withSelfRel());
         resourcesResponse.add(hateoasLinkGenerator.listLink(listId).withRel("list"));
@@ -114,7 +144,10 @@ class TodosController {
                                              @PathVariable String listId,
                                              @RequestBody TodoForm todoForm
     ) {
-        todoApplicationService.create(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                (todoList, todoId) -> TodoListModel.add(todoList, todoId, todoForm.getTask()));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.createTodoLink(listId).withSelfRel(),
@@ -127,7 +160,10 @@ class TodosController {
     ResponseEntity<ResourcesResponse> createDeferred(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @PathVariable String listId,
                                                      @RequestBody TodoForm todoForm) {
-        todoApplicationService.createDeferred(authenticatedUser.getUser(), new ListId(listId), todoForm.getTask());
+        todoApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, todoForm.getTask()));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.createDeferredTodoLink(listId).withSelfRel(),

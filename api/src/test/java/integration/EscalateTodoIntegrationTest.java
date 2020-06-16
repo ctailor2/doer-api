@@ -55,9 +55,9 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void pull() throws Exception {
-        todoApplicationService.create(user, defaultListId, "will become deferred after the escalate");
-        todoApplicationService.create(user, defaultListId, "will remain");
-        todoApplicationService.createDeferred(user, defaultListId, "will no longer be deferred after the escalate");
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "will become deferred after the escalate"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "will remain"));
+        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will no longer be deferred after the escalate"));
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
             .headers(httpHeaders))

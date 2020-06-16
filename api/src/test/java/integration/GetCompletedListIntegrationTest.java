@@ -55,10 +55,9 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void list() throws Exception {
         listApplicationService.create(user, "someOtherList");
         listApplicationService.getAll(user).forEach(todoList -> {
-            todoApplicationService.create(user, todoList.getListId(), todoList.getName().concat(" task"));
-            TodoListModel todoListModel = listApplicationService.get(user, todoList.getListId());
-            Todo todo = TodoListModel.getTodos(todoListModel).head();
-            todoApplicationService.complete(user, todoList.getListId(), new TodoId(todo.getTodoId().getIdentifier()));
+            todoApplicationService.performOperation(user, todoList.getListId(), (todoListModel, todoId) -> TodoListModel.add(todoListModel, todoId, todoList.getName().concat(" task")));
+            Todo todo = TodoListModel.getTodos(listApplicationService.get(user, todoList.getListId())).head();
+            todoApplicationService.performOperation(user, todoList.getListId(), (todoListModel) -> TodoListModel.complete(todoListModel, new TodoId(todo.getTodoId().getIdentifier())));
         });
 
         MvcResult mvcResult = mockMvc.perform(get("/v1/lists/" + defaultListId.get() + "/completed")
