@@ -1,33 +1,41 @@
 package com.doerapispring.domain
 
-import java.util.function.{BiFunction, Function}
+import java.util.function.{BiFunction, Function, Supplier}
 
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 @Service
 class TodoService(private val todoListRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
                   private val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
                   private val todoRepository: IdentityGeneratingRepository[TodoId]) extends TodoApplicationService {
 
-  override def performOperation(user: User, listId: ListId, operation: BiFunction[TodoListModel, TodoId, Try[(TodoListModel, TodoListEvent)]]): Unit = {
-    todoListRepository.find(user.getUserId, listId)
-      .map(todoList => (todoList, todoRepository.nextIdentifier()))
-      .map { case (todoList, todoId) => operation.apply(todoList, todoId) }
-      .foreach {
-        case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
-        case Failure(_) =>
-      }
+  override def performOperation(user: User,
+                                listId: ListId,
+                                eventProducer: Supplier[TodoListEvent],
+                                operation: BiFunction[TodoListModel, TodoListEvent, Try[TodoListModel]]): Try[TodoListModel] = {
+    val todoListModel = Try(todoListRepository.find(user.getUserId, listId).get)
+      .flatMap(todoList => operation.apply(todoList, eventProducer.get()))
+    todoListModel match {
+      case Success(_) => todoListEventRepository.save(user.getUserId, listId, eventProducer.get())
+    }
+    todoListModel
   }
 
-  override def performOperation(user: User, listId: ListId, operation: Function[TodoListModel, Try[(TodoListModel, TodoListEvent)]]): Unit = {
-    todoListRepository.find(user.getUserId, listId)
-      .map(todoList => operation.apply(todoList))
-      .foreach {
-        case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
-        case Failure(_) =>
-      }
+  override def performOperation(user: User,
+                                listId: ListId,
+                                eventProducer: Function[TodoId, TodoListEvent],
+                                operation: BiFunction[TodoListModel, TodoListEvent, Try[TodoListModel]]): Try[TodoListModel] = {
+    val todoId = todoRepository.nextIdentifier()
+    val todoListModel = Try(todoListRepository.find(user.getUserId, listId).get)
+      .flatMap(todoList => {
+        operation.apply(todoList, eventProducer.apply(todoId))
+      })
+    todoListModel match {
+      case Success(_) => todoListEventRepository.save(user.getUserId, listId, eventProducer.apply(todoId))
+    }
+    todoListModel
   }
 }

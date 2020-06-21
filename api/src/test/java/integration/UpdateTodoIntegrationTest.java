@@ -1,6 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.TodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -50,7 +51,11 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
 
     @Test
     public void update() throws Exception {
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
+                TodoListModel::applyEvent);
         TodoListModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo = TodoListModel.getTodos(todoList).head();
 

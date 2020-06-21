@@ -1,6 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.DeferredTodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -55,9 +56,21 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
 
     @Test
     public void pull() throws Exception {
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will get pulled"));
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will also get pulled"));
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "keep for later"));
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will get pulled"),
+                TodoListModel::applyEvent);
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will also get pulled"),
+                TodoListModel::applyEvent);
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "keep for later"),
+                TodoListModel::applyEvent);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
             .headers(httpHeaders))

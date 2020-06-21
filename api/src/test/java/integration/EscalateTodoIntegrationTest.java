@@ -1,6 +1,8 @@
 package integration;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.DeferredTodoAddedEvent;
+import com.doerapispring.domain.events.TodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -55,9 +57,21 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void pull() throws Exception {
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "will become deferred after the escalate"));
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "will remain"));
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.addDeferred(todoList, todoId, "will no longer be deferred after the escalate"));
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "will become deferred after the escalate"),
+                TodoListModel::applyEvent);
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "will remain"),
+                TodoListModel::applyEvent);
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will no longer be deferred after the escalate"),
+                TodoListModel::applyEvent);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
             .headers(httpHeaders))

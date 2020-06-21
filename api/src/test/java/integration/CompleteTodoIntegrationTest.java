@@ -1,6 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.TodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -50,8 +51,16 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Test
     public void complete_completesTodo() throws Exception {
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some other task"));
-        todoApplicationService.performOperation(user, defaultListId, (todoList, todoId) -> TodoListModel.add(todoList, todoId, "some task"));
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some other task"),
+                TodoListModel::applyEvent);
+        todoApplicationService.performOperation(
+                user,
+                defaultListId,
+                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
+                TodoListModel::applyEvent);
         TodoListModel todoList = listApplicationService.get(user, defaultListId);
         Todo todo1 = TodoListModel.getTodos(todoList).head();
         Todo todo2 = TodoListModel.getTodos(todoList).last();
