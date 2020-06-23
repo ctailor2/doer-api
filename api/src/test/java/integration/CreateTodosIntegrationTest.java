@@ -1,6 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
+import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -84,7 +85,11 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        listApplicationService.unlock(user, defaultListId);
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
         TodoListModel todoListModel = listApplicationService.get(user, defaultListId);
         List<Todo> todos = CollectionConverters.asJava(TodoListModel.getDeferredTodos(todoListModel, Date.from(clock.instant())));
 

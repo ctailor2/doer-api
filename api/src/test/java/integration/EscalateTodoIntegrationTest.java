@@ -3,6 +3,7 @@ package integration;
 import com.doerapispring.domain.*;
 import com.doerapispring.domain.events.DeferredTodoAddedEvent;
 import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -77,7 +78,11 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .headers(httpHeaders))
             .andReturn();
         String responseContent = mvcResult.getResponse().getContentAsString();
-        listApplicationService.unlock(user, defaultListId);
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(java.util.Date.from(clock.instant())),
+                TodoListModel::applyEvent);
         TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
         Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))

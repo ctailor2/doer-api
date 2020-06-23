@@ -1,13 +1,13 @@
 package com.doerapispring.domain
 
-import java.time.{Clock, Instant}
+import java.time.Clock
 import java.util
-import java.util.Date
+import java.util.function.{BiFunction, Supplier}
 
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 
 @Service
@@ -20,13 +20,17 @@ class ListService(val completedTodoRepository: OwnedObjectRepository[CompletedTo
                   val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId])
   extends ListApplicationService {
 
-  override def unlock(user: User, listId: ListId): Unit = {
-    todoListModelRepository.find(user.getUserId, listId)
-      .map(todoList => TodoListModel.unlock(todoList, Date.from(Instant.now)))
-      .foreach {
-        case Success((_, event)) => todoListEventRepository.save(user.getUserId, listId, event)
-        case Failure(_) =>
-      }
+  override def performOperation(user: User,
+                                listId: ListId,
+                                eventProducer: Supplier[TodoListEvent],
+                                operation: BiFunction[TodoListModel, TodoListEvent, Try[TodoListModel]]): Try[TodoListModel] = {
+    val todoListModel = Try(todoListModelRepository.find(user.getUserId, listId).get)
+      .flatMap(todoList => operation.apply(todoList, eventProducer.get()))
+    todoListModel match {
+      case Success(_) => todoListEventRepository.save(user.getUserId, listId, eventProducer.get())
+      case Failure(_) =>
+    }
+    todoListModel
   }
 
   override def getDefault(user: User): TodoListModel = {

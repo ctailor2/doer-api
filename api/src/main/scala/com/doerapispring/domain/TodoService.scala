@@ -5,7 +5,7 @@ import java.util.function.{BiFunction, Function, Supplier}
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 @Service
 class TodoService(private val todoListRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
@@ -20,6 +20,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
       .flatMap(todoList => operation.apply(todoList, eventProducer.get()))
     todoListModel match {
       case Success(_) => todoListEventRepository.save(user.getUserId, listId, eventProducer.get())
+      case Failure(_) =>
     }
     todoListModel
   }
@@ -35,6 +36,7 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Todo
       })
     todoListModel match {
       case Success(_) => todoListEventRepository.save(user.getUserId, listId, eventProducer.apply(todoId))
+      case Failure(_) =>
     }
     todoListModel
   }

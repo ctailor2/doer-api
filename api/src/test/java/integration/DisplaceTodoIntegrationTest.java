@@ -2,6 +2,7 @@ package integration;
 
 import com.doerapispring.domain.*;
 import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.assertj.core.api.Assertions;
@@ -75,7 +76,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        listApplicationService.unlock(user, defaultListId);
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
         TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
         Assertions.assertThat(asJava(TodoListModel.getTodos(newTodoList))).extracting("task")

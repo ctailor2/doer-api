@@ -68,8 +68,6 @@ public class ListsControllerTest {
     public void unlock_mapping() throws Exception {
         mockMvc.perform(post("/v1/lists/someListId/unlock"))
             .andExpect(status().isAccepted());
-
-        verify(listApplicationService).unlock(user, new ListId("someListId"));
     }
 
     @Test

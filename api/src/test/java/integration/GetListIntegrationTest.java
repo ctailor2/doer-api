@@ -3,6 +3,7 @@ package integration;
 import com.doerapispring.domain.*;
 import com.doerapispring.domain.events.DeferredTodoAddedEvent;
 import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.hamcrest.Matchers;
@@ -68,7 +69,11 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
     @Test
     public void list() throws Exception {
         mockRequestBuilder = baseMockRequestBuilder;
-        listApplicationService.unlock(user, defaultListId);
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,

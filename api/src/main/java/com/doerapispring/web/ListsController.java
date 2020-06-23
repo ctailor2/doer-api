@@ -4,6 +4,7 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoListModel;
+import com.doerapispring.domain.events.UnlockedEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,11 +39,15 @@ class ListsController {
     @ResponseBody
     ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId) {
-        listApplicationService.unlock(authenticatedUser.getUser(), new ListId(listId));
+        listApplicationService.performOperation(
+                authenticatedUser.getUser(),
+                new ListId(listId),
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
-            hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
-            hateoasLinkGenerator.listLink(listId).withRel("list"));
+                hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
+                hateoasLinkGenerator.listLink(listId).withRel("list"));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
     }
 
@@ -68,9 +73,9 @@ class ListsController {
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                         @PathVariable String listId) {
         CompletedListDTO completedListDTO = new CompletedListDTO(
-            listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).getTodos().stream()
-                .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
-                .collect(toList()));
+                listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).getTodos().stream()
+                        .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+                        .collect(toList()));
         CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
         completedListResponse.add(hateoasLinkGenerator.completedListLink(listId).withSelfRel());
         return ResponseEntity.ok(completedListResponse);
@@ -80,13 +85,13 @@ class ListsController {
     @ResponseBody
     ResponseEntity<TodoListResponse> showAll(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         List<TodoListDTO> todoListDTOS = listApplicationService.getAll(authenticatedUser.getUser()).stream()
-            .map(todoList -> {
-                TodoListDTO todoListDTO = new TodoListDTO(todoList.getName());
-                todoListDTO.add(hateoasLinkGenerator.listLink(todoList.getListId().get()).withRel("list"));
+                .map(todoList -> {
+                    TodoListDTO todoListDTO = new TodoListDTO(todoList.getName());
+                    todoListDTO.add(hateoasLinkGenerator.listLink(todoList.getListId().get()).withRel("list"));
 //                TODO: Add the completed list link
-                return todoListDTO;
-            })
-            .collect(toList());
+                    return todoListDTO;
+                })
+                .collect(toList());
         TodoListResponse todoListResponse = new TodoListResponse(todoListDTOS);
         todoListResponse.add(hateoasLinkGenerator.showListsLink());
         return ResponseEntity.ok(todoListResponse);
@@ -105,8 +110,8 @@ class ListsController {
     @PostMapping(value = "/lists")
     @ResponseBody
     ResponseEntity<ResourcesResponse> create(
-        @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-        @RequestBody ListForm listForm) {
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @RequestBody ListForm listForm) {
         listApplicationService.create(authenticatedUser.getUser(), listForm.getName());
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(hateoasLinkGenerator.createListsLink().withSelfRel());

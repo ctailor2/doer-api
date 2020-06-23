@@ -26,13 +26,9 @@ class TodoListModelResourceTransformerTest {
     val deferredTodoId = new TodoId("oneLaterId")
     val deferredTask = "oneLaterTask"
     val todoListModel = TodoListModel.add(this.todoListModel, todoId, task)
-      .flatMap { case (todoListModel, _) =>
-        TodoListModel.addDeferred(todoListModel, deferredTodoId, deferredTask)
-      }
-      .flatMap { case (todoListModel, _) =>
-        TodoListModel.unlock(todoListModel, Date.from(Instant.now()))
-      }
-      .get._1
+      .flatMap(todoListModel => TodoListModel.addDeferred(todoListModel, deferredTodoId, deferredTask))
+      .flatMap(todoListModel => TodoListModel.unlock(todoListModel, Date.from(Instant.now())))
+      .get
     val responseEntity = todoListReadModelResourceTransformer.transform(todoListModel, Date.from(Instant.now()))
     val todoListReadModelDTO = responseEntity.getTodoListReadModelDTO
     assertThat(todoListReadModelDTO).isNotNull
@@ -52,7 +48,7 @@ class TodoListModelResourceTransformerTest {
       val currentInstant = Instant.now()
       val delta = 1676771L
       val unlockDuration = 123229L
-      val todoList = TodoListModel.unlock(this.todoListModel, Date.from(currentInstant.minusMillis(delta))).get._1
+      val todoList = TodoListModel.unlock(this.todoListModel, Date.from(currentInstant.minusMillis(delta))).get
 
       val responseEntity = todoListReadModelResourceTransformer.transform(todoList, Date.from(currentInstant))
 
@@ -69,11 +65,11 @@ class TodoListModelResourceTransformerTest {
 
   @Test def show_returnsList_includesLinksForEachTodo(): Unit = {
     val todoListModel = TodoListModel.add(this.todoListModel, new TodoId("twoNowId"), "twoNowTask")
-      .flatMap { case (todoListModel, _) => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask") }
-      .flatMap { case (todoListModel, _) => TodoListModel.addDeferred(todoListModel, new TodoId("oneLaterId"), "oneLaterTask") }
-      .flatMap { case (todoListModel, _) => TodoListModel.addDeferred(todoListModel, new TodoId("twoLaterId"), "twoLaterTask") }
-      .flatMap { case (todoListModel, _) => TodoListModel.unlock(todoListModel, Date.from(Instant.now())) }
-      .get._1
+      .flatMap(todoListModel => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask"))
+      .flatMap(todoListModel => TodoListModel.addDeferred(todoListModel, new TodoId("oneLaterId"), "oneLaterTask"))
+      .flatMap(todoListModel => TodoListModel.addDeferred(todoListModel, new TodoId("twoLaterId"), "twoLaterTask"))
+      .flatMap(todoListModel => TodoListModel.unlock(todoListModel, Date.from(Instant.now())))
+      .get
 
     val responseEntity = todoListReadModelResourceTransformer.transform(todoListModel, Date.from(Instant.now()))
     assertThat(responseEntity.getTodoListReadModelDTO.getLinks).contains(new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"))
@@ -96,14 +92,14 @@ class TodoListModelResourceTransformerTest {
 
     @Test def show_whenListHasDisplaceCapability_includesDisplaceLink(): Unit = {
       val todoListModel = TodoListModel.add(this.todoListModel, new TodoId("twoNowId"), "twoNowTask")
-        .flatMap { case (todoListModel, _) => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask") }
-        .get._1
+        .flatMap(todoListModel => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask"))
+        .get
       val responseEntity = todoListReadModelResourceTransformer.transform(todoListModel, Date.from(Instant.now()))
       assertThat(responseEntity.getTodoListReadModelDTO.getLinks).contains(new Link(MOCK_BASE_URL + "/lists/" + listId + "/displaceTodo").withRel("displace"))
     }
 
     @Test def show_whenListIsAbleToBeReplenished_includesPullLink(): Unit = {
-      val todoListModel = TodoListModel.addDeferred(this.todoListModel, new TodoId("someTodoId"), "someTask").get._1
+      val todoListModel = TodoListModel.addDeferred(this.todoListModel, new TodoId("someTodoId"), "someTask").get
       val responseEntity = todoListReadModelResourceTransformer.transform(todoListModel, Date.from(Instant.now()))
       assertThat(responseEntity.getTodoListReadModelDTO.getLinks).contains(new Link(MOCK_BASE_URL + "/lists/" + listId + "/pullTodos").withRel("pull"))
     }
@@ -125,9 +121,9 @@ class TodoListModelResourceTransformerTest {
 
     @Test def show_whenListIsAbleToBeEscalated_includesEscalateLink(): Unit = {
     val todoListModel = TodoListModel.add(this.todoListModel, new TodoId("twoNowId"), "twoNowTask")
-      .flatMap { case (todoListModel, _) => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask") }
-      .flatMap { case (todoListModel, _) => TodoListModel.addDeferred(todoListModel, new TodoId("oneLaterId"), "oneLaterTask") }
-      .get._1
+      .flatMap(todoListModel => TodoListModel.add(todoListModel, new TodoId("oneNowId"), "oneNowTask"))
+      .flatMap(todoListModel => TodoListModel.addDeferred(todoListModel, new TodoId("oneLaterId"), "oneLaterTask"))
+      .get
       val responseEntity = todoListReadModelResourceTransformer.transform(todoListModel, Date.from(Instant.now()))
       assertThat(responseEntity.getTodoListReadModelDTO.getLinks).contains(new Link(MOCK_BASE_URL + "/lists/" + listId + "/escalateTodo").withRel("escalate"))
     }
