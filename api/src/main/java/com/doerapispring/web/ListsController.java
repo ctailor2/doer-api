@@ -56,6 +56,7 @@ class ListsController {
     ResponseEntity<TodoListReadModelResponse> showDefault(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         TodoListModel todoListModel = listApplicationService.getDefault(authenticatedUser.getUser());
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
+        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(todoListModel.listId().get()).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 

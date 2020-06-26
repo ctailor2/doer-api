@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -59,6 +60,8 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
         mockMvc.perform(get("/v1/lists/default")
             .headers(httpHeaders))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.list.profileName", equalTo(otherListName)));
+            .andExpect(jsonPath("$.list.profileName", equalTo(otherListName)))
+            .andExpect(jsonPath("$._links", not(isEmptyString())))
+            .andExpect(jsonPath("$._links.self.href", containsString("/v1/lists/" + otherListId.get())));
     }
 }
