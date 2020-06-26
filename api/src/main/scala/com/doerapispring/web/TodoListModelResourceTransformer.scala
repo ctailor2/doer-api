@@ -49,7 +49,6 @@ import scala.jdk.CollectionConverters._
       todoListReadModelDTO.getDeferredTodos.forEach((targetTodoDTO: TodoDTO) => todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId, todoDTO.getIdentifier, targetTodoDTO.getIdentifier).withRel("move")))
     })
     val todoListReadModelResponse = new TodoListReadModelResponse(todoListReadModelDTO)
-    todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel)
     todoListReadModelResponse
   }
 }

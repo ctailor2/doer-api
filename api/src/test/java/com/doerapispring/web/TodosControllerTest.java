@@ -2,8 +2,7 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedAuthenticationToken;
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.TodoApplicationService;
-import com.doerapispring.domain.User;
+import com.doerapispring.domain.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
@@ -14,9 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import scala.jdk.javaapi.CollectionConverters;
+import scala.util.Success;
+
+import java.time.Clock;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.doerapispring.web.MockHateoasLinkGenerator.MOCK_BASE_URL;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -25,24 +32,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TodosControllerTest {
     private TodosController todosController;
 
-    private TodoApplicationService todoApplicationService;
-
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
-    private User user;
 
     @Before
     public void setUp() throws Exception {
-        todoApplicationService = mock(TodoApplicationService.class);
+        TodoApplicationService todoApplicationService = mock(TodoApplicationService.class);
         authenticatedUser = mock(AuthenticatedUser.class);
-        user = mock(User.class);
+        User user = mock(User.class);
         when(authenticatedUser.getUser()).thenReturn(user);
         SecurityContextHolder.getContext().setAuthentication(new AuthenticatedAuthenticationToken(authenticatedUser));
-        todosController = new TodosController(new MockHateoasLinkGenerator(), todoApplicationService);
+        TodoListModelResourceTransformer todoListModelResourceTransformer = mock(TodoListModelResourceTransformer.class);
+        todosController = new TodosController(new MockHateoasLinkGenerator(), todoApplicationService, todoListModelResourceTransformer, Clock.systemUTC());
         mockMvc = MockMvcBuilders
             .standaloneSetup(todosController)
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
+        when(todoListModelResourceTransformer.transform(any(), any())).thenReturn(new TodoListReadModelResponse(null));
+        java.util.List<Todo> todos = emptyList();
+        TodoListModel todoListModel = new TodoListModel(new ListId("someListId"), "someName", CollectionConverters.asScala(todos).toList(), null, null, null, null);
+        when(todoApplicationService.performOperation(any(), any(), any(Supplier.class), any()))
+                .thenReturn(new Success<>(todoListModel));
+        when(todoApplicationService.performOperation(any(), any(), any(Function.class), any()))
+                .thenReturn(new Success<>(todoListModel));
     }
 
     @Test
@@ -53,7 +65,7 @@ public class TodosControllerTest {
 
     @Test
     public void delete_returns202() {
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.delete(authenticatedUser, "someListId", "someTodoId");
+        ResponseEntity<TodoListReadModelResponse> responseEntity = todosController.delete(authenticatedUser, "someListId", "someTodoId");
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(responseEntity.getBody()).isNotNull();
@@ -73,7 +85,7 @@ public class TodosControllerTest {
     @Test
     public void displace_callsTodoService_returns202() {
         String listId = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity =
+        ResponseEntity<TodoListReadModelResponse> responseEntity =
             todosController.displace(authenticatedUser, listId, new TodoForm("some task"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -94,7 +106,7 @@ public class TodosControllerTest {
     @Test
     public void update_callsTodoService_returns202() {
         String listId = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity =
+        ResponseEntity<TodoListReadModelResponse> responseEntity =
             todosController.update(authenticatedUser, listId, "someId", new TodoForm("some task"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -112,7 +124,7 @@ public class TodosControllerTest {
 
     @Test
     public void complete_returns202() {
-        ResponseEntity<ResourcesResponse> responseEntity =
+        ResponseEntity<TodoListReadModelResponse> responseEntity =
             todosController.complete(authenticatedUser, "someListId", "someTodoId");
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -132,7 +144,7 @@ public class TodosControllerTest {
     public void move_returns202() {
         String listId = "someListId";
         String targetTodoId = "targetTodoId";
-        ResponseEntity<ResourcesResponse> responseEntity =
+        ResponseEntity<TodoListReadModelResponse> responseEntity =
             todosController.move(authenticatedUser, listId, "todoId", targetTodoId);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -151,7 +163,7 @@ public class TodosControllerTest {
     @Test
     public void pull_responseIncludesLinks() {
         String listId = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.pull(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = todosController.pull(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -168,7 +180,7 @@ public class TodosControllerTest {
     @Test
     public void escalate_responseIncludesLinks() {
         String listId = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.escalate(authenticatedUser, listId);
+        ResponseEntity<TodoListReadModelResponse> responseEntity = todosController.escalate(authenticatedUser, listId);
 
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getLinks()).containsOnly(
@@ -187,7 +199,7 @@ public class TodosControllerTest {
     @Test
     public void create_returns201() {
         String listIdPathVariable = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.create(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
+        ResponseEntity<TodoListReadModelResponse> responseEntity = todosController.create(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();
@@ -207,7 +219,7 @@ public class TodosControllerTest {
     @Test
     public void createDeferred_returns201() {
         String listIdPathVariable = "someListId";
-        ResponseEntity<ResourcesResponse> responseEntity = todosController.createDeferred(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
+        ResponseEntity<TodoListReadModelResponse> responseEntity = todosController.createDeferred(authenticatedUser, listIdPathVariable, new TodoForm("some task"));
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(responseEntity.getBody()).isNotNull();

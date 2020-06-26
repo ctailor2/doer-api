@@ -58,7 +58,6 @@ class TodoListModelResourceTransformerTest {
 
   @Test def show_includesLinks_byDefault(): Unit = {
     val responseEntity = todoListReadModelResourceTransformer.transform(this.todoListModel, Date.from(Instant.now()))
-    assertThat(responseEntity.getLinks).contains(new Link(MOCK_BASE_URL + "/lists/" + listId).withSelfRel)
     val links = responseEntity.getTodoListReadModelDTO.getLinks
     assertThat(links).contains(new Link(MOCK_BASE_URL + "/lists/" + listId + "/createDeferredTodo").withRel("createDeferred"), new Link(MOCK_BASE_URL + "/lists/" + listId + "/completedList").withRel("completed"))
   }

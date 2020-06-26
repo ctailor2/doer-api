@@ -65,6 +65,7 @@ class ListsController {
                                                    @PathVariable String listId) {
         TodoListModel todoListModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
+        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 
