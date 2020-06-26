@@ -6,15 +6,12 @@ import com.doerapispring.domain.events.TodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
-import scala.jdk.javaapi.CollectionConverters;
 
-import java.sql.Date;
 import java.time.Clock;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
@@ -73,23 +70,20 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
                 defaultListId,
                 (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will no longer be deferred after the escalate"),
                 TodoListModel::applyEvent);
-
-        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
-            .headers(httpHeaders))
-            .andReturn();
-        String responseContent = mvcResult.getResponse().getContentAsString();
         listApplicationService.performOperation(
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(java.util.Date.from(clock.instant())),
                 TodoListModel::applyEvent);
-        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))
-            .containsExactly("will remain", "will no longer be deferred after the escalate");
-        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())).map(Todo::getTask)))
-            .containsExactly("will become deferred after the escalate");
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
+            .headers(httpHeaders))
+            .andReturn();
+        String responseContent = mvcResult.getResponse().getContentAsString();
+
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("will remain", "will no longer be deferred after the escalate")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[*].task", contains("will become deferred after the escalate")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/escalate")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));

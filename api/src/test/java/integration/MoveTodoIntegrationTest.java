@@ -79,14 +79,10 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos[0].task", equalTo("some task")));
+        assertThat(responseContent, hasJsonPath("$.list.todos[1].task", equalTo("some other task")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString(movePath)));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
-
-        mockMvc.perform(get("/v1/lists/" + defaultListId.get())
-            .headers(httpHeaders))
-            .andExpect(jsonPath("$.list.todos", hasSize(2)))
-            .andExpect(jsonPath("$.list.todos[0].task", equalTo("some task")))
-            .andExpect(jsonPath("$.list.todos[1].task", equalTo("some other task")));
     }
 }

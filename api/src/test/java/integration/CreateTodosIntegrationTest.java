@@ -10,11 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
-import scala.jdk.javaapi.CollectionConverters;
 
 import java.time.Clock;
 import java.util.Date;
-import java.util.List;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
@@ -65,13 +63,9 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
             .headers(httpHeaders))
             .andReturn();
 
-        TodoListModel todoListModel = listApplicationService.get(user, defaultListId);
-        List<Todo> todos = CollectionConverters.asJava(TodoListModel.getTodos(todoListModel));
-
-        assertThat(todos.size(), equalTo(1));
-
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("read the things")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
@@ -79,24 +73,21 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     @Test
     public void createForLater() throws Exception {
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
+
         mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/deferredTodos")
             .content("{\"task\":\"read the things\"}")
             .contentType(MediaType.APPLICATION_JSON)
             .headers(httpHeaders))
             .andReturn();
 
-        listApplicationService.performOperation(
-                user,
-                defaultListId,
-                () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
-        TodoListModel todoListModel = listApplicationService.get(user, defaultListId);
-        List<Todo> todos = CollectionConverters.asJava(TodoListModel.getDeferredTodos(todoListModel, Date.from(clock.instant())));
-
-        assertThat(todos.size(), equalTo(1));
-
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[*].task", contains("read the things")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/deferredTodos")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));

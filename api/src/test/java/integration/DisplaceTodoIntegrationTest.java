@@ -5,7 +5,6 @@ import com.doerapispring.domain.events.TodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -68,6 +66,11 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
                 defaultListId,
                 (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
                 TodoListModel::applyEvent);
+        listApplicationService.performOperation(
+                user,
+                defaultListId,
+                () -> new UnlockedEvent(Date.from(clock.instant())),
+                TodoListModel::applyEvent);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/displace")
             .content("{\"task\":\"do the things\"}")
@@ -76,18 +79,10 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
             .andReturn();
 
         String responseContent = mvcResult.getResponse().getContentAsString();
-        listApplicationService.performOperation(
-                user,
-                defaultListId,
-                () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
-        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
 
-        Assertions.assertThat(asJava(TodoListModel.getTodos(newTodoList))).extracting("task")
-            .containsExactly("do the things", "some task");
-        Assertions.assertThat(asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())))).extracting("task")
-            .containsExactly("some other task");
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("do the things", "some task")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[*].task", contains("some other task")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/displace")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));

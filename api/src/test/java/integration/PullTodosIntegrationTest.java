@@ -5,13 +5,11 @@ import com.doerapispring.domain.events.DeferredTodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MvcResult;
-import scala.jdk.javaapi.CollectionConverters;
 
 import java.time.Clock;
 import java.util.Date;
@@ -72,23 +70,19 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
                 defaultListId,
                 (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "keep for later"),
                 TodoListModel::applyEvent);
-
-        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
-            .headers(httpHeaders))
-            .andReturn();
-        String responseContent = mvcResult.getResponse().getContentAsString();
         listApplicationService.performOperation(
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(Date.from(clock.instant())),
                 TodoListModel::applyEvent);
-        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
+            .headers(httpHeaders))
+            .andReturn();
+        String responseContent = mvcResult.getResponse().getContentAsString();
 
-        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getTodos(newTodoList).map(Todo::getTask)))
-            .containsExactly("will get pulled", "will also get pulled");
-        Assertions.assertThat(CollectionConverters.asJava(TodoListModel.getDeferredTodos(newTodoList, Date.from(clock.instant())).map(Todo::getTask)))
-            .containsExactly("keep for later");
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("will get pulled", "will also get pulled")));
+        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[*].task", contains("keep for later")));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
         assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/pull")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));

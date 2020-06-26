@@ -17,7 +17,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
     private User user;
@@ -65,24 +64,22 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         Todo todo1 = TodoListModel.getTodos(todoList).head();
         Todo todo2 = TodoListModel.getTodos(todoList).last();
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo1.getTodoId().getIdentifier() + "/complete")
+        mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo1.getTodoId().getIdentifier() + "/complete")
                 .headers(httpHeaders))
                 .andReturn();
-        mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo2.getTodoId().getIdentifier() + "/complete")
+        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/todos/" + todo2.getTodoId().getIdentifier() + "/complete")
                 .headers(httpHeaders))
                 .andReturn();
 
-        TodoListModel newTodoList = listApplicationService.get(user, defaultListId);
-
-        assertThat(asJava(TodoListModel.getTodos(newTodoList)), hasSize(0));
         List<CompletedTodo> completedTodos = listApplicationService.getCompleted(user, defaultListId).getTodos();
         assertThat(completedTodos, hasSize(2));
         assertThat(completedTodos.get(0).getTask(), equalTo("some other task"));
         assertThat(completedTodos.get(1).getTask(), equalTo("some task"));
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());
+        assertThat(responseContent, hasJsonPath("$.list.todos", hasSize(0)));
         assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos/" + todo1.getTodoId().getIdentifier() + "/complete")));
+        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos/" + todo2.getTodoId().getIdentifier() + "/complete")));
         assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
     }
 }
