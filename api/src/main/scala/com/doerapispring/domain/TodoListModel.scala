@@ -6,6 +6,20 @@ import com.doerapispring.domain.events._
 
 import scala.util.{Success, Try}
 
+// It would seem that this model is an aggregation of a number of different "processes"
+// 1) There is the split, ordered list process between todos and deferred todos.
+// This includes the move, pull, escalate, and displace features.
+// 2) There is the todos process, where they can be updated/deleted/completed
+// 3) There is the lock process, where certain attributes can be "hidden"
+// 4) There is the timer process, which happens to govern the lock
+
+// Processes 1 & 2 seem appropriately coupled together
+// As do processes 3 & 4
+// But each of these groupings of processes seem mostly unrelated
+
+// Perhaps I can gain increased clarity on the functional modeling of this domain concept
+// by splitting this aggregated process into these 2 groups, minimally
+
 case class TodoListModel(listId: ListId,
                          profileName: String,
                          todos: List[Todo] = List(),
