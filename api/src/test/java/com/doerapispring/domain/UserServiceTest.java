@@ -8,7 +8,12 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import scala.jdk.javaapi.CollectionConverters;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +31,9 @@ public class UserServiceTest {
     @Mock
     private OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
+    @Mock
+    private OwnedObjectWriteRepository<TodoListModelSnapshot, UserId, ListId> todoListModelSnapshotRepository;
+
     private TodoListFactory todoListFactory = mock(TodoListFactory.class);
 
     @Captor
@@ -33,15 +41,19 @@ public class UserServiceTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    private Clock clock = mock(Clock.class);
+
     private TodoList newTodoList;
 
     @Before
     public void setUp() throws Exception {
-        userService = new UserService(userRepository, todoListFactory, todoListRepository);
+        userService = new UserService(userRepository, todoListFactory, todoListRepository, todoListModelSnapshotRepository, clock);
 
         when(userRepository.find(any(UserId.class))).thenReturn(Optional.empty());
         newTodoList = mock(TodoList.class);
         when(todoListFactory.todoList(any(), any(), any())).thenReturn(newTodoList);
+        when(clock.instant()).thenReturn(Instant.now());
     }
 
     @Test
@@ -49,11 +61,39 @@ public class UserServiceTest {
         ListId listId = new ListId("someListId");
         when(todoListRepository.nextIdentifier()).thenReturn(listId);
         String identifier = "soUnique";
+        Instant instant = Instant.ofEpochSecond(15324234L);
+        when(clock.instant()).thenReturn(instant);
 
         userService.create(identifier);
 
         verify(todoListFactory).todoList(new UserId(identifier), listId, "default");
         verify(todoListRepository).save(newTodoList);
+    }
+
+    @Test
+    public void create_createsTodoListModelSnapshot() {
+        String identifier = "soUnique";
+        Instant instant = Instant.ofEpochSecond(15324234L);
+        when(clock.instant()).thenReturn(instant);
+        TodoList todoList = new TodoList(new UserId(identifier), new ListId("someListId"), "someName");
+        when(todoListFactory.todoList(any(), any(), any())).thenReturn(todoList);
+
+        userService.create(identifier);
+
+        java.util.List<Todo> todos = Collections.emptyList();
+        verify(todoListModelSnapshotRepository).save(
+                new UserId(identifier),
+                todoList.getListId(),
+                new TodoListModelSnapshot(
+                        new TodoListModel(
+                                todoList.getListId(),
+                                todoList.getName(),
+                                CollectionConverters.asScala(todos).toList(),
+                                new Date(0L),
+                                0,
+                                "now",
+                                "later"),
+                        Date.from(instant)));
     }
 
     @Test

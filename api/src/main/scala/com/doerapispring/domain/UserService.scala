@@ -1,13 +1,16 @@
 package com.doerapispring.domain
 
-import java.util.Optional
+import java.time.Clock
+import java.util.{Date, Optional}
 
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(val userRepository: ObjectRepository[User, UserId],
                   val todoListFactory: TodoListFactory,
-                  val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId]) {
+                  val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
+                  val todoListModelSnapshotRepository: OwnedObjectWriteRepository[TodoListModelSnapshot, UserId, ListId],
+                  val clock: Clock) {
   def create(identifier: String): User = {
     val userId = new UserId(identifier)
     val userOptional = userRepository.find(userId)
@@ -16,9 +19,14 @@ class UserService(val userRepository: ObjectRepository[User, UserId],
       userId,
       todoListRepository.nextIdentifier(),
       "default")
-    val user = new User(userId, todoList.getListId)
+    val listId = todoList.getListId
+    val user = new User(userId, listId)
     userRepository.save(user)
     todoListRepository.save(todoList)
+    todoListModelSnapshotRepository.save(
+      user.getUserId,
+      listId,
+      TodoListModelSnapshot(TodoListModel(listId, todoList.getName, List(), new Date(0L), 0), Date.from(clock.instant())))
     user
   }
 

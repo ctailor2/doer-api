@@ -1,7 +1,7 @@
 package com.doerapispring.domain;
 
 public class TodoId {
-    private final String identifier;
+    private String identifier;
 
     public TodoId(String identifier) {
         this.identifier = identifier;
@@ -9,6 +9,14 @@ public class TodoId {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    //  TODO: Added just for marshaling/unmarshaling
+    public TodoId() {
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     @Override

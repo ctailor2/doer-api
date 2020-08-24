@@ -1,7 +1,6 @@
 package com.doerapispring.storage
 
 import com.doerapispring.domain._
-import com.doerapispring.domain.events.TodoListEvent
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Repository
 
@@ -11,17 +10,18 @@ import scala.util.{Failure, Success, Try}
 @Repository
 class TodoListModelEventSourcedRepository(private val todoListDao: TodoListDao,
                                           private val todoListEventStoreRepository: TodoListEventStoreRepository,
+                                          private val todoListModelSnapshotRepository: OwnedObjectReadRepository[TodoListModelSnapshot, UserId, ListId],
                                           private val objectMapper: ObjectMapper)
   extends OwnedObjectReadRepository[TodoListModel, UserId, ListId] {
 
   override def find(userId: UserId, listId: ListId): Option[TodoListModel] = {
-    val todoListEntity: TodoListEntity = todoListDao.findByEmailAndListId(userId.get, listId.get)
-    val todoListValue: TodoListModel = TodoListModel(listId, todoListEntity.name)
-    val eventStoreEntities: List[TodoListEventStoreEntity] = todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdOrderByKeyVersion(userId.get, listId.get).asScala.toList
-    val events: List[TodoListEvent] = {
-      eventStoreEntities.map(eventStoreEntity => objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass))
-    }
-    events.foldLeft(Try(todoListValue)) {
+    val todoListModelSnapshot = todoListModelSnapshotRepository.find(userId, listId)
+    val events = todoListModelSnapshot
+      .map(snapshot => snapshot.createdAt)
+      .map(snapshotTime => todoListEventStoreRepository.findAllByKeyUserIdAndKeyListIdAndCreatedAtAfterOrderByKeyVersion(userId.get, listId.get, snapshotTime).asScala.toList)
+      .map(eventStoreEntities => eventStoreEntities.map(eventStoreEntity => objectMapper.readValue(eventStoreEntity.data, eventStoreEntity.eventClass)))
+      .getOrElse(List())
+    events.foldLeft(Try(todoListModelSnapshot.get.todoListModel)) {
       case (Success(todoList), event) => TodoListModel.applyEvent(todoList, event)
       case (Failure(exception), _) =>
         exception.printStackTrace()

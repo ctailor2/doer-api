@@ -1,7 +1,7 @@
 package com.doerapispring.domain;
 
 public class ListId {
-    private final String name;
+    private String name;
 
     public ListId(String name) {
         this.name = name;
@@ -9,6 +9,18 @@ public class ListId {
 
     public String get() {
         return name;
+    }
+
+//  TODO: Added just for marshaling/unmarshaling
+    public ListId() {
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

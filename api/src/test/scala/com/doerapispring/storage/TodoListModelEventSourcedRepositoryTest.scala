@@ -30,18 +30,16 @@ class TodoListModelEventSourcedRepositoryTest {
   private val todoListEventStoreRepository: TodoListEventStoreRepository = null
 
   @Autowired
-  private val userRepository: UserRepository = null
+  private val todoListModelSnapshotRepository: TodoListModelSnapshotRepository = null
 
   @Autowired
-  private val todoListRepository: TodoListRepository = null
+  private val userRepository: UserRepository = null
 
   @Autowired
   private val todoListEventRepository: TodoListEventRepository = null
 
   @Autowired
   private val objectMapper: ObjectMapper = null
-
-  private var todoList: TodoList = _
 
   private val userId: UserId = new UserId("someUserIdentifier")
 
@@ -53,13 +51,12 @@ class TodoListModelEventSourcedRepositoryTest {
   @throws[Exception]
   def setUp(): Unit = {
     userRepository.save(new User(userId, listId))
-    todoList = new TodoList(userId, listId, "someName")
-    todoListRepository.save(todoList)
-    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListDao, todoListEventStoreRepository, objectMapper)
+    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListDao, todoListEventStoreRepository, todoListModelSnapshotRepository, objectMapper)
   }
 
   @Test
   def savesTodoList(): Unit = {
+    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListValue, Date.from(Instant.now())))
     val todoIdToMove1 = "someDeferredTodoIdentifier1"
     val todoIdToMove2 = "someDeferredTodoIdentifier2"
     val todoIdToDelete = "deleteMe"
@@ -85,6 +82,50 @@ class TodoListModelEventSourcedRepositoryTest {
     })
 
     todoListEventRepository.saveAll(userId, listId, todoListEvents)
+
+    val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
+    assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)
+  }
+
+  @Test
+  def startsFromTheTodoListSnapshotWhenOneExists(): Unit = {
+    val todoListModel = TodoListModel(
+      listId,
+      "someProfileName",
+      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      new Date(123L),
+      7,
+      "someSectionName",
+      "someDeferredSectionName")
+    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
+    val todoAddedEvent = TodoAddedEvent("someOtherTodoId", "someOtherTask")
+    todoListEventRepository.save(userId, listId, todoAddedEvent)
+
+    val resultingTodoListValue = TodoListModel.applyEvent(todoListModel, todoAddedEvent).get
+
+    val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
+    assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)
+  }
+
+  @Test
+  def producesTheModelFromTheEventsThatOccurredAfterTheSnapshot(): Unit = {
+    val eventBeforeSnapshot = TodoAddedEvent("someOtherTodoId", "someOtherTask")
+    todoListEventRepository.save(userId, listId, eventBeforeSnapshot)
+
+    val todoListModel = TodoListModel(
+      listId,
+      "someProfileName",
+      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      new Date(123L),
+      7,
+      "someSectionName",
+      "someDeferredSectionName")
+    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
+
+    val eventAfterSnapshot = DeferredTodoAddedEvent("yetAnotherTodoId", "yetAnotherTask")
+    todoListEventRepository.save(userId, listId, eventAfterSnapshot)
+
+    val resultingTodoListValue = TodoListModel.applyEvent(todoListModel, eventAfterSnapshot).get
 
     val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
     assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)
