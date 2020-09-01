@@ -2,38 +2,38 @@ package com.doerapispring.web
 
 import java.util.Date
 
-import com.doerapispring.domain.TodoListModel
+import com.doerapispring.domain.DeprecatedTodoListModel
 import org.springframework.stereotype.Component
 
 import scala.jdk.CollectionConverters._
 
 
 @Component class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGenerator) {
-  def transform(todoListModel: TodoListModel, now: Date): TodoListReadModelResponse = {
+  def transform(todoListModel: DeprecatedTodoListModel, now: Date): TodoListReadModelResponse = {
     val todoListReadModelDTO = new TodoListReadModelDTO(
       todoListModel.profileName,
       todoListModel.sectionName,
       todoListModel.deferredSectionName,
-      TodoListModel.getTodos(todoListModel).map(todo => new TodoDTO(todo.getTodoId.getIdentifier, todo.getTask)).asJava,
-      TodoListModel.getDeferredTodos(todoListModel, now).map(todo => new TodoDTO(todo.getTodoId.getIdentifier, todo.getTask)).asJava,
-      TodoListModel.unlockDurationMs(todoListModel, now)
+      DeprecatedTodoListModel.getTodos(todoListModel).map(todo => new TodoDTO(todo.getTodoId.getIdentifier, todo.getTask)).asJava,
+      DeprecatedTodoListModel.getDeferredTodos(todoListModel, now).map(todo => new TodoDTO(todo.getTodoId.getIdentifier, todo.getTask)).asJava,
+      DeprecatedTodoListModel.unlockDurationMs(todoListModel, now)
     )
     val listId = todoListModel.listId.get
     todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"))
     todoListReadModelDTO.add(hateoasLinkGenerator.completedListLink(listId).withRel("completed"))
-    if (TodoListModel.unlockCapability(todoListModel, now).isSuccess) {
+    if (DeprecatedTodoListModel.unlockCapability(todoListModel, now).isSuccess) {
       todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"))
     }
-    if (TodoListModel.displaceCapability(todoListModel).isSuccess) {
+    if (DeprecatedTodoListModel.displaceCapability(todoListModel).isSuccess) {
       todoListReadModelDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"))
     }
-    if (TodoListModel.addCapability(todoListModel).isSuccess) {
+    if (DeprecatedTodoListModel.addCapability(todoListModel).isSuccess) {
       todoListReadModelDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"))
     }
-    if (TodoListModel.pullCapability(todoListModel).isSuccess) {
+    if (DeprecatedTodoListModel.pullCapability(todoListModel).isSuccess) {
       todoListReadModelDTO.add(hateoasLinkGenerator.listPullTodosLink(listId).withRel("pull"))
     }
-    if (TodoListModel.escalateCapability(todoListModel).isSuccess) {
+    if (DeprecatedTodoListModel.escalateCapability(todoListModel).isSuccess) {
       todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"))
     }
     todoListReadModelDTO.getTodos.forEach((todoDTO: TodoDTO) => {

@@ -80,12 +80,12 @@ public class UserServiceTest {
 
         userService.create(identifier);
 
-        java.util.List<Todo> todos = Collections.emptyList();
+        java.util.List<DeprecatedTodo> todos = Collections.emptyList();
         verify(todoListModelSnapshotRepository).save(
                 new UserId(identifier),
                 todoList.getListId(),
                 new TodoListModelSnapshot(
-                        new TodoListModel(
+                        new DeprecatedTodoListModel(
                                 todoList.getListId(),
                                 todoList.getName(),
                                 CollectionConverters.asScala(todos).toList(),

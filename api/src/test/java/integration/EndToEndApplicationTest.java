@@ -28,14 +28,14 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
 
     @Test
     public void hasTheDefaultListSet() {
-        TodoListModel list = listService.getDefault(user);
+        DeprecatedTodoListModel list = listService.getDefault(user);
 
         assertThat(list.profileName()).isEqualTo("default");
     }
 
     @Test
     public void includesTheDefaultList() {
-        TodoListModel list = listService.getDefault(user);
+        DeprecatedTodoListModel list = listService.getDefault(user);
 
         List<ListId> todoListIds = listService.getAll(user).stream()
             .map(TodoList::getListId)

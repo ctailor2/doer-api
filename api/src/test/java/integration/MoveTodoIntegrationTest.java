@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
@@ -56,13 +56,13 @@ public class MoveTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some task"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some other task"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some other task"),
+                DeprecatedTodoListModel::applyEvent);
 
         String todosResponse = mockMvc.perform(get("/v1/lists/" + defaultListId.get())
             .headers(httpHeaders))

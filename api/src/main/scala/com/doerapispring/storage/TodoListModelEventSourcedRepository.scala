@@ -15,9 +15,9 @@ import scala.util.{Failure, Success, Try}
 class TodoListModelEventSourcedRepository(private val todoListModelSnapshotRepository: OwnedObjectReadRepository[TodoListModelSnapshot, UserId, ListId],
                                           private val objectMapper: ObjectMapper,
                                           private val jdbcTemplate: JdbcTemplate)
-  extends OwnedObjectReadRepository[TodoListModel, UserId, ListId] {
+  extends OwnedObjectReadRepository[DeprecatedTodoListModel, UserId, ListId] {
 
-  override def find(userId: UserId, listId: ListId): Option[TodoListModel] = {
+  override def find(userId: UserId, listId: ListId): Option[DeprecatedTodoListModel] = {
     val todoListModelSnapshot = todoListModelSnapshotRepository.find(userId, listId)
     val events = todoListModelSnapshot
       .map(snapshot => snapshot.createdAt)
@@ -39,7 +39,7 @@ class TodoListModelEventSourcedRepository(private val todoListModelSnapshotRepos
         objectMapper.readValue(data, Class.forName(eventClass).asSubclass(classOf[TodoListEvent]))
       }
     events.foldLeft(Try(todoListModelSnapshot.get.todoListModel)) {
-      case (Success(todoList), event) => TodoListModel.applyEvent(todoList, event)
+      case (Success(todoList), event) => DeprecatedTodoListModel.applyEvent(todoList, event)
       case (Failure(exception), _) =>
         exception.printStackTrace()
         Failure(exception)

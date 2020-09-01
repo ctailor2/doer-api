@@ -77,7 +77,7 @@ public class CreateTodosIntegrationTest extends AbstractWebAppJUnit4SpringContex
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
 
         mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/deferredTodos")
             .content("{\"task\":\"read the things\"}")

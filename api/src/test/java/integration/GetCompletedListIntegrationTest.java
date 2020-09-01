@@ -1,8 +1,8 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.TodoAddedEvent;
-import com.doerapispring.domain.events.TodoCompletedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoCompletedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import com.jayway.jsonpath.JsonPath;
@@ -57,9 +57,9 @@ public class GetCompletedListIntegrationTest extends AbstractWebAppJUnit4SpringC
     public void list() throws Exception {
         listApplicationService.create(user, "someOtherList");
         listApplicationService.getAll(user).forEach(todoList -> {
-            todoApplicationService.performOperation(user, todoList.getListId(), (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), todoList.getName().concat(" task")), TodoListModel::applyEvent);
-            Todo todo = TodoListModel.getTodos(listApplicationService.get(user, todoList.getListId())).head();
-            todoApplicationService.performOperation(user, todoList.getListId(), () -> new TodoCompletedEvent(todo.getTodoId().getIdentifier()), TodoListModel::applyEvent);
+            todoApplicationService.performOperation(user, todoList.getListId(), (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), todoList.getName().concat(" task")), DeprecatedTodoListModel::applyEvent);
+            DeprecatedTodo todo = DeprecatedTodoListModel.getTodos(listApplicationService.get(user, todoList.getListId())).head();
+            todoApplicationService.performOperation(user, todoList.getListId(), () -> new DeprecatedTodoCompletedEvent(todo.getTodoId().getIdentifier()), DeprecatedTodoListModel::applyEvent);
         });
 
         MvcResult mvcResult = mockMvc.perform(get("/v1/lists/" + defaultListId.get() + "/completed")

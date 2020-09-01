@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.Date
 
 import com.doerapispring.domain._
-import com.doerapispring.domain.events.TodoAddedEvent
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent
 import org.assertj.core.api.Assertions
 import org.junit.runner.RunWith
 import org.junit.{Before, Test}
@@ -44,10 +44,10 @@ class TodoListModelSnapshotRepositoryTest {
 
   @Test
   def savesTheTodoListModelSnapshot(): Unit = {
-    val todoListModel = TodoListModel(
+    val todoListModel = DeprecatedTodoListModel(
         listId,
       "someProfileName",
-      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
       new Date(123L),
       7,
       "someSectionName",
@@ -63,10 +63,10 @@ class TodoListModelSnapshotRepositoryTest {
 
   @Test
   def updatesTheTodoListModelSnapshot(): Unit = {
-    val todoListModel = TodoListModel(
+    val todoListModel = DeprecatedTodoListModel(
       listId,
       "someProfileName",
-      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
       new Date(123L),
       7,
       "someSectionName",
@@ -75,7 +75,7 @@ class TodoListModelSnapshotRepositoryTest {
 
     todoListModelSnapshotRepository.save(userId, listId, todoListModelSnapshot)
 
-    val updatedTodoListModel = TodoListModel.applyEvent(todoListModel, TodoAddedEvent("someOtherTodoId", "someOtherTask")).get
+    val updatedTodoListModel = DeprecatedTodoListModel.applyEvent(todoListModel, DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")).get
     val updatedTodoListModelSnapshot = TodoListModelSnapshot(updatedTodoListModel, Date.from(Instant.now()))
     todoListModelSnapshotRepository.save(userId, listId, updatedTodoListModelSnapshot)
 

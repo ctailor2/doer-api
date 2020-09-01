@@ -63,24 +63,24 @@ public class CompletedTodoList {
         DomainEvent domainEvent = timestampedDomainEvent.domainEvent();
         String domainEventClassName = domainEvent.getClass().getName();
         switch (domainEventClassName) {
-            case "com.doerapispring.domain.events.TodoAddedEvent":
-                handleEvent((TodoAddedEvent) domainEvent);
+            case "com.doerapispring.domain.events.DeprecatedTodoAddedEvent":
+                handleEvent((DeprecatedTodoAddedEvent) domainEvent);
                 break;
-            case "com.doerapispring.domain.events.DeferredTodoAddedEvent":
-                handleEvent((DeferredTodoAddedEvent) domainEvent);
+            case "com.doerapispring.domain.events.DeprecatedDeferredTodoAddedEvent":
+                handleEvent((DeprecatedDeferredTodoAddedEvent) domainEvent);
                 break;
-            case "com.doerapispring.domain.events.TodoDisplacedEvent":
-                handleEvent((TodoDisplacedEvent) domainEvent);
+            case "com.doerapispring.domain.events.DeprecatedTodoDisplacedEvent":
+                handleEvent((DeprecatedTodoDisplacedEvent) domainEvent);
                 break;
-            case "com.doerapispring.domain.events.TodoCompletedEvent":
-                handleEvent((TodoCompletedEvent) domainEvent, timestampedDomainEvent.date());
+            case "com.doerapispring.domain.events.DeprecatedTodoCompletedEvent":
+                handleEvent((DeprecatedTodoCompletedEvent) domainEvent, timestampedDomainEvent.date());
                 break;
             default:
                 throw new IllegalArgumentException(format("Received unhandled domain event with class name: %s", domainEventClassName));
         }
     }
 
-    private void handleEvent(TodoCompletedEvent todoCompletedEvent, Date date) {
+    private void handleEvent(DeprecatedTodoCompletedEvent todoCompletedEvent, Date date) {
         String todoId = todoCompletedEvent.completedTodoId();
         this.todos.add(0, new CompletedTodo(
                 new CompletedTodoId(todoId),
@@ -88,15 +88,15 @@ public class CompletedTodoList {
                 date));
     }
 
-    private void handleEvent(TodoDisplacedEvent todoDisplacedEvent) {
+    private void handleEvent(DeprecatedTodoDisplacedEvent todoDisplacedEvent) {
         this.addedTodos.put(todoDisplacedEvent.todoId(), todoDisplacedEvent.task());
     }
 
-    private void handleEvent(DeferredTodoAddedEvent deferredTodoAddedEvent) {
+    private void handleEvent(DeprecatedDeferredTodoAddedEvent deferredTodoAddedEvent) {
         this.addedTodos.put(deferredTodoAddedEvent.todoId(), deferredTodoAddedEvent.task());
     }
 
-    private void handleEvent(TodoAddedEvent todoAddedEvent) {
+    private void handleEvent(DeprecatedTodoAddedEvent todoAddedEvent) {
         this.addedTodos.put(todoAddedEvent.todoId(), todoAddedEvent.task());
     }
 }

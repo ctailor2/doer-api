@@ -43,9 +43,9 @@ public class ResourcesControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         defaultListId = new ListId("someListId");
-        java.util.List<Todo> emptyList = Collections.emptyList();
+        java.util.List<DeprecatedTodo> emptyList = Collections.emptyList();
         when(listApplicationService.getDefault(any())).thenReturn(
-            new TodoListModel(defaultListId, "someName", CollectionConverters.asScala(emptyList).toList(), null, null, null, null));
+            new DeprecatedTodoListModel(defaultListId, "someName", CollectionConverters.asScala(emptyList).toList(), null, null, null, null));
     }
 
     @Test

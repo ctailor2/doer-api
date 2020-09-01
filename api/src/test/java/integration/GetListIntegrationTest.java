@@ -1,8 +1,8 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.DeferredTodoAddedEvent;
-import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedDeferredTodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
@@ -73,27 +73,27 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "this and that"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "this and that"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "near and far"),
-                TodoListModel::applyEvent);
-        TodoListModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = TodoListModel.getTodos(todoList).head();
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "near and far"),
+                DeprecatedTodoListModel::applyEvent);
+        DeprecatedTodoListModel todoList = listApplicationService.get(user, defaultListId);
+        DeprecatedTodo todo = DeprecatedTodoListModel.getTodos(todoList).head();
         Date now = Date.from(clock.instant());
-        Todo firstDeferredTodo = TodoListModel.getDeferredTodos(todoList, now).head();
-        Todo secondDeferredTodo = TodoListModel.getDeferredTodos(todoList, now).last();
+        DeprecatedTodo firstDeferredTodo = DeprecatedTodoListModel.getDeferredTodos(todoList, now).head();
+        DeprecatedTodo secondDeferredTodo = DeprecatedTodoListModel.getDeferredTodos(todoList, now).last();
 
         doGet();
 
@@ -148,13 +148,13 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "this and that"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "this and that"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
+                DeprecatedTodoListModel::applyEvent);
 
         doGet();
 
@@ -172,18 +172,18 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "this and that"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "this and that"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "one and two"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "one and two"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "here and there"),
+                DeprecatedTodoListModel::applyEvent);
 
         doGet();
 

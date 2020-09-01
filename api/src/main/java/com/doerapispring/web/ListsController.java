@@ -1,9 +1,9 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
+import com.doerapispring.domain.DeprecatedTodoListModel;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
-import com.doerapispring.domain.TodoListModel;
 import com.doerapispring.domain.events.UnlockedEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +43,7 @@ class ListsController {
                 authenticatedUser.getUser(),
                 new ListId(listId),
                 () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
                 hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
@@ -54,7 +54,7 @@ class ListsController {
     @RequestMapping("/lists/default")
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> showDefault(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        TodoListModel todoListModel = listApplicationService.getDefault(authenticatedUser.getUser());
+        DeprecatedTodoListModel todoListModel = listApplicationService.getDefault(authenticatedUser.getUser());
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(hateoasLinkGenerator.listLink(todoListModel.listId().get()).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);
@@ -64,7 +64,7 @@ class ListsController {
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> show(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @PathVariable String listId) {
-        TodoListModel todoListModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
+        DeprecatedTodoListModel todoListModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);

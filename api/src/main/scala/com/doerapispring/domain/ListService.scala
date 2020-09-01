@@ -16,9 +16,9 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
                   val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
                   val todoListFactory: TodoListFactory,
                   val userRepository: ObjectRepository[User, UserId],
-                  val todoListModelRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
+                  val todoListModelRepository: OwnedObjectReadRepository[DeprecatedTodoListModel, UserId, ListId],
                   val clock: Clock,
-                  val domainEventPublisher: DomainEventPublisher[TodoListModel, TodoListEvent, UserId, ListId],
+                  val domainEventPublisher: DomainEventPublisher[DeprecatedTodoListModel, TodoListEvent, UserId, ListId],
                   val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
                   val todoListModelSnapshotRepository: OwnedObjectWriteRepository[TodoListModelSnapshot, UserId, ListId])
   extends ListApplicationService {
@@ -26,7 +26,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
   override def performOperation(user: User,
                                 listId: ListId,
                                 eventProducer: Supplier[TodoListEvent],
-                                operation: BiFunction[TodoListModel, TodoListEvent, Try[TodoListModel]]): Try[TodoListModel] = {
+                                operation: BiFunction[DeprecatedTodoListModel, TodoListEvent, Try[DeprecatedTodoListModel]]): Try[DeprecatedTodoListModel] = {
     val todoListEvent = eventProducer.get()
     Try(todoListModelRepository.find(user.getUserId, listId).get)
       .flatMap(todoList => {
@@ -35,7 +35,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
       .map(todoList => domainEventPublisher.publish(todoList, todoListEvent, user.getUserId, listId))
   }
 
-  override def getDefault(user: User): TodoListModel = {
+  override def getDefault(user: User): DeprecatedTodoListModel = {
     todoListModelRepository.find(user.getUserId, user.getDefaultListId).get
   }
 
@@ -43,7 +43,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
     completedTodoRepository.find(user.getUserId, listId).get
   }
 
-  override def get(user: User, listId: ListId): TodoListModel = {
+  override def get(user: User, listId: ListId): DeprecatedTodoListModel = {
     todoListModelRepository.find(user.getUserId, listId).get
   }
 
@@ -58,7 +58,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
     todoListModelSnapshotRepository.save(
       user.getUserId,
       listId,
-      TodoListModelSnapshot(TodoListModel(listId, name, List(), new Date(0L), 0), Date.from(clock.instant())))
+      TodoListModelSnapshot(DeprecatedTodoListModel(listId, name, List(), new Date(0L), 0), Date.from(clock.instant())))
   }
 
   override def setDefault(user: User, listId: ListId): Unit = {

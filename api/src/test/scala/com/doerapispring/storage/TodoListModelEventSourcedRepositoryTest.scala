@@ -46,7 +46,7 @@ class TodoListModelEventSourcedRepositoryTest {
 
   private val listId: ListId = new ListId("someListIdentifier")
 
-  private val todoListValue = TodoListModel(listId, "someName")
+  private val todoListValue = DeprecatedTodoListModel(listId, "someName")
 
   @Before
   @throws[Exception]
@@ -65,22 +65,22 @@ class TodoListModelEventSourcedRepositoryTest {
     val todoIdToUpdate = "updateMe"
     val todoIdToComplete = "completeMe"
     val todoListEvents = List(
-      TodoAddedEvent("someTodoIdentifier", "someTask"),
-      DeferredTodoAddedEvent(todoIdToMove1, "someDeferredTask1"),
-      DeferredTodoAddedEvent(todoIdToMove2, "someDeferredTask2"),
-      TodoMovedEvent(todoIdToMove1, todoIdToMove2),
-      DeferredTodoAddedEvent(todoIdToDelete, "taskToDelete"),
-      TodoDeletedEvent(todoIdToDelete),
-      DeferredTodoAddedEvent(todoIdToUpdate, "taskToUpdate"),
-      TodoUpdatedEvent(todoIdToUpdate, "updatedTask"),
+      DeprecatedTodoAddedEvent("someTodoIdentifier", "someTask"),
+      DeprecatedDeferredTodoAddedEvent(todoIdToMove1, "someDeferredTask1"),
+      DeprecatedDeferredTodoAddedEvent(todoIdToMove2, "someDeferredTask2"),
+      DeprecatedTodoMovedEvent(todoIdToMove1, todoIdToMove2),
+      DeprecatedDeferredTodoAddedEvent(todoIdToDelete, "taskToDelete"),
+      DeprecatedTodoDeletedEvent(todoIdToDelete),
+      DeprecatedDeferredTodoAddedEvent(todoIdToUpdate, "taskToUpdate"),
+      DeprecatedTodoUpdatedEvent(todoIdToUpdate, "updatedTask"),
       PulledEvent(),
       EscalatedEvent(),
-      TodoDisplacedEvent(todoIdToComplete, "someImportantTask"),
-      TodoCompletedEvent(todoIdToComplete),
+      DeprecatedTodoDisplacedEvent(todoIdToComplete, "someImportantTask"),
+      DeprecatedTodoCompletedEvent(todoIdToComplete),
       UnlockedEvent(Date.from(Instant.now()))
     )
     val resultingTodoListValue = todoListEvents.foldLeft(todoListValue)((todoListModel, todoListEvent) => {
-      TodoListModel.applyEvent(todoListModel, todoListEvent).get
+      DeprecatedTodoListModel.applyEvent(todoListModel, todoListEvent).get
     })
 
     todoListEventRepository.saveAll(userId, listId, todoListEvents)
@@ -91,19 +91,19 @@ class TodoListModelEventSourcedRepositoryTest {
 
   @Test
   def startsFromTheTodoListSnapshotWhenOneExists(): Unit = {
-    val todoListModel = TodoListModel(
+    val todoListModel = DeprecatedTodoListModel(
       listId,
       "someProfileName",
-      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
       new Date(123L),
       7,
       "someSectionName",
       "someDeferredSectionName")
     todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
-    val todoAddedEvent = TodoAddedEvent("someOtherTodoId", "someOtherTask")
+    val todoAddedEvent = DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")
     todoListEventRepository.save(userId, listId, todoAddedEvent)
 
-    val resultingTodoListValue = TodoListModel.applyEvent(todoListModel, todoAddedEvent).get
+    val resultingTodoListValue = DeprecatedTodoListModel.applyEvent(todoListModel, todoAddedEvent).get
 
     val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
     assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)
@@ -111,23 +111,23 @@ class TodoListModelEventSourcedRepositoryTest {
 
   @Test
   def producesTheModelFromTheEventsThatOccurredAfterTheSnapshot(): Unit = {
-    val eventBeforeSnapshot = TodoAddedEvent("someOtherTodoId", "someOtherTask")
+    val eventBeforeSnapshot = DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")
     todoListEventRepository.save(userId, listId, eventBeforeSnapshot)
 
-    val todoListModel = TodoListModel(
+    val todoListModel = DeprecatedTodoListModel(
       listId,
       "someProfileName",
-      List(new Todo(new TodoId("someTodoId"), "someTask")),
+      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
       new Date(123L),
       7,
       "someSectionName",
       "someDeferredSectionName")
     todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
 
-    val eventAfterSnapshot = DeferredTodoAddedEvent("yetAnotherTodoId", "yetAnotherTask")
+    val eventAfterSnapshot = DeprecatedDeferredTodoAddedEvent("yetAnotherTodoId", "yetAnotherTask")
     todoListEventRepository.save(userId, listId, eventAfterSnapshot)
 
-    val resultingTodoListValue = TodoListModel.applyEvent(todoListModel, eventAfterSnapshot).get
+    val resultingTodoListValue = DeprecatedTodoListModel.applyEvent(todoListModel, eventAfterSnapshot).get
 
     val retrievedTodoListModel = todoListModelRepository.find(userId, listId).get
     assertThat(retrievedTodoListModel).isEqualTo(resultingTodoListValue)

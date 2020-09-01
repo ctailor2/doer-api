@@ -35,7 +35,7 @@ public class ListsControllerTest {
 
     private MockMvc mockMvc;
     private AuthenticatedUser authenticatedUser;
-    private TodoListModel todoListReadModel;
+    private DeprecatedTodoListModel todoListReadModel;
     private User user;
     private String listId = "someListId";
     private TodoListModelResourceTransformer todoListResourceTransformer;
@@ -56,7 +56,7 @@ public class ListsControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
 
-        todoListReadModel = mock(TodoListModel.class);
+        todoListReadModel = mock(DeprecatedTodoListModel.class);
         when(todoListReadModel.listId()).thenReturn(new ListId(listId));
         when(listApplicationService.getDefault(any())).thenReturn(todoListReadModel);
         when(listApplicationService.get(any(), any())).thenReturn(todoListReadModel);

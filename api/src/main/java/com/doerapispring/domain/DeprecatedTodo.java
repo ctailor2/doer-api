@@ -2,11 +2,11 @@ package com.doerapispring.domain;
 
 import org.springframework.hateoas.ResourceSupport;
 
-public class Todo extends ResourceSupport {
+public class DeprecatedTodo extends ResourceSupport {
     private TodoId todoId;
     private String task;
 
-    public Todo(TodoId todoId, String task) {
+    public DeprecatedTodo(TodoId todoId, String task) {
         this.todoId = todoId;
         this.task = task;
     }
@@ -28,7 +28,7 @@ public class Todo extends ResourceSupport {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Todo todo = (Todo) o;
+        DeprecatedTodo todo = (DeprecatedTodo) o;
 
         if (todoId != null ? !todoId.equals(todo.todoId) : todo.todoId != null) return false;
         return task != null ? task.equals(todo.task) : todo.task == null;

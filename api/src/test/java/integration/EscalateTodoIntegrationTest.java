@@ -1,8 +1,8 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.DeferredTodoAddedEvent;
-import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedDeferredTodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
@@ -58,23 +58,23 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "will become deferred after the escalate"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "will become deferred after the escalate"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "will remain"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "will remain"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will no longer be deferred after the escalate"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "will no longer be deferred after the escalate"),
+                DeprecatedTodoListModel::applyEvent);
         listApplicationService.performOperation(
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(java.util.Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
             .headers(httpHeaders))

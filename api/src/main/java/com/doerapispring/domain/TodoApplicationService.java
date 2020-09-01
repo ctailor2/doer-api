@@ -8,17 +8,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface TodoApplicationService {
-    Try<TodoListModel> performOperation(
+    Try<DeprecatedTodoListModel> performOperation(
             User user,
             ListId listId,
             Supplier<TodoListEvent> eventProducer,
-            BiFunction<TodoListModel, TodoListEvent, Try<TodoListModel>> operation
+            BiFunction<DeprecatedTodoListModel, TodoListEvent, Try<DeprecatedTodoListModel>> operation
     );
 
-    Try<TodoListModel> performOperation(
+    Try<DeprecatedTodoListModel> performOperation(
             User user,
             ListId listId,
             Function<TodoId, TodoListEvent> eventProducer,
-            BiFunction<TodoListModel, TodoListEvent, Try<TodoListModel>> operation
+            BiFunction<DeprecatedTodoListModel, TodoListEvent, Try<DeprecatedTodoListModel>> operation
     );
 }

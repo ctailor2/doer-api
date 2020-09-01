@@ -36,7 +36,7 @@ class TodoListModelSnapshotRepository(private val jdbcTemplate: JdbcTemplate,
   override def find(userId: UserId, listId: ListId): Option[TodoListModelSnapshot] = {
     val rowMapper: RowMapper[TodoListModelSnapshot] = (rs: ResultSet, _: Int) => {
       TodoListModelSnapshot(
-        objectMapper.readValue(rs.getString("data"), classOf[TodoListModel]),
+        objectMapper.readValue(rs.getString("data"), classOf[DeprecatedTodoListModel]),
         Date.from(rs.getTimestamp("created_at").toInstant))
     }
 

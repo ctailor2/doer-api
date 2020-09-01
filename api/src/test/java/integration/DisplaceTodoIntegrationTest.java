@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
@@ -59,18 +59,18 @@ public class DisplaceTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some other task"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some other task"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some task"),
+                DeprecatedTodoListModel::applyEvent);
         listApplicationService.performOperation(
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
 
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/displace")
             .content("{\"task\":\"do the things\"}")

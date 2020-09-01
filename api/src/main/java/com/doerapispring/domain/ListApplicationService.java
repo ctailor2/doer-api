@@ -8,17 +8,17 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public interface ListApplicationService {
-    Try<TodoListModel> performOperation(
+    Try<DeprecatedTodoListModel> performOperation(
             User user,
             ListId listId,
             Supplier<TodoListEvent> eventProducer,
-            BiFunction<TodoListModel, TodoListEvent, Try<TodoListModel>> operation);
+            BiFunction<DeprecatedTodoListModel, TodoListEvent, Try<DeprecatedTodoListModel>> operation);
 
-    TodoListModel getDefault(User user);
+    DeprecatedTodoListModel getDefault(User user);
 
     CompletedTodoList getCompleted(User user, ListId listId);
 
-    TodoListModel get(User user, ListId listId);
+    DeprecatedTodoListModel get(User user, ListId listId);
 
     List<TodoList> getAll(User user);
 

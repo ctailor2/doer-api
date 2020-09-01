@@ -54,9 +54,9 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
             .headers(httpHeaders))
             .andReturn();
 
-        TodoListModel todoList = listApplicationService.get(user, defaultListId);
+        DeprecatedTodoListModel todoList = listApplicationService.get(user, defaultListId);
 
-        assertThat(TodoListModel.unlockCapability(todoList, Date.from(clock.instant())).isSuccess(), equalTo(false));
+        assertThat(DeprecatedTodoListModel.unlockCapability(todoList, Date.from(clock.instant())).isSuccess(), equalTo(false));
 
         String responseContent = mvcResult.getResponse().getContentAsString();
         assertThat(responseContent, isJson());

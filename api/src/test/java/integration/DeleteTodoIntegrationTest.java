@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.TodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
 import org.junit.Before;
@@ -51,10 +51,10 @@ public class DeleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new TodoAddedEvent(todoId.getIdentifier(), "some task"),
-                TodoListModel::applyEvent);
-        TodoListModel todoList = listApplicationService.get(user, defaultListId);
-        Todo todo = TodoListModel.getTodos(todoList).head();
+                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some task"),
+                DeprecatedTodoListModel::applyEvent);
+        DeprecatedTodoListModel todoList = listApplicationService.get(user, defaultListId);
+        DeprecatedTodo todo = DeprecatedTodoListModel.getTodos(todoList).head();
 
         MvcResult mvcResult = mockMvc.perform(delete("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
             .headers(httpHeaders))

@@ -6,27 +6,27 @@ import com.doerapispring.domain.events._
 
 import scala.util.{Success, Try}
 
-case class TodoListModel(listId: ListId,
-                         profileName: String,
-                         todos: List[Todo] = List(),
-                         lastUnlockedAt: Date = new Date(0L),
-                         demarcationIndex: Integer = 0,
-                         sectionName: String = "now",
-                         deferredSectionName: String = "later")
+case class DeprecatedTodoListModel(listId: ListId,
+                                   profileName: String,
+                                   todos: List[DeprecatedTodo] = List(),
+                                   lastUnlockedAt: Date = new Date(0L),
+                                   demarcationIndex: Integer = 0,
+                                   sectionName: String = "now",
+                                   deferredSectionName: String = "later")
 
-object TodoListModel {
+object DeprecatedTodoListModel {
   val MaxSize: Int = 2
 
-  def applyEvent(todoList: TodoListModel, todoListEvent: TodoListEvent): Try[TodoListModel] = {
+  def applyEvent(todoList: DeprecatedTodoListModel, todoListEvent: TodoListEvent): Try[DeprecatedTodoListModel] = {
     val result = todoListEvent match {
-      case TodoUpdatedEvent(todoId, task) => update(todoList, new TodoId(todoId), task)
-      case TodoCompletedEvent(completedTodoId) => complete(todoList, new TodoId(completedTodoId))
-      case TodoDisplacedEvent(todoId, task) => displaceCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
-      case TodoDeletedEvent(todoId) => delete(todoList, new TodoId(todoId))
-      case TodoAddedEvent(todoId, task) => addCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
+      case DeprecatedTodoUpdatedEvent(todoId, task) => update(todoList, new TodoId(todoId), task)
+      case DeprecatedTodoCompletedEvent(completedTodoId) => complete(todoList, new TodoId(completedTodoId))
+      case DeprecatedTodoDisplacedEvent(todoId, task) => displaceCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
+      case DeprecatedTodoDeletedEvent(todoId) => delete(todoList, new TodoId(todoId))
+      case DeprecatedTodoAddedEvent(todoId, task) => addCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
       case EscalatedEvent() => escalateCapability(todoList).flatMap(func => func.apply())
-      case DeferredTodoAddedEvent(todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
-      case TodoMovedEvent(todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
+      case DeprecatedDeferredTodoAddedEvent(todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
+      case DeprecatedTodoMovedEvent(todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
       case PulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
       case UnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
     }
@@ -37,65 +37,65 @@ object TodoListModel {
     }
   }
 
-  def add(todoList: TodoListModel, todoId: TodoId, task: String): Try[TodoListModel] = Try {
+  def add(todoList: DeprecatedTodoListModel, todoId: TodoId, task: String): Try[DeprecatedTodoListModel] = Try {
     if (alreadyExists(todoList, task)) {
       throw new DuplicateTodoException
     }
-    val todo = new Todo(todoId, task)
+    val todo = new DeprecatedTodo(todoId, task)
     todoList.copy(todos = todo +: todoList.todos, demarcationIndex = todoList.demarcationIndex + 1)
   }
 
-  def addCapability(todoList: TodoListModel): Try[(TodoId, String) => Try[TodoListModel]] = Try {
+  def addCapability(todoList: DeprecatedTodoListModel): Try[(TodoId, String) => Try[DeprecatedTodoListModel]] = Try {
     if (isFull(todoList)) {
       throw new ListSizeExceededException
     }
     (todoId: TodoId, task: String) => add(todoList, todoId, task)
   }
 
-  def addDeferred(todoList: TodoListModel, todoId: TodoId, task: String): Try[TodoListModel] = Try {
+  def addDeferred(todoList: DeprecatedTodoListModel, todoId: TodoId, task: String): Try[DeprecatedTodoListModel] = Try {
     if (alreadyExists(todoList, task)) {
       throw new DuplicateTodoException
     }
-    val todo = new Todo(todoId, task)
+    val todo = new DeprecatedTodo(todoId, task)
     todoList.copy(todos = todoList.todos :+ todo)
   }
 
-  def delete(todoList: TodoListModel, todoId: TodoId): Try[TodoListModel] = Try {
-    val todoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
+  def delete(todoList: DeprecatedTodoListModel, todoId: TodoId): Try[DeprecatedTodoListModel] = Try {
+    val todoMatches: DeprecatedTodo => Boolean = todo => todo.getTodoId.equals(todoId)
     if (!todoList.todos.exists(todoMatches)) throw new TodoNotFoundException
     val indexOfTodo = todoList.todos.indexWhere(todoMatches)
     val newDemarcationIndex: Int = if (indexOfTodo < todoList.demarcationIndex) todoList.demarcationIndex - 1 else todoList.demarcationIndex
     todoList.copy(todos = todoList.todos.filterNot(todoMatches), demarcationIndex = newDemarcationIndex)
   }
 
-  def displace(todoList: TodoListModel, todoId: TodoId, task: String): Try[TodoListModel] = Try {
+  def displace(todoList: DeprecatedTodoListModel, todoId: TodoId, task: String): Try[DeprecatedTodoListModel] = Try {
     if (alreadyExists(todoList, task)) throw new DuplicateTodoException
-    val todo = new Todo(todoId, task)
+    val todo = new DeprecatedTodo(todoId, task)
     todoList.copy(todos = todo +: todoList.todos)
   }
 
-  def displaceCapability(todoList: TodoListModel): Try[(TodoId, String) => Try[TodoListModel]] = Try {
+  def displaceCapability(todoList: DeprecatedTodoListModel): Try[(TodoId, String) => Try[DeprecatedTodoListModel]] = Try {
     if (!isFull(todoList)) throw new ListNotFullException
     (todoId: TodoId, task: String) => displace(todoList, todoId, task)
   }
 
-  def update(todoList: TodoListModel, todoId: TodoId, task: String): Try[TodoListModel] = Try {
+  def update(todoList: DeprecatedTodoListModel, todoId: TodoId, task: String): Try[DeprecatedTodoListModel] = Try {
     if (alreadyExists(todoList, task)) throw new DuplicateTodoException
-    val todoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
-    val todo: Todo = todoList.todos.find(todoMatches).getOrElse(throw new TodoNotFoundException)
+    val todoMatches: DeprecatedTodo => Boolean = todo => todo.getTodoId.equals(todoId)
+    val todo: DeprecatedTodo = todoList.todos.find(todoMatches).getOrElse(throw new TodoNotFoundException)
     todo.setTask(task)
     todoList.copy(todos = todoList.todos)
   }
 
-  def complete(todoList: TodoListModel, todoId: TodoId): Try[TodoListModel] = {
+  def complete(todoList: DeprecatedTodoListModel, todoId: TodoId): Try[DeprecatedTodoListModel] = {
     delete(todoList, todoId)
   }
 
-  def move(todoList: TodoListModel, todoId: TodoId, targetTodoId: TodoId): Try[TodoListModel] = Try {
-    val sourceTodoMatches: Todo => Boolean = todo => todo.getTodoId.equals(todoId)
-    val targetTodoMatches: Todo => Boolean = todo => todo.getTodoId.equals(targetTodoId)
-    val sourceTodo: Todo = todoList.todos.find(sourceTodoMatches).getOrElse(throw new TodoNotFoundException)
-    val targetTodo: Todo = todoList.todos.find(targetTodoMatches).getOrElse(throw new TodoNotFoundException)
+  def move(todoList: DeprecatedTodoListModel, todoId: TodoId, targetTodoId: TodoId): Try[DeprecatedTodoListModel] = Try {
+    val sourceTodoMatches: DeprecatedTodo => Boolean = todo => todo.getTodoId.equals(todoId)
+    val targetTodoMatches: DeprecatedTodo => Boolean = todo => todo.getTodoId.equals(targetTodoId)
+    val sourceTodo: DeprecatedTodo = todoList.todos.find(sourceTodoMatches).getOrElse(throw new TodoNotFoundException)
+    val targetTodo: DeprecatedTodo = todoList.todos.find(targetTodoMatches).getOrElse(throw new TodoNotFoundException)
     val sourceTodoIndex = todoList.todos.indexOf(sourceTodo)
     val targetTodoIndex = todoList.todos.indexOf(targetTodo)
     sourceTodoIndex.compareTo(targetTodoIndex) match {
@@ -107,29 +107,29 @@ object TodoListModel {
     }
   }
 
-  def getTodos(todoList: TodoListModel): List[Todo] = {
+  def getTodos(todoList: DeprecatedTodoListModel): List[DeprecatedTodo] = {
     todoList.todos.slice(0, todoList.demarcationIndex)
   }
 
-  def getDeferredTodos(todoList: TodoListModel, unlockTime: Date): List[Todo] = {
+  def getDeferredTodos(todoList: DeprecatedTodoListModel, unlockTime: Date): List[DeprecatedTodo] = {
     if (isLocked(todoList, unlockTime)) List.empty else todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size)
   }
 
-  def unlock(todoList: TodoListModel, unlockTime: Date): Try[TodoListModel] = Try {
+  def unlock(todoList: DeprecatedTodoListModel, unlockTime: Date): Try[DeprecatedTodoListModel] = Try {
     todoList.copy(lastUnlockedAt = unlockTime)
   }
 
-  def unlockDurationMs(todoList: TodoListModel, compareTime: Date): Long = {
+  def unlockDurationMs(todoList: DeprecatedTodoListModel, compareTime: Date): Long = {
     val unlockDuration = 1800000L
     val duration = todoList.lastUnlockedAt.toInstant.toEpochMilli + unlockDuration - compareTime.toInstant.toEpochMilli
     if (duration > 0) duration else 0L
   }
 
-  def pull(todoList: TodoListModel): Try[TodoListModel] = Try {
+  def pull(todoList: DeprecatedTodoListModel): Try[DeprecatedTodoListModel] = Try {
     todoList.copy(demarcationIndex = Math.min(todoList.todos.size, MaxSize))
   }
 
-  def pullCapability(todoList: TodoListModel): Try[() => Try[TodoListModel]] = Try {
+  def pullCapability(todoList: DeprecatedTodoListModel): Try[() => Try[DeprecatedTodoListModel]] = Try {
     val isAbleToBeReplenished = !isFull(todoList) && todoList.todos.slice(todoList.demarcationIndex, todoList.todos.size).nonEmpty
     if (!isAbleToBeReplenished) {
       throw new PullNotAllowedException
@@ -137,12 +137,12 @@ object TodoListModel {
     () => pull(todoList)
   }
 
-  def escalate(todoList: TodoListModel): Try[TodoListModel] = {
+  def escalate(todoList: DeprecatedTodoListModel): Try[DeprecatedTodoListModel] = {
     val first :: second :: third :: rest = todoList.todos
     Success(todoList.copy(todos = first :: third :: second :: rest))
   }
 
-  def escalateCapability(todoListValue: TodoListModel): Try[() => Try[TodoListModel]] = Try {
+  def escalateCapability(todoListValue: DeprecatedTodoListModel): Try[() => Try[DeprecatedTodoListModel]] = Try {
     val isAbleToBeEscalated = isFull(todoListValue) && todoListValue.todos.slice(todoListValue.demarcationIndex, todoListValue.todos.size).nonEmpty
     if (!isAbleToBeEscalated) {
       throw new EscalateNotAllowException
@@ -150,7 +150,7 @@ object TodoListModel {
     () => escalate(todoListValue)
   }
 
-  def unlockCapability(todoList: TodoListModel, unlockTime: Date): Try[Date => Try[TodoListModel]] = Try {
+  def unlockCapability(todoList: DeprecatedTodoListModel, unlockTime: Date): Try[Date => Try[DeprecatedTodoListModel]] = Try {
     val calendar = Calendar.getInstance
     calendar.setTimeZone(TimeZone.getTimeZone("UTC"))
     calendar.setTime(unlockTime)
@@ -163,15 +163,15 @@ object TodoListModel {
     unlockTime => unlock(todoList, unlockTime);
   }
 
-  private def isFull(todoList: TodoListModel): Boolean = {
+  private def isFull(todoList: DeprecatedTodoListModel): Boolean = {
     todoList.todos.slice(0, todoList.demarcationIndex).size >= MaxSize
   }
 
-  private def isLocked(todoList: TodoListModel, unlockTime: Date) = {
+  private def isLocked(todoList: DeprecatedTodoListModel, unlockTime: Date) = {
     todoList.lastUnlockedAt.before(Date.from(unlockTime.toInstant.minusSeconds(1800)))
   }
 
-  private def alreadyExists(todoList: TodoListModel, task: String): Boolean = {
+  private def alreadyExists(todoList: DeprecatedTodoListModel, task: String): Boolean = {
     todoList.todos
       .map(todo => todo.getTask)
       .contains(task)

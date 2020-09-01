@@ -1,7 +1,7 @@
 package integration;
 
 import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.DeferredTodoAddedEvent;
+import com.doerapispring.domain.events.DeprecatedDeferredTodoAddedEvent;
 import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
@@ -58,23 +58,23 @@ public class PullTodosIntegrationTest extends AbstractWebAppJUnit4SpringContextT
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will get pulled"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "will get pulled"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "will also get pulled"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "will also get pulled"),
+                DeprecatedTodoListModel::applyEvent);
         todoApplicationService.performOperation(
                 user,
                 defaultListId,
-                (todoId) -> new DeferredTodoAddedEvent(todoId.getIdentifier(), "keep for later"),
-                TodoListModel::applyEvent);
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "keep for later"),
+                DeprecatedTodoListModel::applyEvent);
         listApplicationService.performOperation(
                 user,
                 defaultListId,
                 () -> new UnlockedEvent(Date.from(clock.instant())),
-                TodoListModel::applyEvent);
+                DeprecatedTodoListModel::applyEvent);
         MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/pull")
             .headers(httpHeaders))
             .andReturn();

@@ -22,10 +22,10 @@ class CompletedTodoListEventSourcedRepository(val objectMapper: ObjectMapper,
     val parameters = new MapSqlParameterSource("userId", userId.get)
       .addValue("listId", listId.get)
       .addValue("eventClasses", List(
-        classOf[TodoAddedEvent].getName,
-        classOf[DeferredTodoAddedEvent].getName,
-        classOf[TodoCompletedEvent].getName,
-        classOf[TodoDisplacedEvent].getName).asJava)
+        classOf[DeprecatedTodoAddedEvent].getName,
+        classOf[DeprecatedDeferredTodoAddedEvent].getName,
+        classOf[DeprecatedTodoCompletedEvent].getName,
+        classOf[DeprecatedTodoDisplacedEvent].getName).asJava)
     val rowMapper = new RowMapper[(String, String, Date)] {
       override def mapRow(rs: ResultSet, rowNum: Int): (String, String, Date) = {
         (rs.getString("data"), rs.getString("event_class"), Date.from(rs.getTimestamp("created_at").toInstant))

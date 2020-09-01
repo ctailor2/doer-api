@@ -49,8 +49,8 @@ public class TodosControllerTest {
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
         when(todoListModelResourceTransformer.transform(any(), any())).thenReturn(new TodoListReadModelResponse(null));
-        java.util.List<Todo> todos = emptyList();
-        TodoListModel todoListModel = new TodoListModel(new ListId("someListId"), "someName", CollectionConverters.asScala(todos).toList(), null, null, null, null);
+        java.util.List<DeprecatedTodo> todos = emptyList();
+        DeprecatedTodoListModel todoListModel = new DeprecatedTodoListModel(new ListId("someListId"), "someName", CollectionConverters.asScala(todos).toList(), null, null, null, null);
         when(todoApplicationService.performOperation(any(), any(), any(Supplier.class), any()))
                 .thenReturn(new Success<>(todoListModel));
         when(todoApplicationService.performOperation(any(), any(), any(Function.class), any()))

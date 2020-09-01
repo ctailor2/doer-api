@@ -26,7 +26,7 @@ class UserService(val userRepository: ObjectRepository[User, UserId],
     todoListModelSnapshotRepository.save(
       user.getUserId,
       listId,
-      TodoListModelSnapshot(TodoListModel(listId, todoList.getName, List(), new Date(0L), 0), Date.from(clock.instant())))
+      TodoListModelSnapshot(DeprecatedTodoListModel(listId, todoList.getName, List(), new Date(0L), 0), Date.from(clock.instant())))
     user
   }
 
