@@ -11,6 +11,7 @@ import org.junit.runner.RunWith
 import org.junit.{Before, Test}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit4.SpringRunner
@@ -24,12 +25,6 @@ class TodoListModelEventSourcedRepositoryTest {
   private var todoListModelRepository: TodoListModelEventSourcedRepository = _
 
   @Autowired
-  private val todoListDao: TodoListDao = null
-
-  @Autowired
-  private val todoListEventStoreRepository: TodoListEventStoreRepository = null
-
-  @Autowired
   private val todoListModelSnapshotRepository: TodoListModelSnapshotRepository = null
 
   @Autowired
@@ -39,7 +34,13 @@ class TodoListModelEventSourcedRepositoryTest {
   private val todoListEventRepository: TodoListEventRepository = null
 
   @Autowired
+  private val todoListRepository: TodoListRepository = null
+
+  @Autowired
   private val objectMapper: ObjectMapper = null
+
+  @Autowired
+  private val jdbcTemplate: JdbcTemplate = null
 
   private val userId: UserId = new UserId("someUserIdentifier")
 
@@ -51,7 +52,8 @@ class TodoListModelEventSourcedRepositoryTest {
   @throws[Exception]
   def setUp(): Unit = {
     userRepository.save(new User(userId, listId))
-    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListDao, todoListEventStoreRepository, todoListModelSnapshotRepository, objectMapper)
+    todoListRepository.save(new TodoList(userId, listId, "someListName"))
+    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListModelSnapshotRepository, objectMapper, jdbcTemplate)
   }
 
   @Test

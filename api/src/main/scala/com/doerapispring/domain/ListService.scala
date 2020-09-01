@@ -12,7 +12,7 @@ import scala.util.Try
 
 
 @Service
-class ListService(val completedTodoRepository: OwnedObjectRepository[CompletedTodoList, UserId, ListId],
+class ListService(val completedTodoRepository: OwnedObjectReadRepository[CompletedTodoList, UserId, ListId],
                   val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
                   val todoListFactory: TodoListFactory,
                   val userRepository: ObjectRepository[User, UserId],
@@ -40,7 +40,7 @@ class ListService(val completedTodoRepository: OwnedObjectRepository[CompletedTo
   }
 
   override def getCompleted(user: User, listId: ListId): CompletedTodoList = {
-    completedTodoRepository.find(user.getUserId, listId).orElseThrow(() => new ListNotFoundException)
+    completedTodoRepository.find(user.getUserId, listId).get
   }
 
   override def get(user: User, listId: ListId): TodoListModel = {
