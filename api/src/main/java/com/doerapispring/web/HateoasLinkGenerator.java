@@ -15,15 +15,15 @@ interface HateoasLinkGenerator {
 
     Link listResourcesLink();
 
-    Link deleteTodoLink(String listId, String todoId);
+    Link deleteTodoLink(String listId, int index);
 
     Link displaceTodoLink(String listId);
 
-    Link updateTodoLink(String listId, String todoId);
+    Link updateTodoLink(String listId, int index);
 
-    Link completeTodoLink(String listId, String localId);
+    Link completeTodoLink(String listId, int index);
 
-    Link moveTodoLink(String listId, String todoId, String targetTodoId);
+    Link moveTodoLink(String listId, int index, int targetIndex);
 
     Link listPullTodosLink(String listId);
 

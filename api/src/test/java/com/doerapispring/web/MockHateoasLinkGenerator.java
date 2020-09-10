@@ -26,8 +26,8 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String listId, String todoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/" + todoId);
+    public Link deleteTodoLink(String listId, int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/" + index);
     }
 
     @Override
@@ -36,18 +36,18 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String listId, String todoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/" + todoId);
+    public Link updateTodoLink(String listId, int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/" + index);
     }
 
     @Override
-    public Link completeTodoLink(String listId, String localId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + localId);
+    public Link completeTodoLink(String listId, int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + index);
     }
 
     @Override
-    public Link moveTodoLink(String listId, String todoId, String targetTodoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/" + todoId + "/moveTodo/" + targetTodoId);
+    public Link moveTodoLink(String listId, int index, int targetIndex) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/" + index + "/moveTodo/" + targetIndex);
     }
 
     @Override

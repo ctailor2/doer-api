@@ -2,6 +2,7 @@ package integration;
 
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,9 @@ public class CompleteTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     @Before

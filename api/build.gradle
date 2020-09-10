@@ -18,19 +18,16 @@ repositories {
 }
 
 dependencies {
-    compileOnly('org.projectlombok:lombok:1.18.0')
-    annotationProcessor('org.projectlombok:lombok:1.18.0')
-
     compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-data-jdbc:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     compile('org.springframework.plugin:spring-plugin-core:1.0.0.RELEASE')
     compile('org.springframework.security:spring-security-crypto:4.1.2.RELEASE')
-    compile('org.springframework.hateoas:spring-hateoas:0.23.0.RELEASE')
+    compile('org.springframework.hateoas:spring-hateoas:0.25.0.RELEASE')
     compile('org.postgresql:postgresql:9.4-1206-jdbc42')
     compile('org.flywaydb:flyway-core:5.2.4')
-    compile('org.scala-lang:scala-library:2.12.12')
+    compile('org.scala-lang:scala-library:2.13.3')
     compile('com.fasterxml.jackson.module:jackson-module-scala_2.13:2.10.3')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
@@ -57,25 +54,6 @@ task integrationTest(type: Test) {
     include 'integration/**'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = []
-        }
-        scala {
-            srcDirs = ['src/main/java', 'src/main/scala']
-        }
-    }
-    test {
-        java {
-            srcDirs = ['src/test/java']
-        }
-        scala {
-            srcDirs = ['src/test/scala']
-        }
-    }
-}
-
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 
@@ -86,4 +64,8 @@ task stage(dependsOn: build) {
             integrationTest.enabled = false
         }
     }
+}
+
+jar {
+    enabled = true
 }

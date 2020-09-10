@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,13 +32,19 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
     @Test
     public void list() throws Exception {
-        mockMvc.perform(get("/v1/lists/default")
-            .headers(httpHeaders))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.list.profileName", equalTo("default")));
+        String nextActionHref = JsonPath.parse(mockMvc.perform(get("/v1/lists/default")
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.create.href", String.class);
+
+        mockMvc.perform(post(nextActionHref)
+                .content("{\"task\":\"default list task\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString();
 
         String otherListName = "someListName";
-        String nextActionHref = JsonPath.parse(mockMvc.perform(post("/v1/lists")
+        nextActionHref = JsonPath.parse(mockMvc.perform(post("/v1/lists")
                 .headers(httpHeaders)
                 .content("{\n  \"name\": \"" + otherListName + "\"}")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -46,15 +52,16 @@ public class DefaultListIntegrationTest extends AbstractWebAppJUnit4SpringContex
 
         nextActionHref = JsonPath.parse(mockMvc.perform(get(nextActionHref)
                 .headers(httpHeaders))
+                .andExpect(jsonPath("$.lists", hasSize(2)))
                 .andReturn().getResponse().getContentAsString()).read("$.lists[1]._links.setDefault.href", String.class);
 
         mockMvc.perform(post(nextActionHref)
-            .headers(httpHeaders))
-            .andExpect(status().isAccepted());
+                .headers(httpHeaders))
+                .andExpect(status().isAccepted());
 
         mockMvc.perform(get("/v1/lists/default")
-            .headers(httpHeaders))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.list.profileName", equalTo(otherListName)));
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.list.todos", hasSize(0)));
     }
 }
