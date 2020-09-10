@@ -32,7 +32,7 @@ public class UserServiceTest {
     private OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
     @Mock
-    private OwnedObjectWriteRepository<TodoListModelSnapshot, UserId, ListId> todoListModelSnapshotRepository;
+    private OwnedObjectWriteRepository<Snapshot<DeprecatedTodoListModel>, UserId, ListId> todoListModelSnapshotRepository;
 
     private TodoListFactory todoListFactory = mock(TodoListFactory.class);
 
@@ -84,7 +84,7 @@ public class UserServiceTest {
         verify(todoListModelSnapshotRepository).save(
                 new UserId(identifier),
                 todoList.getListId(),
-                new TodoListModelSnapshot(
+                new Snapshot(
                         new DeprecatedTodoListModel(
                                 todoList.getListId(),
                                 todoList.getName(),

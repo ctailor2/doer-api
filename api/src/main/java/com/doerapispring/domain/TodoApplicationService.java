@@ -11,14 +11,12 @@ public interface TodoApplicationService {
     Try<DeprecatedTodoListModel> performOperation(
             User user,
             ListId listId,
-            Supplier<TodoListEvent> eventProducer,
-            BiFunction<DeprecatedTodoListModel, TodoListEvent, Try<DeprecatedTodoListModel>> operation
+            Supplier<TodoListEvent> eventProducer
     );
 
     Try<DeprecatedTodoListModel> performOperation(
             User user,
             ListId listId,
-            Function<TodoId, TodoListEvent> eventProducer,
-            BiFunction<DeprecatedTodoListModel, TodoListEvent, Try<DeprecatedTodoListModel>> operation
+            Function<TodoId, TodoListEvent> eventProducer
     );
 }

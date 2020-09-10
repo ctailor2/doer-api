@@ -21,8 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner
 @Sql(scripts = Array("/cleanup.sql"), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles(value = Array("test"))
 @RunWith(classOf[SpringRunner])
-class TodoListModelEventSourcedRepositoryTest {
-  private var todoListModelRepository: TodoListModelEventSourcedRepository = _
+class DeprecatedTodoListModelEventSourcedRepositoryTest {
+  private var todoListModelRepository: DeprecatedTodoListModelEventSourcedRepository = _
 
   @Autowired
   private val todoListModelSnapshotRepository: TodoListModelSnapshotRepository = null
@@ -53,12 +53,12 @@ class TodoListModelEventSourcedRepositoryTest {
   def setUp(): Unit = {
     userRepository.save(new User(userId, listId))
     todoListRepository.save(new TodoList(userId, listId, "someListName"))
-    todoListModelRepository = new TodoListModelEventSourcedRepository(todoListModelSnapshotRepository, objectMapper, jdbcTemplate)
+    todoListModelRepository = new DeprecatedTodoListModelEventSourcedRepository(todoListModelSnapshotRepository, objectMapper, jdbcTemplate)
   }
 
   @Test
   def savesTodoList(): Unit = {
-    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListValue, Date.from(Instant.now())))
+    todoListModelSnapshotRepository.save(userId, listId, Snapshot(todoListValue, Date.from(Instant.now())))
     val todoIdToMove1 = "someDeferredTodoIdentifier1"
     val todoIdToMove2 = "someDeferredTodoIdentifier2"
     val todoIdToDelete = "deleteMe"
@@ -99,7 +99,7 @@ class TodoListModelEventSourcedRepositoryTest {
       7,
       "someSectionName",
       "someDeferredSectionName")
-    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
+    todoListModelSnapshotRepository.save(userId, listId, Snapshot(todoListModel, Date.from(Instant.now())))
     val todoAddedEvent = DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")
     todoListEventRepository.save(userId, listId, todoAddedEvent)
 
@@ -122,7 +122,7 @@ class TodoListModelEventSourcedRepositoryTest {
       7,
       "someSectionName",
       "someDeferredSectionName")
-    todoListModelSnapshotRepository.save(userId, listId, TodoListModelSnapshot(todoListModel, Date.from(Instant.now())))
+    todoListModelSnapshotRepository.save(userId, listId, Snapshot(todoListModel, Date.from(Instant.now())))
 
     val eventAfterSnapshot = DeprecatedDeferredTodoAddedEvent("yetAnotherTodoId", "yetAnotherTask")
     todoListEventRepository.save(userId, listId, eventAfterSnapshot)

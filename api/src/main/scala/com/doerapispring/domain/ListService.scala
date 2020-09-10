@@ -3,7 +3,7 @@ package com.doerapispring.domain
 import java.time.Clock
 import java.util
 import java.util.Date
-import java.util.function.{BiFunction, Supplier}
+import java.util.function.Supplier
 
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
@@ -16,26 +16,24 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
                   val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
                   val todoListFactory: TodoListFactory,
                   val userRepository: ObjectRepository[User, UserId],
-                  val todoListModelRepository: OwnedObjectReadRepository[DeprecatedTodoListModel, UserId, ListId],
+                  val todoListModelRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
                   val clock: Clock,
-                  val domainEventPublisher: DomainEventPublisher[DeprecatedTodoListModel, TodoListEvent, UserId, ListId],
+                  val domainEventPublisher: DomainEventPublisher[TodoListModel, TodoListEvent, UserId, ListId],
                   val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
-                  val todoListModelSnapshotRepository: OwnedObjectWriteRepository[TodoListModelSnapshot, UserId, ListId])
+                  val todoListModelSnapshotRepository: OwnedObjectWriteRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId])
   extends ListApplicationService {
 
   override def performOperation(user: User,
                                 listId: ListId,
-                                eventProducer: Supplier[TodoListEvent],
-                                operation: BiFunction[DeprecatedTodoListModel, TodoListEvent, Try[DeprecatedTodoListModel]]): Try[DeprecatedTodoListModel] = {
-    val todoListEvent = eventProducer.get()
+                                event: TodoListEvent): Try[TodoListModel] = {
     Try(todoListModelRepository.find(user.getUserId, listId).get)
       .flatMap(todoList => {
-        operation.apply(todoList, todoListEvent)
+        TodoListModel.applyEvent(todoList, event)
       })
-      .map(todoList => domainEventPublisher.publish(todoList, todoListEvent, user.getUserId, listId))
+      .map(todoList => domainEventPublisher.publish(todoList, event, user.getUserId, listId))
   }
 
-  override def getDefault(user: User): DeprecatedTodoListModel = {
+  override def getDefault(user: User): TodoListModel = {
     todoListModelRepository.find(user.getUserId, user.getDefaultListId).get
   }
 
@@ -43,7 +41,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
     completedTodoRepository.find(user.getUserId, listId).get
   }
 
-  override def get(user: User, listId: ListId): DeprecatedTodoListModel = {
+  override def get(user: User, listId: ListId): TodoListModel = {
     todoListModelRepository.find(user.getUserId, listId).get
   }
 
@@ -58,7 +56,7 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
     todoListModelSnapshotRepository.save(
       user.getUserId,
       listId,
-      TodoListModelSnapshot(DeprecatedTodoListModel(listId, name, List(), new Date(0L), 0), Date.from(clock.instant())))
+      Snapshot(DeprecatedTodoListModel(listId, name, List(), new Date(0L), 0), Date.from(clock.instant())))
   }
 
   override def setDefault(user: User, listId: ListId): Unit = {

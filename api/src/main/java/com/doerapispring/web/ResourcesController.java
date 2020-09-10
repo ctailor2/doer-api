@@ -1,8 +1,10 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.DeprecatedTodoListModel;
 import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.OwnedTodoListModel;
+import com.doerapispring.domain.TodoListModel;
+import com.doerapispring.domain.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,11 +59,11 @@ class ResourcesController {
     @RequestMapping(value = "/v1/resources/history", method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<ResourcesResponse> history(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        DeprecatedTodoListModel defaultList = listApplicationService.getDefault(authenticatedUser.getUser());
+        User user = authenticatedUser.getUser();
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
             hateoasLinkGenerator.historyResourcesLink().withSelfRel(),
-            hateoasLinkGenerator.completedListLink(defaultList.listId().get()).withRel("completedList"));
+            hateoasLinkGenerator.completedListLink(user.getDefaultListId().get()).withRel("completedList"));
         return ResponseEntity.status(HttpStatus.OK).body(resourcesResponse);
     }
 }

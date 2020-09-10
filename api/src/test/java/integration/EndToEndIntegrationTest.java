@@ -57,7 +57,7 @@ public class EndToEndIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
             get(getListHref)
                 .headers(httpHeaders))
             .andExpect(jsonPath("$.list.todos", hasSize(0)))
-            .andExpect(jsonPath("$.list.profileName", equalTo("someName")));
+            .andExpect(jsonPath("$._links.self.href", equalTo(getListHref)));
     }
 
     @Test

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class TodoListEventApplicationEventListener(private val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
-                                            private val todoListModelSnapshotRepository: OwnedObjectWriteRepository[TodoListModelSnapshot, UserId, ListId],
+                                            private val todoListModelSnapshotRepository: OwnedObjectWriteRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId],
                                             private val clock: Clock)
   extends ApplicationListener[PayloadApplicationEvent[OwnedTodoListEvent]] {
 

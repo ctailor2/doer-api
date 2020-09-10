@@ -15,25 +15,23 @@ class TodoService(private val todoListRepository: OwnedObjectReadRepository[Depr
 
   override def performOperation(user: User,
                                 listId: ListId,
-                                eventProducer: Supplier[TodoListEvent],
-                                operation: BiFunction[DeprecatedTodoListModel, TodoListEvent, Try[DeprecatedTodoListModel]]): Try[DeprecatedTodoListModel] = {
+                                eventProducer: Supplier[TodoListEvent]): Try[DeprecatedTodoListModel] = {
     val todoListEvent = eventProducer.get()
     Try(todoListRepository.find(user.getUserId, listId).get)
       .flatMap(todoList => {
-        operation.apply(todoList, todoListEvent)
+        DeprecatedTodoListModel.applyEvent(todoList, todoListEvent)
       })
       .map(todoList => domainEventPublisher.publish(todoList, todoListEvent, user.getUserId, listId))
   }
 
   override def performOperation(user: User,
                                 listId: ListId,
-                                eventProducer: Function[TodoId, TodoListEvent],
-                                operation: BiFunction[DeprecatedTodoListModel, TodoListEvent, Try[DeprecatedTodoListModel]]): Try[DeprecatedTodoListModel] = {
+                                eventProducer: Function[TodoId, TodoListEvent]): Try[DeprecatedTodoListModel] = {
     val todoId = todoRepository.nextIdentifier()
     val todoListEvent = eventProducer.apply(todoId)
     Try(todoListRepository.find(user.getUserId, listId).get)
       .flatMap(todoList => {
-        operation.apply(todoList, todoListEvent)
+        DeprecatedTodoListModel.applyEvent(todoList, todoListEvent)
       })
       .map(todoList => domainEventPublisher.publish(todoList, todoListEvent, user.getUserId, listId))
   }

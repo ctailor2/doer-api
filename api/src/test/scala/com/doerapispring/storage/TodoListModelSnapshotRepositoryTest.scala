@@ -52,7 +52,7 @@ class TodoListModelSnapshotRepositoryTest {
       7,
       "someSectionName",
       "someDeferredSectionName")
-    val todoListModelSnapshot = TodoListModelSnapshot(todoListModel, Date.from(Instant.now()))
+    val todoListModelSnapshot = Snapshot(todoListModel, Date.from(Instant.now()))
 
     todoListModelSnapshotRepository.save(userId, listId, todoListModelSnapshot)
 
@@ -71,12 +71,12 @@ class TodoListModelSnapshotRepositoryTest {
       7,
       "someSectionName",
       "someDeferredSectionName")
-    val todoListModelSnapshot = TodoListModelSnapshot(todoListModel, Date.from(Instant.now()))
+    val todoListModelSnapshot = Snapshot(todoListModel, Date.from(Instant.now()))
 
     todoListModelSnapshotRepository.save(userId, listId, todoListModelSnapshot)
 
     val updatedTodoListModel = DeprecatedTodoListModel.applyEvent(todoListModel, DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")).get
-    val updatedTodoListModelSnapshot = TodoListModelSnapshot(updatedTodoListModel, Date.from(Instant.now()))
+    val updatedTodoListModelSnapshot = Snapshot(updatedTodoListModel, Date.from(Instant.now()))
     todoListModelSnapshotRepository.save(userId, listId, updatedTodoListModelSnapshot)
 
     val actualTodoListModelSnapshot = todoListModelSnapshotRepository.find(userId, listId)

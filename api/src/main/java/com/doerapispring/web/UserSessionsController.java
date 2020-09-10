@@ -52,11 +52,4 @@ class UserSessionsController {
             hateoasLinkGenerator.rootResourcesLink().withRel("root"));
         return ResponseEntity.ok().body(sessionResponse);
     }
-
-    // Logout doesn't really need to be an action taken against the server at all
-    // If the client wants to terminate their current session, just have them drop their key
-    // Clients shouldn't have to tell the server to stop allowing a key that it issued
-    // If there are security concerns around key sharing, maybe the keys can be made ip specific or something
-    // If the server wants credentials to be short lived, it can include an expiration
-    // These are all things it can check when it receives a request with credentials in the header
 }

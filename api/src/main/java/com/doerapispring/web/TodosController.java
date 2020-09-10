@@ -4,6 +4,7 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.DeprecatedTodoListModel;
 import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoApplicationService;
+import com.doerapispring.domain.TodoListModel;
 import com.doerapispring.domain.events.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +41,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                () -> new DeprecatedTodoDeletedEvent(todoId),
-                DeprecatedTodoListModel::applyEvent)
+                () -> new DeprecatedTodoDeletedEvent(todoId))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, todoId).withSelfRel(),
@@ -57,8 +57,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                (todoId) -> new DeprecatedTodoDisplacedEvent(todoId.getIdentifier(), todoForm.getTask()),
-                DeprecatedTodoListModel::applyEvent)
+                (todoId) -> new DeprecatedTodoDisplacedEvent(todoId.getIdentifier(), todoForm.getTask()))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(hateoasLinkGenerator.displaceTodoLink(listId).withSelfRel(),
@@ -75,8 +74,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                () -> new DeprecatedTodoUpdatedEvent(todoId, todoForm.getTask()),
-                DeprecatedTodoListModel::applyEvent)
+                () -> new DeprecatedTodoUpdatedEvent(todoId, todoForm.getTask()))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(hateoasLinkGenerator.updateTodoLink(listId, todoId).withSelfRel(),
@@ -92,8 +90,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                () -> new DeprecatedTodoCompletedEvent(todoId),
-                DeprecatedTodoListModel::applyEvent)
+                () -> new DeprecatedTodoCompletedEvent(todoId))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(
@@ -111,8 +108,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                () -> new DeprecatedTodoMovedEvent(todoId, targetTodoId),
-                DeprecatedTodoListModel::applyEvent)
+                () -> new DeprecatedTodoMovedEvent(todoId, targetTodoId))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(
@@ -128,8 +124,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                DeprecatedPulledEvent::new,
-                DeprecatedTodoListModel::applyEvent)
+                DeprecatedPulledEvent::new)
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(
@@ -145,8 +140,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                DeprecatedEscalatedEvent::new,
-                DeprecatedTodoListModel::applyEvent)
+                DeprecatedEscalatedEvent::new)
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withSelfRel());
@@ -163,8 +157,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                todoId -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), todoForm.getTask()),
-                DeprecatedTodoListModel::applyEvent)
+                todoId -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), todoForm.getTask()))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(
@@ -181,8 +174,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), todoForm.getTask()),
-                DeprecatedTodoListModel::applyEvent)
+                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), todoForm.getTask()))
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
         todoListReadModelResponse.add(

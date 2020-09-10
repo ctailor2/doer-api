@@ -12,14 +12,14 @@ import org.springframework.stereotype.Repository
 @Repository
 class TodoListModelSnapshotRepository(private val jdbcTemplate: JdbcTemplate,
                                       private val objectMapper: ObjectMapper)
-  extends OwnedObjectWriteRepository[TodoListModelSnapshot, UserId, ListId]
-    with OwnedObjectReadRepository[TodoListModelSnapshot, UserId, ListId] {
+  extends OwnedObjectWriteRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId]
+    with OwnedObjectReadRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId] {
 
-  override def saveAll(userId: UserId, listId: ListId, models: List[TodoListModelSnapshot]): Unit = {
-    models.foreach(model => this.save(userId, listId, model))
+  override def saveAll(userId: UserId, listId: ListId, snapshots: List[Snapshot[DeprecatedTodoListModel]]): Unit = {
+    snapshots.foreach(snapshot => this.save(userId, listId, snapshot))
   }
 
-  override def save(userId: UserId, listId: ListId, model: TodoListModelSnapshot): Unit = {
+  override def save(userId: UserId, listId: ListId, snapshot: Snapshot[DeprecatedTodoListModel]): Unit = {
     jdbcTemplate.update(
       "INSERT INTO todo_lists (user_id, list_id, data, created_at) " +
         "VALUES (?, ?, ?, ?) " +
@@ -28,14 +28,14 @@ class TodoListModelSnapshotRepository(private val jdbcTemplate: JdbcTemplate,
       (ps: PreparedStatement) => {
         ps.setString(1, userId.get())
         ps.setString(2, listId.get())
-        ps.setString(3, objectMapper.writeValueAsString(model.todoListModel))
-        ps.setTimestamp(4, java.sql.Timestamp.from(model.createdAt.toInstant))
+        ps.setString(3, objectMapper.writeValueAsString(snapshot.model))
+        ps.setTimestamp(4, java.sql.Timestamp.from(snapshot.createdAt.toInstant))
       })
   }
 
-  override def find(userId: UserId, listId: ListId): Option[TodoListModelSnapshot] = {
-    val rowMapper: RowMapper[TodoListModelSnapshot] = (rs: ResultSet, _: Int) => {
-      TodoListModelSnapshot(
+  override def find(userId: UserId, listId: ListId): Option[Snapshot[DeprecatedTodoListModel]] = {
+    val rowMapper: RowMapper[Snapshot[DeprecatedTodoListModel]] = (rs: ResultSet, _: Int) => {
+      Snapshot(
         objectMapper.readValue(rs.getString("data"), classOf[DeprecatedTodoListModel]),
         Date.from(rs.getTimestamp("created_at").toInstant))
     }
