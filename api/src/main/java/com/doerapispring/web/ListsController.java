@@ -90,6 +90,7 @@ class ListsController {
                 .map(todoList -> {
                     TodoListDTO todoListDTO = new TodoListDTO(todoList.getName());
                     todoListDTO.add(hateoasLinkGenerator.listLink(todoList.getListId().get()).withRel("list"));
+                    todoListDTO.add(hateoasLinkGenerator.setDefaultListLink(todoList.getListId().get()).withRel("setDefault"));
 //                TODO: Add the completed list link
                     return todoListDTO;
                 })

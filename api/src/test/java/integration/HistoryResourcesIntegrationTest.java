@@ -1,37 +1,23 @@
 package integration;
 
-import com.doerapispring.domain.ListApplicationService;
-import com.doerapispring.domain.ListId;
-import com.doerapispring.domain.User;
-import com.doerapispring.domain.UserService;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private MvcResult mvcResult;
     private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
-
-    @Autowired
-    private ListApplicationService listApplicationService;
-
-    @Autowired
-    private UserService userService;
-
-    private ListId defaultListId;
 
     @Override
     @Before
@@ -40,23 +26,18 @@ public class HistoryResourcesIntegrationTest extends AbstractWebAppJUnit4SpringC
         String identifier = "test@email.com";
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        User user = userService.find(identifier).orElseThrow(RuntimeException::new);
-        defaultListId = user.getDefaultListId();
     }
 
     @Test
     public void historyResources() throws Exception {
-        doGet();
+        String defaultListHref = JsonPath.parse(mockMvc.perform(get("/v1/lists/default")
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$._links.self.href", String.class);
 
-        String responseContent = mvcResult.getResponse().getContentAsString();
-
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/resources/history")));
-        assertThat(responseContent, hasJsonPath("$._links.completedList.href", containsString("/v1/lists/" + defaultListId.get() + "/completed")));
-    }
-
-    private void doGet() throws Exception {
-        mvcResult = mockMvc.perform(get("/v1/resources/history").headers(httpHeaders)).andReturn();
+        mockMvc.perform(get("/v1/resources/history").headers(httpHeaders))
+                .andExpect(jsonPath("$._links", not(isEmptyString())))
+                .andExpect(jsonPath("$._links.self.href", containsString("/v1/resources/history")))
+                .andExpect(jsonPath("$._links.completedList.href", equalTo(defaultListHref + "/completed")));
     }
 }

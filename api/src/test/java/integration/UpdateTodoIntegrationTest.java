@@ -1,40 +1,25 @@
 package integration;
 
-import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.hamcrest.Matchers.contains;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private User user;
 
     private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
-
-    @Autowired
-    private TodoApplicationService todoApplicationService;
-
-    @Autowired
-    private ListApplicationService listApplicationService;
-
-    @Autowired
-    private UserService userService;
-
-    private ListId defaultListId;
 
     @Override
     @Before
@@ -43,31 +28,25 @@ public class UpdateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String identifier = "test@email.com";
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        user = userService.find(identifier).orElseThrow(RuntimeException::new);
-        defaultListId = user.getDefaultListId();
     }
 
     @Test
     public void update() throws Exception {
-        todoApplicationService.performOperation(
-                user,
-                defaultListId,
-                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "some task"),
-                DeprecatedTodoListModel::applyEvent);
-        DeprecatedTodoListModel todoList = listApplicationService.get(user, defaultListId);
-        DeprecatedTodo todo = DeprecatedTodoListModel.getTodos(todoList).head();
+        String nextActionHref = JsonPath.parse(mockMvc.perform(get("/v1/lists/default")
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.create.href", String.class);
 
-        MvcResult mvcResult = mockMvc.perform(put("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())
-            .content("{\"task\":\"do the things\"}")
-            .contentType(MediaType.APPLICATION_JSON)
-            .headers(httpHeaders))
-            .andReturn();
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .content("{\"task\":\"some task\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$.list.todos[0]._links.update.href", String.class);
 
-        String responseContent = mvcResult.getResponse().getContentAsString();
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("do the things")));
-        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/todos/" + todo.getTodoId().getIdentifier())));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", endsWith("/v1/lists/" + defaultListId.get())));
+        mockMvc.perform(put(nextActionHref)
+                .content("{\"task\":\"do the things\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andExpect(jsonPath("$.list.todos[*].task", contains("do the things")));
     }
 }

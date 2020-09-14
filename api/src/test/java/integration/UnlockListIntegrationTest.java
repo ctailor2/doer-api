@@ -1,41 +1,26 @@
 package integration;
 
-import com.doerapispring.domain.*;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.Clock;
-import java.util.Date;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private User user;
 
     private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
-
-    @Autowired
-    private ListApplicationService listApplicationService;
-
-    @Autowired
-    private UserService userService;
-
-    private ListId defaultListId;
-
-    @Autowired
-    private Clock clock;
 
     @Override
     @Before
@@ -44,24 +29,19 @@ public class UnlockListIntegrationTest extends AbstractWebAppJUnit4SpringContext
         String identifier = "test@email.com";
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
-        user = userService.find(identifier).orElseThrow(RuntimeException::new);
-        defaultListId = user.getDefaultListId();
     }
 
     @Test
     public void unlock() throws Exception {
-        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/unlock")
-            .headers(httpHeaders))
-            .andReturn();
-
-        DeprecatedTodoListModel todoList = listApplicationService.get(user, defaultListId);
-
-        assertThat(DeprecatedTodoListModel.unlockCapability(todoList, Date.from(clock.instant())).isSuccess(), equalTo(false));
-
-        String responseContent = mvcResult.getResponse().getContentAsString();
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/unlock")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
+        String nextActionHref = JsonPath.parse(mockMvc.perform(get("/v1/lists/default")
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.unlock.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$._links.list.href", String.class);
+        mockMvc.perform(post(nextActionHref)
+                .headers(httpHeaders))
+                .andExpect(jsonPath("$.list._links", not(containsString("unlock"))));
     }
 }

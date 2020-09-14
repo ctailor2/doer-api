@@ -1,46 +1,26 @@
 package integration;
 
-import com.doerapispring.domain.*;
-import com.doerapispring.domain.events.DeprecatedDeferredTodoAddedEvent;
-import com.doerapispring.domain.events.DeprecatedTodoAddedEvent;
-import com.doerapispring.domain.events.UnlockedEvent;
 import com.doerapispring.web.SessionTokenDTO;
 import com.doerapispring.web.UserSessionsApiService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.http.MediaType;
 
-import java.time.Clock;
-
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringContextTests {
-    private User user;
 
     private final HttpHeaders httpHeaders = new HttpHeaders();
 
     @Autowired
     private UserSessionsApiService userSessionsApiService;
-
-    @Autowired
-    private TodoApplicationService todoApplicationService;
-
-    @Autowired
-    private ListApplicationService listApplicationService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private Clock clock;
-
-    private ListId defaultListId;
 
     @Override
     @Before
@@ -48,44 +28,41 @@ public class EscalateTodoIntegrationTest extends AbstractWebAppJUnit4SpringConte
         super.setUp();
         String identifier = "test@email.com";
         SessionTokenDTO signupSessionToken = userSessionsApiService.signup(identifier, "password");
-        user = userService.find(identifier).orElseThrow(RuntimeException::new);
-        defaultListId = user.getDefaultListId();
         httpHeaders.add("Session-Token", signupSessionToken.getToken());
     }
 
     @Test
     public void pull() throws Exception {
-        todoApplicationService.performOperation(
-                user,
-                defaultListId,
-                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "will become deferred after the escalate"),
-                DeprecatedTodoListModel::applyEvent);
-        todoApplicationService.performOperation(
-                user,
-                defaultListId,
-                (todoId) -> new DeprecatedTodoAddedEvent(todoId.getIdentifier(), "will remain"),
-                DeprecatedTodoListModel::applyEvent);
-        todoApplicationService.performOperation(
-                user,
-                defaultListId,
-                (todoId) -> new DeprecatedDeferredTodoAddedEvent(todoId.getIdentifier(), "will no longer be deferred after the escalate"),
-                DeprecatedTodoListModel::applyEvent);
-        listApplicationService.performOperation(
-                user,
-                defaultListId,
-                () -> new UnlockedEvent(java.util.Date.from(clock.instant())),
-                DeprecatedTodoListModel::applyEvent);
+        String nextActionHref = JsonPath.parse(mockMvc.perform(get("/v1/lists/default")
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.unlock.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$._links.list.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(get(nextActionHref)
+                .headers(httpHeaders))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.create.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .content("{\"task\":\"will become deferred after the escalate\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.create.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .content("{\"task\":\"will remain\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.createDeferred.href", String.class);
+        nextActionHref = JsonPath.parse(mockMvc.perform(post(nextActionHref)
+                .content("{\"task\":\"will no longer be deferred after the escalate\"}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .headers(httpHeaders))
+                .andReturn().getResponse().getContentAsString()).read("$.list._links.escalate.href", String.class);
 
-        MvcResult mvcResult = mockMvc.perform(post("/v1/lists/" + defaultListId.get() + "/escalate")
+        mockMvc.perform(post(nextActionHref)
             .headers(httpHeaders))
-            .andReturn();
-        String responseContent = mvcResult.getResponse().getContentAsString();
-
-        assertThat(responseContent, isJson());
-        assertThat(responseContent, hasJsonPath("$.list.todos[*].task", contains("will remain", "will no longer be deferred after the escalate")));
-        assertThat(responseContent, hasJsonPath("$.list.deferredTodos[*].task", contains("will become deferred after the escalate")));
-        assertThat(responseContent, hasJsonPath("$._links", not(isEmptyString())));
-        assertThat(responseContent, hasJsonPath("$._links.self.href", containsString("/v1/lists/" + defaultListId.get() + "/escalate")));
-        assertThat(responseContent, hasJsonPath("$._links.list.href", containsString("/v1/lists/" + defaultListId.get())));
+                .andExpect(jsonPath("$.list.todos[*].task", contains("will remain", "will no longer be deferred after the escalate")))
+                .andExpect(jsonPath("$.list.deferredTodos[*].task", contains("will become deferred after the escalate")));
     }
 }
