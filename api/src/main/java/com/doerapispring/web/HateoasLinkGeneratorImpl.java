@@ -3,6 +3,7 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
+import scala.Int;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -38,8 +39,8 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String listId, String todoId) {
-        return linkTo(methodOn(TodosController.class).delete(null, listId, todoId)).withSelfRel();
+    public Link deleteTodoLink(String listId, Int index) {
+        return linkTo(methodOn(TodosController.class).delete(null, listId, index)).withSelfRel();
     }
 
     @Override
@@ -48,18 +49,18 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String listId, String todoId) {
-        return linkTo(methodOn(TodosController.class).update(null, listId, todoId, null)).withSelfRel();
+    public Link updateTodoLink(String listId, Int index) {
+        return linkTo(methodOn(TodosController.class).update(null, listId, index, null)).withSelfRel();
     }
 
     @Override
-    public Link completeTodoLink(String listId, String todoId) {
-        return linkTo(methodOn(TodosController.class).complete(null, listId, todoId)).withSelfRel();
+    public Link completeTodoLink(String listId, Int index) {
+        return linkTo(methodOn(TodosController.class).complete(null, listId, index)).withSelfRel();
     }
 
     @Override
-    public Link moveTodoLink(String listId, String todoId, String targetTodoId) {
-        return linkTo(methodOn(TodosController.class).move(null, listId, todoId, targetTodoId)).withSelfRel();
+    public Link moveTodoLink(String listId, Int index, Int targetIndex) {
+        return linkTo(methodOn(TodosController.class).move(null, listId, index, targetIndex)).withSelfRel();
     }
 
     @Override

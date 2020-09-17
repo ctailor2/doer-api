@@ -4,12 +4,13 @@ import java.time.Instant
 import java.util.Date
 
 import com.doerapispring.domain._
-import com.doerapispring.domain.events.DeprecatedTodoAddedEvent
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions
 import org.junit.runner.RunWith
 import org.junit.{Before, Test}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.junit4.SpringRunner
@@ -19,10 +20,9 @@ import org.springframework.test.context.junit4.SpringRunner
 @Sql(scripts = Array("/cleanup.sql"), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles(value = Array("test"))
 @RunWith(classOf[SpringRunner])
-class TodoListModelSnapshotRepositoryTest {
+class AbstractTodoListModelSnapshotRepositoryTest {
 
-  @Autowired
-  private val todoListModelSnapshotRepository: TodoListModelSnapshotRepository = null
+  private var todoListModelSnapshotRepository: AbstractTodoListModelSnapshotRepository[TestTodoListModel] = null
 
   @Autowired
   private val userRepository: UserRepository = null
@@ -34,9 +34,16 @@ class TodoListModelSnapshotRepositoryTest {
 
   private val listId: ListId = new ListId("someListIdentifier")
 
+  @Autowired
+  private val jdbcTemplate: JdbcTemplate = null
+
+  @Autowired
+  private val objectMapper: ObjectMapper = null
+
   @Before
   @throws[Exception]
   def setUp(): Unit = {
+    todoListModelSnapshotRepository = new TestTodoListModelSnapshotRepository(jdbcTemplate, objectMapper)
     userRepository.save(new User(userId, listId))
     val todoList = new TodoList(userId, listId, "someName")
     todoListRepository.save(todoList)
@@ -44,14 +51,7 @@ class TodoListModelSnapshotRepositoryTest {
 
   @Test
   def savesTheTodoListModelSnapshot(): Unit = {
-    val todoListModel = DeprecatedTodoListModel(
-        listId,
-      "someProfileName",
-      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
-      new Date(123L),
-      7,
-      "someSectionName",
-      "someDeferredSectionName")
+    val todoListModel = TestTodoListModel("someValue")
     val todoListModelSnapshot = Snapshot(todoListModel, Date.from(Instant.now()))
 
     todoListModelSnapshotRepository.save(userId, listId, todoListModelSnapshot)
@@ -63,19 +63,12 @@ class TodoListModelSnapshotRepositoryTest {
 
   @Test
   def updatesTheTodoListModelSnapshot(): Unit = {
-    val todoListModel = DeprecatedTodoListModel(
-      listId,
-      "someProfileName",
-      List(new DeprecatedTodo(new TodoId("someTodoId"), "someTask")),
-      new Date(123L),
-      7,
-      "someSectionName",
-      "someDeferredSectionName")
+    val todoListModel = TestTodoListModel("someValue")
     val todoListModelSnapshot = Snapshot(todoListModel, Date.from(Instant.now()))
 
     todoListModelSnapshotRepository.save(userId, listId, todoListModelSnapshot)
 
-    val updatedTodoListModel = DeprecatedTodoListModel.applyEvent(todoListModel, DeprecatedTodoAddedEvent("someOtherTodoId", "someOtherTask")).get
+    val updatedTodoListModel = TestTodoListModel("someUpdatedValue")
     val updatedTodoListModelSnapshot = Snapshot(updatedTodoListModel, Date.from(Instant.now()))
     todoListModelSnapshotRepository.save(userId, listId, updatedTodoListModelSnapshot)
 
@@ -84,3 +77,9 @@ class TodoListModelSnapshotRepositoryTest {
     Assertions.assertThat(actualTodoListModelSnapshot.get).isEqualTo(updatedTodoListModelSnapshot)
   }
 }
+
+case class TestTodoListModel(someAttribute: String)
+
+class TestTodoListModelSnapshotRepository(jdbcTemplate: JdbcTemplate,
+                                          objectMapper: ObjectMapper)
+  extends AbstractTodoListModelSnapshotRepository[TestTodoListModel](classOf[TestTodoListModel], jdbcTemplate, objectMapper)

@@ -3,17 +3,13 @@ package com.doerapispring.domain
 import java.time.Clock
 import java.util
 import java.util.Date
-import java.util.function.Supplier
 
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
-
-import scala.util.Try
-
+import scala.jdk.CollectionConverters._
 
 @Service
-class ListService(val completedTodoRepository: OwnedObjectReadRepository[CompletedTodoList, UserId, ListId],
-                  val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
+class ListService(val todoListRepository: OwnedObjectRepository[TodoList, UserId, ListId],
                   val todoListFactory: TodoListFactory,
                   val userRepository: ObjectRepository[User, UserId],
                   val todoListModelRepository: OwnedObjectReadRepository[TodoListModel, UserId, ListId],
@@ -25,28 +21,27 @@ class ListService(val completedTodoRepository: OwnedObjectReadRepository[Complet
 
   override def performOperation(user: User,
                                 listId: ListId,
-                                event: TodoListEvent): Try[TodoListModel] = {
-    Try(todoListModelRepository.find(user.getUserId, listId).get)
-      .flatMap(todoList => {
-        TodoListModel.applyEvent(todoList, event)
-      })
+                                event: TodoListEvent): TodoListModel = {
+    todoListModelRepository.find(user.getUserId, listId)
+      .map(todoList => TodoListModel.applyEvent(todoList, event))
       .map(todoList => domainEventPublisher.publish(todoList, event, user.getUserId, listId))
+      .get
   }
 
   override def getDefault(user: User): TodoListModel = {
     todoListModelRepository.find(user.getUserId, user.getDefaultListId).get
   }
 
-  override def getCompleted(user: User, listId: ListId): CompletedTodoList = {
-    completedTodoRepository.find(user.getUserId, listId).get
+  override def getCompleted(user: User, listId: ListId): List[CompletedTodo] = {
+    todoListModelRepository.find(user.getUserId, listId).get.completedTodos
   }
 
   override def get(user: User, listId: ListId): TodoListModel = {
     todoListModelRepository.find(user.getUserId, listId).get
   }
 
-  override def getAll(user: User): util.List[TodoList] = {
-    todoListRepository.findAll(user.getUserId)
+  override def getAll(user: User): List[TodoList] = {
+    todoListRepository.findAll(user.getUserId).asScala.toList
   }
 
   override def create(user: User, name: String): Unit = {

@@ -1,6 +1,7 @@
 package com.doerapispring.web;
 
 import org.springframework.hateoas.Link;
+import scala.Int;
 
 class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     static final String MOCK_BASE_URL = "http://some.api";
@@ -26,8 +27,8 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String listId, String todoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/" + todoId);
+    public Link deleteTodoLink(String listId, Int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/" + index);
     }
 
     @Override
@@ -36,18 +37,18 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String listId, String todoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/" + todoId);
+    public Link updateTodoLink(String listId, Int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/" + index);
     }
 
     @Override
-    public Link completeTodoLink(String listId, String localId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + localId);
+    public Link completeTodoLink(String listId, Int index) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + index);
     }
 
     @Override
-    public Link moveTodoLink(String listId, String todoId, String targetTodoId) {
-        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/" + todoId + "/moveTodo/" + targetTodoId);
+    public Link moveTodoLink(String listId, Int index, Int targetIndex) {
+        return new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/" + index + "/moveTodo/" + targetIndex);
     }
 
     @Override

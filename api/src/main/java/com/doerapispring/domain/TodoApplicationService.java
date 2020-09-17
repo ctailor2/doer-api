@@ -8,15 +8,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface TodoApplicationService {
-    Try<DeprecatedTodoListModel> performOperation(
+    TodoListModel performOperation(
             User user,
             ListId listId,
-            Supplier<TodoListEvent> eventProducer
-    );
-
-    Try<DeprecatedTodoListModel> performOperation(
-            User user,
-            ListId listId,
-            Function<TodoId, TodoListEvent> eventProducer
+            TodoListEvent event
     );
 }

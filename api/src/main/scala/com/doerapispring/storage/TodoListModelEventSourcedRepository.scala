@@ -39,7 +39,7 @@ class TodoListModelEventSourcedRepository(private val todoListModelSnapshotRepos
         objectMapper.readValue(data, Class.forName(eventClass).asSubclass(classOf[TodoListEvent]))
       }
     events.foldLeft(Try(todoListModelSnapshot.get.model)) {
-      case (Success(todoList), event) => TodoListModel.applyEvent(todoList, event)
+      case (Success(todoList), event) => Try(TodoListModel.applyEvent(todoList, event))
       case (Failure(exception), _) =>
         exception.printStackTrace()
         Failure(exception)

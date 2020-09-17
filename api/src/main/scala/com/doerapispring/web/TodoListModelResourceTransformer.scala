@@ -2,67 +2,57 @@ package com.doerapispring.web
 
 import java.util.Date
 
-import com.doerapispring.domain.{DeprecatedTodoListModel, ListId, OwnedTodoListModel, TodoListModel}
+import com.doerapispring.domain.{ListId, TodoListModel}
 import org.springframework.stereotype.Component
-
-import scala.jdk.CollectionConverters._
 
 
 @Component
 class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGenerator) {
   def transform(listId: ListId, todoListModel: TodoListModel, now: Date): TodoListReadModelResponse = {
-    val capabilities = TodoListModel.capabilities(todoListModel)
+    val capabilities = TodoListModel.capabilities(todoListModel, now)
     val todoListReadModelDTO = TodoListReadModelDTO(
       "now",
       "later",
-      TodoListModel.getTodos(todoListModel).map(todo => TodoDTO(todo.task)),
+      TodoListModel.getTodos(todoListModel)
+        .map(todo => TodoDTO(todo.task)),
       TodoListModel.getDeferredTodos(todoListModel, now).map(todo => TodoDTO(todo.task)),
       TodoListModel.unlockDurationMs(todoListModel, now)
     )
-    null
-//    capabilities.todoCapabilities.map(todoCapabilities =>
-//      hateoasLinkGenerator.updateTodoLink("", todoCapabilities.update.apply("").index))
-  }
-
-  def transform(todoListModel: DeprecatedTodoListModel, now: Date): TodoListReadModelResponse = {
-    val todoListReadModelDTO = new TodoListReadModelDTO(
-      todoListModel.sectionName,
-      todoListModel.deferredSectionName,
-      DeprecatedTodoListModel.getTodos(todoListModel).map(todo => TodoDTO(todo.getTask)),
-      DeprecatedTodoListModel.getDeferredTodos(todoListModel, now).map(todo => TodoDTO(todo.getTask)),
-      DeprecatedTodoListModel.unlockDurationMs(todoListModel, now)
-    )
-    val listId = todoListModel.listId.get
-    todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId).withRel("createDeferred"))
-    todoListReadModelDTO.add(hateoasLinkGenerator.completedListLink(listId).withRel("completed"))
-    if (DeprecatedTodoListModel.unlockCapability(todoListModel, now).isSuccess) {
-      todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId).withRel("unlock"))
+    todoListReadModelDTO.add(hateoasLinkGenerator.createDeferredTodoLink(listId.get()).withRel("createDeferred"))
+    todoListReadModelDTO.add(hateoasLinkGenerator.completedListLink(listId.get()).withRel("completed"))
+    if (capabilities.unlock.isDefined) {
+      todoListReadModelDTO.add(hateoasLinkGenerator.listUnlockLink(listId.get()).withRel("unlock"))
     }
-    if (DeprecatedTodoListModel.displaceCapability(todoListModel).isSuccess) {
-      todoListReadModelDTO.add(hateoasLinkGenerator.displaceTodoLink(listId).withRel("displace"))
+    if (capabilities.displace.isDefined) {
+      todoListReadModelDTO.add(hateoasLinkGenerator.displaceTodoLink(listId.get()).withRel("displace"))
     }
-    if (DeprecatedTodoListModel.addCapability(todoListModel).isSuccess) {
-      todoListReadModelDTO.add(hateoasLinkGenerator.createTodoLink(listId).withRel("create"))
+    if (capabilities.add.isDefined) {
+      todoListReadModelDTO.add(hateoasLinkGenerator.createTodoLink(listId.get()).withRel("create"))
     }
-    if (DeprecatedTodoListModel.pullCapability(todoListModel).isSuccess) {
-      todoListReadModelDTO.add(hateoasLinkGenerator.listPullTodosLink(listId).withRel("pull"))
+    if (capabilities.pull.isDefined) {
+      todoListReadModelDTO.add(hateoasLinkGenerator.listPullTodosLink(listId.get()).withRel("pull"))
     }
-    if (DeprecatedTodoListModel.escalateCapability(todoListModel).isSuccess) {
-      todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId).withRel("escalate"))
+    if (capabilities.escalate.isDefined) {
+      todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId.get()).withRel("escalate"))
     }
-//    TODO: Fix links
-    todoListReadModelDTO.todos.foreach((todoDTO: TodoDTO) => {
-      todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, null).withRel("delete"))
-      todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, null).withRel("update"))
-      todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, null).withRel("complete"))
-      todoListReadModelDTO.todos.foreach((targetTodoDTO: TodoDTO) => todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId, null, null).withRel("move")))
-    })
-    todoListReadModelDTO.deferredTodos.foreach((todoDTO: TodoDTO) => {
-      todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId, null).withRel("delete"))
-      todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId, null).withRel("update"))
-      todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId, null).withRel("complete"))
-      todoListReadModelDTO.deferredTodos.foreach((targetTodoDTO: TodoDTO) => todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId, null, null).withRel("move")))
-    })
+    todoListReadModelDTO.todos.zipWithIndex.foreach { case (todoDTO, index) => {
+      val todoCapabilities = capabilities.todoCapabilities(index)
+      todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId.get(), todoCapabilities.delete.index).withRel("delete"))
+      todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId.get(), todoCapabilities.update("").index).withRel("update"))
+      todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId.get(), todoCapabilities.complete(now).index).withRel("complete"))
+      todoCapabilities.move.foreach(todoMovedEvent => {
+        todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId.get(), todoMovedEvent.index, todoMovedEvent.targetIndex).withRel("move"))
+      })
+    }}
+    todoListReadModelDTO.deferredTodos.zipWithIndex.foreach { case (todoDTO, index) => {
+      val todoCapabilities = capabilities.deferredTodoCapabilities(index)
+      todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId.get(), todoCapabilities.delete.index).withRel("delete"))
+      todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId.get(), todoCapabilities.update("").index).withRel("update"))
+      todoDTO.add(hateoasLinkGenerator.completeTodoLink(listId.get(), todoCapabilities.complete(now).index).withRel("complete"))
+      todoCapabilities.move.foreach(todoMovedEvent => {
+        todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId.get(), todoMovedEvent.index, todoMovedEvent.targetIndex).withRel("move"))
+      })
+    }}
     val todoListReadModelResponse = new TodoListReadModelResponse(todoListReadModelDTO)
     todoListReadModelResponse
   }

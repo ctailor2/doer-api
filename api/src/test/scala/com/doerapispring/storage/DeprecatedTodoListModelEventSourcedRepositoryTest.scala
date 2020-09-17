@@ -25,7 +25,7 @@ class DeprecatedTodoListModelEventSourcedRepositoryTest {
   private var todoListModelRepository: DeprecatedTodoListModelEventSourcedRepository = _
 
   @Autowired
-  private val todoListModelSnapshotRepository: TodoListModelSnapshotRepository = null
+  private val todoListModelSnapshotRepository: DeprecatedTodoListModelSnapshotRepository = null
 
   @Autowired
   private val userRepository: UserRepository = null

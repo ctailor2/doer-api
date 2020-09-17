@@ -30,7 +30,7 @@ dependencies {
     compile('org.springframework.hateoas:spring-hateoas:0.23.0.RELEASE')
     compile('org.postgresql:postgresql:9.4-1206-jdbc42')
     compile('org.flywaydb:flyway-core:5.2.4')
-    compile('org.scala-lang:scala-library:2.12.12')
+    compile('org.scala-lang:scala-library:2.13.3')
     compile('com.fasterxml.jackson.module:jackson-module-scala_2.13:2.10.3')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")

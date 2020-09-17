@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository
 
 import scala.jdk.CollectionConverters._
 
-@Repository
 class CompletedTodoListEventSourcedRepository(val objectMapper: ObjectMapper,
                                               val jdbcTemplate: JdbcTemplate)
   extends OwnedObjectReadRepository[CompletedTodoList, UserId, ListId] {

@@ -2,8 +2,6 @@ package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.ListApplicationService;
-import com.doerapispring.domain.OwnedTodoListModel;
-import com.doerapispring.domain.TodoListModel;
 import com.doerapispring.domain.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

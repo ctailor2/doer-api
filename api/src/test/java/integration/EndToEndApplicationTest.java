@@ -9,6 +9,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTests {
     @Autowired
@@ -31,7 +32,7 @@ public class EndToEndApplicationTest extends AbstractWebAppJUnit4SpringContextTe
         String listName = "someName";
         listService.create(user, listName);
 
-        List<TodoList> todoLists = listService.getAll(user);
+        List<TodoList> todoLists = asJava(listService.getAll(user));
 
         List<String> listNames = todoLists.stream()
                 .map(TodoList::getName)

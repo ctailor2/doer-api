@@ -1,7 +1,10 @@
 package com.doerapispring.web;
 
 import com.doerapispring.authentication.AuthenticatedUser;
-import com.doerapispring.domain.*;
+import com.doerapispring.domain.ListApplicationService;
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.TodoListModel;
+import com.doerapispring.domain.User;
 import com.doerapispring.domain.events.DeprecatedUnlockedEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static scala.jdk.javaapi.CollectionConverters.asJava;
 
 @RestController
 @CrossOrigin
@@ -71,8 +75,9 @@ class ListsController {
     ResponseEntity<CompletedListResponse> showCompleted(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                         @PathVariable String listId) {
         CompletedListDTO completedListDTO = new CompletedListDTO(
-                listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)).getTodos().stream()
-                        .map(completedTodo -> new CompletedTodoDTO(completedTodo.getTask(), completedTodo.getCompletedAt()))
+                asJava(listApplicationService.getCompleted(authenticatedUser.getUser(), new ListId(listId)))
+                        .stream()
+                        .map(completedTodo -> new CompletedTodoDTO(completedTodo.task(), completedTodo.completedAt()))
                         .collect(toList()));
         CompletedListResponse completedListResponse = new CompletedListResponse(completedListDTO);
         completedListResponse.add(hateoasLinkGenerator.completedListLink(listId).withSelfRel());
@@ -82,7 +87,7 @@ class ListsController {
     @GetMapping(value = "/lists")
     @ResponseBody
     ResponseEntity<TodoListResponse> showAll(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        List<TodoListDTO> todoListDTOS = listApplicationService.getAll(authenticatedUser.getUser()).stream()
+        List<TodoListDTO> todoListDTOS = asJava(listApplicationService.getAll(authenticatedUser.getUser())).stream()
                 .map(todoList -> {
                     TodoListDTO todoListDTO = new TodoListDTO(todoList.getName());
                     todoListDTO.add(hateoasLinkGenerator.listLink(todoList.getListId().get()).withRel("list"));
