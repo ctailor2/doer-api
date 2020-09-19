@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import scala.Int;
 
 import java.time.Clock;
 import java.util.Date;
@@ -33,15 +32,15 @@ class TodosController {
         this.clock = clock;
     }
 
-    @RequestMapping(value = "/lists/{listId}/todos/{todoId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/lists/{listId}/todos/{index}", method = RequestMethod.DELETE)
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> delete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @PathVariable String listId,
-                                                     @PathVariable Int index) {
+                                                     @PathVariable int index) {
         TodoListModel todoListModel = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                new TodoDeletedEvent(index.toInt()));
+                new TodoDeletedEvent(index));
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(hateoasLinkGenerator.deleteTodoLink(listId, index).withSelfRel(),
                 hateoasLinkGenerator.listLink(listId).withRel("list"));
@@ -64,16 +63,16 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoListReadModelResponse);
     }
 
-    @RequestMapping(value = "/lists/{listId}/todos/{todoId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/lists/{listId}/todos/{index}", method = RequestMethod.PUT)
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> update(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                      @PathVariable String listId,
-                                                     @PathVariable Int index,
+                                                     @PathVariable int index,
                                                      @RequestBody TodoForm todoForm) {
         TodoListModel todoListModel = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                new TodoUpdatedEvent(index.toInt(), todoForm.getTask()));
+                new TodoUpdatedEvent(index, todoForm.getTask()));
         TodoListReadModelResponse todoListReadModelResponse =
                 todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(hateoasLinkGenerator.updateTodoLink(listId, index).withSelfRel(),
@@ -81,15 +80,15 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoListReadModelResponse);
     }
 
-    @RequestMapping(value = "/lists/{listId}/todos/{todoId}/complete", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/todos/{index}/complete", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> complete(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                        @PathVariable String listId,
-                                                       @PathVariable Int index) {
+                                                       @PathVariable int index) {
         TodoListModel todoListModel = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                new TodoCompletedEvent(index.toInt(), Date.from(clock.instant())));
+                new TodoCompletedEvent(index, Date.from(clock.instant())));
         TodoListReadModelResponse todoListReadModelResponse =
                 todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(
@@ -98,16 +97,16 @@ class TodosController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoListReadModelResponse);
     }
 
-    @RequestMapping(value = "/lists/{listId}/todos/{todoId}/move/{targetTodoId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/lists/{listId}/todos/{index}/move/{targetIndex}", method = RequestMethod.POST)
     @ResponseBody
     ResponseEntity<TodoListReadModelResponse> move(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                                    @PathVariable String listId,
-                                                   @PathVariable Int index,
-                                                   @PathVariable Int targetIndex) {
+                                                   @PathVariable int index,
+                                                   @PathVariable int targetIndex) {
         TodoListModel todoListModel = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                new TodoMovedEvent(index.toInt(), targetIndex.toInt()));
+                new TodoMovedEvent(index, targetIndex));
         TodoListReadModelResponse todoListReadModelResponse =
                 todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
         todoListReadModelResponse.add(

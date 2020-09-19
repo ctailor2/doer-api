@@ -6,12 +6,10 @@ import com.doerapispring.domain._
 import com.doerapispring.domain.events.TodoListEvent
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.{JdbcTemplate, RowMapper}
-import org.springframework.stereotype.Repository
 
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
-@Repository
 class DeprecatedTodoListModelEventSourcedRepository(private val todoListModelSnapshotRepository: OwnedObjectReadRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId],
                                                     private val objectMapper: ObjectMapper,
                                                     private val jdbcTemplate: JdbcTemplate)

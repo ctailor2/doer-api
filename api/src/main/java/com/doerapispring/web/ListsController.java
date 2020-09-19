@@ -58,6 +58,7 @@ class ListsController {
         User user = authenticatedUser.getUser();
         TodoListModel todoListModel = listApplicationService.getDefault(user);
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(user.getDefaultListId(), todoListModel, Date.from(clock.instant()));
+        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(user.getDefaultListId().get()).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 
@@ -67,6 +68,7 @@ class ListsController {
                                                    @PathVariable String listId) {
         TodoListModel todoListModel = listApplicationService.get(authenticatedUser.getUser(), new ListId(listId));
         TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
+        todoListReadModelResponse.add(hateoasLinkGenerator.listLink(listId).withSelfRel());
         return ResponseEntity.ok(todoListReadModelResponse);
     }
 

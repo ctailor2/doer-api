@@ -32,7 +32,7 @@ public class UserServiceTest {
     private OwnedObjectRepository<TodoList, UserId, ListId> todoListRepository;
 
     @Mock
-    private OwnedObjectWriteRepository<Snapshot<DeprecatedTodoListModel>, UserId, ListId> todoListModelSnapshotRepository;
+    private OwnedObjectWriteRepository<Snapshot<TodoListModel>, UserId, ListId> todoListModelSnapshotRepository;
 
     private TodoListFactory todoListFactory = mock(TodoListFactory.class);
 
@@ -80,19 +80,17 @@ public class UserServiceTest {
 
         userService.create(identifier);
 
-        java.util.List<DeprecatedTodo> todos = Collections.emptyList();
+        java.util.List<Todo> todos = Collections.emptyList();
+        java.util.List<CompletedTodo> completedTodos = Collections.emptyList();
         verify(todoListModelSnapshotRepository).save(
                 new UserId(identifier),
                 todoList.getListId(),
-                new Snapshot(
-                        new DeprecatedTodoListModel(
-                                todoList.getListId(),
-                                todoList.getName(),
+                new Snapshot<>(
+                        new TodoListModel(
                                 CollectionConverters.asScala(todos).toList(),
+                                CollectionConverters.asScala(completedTodos).toList(),
                                 new Date(0L),
-                                0,
-                                "now",
-                                "later"),
+                                0),
                         Date.from(instant)));
     }
 

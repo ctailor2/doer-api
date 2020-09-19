@@ -1,11 +1,11 @@
 package com.doerapispring.domain
 
 import java.time.Clock
-import java.util
 import java.util.Date
 
 import com.doerapispring.domain.events.TodoListEvent
 import org.springframework.stereotype.Service
+
 import scala.jdk.CollectionConverters._
 
 @Service
@@ -16,7 +16,7 @@ class ListService(val todoListRepository: OwnedObjectRepository[TodoList, UserId
                   val clock: Clock,
                   val domainEventPublisher: DomainEventPublisher[TodoListModel, TodoListEvent, UserId, ListId],
                   val todoListEventRepository: OwnedObjectWriteRepository[TodoListEvent, UserId, ListId],
-                  val todoListModelSnapshotRepository: OwnedObjectWriteRepository[Snapshot[DeprecatedTodoListModel], UserId, ListId])
+                  val todoListModelSnapshotRepository: OwnedObjectWriteRepository[Snapshot[TodoListModel], UserId, ListId])
   extends ListApplicationService {
 
   override def performOperation(user: User,
@@ -51,7 +51,7 @@ class ListService(val todoListRepository: OwnedObjectRepository[TodoList, UserId
     todoListModelSnapshotRepository.save(
       user.getUserId,
       listId,
-      Snapshot(DeprecatedTodoListModel(listId, name, List(), new Date(0L), 0), Date.from(clock.instant())))
+      Snapshot(TodoListModel(List(), List(), new Date(0L), 0), Date.from(clock.instant())))
   }
 
   override def setDefault(user: User, listId: ListId): Unit = {

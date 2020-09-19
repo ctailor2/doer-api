@@ -1,7 +1,6 @@
 package com.doerapispring.web;
 
 import org.springframework.hateoas.Link;
-import scala.Int;
 
 class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     static final String MOCK_BASE_URL = "http://some.api";
@@ -27,7 +26,7 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String listId, Int index) {
+    public Link deleteTodoLink(String listId, int index) {
         return new Link(MOCK_BASE_URL + "/lists/" + listId + "/deleteTodo/" + index);
     }
 
@@ -37,17 +36,17 @@ class MockHateoasLinkGenerator implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String listId, Int index) {
+    public Link updateTodoLink(String listId, int index) {
         return new Link(MOCK_BASE_URL + "/lists/" + listId + "/updateTodo/" + index);
     }
 
     @Override
-    public Link completeTodoLink(String listId, Int index) {
+    public Link completeTodoLink(String listId, int index) {
         return new Link(MOCK_BASE_URL + "/lists/" + listId + "/completeTodo/" + index);
     }
 
     @Override
-    public Link moveTodoLink(String listId, Int index, Int targetIndex) {
+    public Link moveTodoLink(String listId, int index, int targetIndex) {
         return new Link(MOCK_BASE_URL + "/lists/" + listId + "/todos/" + index + "/moveTodo/" + targetIndex);
     }
 

@@ -29,6 +29,7 @@ object DeprecatedTodoListModel {
       case DeprecatedTodoMovedEvent(todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
       case DeprecatedPulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
       case DeprecatedUnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
+      case _ => Try(todoList)
     }
     result.recover {
       case e: DomainException =>

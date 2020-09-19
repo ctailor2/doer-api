@@ -8,7 +8,7 @@ import com.doerapispring.domain.events._
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.runner.RunWith
-import org.junit.{Before, Test}
+import org.junit.{Before, Ignore, Test}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -21,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @Sql(scripts = Array("/cleanup.sql"), executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @ActiveProfiles(value = Array("test"))
 @RunWith(classOf[SpringRunner])
+@Ignore
 class DeprecatedTodoListModelEventSourcedRepositoryTest {
   private var todoListModelRepository: DeprecatedTodoListModelEventSourcedRepository = _
 

@@ -1,7 +1,6 @@
 package com.doerapispring.web;
 
 import org.springframework.hateoas.Link;
-import scala.Int;
 
 interface HateoasLinkGenerator {
     Link signupLink();
@@ -16,15 +15,15 @@ interface HateoasLinkGenerator {
 
     Link listResourcesLink();
 
-    Link deleteTodoLink(String listId, Int index);
+    Link deleteTodoLink(String listId, int index);
 
     Link displaceTodoLink(String listId);
 
-    Link updateTodoLink(String listId, Int index);
+    Link updateTodoLink(String listId, int index);
 
-    Link completeTodoLink(String listId, Int index);
+    Link completeTodoLink(String listId, int index);
 
-    Link moveTodoLink(String listId, Int index, Int targetIndex);
+    Link moveTodoLink(String listId, int index, int targetIndex);
 
     Link listPullTodosLink(String listId);
 

@@ -3,7 +3,6 @@ package com.doerapispring.web;
 import com.doerapispring.authentication.AccessDeniedException;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
-import scala.Int;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -39,7 +38,7 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link deleteTodoLink(String listId, Int index) {
+    public Link deleteTodoLink(String listId, int index) {
         return linkTo(methodOn(TodosController.class).delete(null, listId, index)).withSelfRel();
     }
 
@@ -49,17 +48,17 @@ public class HateoasLinkGeneratorImpl implements HateoasLinkGenerator {
     }
 
     @Override
-    public Link updateTodoLink(String listId, Int index) {
+    public Link updateTodoLink(String listId, int index) {
         return linkTo(methodOn(TodosController.class).update(null, listId, index, null)).withSelfRel();
     }
 
     @Override
-    public Link completeTodoLink(String listId, Int index) {
+    public Link completeTodoLink(String listId, int index) {
         return linkTo(methodOn(TodosController.class).complete(null, listId, index)).withSelfRel();
     }
 
     @Override
-    public Link moveTodoLink(String listId, Int index, Int targetIndex) {
+    public Link moveTodoLink(String listId, int index, int targetIndex) {
         return linkTo(methodOn(TodosController.class).move(null, listId, index, targetIndex)).withSelfRel();
     }
 

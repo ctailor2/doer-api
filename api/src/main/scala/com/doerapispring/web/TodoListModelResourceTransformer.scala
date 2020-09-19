@@ -13,8 +13,7 @@ class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGene
     val todoListReadModelDTO = TodoListReadModelDTO(
       "now",
       "later",
-      TodoListModel.getTodos(todoListModel)
-        .map(todo => TodoDTO(todo.task)),
+      TodoListModel.getTodos(todoListModel).map(todo => TodoDTO(todo.task)),
       TodoListModel.getDeferredTodos(todoListModel, now).map(todo => TodoDTO(todo.task)),
       TodoListModel.unlockDurationMs(todoListModel, now)
     )
@@ -35,7 +34,7 @@ class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGene
     if (capabilities.escalate.isDefined) {
       todoListReadModelDTO.add(hateoasLinkGenerator.listEscalateTodoLink(listId.get()).withRel("escalate"))
     }
-    todoListReadModelDTO.todos.zipWithIndex.foreach { case (todoDTO, index) => {
+    todoListReadModelDTO.todos.zipWithIndex.foreach { case (todoDTO, index) =>
       val todoCapabilities = capabilities.todoCapabilities(index)
       todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId.get(), todoCapabilities.delete.index).withRel("delete"))
       todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId.get(), todoCapabilities.update("").index).withRel("update"))
@@ -43,8 +42,8 @@ class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGene
       todoCapabilities.move.foreach(todoMovedEvent => {
         todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId.get(), todoMovedEvent.index, todoMovedEvent.targetIndex).withRel("move"))
       })
-    }}
-    todoListReadModelDTO.deferredTodos.zipWithIndex.foreach { case (todoDTO, index) => {
+    }
+    todoListReadModelDTO.deferredTodos.zipWithIndex.foreach { case (todoDTO, index) =>
       val todoCapabilities = capabilities.deferredTodoCapabilities(index)
       todoDTO.add(hateoasLinkGenerator.deleteTodoLink(listId.get(), todoCapabilities.delete.index).withRel("delete"))
       todoDTO.add(hateoasLinkGenerator.updateTodoLink(listId.get(), todoCapabilities.update("").index).withRel("update"))
@@ -52,8 +51,8 @@ class TodoListModelResourceTransformer(val hateoasLinkGenerator: HateoasLinkGene
       todoCapabilities.move.foreach(todoMovedEvent => {
         todoDTO.add(hateoasLinkGenerator.moveTodoLink(listId.get(), todoMovedEvent.index, todoMovedEvent.targetIndex).withRel("move"))
       })
-    }}
-    val todoListReadModelResponse = new TodoListReadModelResponse(todoListReadModelDTO)
+    }
+    val todoListReadModelResponse = TodoListReadModelResponse(todoListReadModelDTO)
     todoListReadModelResponse
   }
 }
