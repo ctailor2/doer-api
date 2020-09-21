@@ -23,13 +23,13 @@ class SessionTokenRepository implements TokenStore {
     public void add(TransientAccessToken token) throws InvalidTokenException {
         UserEntity userEntity = userDAO.findByEmail(token.getAuthenticatedEntityIdentifier());
         if (userEntity == null) throw new InvalidTokenException();
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .userEntity(userEntity)
-                .token(token.getAccessToken())
-                .expiresAt(token.getExpiresAt())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
+        SessionTokenEntity sessionTokenEntity = new SessionTokenEntity(
+                null,
+                token.getAccessToken(),
+                token.getExpiresAt(),
+                new Date(),
+                new Date(),
+                userEntity);
         sessionTokenDAO.save(sessionTokenEntity);
     }
 

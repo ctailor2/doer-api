@@ -1,8 +1,9 @@
-package com.doerapispring.domain
+package com.doerapispring
 
 import java.time.Instant
 import java.util.Date
 
+import com.doerapispring.domain._
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test

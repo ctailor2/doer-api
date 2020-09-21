@@ -57,25 +57,6 @@ task integrationTest(type: Test) {
     include 'integration/**'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = []
-        }
-        scala {
-            srcDirs = ['src/main/java', 'src/main/scala']
-        }
-    }
-    test {
-        java {
-            srcDirs = ['src/test/java']
-        }
-        scala {
-            srcDirs = ['src/test/scala']
-        }
-    }
-}
-
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 

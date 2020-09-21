@@ -27,11 +27,10 @@ public class TodoListRepository implements OwnedObjectRepository<TodoList, UserI
     @Override
     public void save(TodoList todoList) {
         UserEntity userEntity = userDAO.findByEmail(todoList.getUserId().get());
-        TodoListEntity todoListEntity = TodoListEntity.builder()
-            .userEntity(userEntity)
-            .uuid(todoList.getListId().get())
-            .name(todoList.getName())
-            .build();
+        TodoListEntity todoListEntity = new TodoListEntity(
+                todoList.getListId().get(),
+                todoList.getName(),
+                userEntity);
         todoListDao.save(todoListEntity);
     }
 
@@ -43,10 +42,10 @@ public class TodoListRepository implements OwnedObjectRepository<TodoList, UserI
     @Override
     public List<TodoList> findAll(UserId userId) {
         return todoListDao.findByEmailWithoutTodos(userId.get()).stream()
-            .map(todoListEntity -> new TodoList(
-                userId,
-                new ListId(todoListEntity.uuid),
-                todoListEntity.name))
-            .collect(Collectors.toList());
+                .map(todoListEntity -> new TodoList(
+                        userId,
+                        new ListId(todoListEntity.uuid),
+                        todoListEntity.name))
+                .collect(Collectors.toList());
     }
 }

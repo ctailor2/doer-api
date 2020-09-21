@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'scala'
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    archivesBaseName = 'migrator'
+}
+
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(project(':api'))
+
+    compile("org.springframework.boot:spring-boot-starter:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-data-jdbc:${springBootVersion}")
+    compile('org.scala-lang:scala-library:2.13.3')
+    compile('org.postgresql:postgresql:9.4-1206-jdbc42')
+
+
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+    testCompile('org.scalatest:scalatest_2.11:3.0.0')
+}

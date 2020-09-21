@@ -24,13 +24,11 @@ class UserRepository implements ObjectRepository<User, UserId> {
         UserEntity userEntity = userDAO.findByEmail(user.getUserId().get());
         if (userEntity == null) {
             userDAO.save(
-                UserEntity.builder()
-                    .email(user.getUserId().get())
-                    .defaultListId(user.getDefaultListId().get())
-                    .passwordDigest("")
-                    .createdAt(new Date())
-                    .updatedAt(new Date())
-                    .build());
+                    new UserEntity(user.getUserId().get(),
+                            user.getDefaultListId().get(),
+                            "",
+                            new Date(),
+                            new Date()));
         } else {
             userEntity.defaultListId = user.getDefaultListId().get();
             userDAO.save(userEntity);
@@ -42,8 +40,8 @@ class UserRepository implements ObjectRepository<User, UserId> {
         UserEntity userEntity = userDAO.findByEmail(userId.get());
         if (userEntity == null) return Optional.empty();
         User user = new User(
-            new UserId(userEntity.email),
-            new ListId(userEntity.defaultListId));
+                new UserId(userEntity.email),
+                new ListId(userEntity.defaultListId));
         return Optional.of(user);
     }
 }

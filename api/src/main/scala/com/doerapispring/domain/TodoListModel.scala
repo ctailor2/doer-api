@@ -94,7 +94,6 @@ object TodoListModel {
   }
 
   def displace(todoList: TodoListModel, task: String): TodoListModel = {
-    if (alreadyExists(todoList, task)) throw new DuplicateTodoException
     val todo = Todo(task)
     todoList.copy(todos = todo +: todoList.todos)
   }

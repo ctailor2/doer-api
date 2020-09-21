@@ -1,15 +1,8 @@
 package com.doerapispring.storage;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
 import java.util.Date;
 
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "session_tokens")
 class SessionTokenEntity {
@@ -33,4 +26,64 @@ class SessionTokenEntity {
     @ManyToOne
     @JoinColumn(name = "user_identifier")
     public UserEntity userEntity;
+
+    public SessionTokenEntity() {
+    }
+
+    public SessionTokenEntity(Long id, String token, Date expiresAt, Date createdAt, Date updatedAt, UserEntity userEntity) {
+        this.id = id;
+        this.token = token;
+        this.expiresAt = expiresAt;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.userEntity = userEntity;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Date getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Date expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public UserEntity getUserEntity() {
+        return userEntity;
+    }
+
+    public void setUserEntity(UserEntity userEntity) {
+        this.userEntity = userEntity;
+    }
 }

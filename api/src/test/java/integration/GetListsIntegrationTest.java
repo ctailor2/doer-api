@@ -32,7 +32,6 @@ public class GetListsIntegrationTest extends AbstractWebAppJUnit4SpringContextTe
     public void list() throws Exception {
         mockMvc.perform(get("/v1/lists")
                 .headers(httpHeaders))
-                .andExpect(jsonPath("$.defaultList", equalTo("default")))
                 .andExpect(jsonPath("$.lists", hasSize(1)))
                 .andExpect(jsonPath("$.lists[0].name", equalTo("default")))
                 .andExpect(jsonPath("$._links.self.href", endsWith("/v1/lists")));

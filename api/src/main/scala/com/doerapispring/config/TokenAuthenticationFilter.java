@@ -42,10 +42,7 @@ public class TokenAuthenticationFilter extends AbstractAuthenticationProcessingF
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         SecurityContextHolder.clearContext();
         ObjectMapper mapper = new ObjectMapper();
-        Error error = Error.builder()
-                .status("401")
-                .message(failed.getMessage())
-                .build();
+        Error error = new Error("401", failed.getMessage());
         String serializedError = mapper.writeValueAsString(error);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");

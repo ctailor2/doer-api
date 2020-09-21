@@ -1,14 +1,16 @@
-package com.doerapispring.storage
+package com.doerapispring
 
 import java.time.Instant
 import java.util.Date
 
 import com.doerapispring.domain._
 import com.doerapispring.domain.events._
+import com.doerapispring.storage.{DeprecatedTodoListModelEventSourcedRepository, DeprecatedTodoListModelSnapshotRepository, TodoListEventRepository, TodoListRepository, UserRepository}
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.runner.RunWith
 import org.junit.{Before, Ignore, Test}
+import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate

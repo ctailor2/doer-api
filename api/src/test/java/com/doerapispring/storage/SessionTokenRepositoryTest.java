@@ -37,7 +37,7 @@ public class SessionTokenRepositoryTest {
 
     @Test
     public void add_sessionToken_findsUser_whenFound_savesRelationship_savesFields_setsAuditingData() throws Exception {
-        UserEntity userEntity = UserEntity.builder().build();
+        UserEntity userEntity = new UserEntity();
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
         Date expiresAt = new Date();
@@ -67,11 +67,12 @@ public class SessionTokenRepositoryTest {
 
     @Test
     public void find_callsSessionTokenDao_whenSessionTokenFound_withUser_returnsOptionalWithSessionToken() {
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .token("bananas")
-                .expiresAt(new Date())
-                .userEntity(UserEntity.builder().email("chimi@chonga.com").build())
-                .build();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setEmail("chimi@chonga.com");
+        SessionTokenEntity sessionTokenEntity = new SessionTokenEntity();
+        sessionTokenEntity.setToken("bananas");
+        sessionTokenEntity.setExpiresAt(new Date());
+        sessionTokenEntity.setUserEntity(userEntity);
         when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
 
         Optional<TransientAccessToken> tokenOptional = sessionTokenRepository.find("suchSecretToken");
@@ -86,11 +87,10 @@ public class SessionTokenRepositoryTest {
 
     @Test
     public void find_callsSessionTokenDao_whenSessionTokenFound_withoutUser_returnsEmptyOptional() {
-        SessionTokenEntity sessionTokenEntity = SessionTokenEntity.builder()
-                .token("bananas")
-                .expiresAt(new Date())
-                .userEntity(null)
-                .build();
+        SessionTokenEntity sessionTokenEntity = new SessionTokenEntity();
+        sessionTokenEntity.setToken("bananas");
+        sessionTokenEntity.setExpiresAt(new Date());
+        sessionTokenEntity.setUserEntity(null);
         when(sessionTokenDAO.findByToken(any())).thenReturn(sessionTokenEntity);
 
         Optional<TransientAccessToken> tokenOptional = sessionTokenRepository.find("suchSecretToken");

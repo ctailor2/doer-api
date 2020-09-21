@@ -28,7 +28,7 @@ public class UserCredentialsRepositoryTest {
 
     @Test
     public void add_callsUserDAO_findsUser_setsPassword() {
-        when(userDAO.findByEmail(any())).thenReturn(UserEntity.builder().build());
+        when(userDAO.findByEmail(any())).thenReturn(new UserEntity());
 
         userCredentialsRepository.add(new Credentials("test@id.com", "soSecret", new Date()));
 
@@ -47,9 +47,8 @@ public class UserCredentialsRepositoryTest {
 
     @Test
     public void findLatest_whenUserFound_returnsOptionalWithCredentials() {
-        UserEntity userEntity = UserEntity.builder()
-                .passwordDigest("securePassword")
-                .build();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setPasswordDigest("securePassword");
         when(userDAO.findByEmail(any())).thenReturn(userEntity);
 
         String userIdentifier = "test";
