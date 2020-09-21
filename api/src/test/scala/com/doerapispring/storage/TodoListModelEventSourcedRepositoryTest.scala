@@ -73,11 +73,11 @@ class TodoListModelEventSourcedRepositoryTest {
       DeprecatedTodoDeletedEvent(todoIdToDelete),
       DeprecatedDeferredTodoAddedEvent(todoIdToUpdate, "taskToUpdate"),
       DeprecatedTodoUpdatedEvent(todoIdToUpdate, "updatedTask"),
-      PulledEvent(),
-      EscalatedEvent(),
+      DeprecatedPulledEvent(),
+      DeprecatedEscalatedEvent(),
       DeprecatedTodoDisplacedEvent(todoIdToComplete, "someImportantTask"),
       DeprecatedTodoCompletedEvent(todoIdToComplete),
-      UnlockedEvent(Date.from(Instant.now()))
+      DeprecatedUnlockedEvent(Date.from(Instant.now()))
     )
     val resultingTodoListValue = todoListEvents.foldLeft(todoListValue)((todoListModel, todoListEvent) => {
       DeprecatedTodoListModel.applyEvent(todoListModel, todoListEvent).get

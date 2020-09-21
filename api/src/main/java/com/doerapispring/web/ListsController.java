@@ -4,7 +4,7 @@ import com.doerapispring.authentication.AuthenticatedUser;
 import com.doerapispring.domain.DeprecatedTodoListModel;
 import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
-import com.doerapispring.domain.events.UnlockedEvent;
+import com.doerapispring.domain.events.DeprecatedUnlockedEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,7 +42,7 @@ class ListsController {
         listApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                () -> new UnlockedEvent(Date.from(clock.instant())),
+                () -> new DeprecatedUnlockedEvent(Date.from(clock.instant())),
                 DeprecatedTodoListModel::applyEvent);
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(

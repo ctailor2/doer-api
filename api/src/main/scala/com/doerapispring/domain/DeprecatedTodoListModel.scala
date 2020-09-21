@@ -24,11 +24,11 @@ object DeprecatedTodoListModel {
       case DeprecatedTodoDisplacedEvent(todoId, task) => displaceCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
       case DeprecatedTodoDeletedEvent(todoId) => delete(todoList, new TodoId(todoId))
       case DeprecatedTodoAddedEvent(todoId, task) => addCapability(todoList).flatMap(func => func.apply(new TodoId(todoId), task))
-      case EscalatedEvent() => escalateCapability(todoList).flatMap(func => func.apply())
+      case DeprecatedEscalatedEvent() => escalateCapability(todoList).flatMap(func => func.apply())
       case DeprecatedDeferredTodoAddedEvent(todoId, task) => addDeferred(todoList, new TodoId(todoId), task)
       case DeprecatedTodoMovedEvent(todoId, targetTodoId) => move(todoList, new TodoId(todoId), new TodoId(targetTodoId))
-      case PulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
-      case UnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
+      case DeprecatedPulledEvent() => pullCapability(todoList).flatMap(func => func.apply())
+      case DeprecatedUnlockedEvent(unlockedAt) => unlock(todoList, unlockedAt)
     }
     result.recover {
       case e: DomainException =>

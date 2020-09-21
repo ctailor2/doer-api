@@ -128,7 +128,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                PulledEvent::new,
+                DeprecatedPulledEvent::new,
                 DeprecatedTodoListModel::applyEvent)
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
@@ -145,7 +145,7 @@ class TodosController {
         TodoListReadModelResponse todoListReadModelResponse = todoApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                EscalatedEvent::new,
+                DeprecatedEscalatedEvent::new,
                 DeprecatedTodoListModel::applyEvent)
                 .map(todoList -> todoListModelResourceTransformer.transform(todoList, Date.from(clock.instant())))
                 .get();
