@@ -1,7 +1,5 @@
 package com.doerapispring.storage;
 
-import lombok.*;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;

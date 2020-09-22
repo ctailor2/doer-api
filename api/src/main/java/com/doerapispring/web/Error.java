@@ -1,7 +1,5 @@
 package com.doerapispring.web;
 
-import lombok.Data;
-
 public class Error {
     private String status;
     private String message;
