@@ -5,7 +5,7 @@ import com.doerapispring.domain.ListApplicationService;
 import com.doerapispring.domain.ListId;
 import com.doerapispring.domain.TodoListModel;
 import com.doerapispring.domain.User;
-import com.doerapispring.domain.events.DeprecatedUnlockedEvent;
+import com.doerapispring.domain.events.UnlockedEvent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,7 +44,7 @@ class ListsController {
         listApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
-                new DeprecatedUnlockedEvent(Date.from(clock.instant())));
+                new UnlockedEvent(Date.from(clock.instant())));
         ResourcesResponse resourcesResponse = new ResourcesResponse();
         resourcesResponse.add(
                 hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
