@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional
-class UserRepository implements ObjectRepository<User, UserId> {
+public class UserRepository implements ObjectRepository<User, UserId> {
     private final UserDAO userDAO;
 
     UserRepository(UserDAO userDAO) {

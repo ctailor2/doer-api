@@ -4,8 +4,6 @@ import java.util.{Calendar, Date, TimeZone}
 
 import com.doerapispring.domain.events._
 
-import scala.util.{Success, Try}
-
 case class TodoListModel(todos: List[Todo] = List(),
                          completedTodos: List[CompletedTodo] = List(),
                          lastUnlockedAt: Date = new Date(0L),
