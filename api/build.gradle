@@ -66,6 +66,10 @@ task stage(dependsOn: build) {
     }
 }
 
+bootJar {
+    classifier = 'boot'
+}
+
 jar {
     enabled = true
 }
