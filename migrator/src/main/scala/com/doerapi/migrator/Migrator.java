@@ -28,7 +28,7 @@ public class Migrator implements CommandLineRunner {
     private ObjectMapper objectMapper;
 
     public static void main(String[] args) {
-        SpringApplication.run(Migrator.class, args);
+        SpringApplication.run(Migrator.class, args).close();
     }
 
     @Override

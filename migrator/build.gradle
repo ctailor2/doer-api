@@ -24,7 +24,6 @@ dependencies {
     compile('org.scala-lang:scala-library:2.13.3')
     compile('org.postgresql:postgresql:9.4-1206-jdbc42')
 
-
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
     testCompile('org.scalatest:scalatest_2.11:3.0.0')
 }
