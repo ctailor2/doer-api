@@ -1,4 +1,4 @@
-package com.doerapispring.domain;
+package com.doerapi.migrator.domain;
 
 public class CompletedTodoId {
     private final String identifier;

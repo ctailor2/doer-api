@@ -1,10 +1,11 @@
-package com.doerapispring.storage
+package com.doerapi.migrator.storage
 
 import java.sql.ResultSet
 import java.util.Date
 
+import com.doerapi.migrator.domain.CompletedTodoList
+import com.doerapispring.domain._
 import com.doerapispring.domain.events._
-import com.doerapispring.domain.{CompletedTodoList, _}
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.namedparam.{MapSqlParameterSource, NamedParameterJdbcTemplate}
 import org.springframework.jdbc.core.{JdbcTemplate, RowMapper}

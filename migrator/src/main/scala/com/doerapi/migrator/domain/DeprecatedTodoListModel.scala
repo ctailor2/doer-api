@@ -1,8 +1,9 @@
-package com.doerapispring.domain
+package com.doerapi.migrator.domain
 
 import java.util.{Calendar, Date, TimeZone}
 
 import com.doerapispring.domain.events._
+import com.doerapispring.domain.{DomainException, ListId, TodoId}
 
 import scala.util.{Success, Try}
 

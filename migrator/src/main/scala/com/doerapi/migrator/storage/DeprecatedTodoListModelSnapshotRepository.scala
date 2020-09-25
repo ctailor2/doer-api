@@ -1,6 +1,7 @@
-package com.doerapispring.storage
+package com.doerapi.migrator.storage
 
-import com.doerapispring.domain.DeprecatedTodoListModel
+import com.doerapi.migrator.domain.DeprecatedTodoListModel
+import com.doerapispring.storage.AbstractTodoListModelSnapshotRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.JdbcTemplate
 

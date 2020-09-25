@@ -1,4 +1,4 @@
-package com.doerapispring.domain;
+package com.doerapi.migrator.domain;
 
 import java.util.Date;
 import java.util.Objects;

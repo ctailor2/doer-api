@@ -1,5 +1,7 @@
-package com.doerapispring.domain;
+package com.doerapi.migrator.domain;
 
+import com.doerapispring.domain.ListId;
+import com.doerapispring.domain.UserId;
 import com.doerapispring.domain.events.*;
 
 import java.util.*;

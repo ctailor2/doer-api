@@ -1,5 +1,6 @@
-package com.doerapispring.domain;
+package com.doerapi.migrator.domain;
 
+import com.doerapispring.domain.TodoId;
 import org.springframework.hateoas.ResourceSupport;
 
 public class DeprecatedTodo extends ResourceSupport {

@@ -1,7 +1,8 @@
-package com.doerapispring.storage
+package com.doerapi.migrator.storage
 
 import java.sql.ResultSet
 
+import com.doerapi.migrator.domain.DeprecatedTodoListModel
 import com.doerapispring.domain._
 import com.doerapispring.domain.events.TodoListEvent
 import com.fasterxml.jackson.databind.ObjectMapper

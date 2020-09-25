@@ -1,9 +1,11 @@
-package com.doerapispring;
+package com.doerapi.migrator;
 
+import com.doerapi.migrator.domain.CompletedTodoList;
+import com.doerapi.migrator.domain.DeprecatedTodoListModel;
+import com.doerapi.migrator.storage.CompletedTodoListEventSourcedRepository;
+import com.doerapi.migrator.storage.DeprecatedTodoListModelEventSourcedRepository;
+import com.doerapi.migrator.storage.DeprecatedTodoListModelSnapshotRepository;
 import com.doerapispring.domain.*;
-import com.doerapispring.storage.CompletedTodoListEventSourcedRepository;
-import com.doerapispring.storage.DeprecatedTodoListModelEventSourcedRepository;
-import com.doerapispring.storage.DeprecatedTodoListModelSnapshotRepository;
 import com.doerapispring.storage.TodoListModelSnapshotRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;

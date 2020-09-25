@@ -1,4 +1,6 @@
-package com.doerapispring.domain;
+package com.doerapi.migrator.domain;
+
+import com.doerapispring.domain.DomainException;
 
 class DuplicateTodoException extends DomainException {
     DuplicateTodoException() {
