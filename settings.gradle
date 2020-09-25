@@ -1,4 +1,3 @@
 rootProject.name = 'doer-api'
 
 include 'api'
-include 'migrator'

@@ -1,7 +1,0 @@
-TODO: Plan for migrating the data to the next version of the todo list model
-
-1) Update the current empty v1 snapshot to an empty v2 snapshot to keep the new code compiling
-and working with the new version. If the v1 snapshot can be deserialized appropriately
-to v2 snapshot, this may be as simple as updated the timestamp on the snapshot to now.
-2) Make the migrator use the deprecated event sourced repos (todolistmodel and completedtodolist) to
-produce a v2 todolistmodel, produce a snapshot, and save it.
