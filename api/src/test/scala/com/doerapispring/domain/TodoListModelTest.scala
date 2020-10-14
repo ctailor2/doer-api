@@ -357,15 +357,28 @@ class TodoListModelTest {
     val capabilities = TodoListModel.addDeferred(this.todoListValue, "someTask")
       .pipe(todoList => TodoListModel.addDeferred(todoList, "someOtherTask"))
       .pipe(todoList => TodoListModel.add(todoList, "someNonDeferredTask"))
+      .pipe(todoList => TodoListModel.add(todoList, "someOtherNonDeferredTask"))
       .pipe(todoList => TodoListModel.unlock(todoList, Date.from(Instant.now())))
       .pipe(todoList => TodoListModel.capabilities(todoList, Date.from(Instant.now())))
 
+    assertThat(capabilities.todoCapabilities.size).isEqualTo(2)
+    val todoCapabilities1 = capabilities.todoCapabilities.head
+    assertThat(todoCapabilities1.move.head).isEqualTo(TodoMovedEvent(0, 0))
+    assertThat(todoCapabilities1.move(1)).isEqualTo(TodoMovedEvent(0, 1))
+    val todoCapabilities2 = capabilities.todoCapabilities.last
+    assertThat(todoCapabilities2.move.head).isEqualTo(TodoMovedEvent(1, 0))
+    assertThat(todoCapabilities2.move(1)).isEqualTo(TodoMovedEvent(1, 1))
+
     assertThat(capabilities.deferredTodoCapabilities.size).isEqualTo(2)
-    val todoCapabilities = capabilities.deferredTodoCapabilities.head
-    assertThat(todoCapabilities.update("someUpdatedTask")).isEqualTo(TodoUpdatedEvent(1, "someUpdatedTask"))
+    val deferredTodoCapabilities1 = capabilities.deferredTodoCapabilities.head
+    assertThat(deferredTodoCapabilities1.update("someUpdatedTask")).isEqualTo(TodoUpdatedEvent(2, "someUpdatedTask"))
     val completedAt = Date.from(Instant.now())
-    assertThat(todoCapabilities.complete(completedAt)).isEqualTo(TodoCompletedEvent(1, completedAt))
-    assertThat(todoCapabilities.delete).isEqualTo(TodoDeletedEvent(1))
-    assertThat(todoCapabilities.move(2)).isEqualTo(TodoMovedEvent(1, 2))
+    assertThat(deferredTodoCapabilities1.complete(completedAt)).isEqualTo(TodoCompletedEvent(2, completedAt))
+    assertThat(deferredTodoCapabilities1.delete).isEqualTo(TodoDeletedEvent(2))
+    assertThat(deferredTodoCapabilities1.move.head).isEqualTo(TodoMovedEvent(2, 2))
+    assertThat(deferredTodoCapabilities1.move(1)).isEqualTo(TodoMovedEvent(2, 3))
+    val deferredTodoCapabilities2 = capabilities.deferredTodoCapabilities.last
+    assertThat(deferredTodoCapabilities2.move.head).isEqualTo(TodoMovedEvent(3, 2))
+    assertThat(deferredTodoCapabilities2.move(1)).isEqualTo(TodoMovedEvent(3, 3))
   }
 }

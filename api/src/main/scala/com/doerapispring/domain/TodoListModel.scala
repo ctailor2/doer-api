@@ -27,6 +27,8 @@ object TodoListModel {
   val MaxSize: Int = 2
 
   def capabilities(todoList: TodoListModel, now: Date): TodoListModelCapabilities = {
+    val todos = getTodos(todoList)
+    val deferredTodos = getDeferredTodos(todoList, now)
     TodoListModelCapabilities(
       add = Option.unless(isFull(todoList))((task: String) => TodoAddedEvent(task)),
       displace = Option.when(isFull(todoList))((task: String) => TodoDisplacedEvent(task)),
@@ -34,24 +36,26 @@ object TodoListModel {
       escalate = Option.when(isAbleToBeEscalated(todoList))(EscalatedEvent()),
       pull = Option.when(isAbleToBePulled(todoList))(PulledEvent()),
       unlock = Option.when(isAbleToBeUnlocked(todoList, now))((unlockedAt: Date) => UnlockedEvent(unlockedAt)),
-      todoCapabilities = getTodos(todoList).map(todo => {
+      todoCapabilities = todos.map(todo => {
         val index = todoList.todos.indexOf(todo)
         TodoCapabilities(
           update = (task: String) => TodoUpdatedEvent(index, task),
           complete = (completedAt: Date) => TodoCompletedEvent(index, completedAt),
           delete = TodoDeletedEvent(index),
-          move = todoList.todos.indices
-            .map(index => TodoMovedEvent(todoList.todos.indexOf(todo), index))
+          move = todos.indices
+            .map(localIndex => todoList.todos.indexOf(todos(localIndex)))
+            .map(targetIndex => TodoMovedEvent(index, targetIndex))
             .toList)
       }),
-      deferredTodoCapabilities = getDeferredTodos(todoList, now).map(todo => {
+      deferredTodoCapabilities = deferredTodos.map(todo => {
         val index = todoList.todos.indexOf(todo)
         TodoCapabilities(
           update = (task: String) => TodoUpdatedEvent(index, task),
           complete = (completedAt: Date) => TodoCompletedEvent(index, completedAt),
           delete = TodoDeletedEvent(index),
-          move = todoList.todos.indices
-            .map(index => TodoMovedEvent(todoList.todos.indexOf(todo), index))
+          move = deferredTodos.indices
+            .map(localIndex => todoList.todos.indexOf(deferredTodos(localIndex)))
+            .map(targetIndex => TodoMovedEvent(index, targetIndex))
             .toList)
       })
     )

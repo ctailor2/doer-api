@@ -72,7 +72,7 @@ public class GetListIntegrationTest extends AbstractWebAppJUnit4SpringContextTes
                 .andExpect(jsonPath("$.list.todos[0]._links.delete.href", not(isEmptyString())))
                 .andExpect(jsonPath("$.list.todos[0]._links.update.href", not(isEmptyString())))
                 .andExpect(jsonPath("$.list.todos[0]._links.complete.href", not(isEmptyString())))
-                .andExpect(jsonPath("$.list.todos[0]._links.move[0].href", not(isEmptyString())))
+                .andExpect(jsonPath("$.list.todos[0]._links.move.href", not(isEmptyString())))
                 .andExpect(jsonPath("$.list.deferredTodos", hasSize(2)))
                 .andExpect(jsonPath("$.list.deferredTodos[0].task", equalTo("here and there")))
                 .andExpect(jsonPath("$.list.deferredTodos[0]._links", not(isEmptyString())))
