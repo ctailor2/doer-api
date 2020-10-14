@@ -39,17 +39,17 @@ class ListsController {
 
     @PostMapping(value = "/lists/{listId}/unlock")
     @ResponseBody
-    ResponseEntity<ResourcesResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+    ResponseEntity<TodoListReadModelResponse> unlock(@AuthenticationPrincipal AuthenticatedUser authenticatedUser,
                                              @PathVariable String listId) {
-        listApplicationService.performOperation(
+        TodoListModel todoListModel = listApplicationService.performOperation(
                 authenticatedUser.getUser(),
                 new ListId(listId),
                 new UnlockedEvent(Date.from(clock.instant())));
-        ResourcesResponse resourcesResponse = new ResourcesResponse();
-        resourcesResponse.add(
+        TodoListReadModelResponse todoListReadModelResponse = todoListModelResourceTransformer.transform(new ListId(listId), todoListModel, Date.from(clock.instant()));
+        todoListReadModelResponse.add(
                 hateoasLinkGenerator.listUnlockLink(listId).withSelfRel(),
                 hateoasLinkGenerator.listLink(listId).withRel("list"));
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(resourcesResponse);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(todoListReadModelResponse);
     }
 
     @RequestMapping("/lists/default")
