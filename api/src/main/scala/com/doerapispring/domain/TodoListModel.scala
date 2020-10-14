@@ -42,10 +42,9 @@ object TodoListModel {
           update = (task: String) => TodoUpdatedEvent(index, task),
           complete = (completedAt: Date) => TodoCompletedEvent(index, completedAt),
           delete = TodoDeletedEvent(index),
-          move = todos.indices
-            .map(localIndex => todoList.todos.indexOf(todos(localIndex)))
-            .map(targetIndex => TodoMovedEvent(index, targetIndex))
-            .toList)
+          move = todos
+            .map(todo => todoList.todos.indexOf(todo))
+            .map(targetIndex => TodoMovedEvent(index, targetIndex)))
       }),
       deferredTodoCapabilities = deferredTodos.map(todo => {
         val index = todoList.todos.indexOf(todo)
@@ -53,10 +52,9 @@ object TodoListModel {
           update = (task: String) => TodoUpdatedEvent(index, task),
           complete = (completedAt: Date) => TodoCompletedEvent(index, completedAt),
           delete = TodoDeletedEvent(index),
-          move = deferredTodos.indices
-            .map(localIndex => todoList.todos.indexOf(deferredTodos(localIndex)))
-            .map(targetIndex => TodoMovedEvent(index, targetIndex))
-            .toList)
+          move = deferredTodos
+            .map(deferredTodo => todoList.todos.indexOf(deferredTodo))
+            .map(targetIndex => TodoMovedEvent(index, targetIndex)))
       })
     )
   }
