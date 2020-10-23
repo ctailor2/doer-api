@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: doer-api-db
+  name: doer-api-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doer-api-db
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: doer-api-db
+    spec:
+      containers:
+      - image: postgres:9.6
+        name: postgres
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/doer-api-db
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: doer-api-db-secret
+              key: password
+        volumeMounts:
+        - name: pgdata-usb-volume
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: pgdata-usb-volume
+        hostPath:
+          path: /mnt/pgdata-usb
+          type: Directory
+status: {}
