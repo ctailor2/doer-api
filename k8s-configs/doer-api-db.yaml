@@ -23,6 +23,13 @@ spec:
         env:
         - name: PGDATA
           value: /var/lib/postgresql/data/doer-api-db
+        - name: POSTGRES_DB
+          value: doer-api
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: doer-api-db-secret
+              key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:

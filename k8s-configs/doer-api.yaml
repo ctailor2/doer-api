@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: doer-api
+  name: doer-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doer-api
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: doer-api
+    spec:
+      containers:
+      - image: ctailor2/doer-api:latest
+        name: doer-api
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://doer-api-db:15432/doer-api
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: doer-api-db-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: doer-api-db-secret
+              key: password
+status: {}
