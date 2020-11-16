@@ -3,23 +3,12 @@ plugins {
     id 'scala'
     id "org.flywaydb.flyway" version "5.2.4"
     id 'org.springframework.boot' version '2.1.4.RELEASE'
-    id 'com.google.cloud.tools.jib' version '2.6.0'
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
     archivesBaseName = 'api'
-}
-
-jib.from {
-    image = 'arm64v8/openjdk:8-jdk'
-    platforms {
-        platform {
-            architecture = 'arm64'
-            os = 'linux'
-        }
-    }
 }
 
 version = '0.0.1-SNAPSHOT'
