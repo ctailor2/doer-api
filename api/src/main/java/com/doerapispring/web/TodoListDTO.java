@@ -1,8 +1,8 @@
 package com.doerapispring.web;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
-class TodoListDTO extends ResourceSupport {
+class TodoListDTO extends RepresentationModel<TodoListDTO> {
     private String name;
 
     TodoListDTO(String name) {

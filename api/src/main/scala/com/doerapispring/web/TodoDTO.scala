@@ -1,5 +1,5 @@
 package com.doerapispring.web
 
-import org.springframework.hateoas.ResourceSupport
+import org.springframework.hateoas.RepresentationModel
 
-case class TodoDTO(task: String) extends ResourceSupport
+case class TodoDTO(task: String) extends RepresentationModel[TodoDTO]

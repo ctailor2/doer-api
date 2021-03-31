@@ -1,11 +1,11 @@
 package com.doerapispring.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.List;
 
-class TodosResponse extends ResourceSupport {
+class TodosResponse extends RepresentationModel<TodosResponse> {
     @JsonProperty("todos")
     private final List<TodoDTO> todoDTOs;
 

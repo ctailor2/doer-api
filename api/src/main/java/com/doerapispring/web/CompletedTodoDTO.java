@@ -1,11 +1,11 @@
 package com.doerapispring.web;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Date;
 
-public class CompletedTodoDTO extends ResourceSupport {
+public class CompletedTodoDTO extends RepresentationModel<CompletedTodoDTO> {
     private final String task;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssZ")

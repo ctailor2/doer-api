@@ -1,6 +1,6 @@
 package com.doerapispring.web;
 
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
-class ResourcesResponse extends ResourceSupport {
+class ResourcesResponse extends RepresentationModel<ResourcesResponse> {
 }

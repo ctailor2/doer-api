@@ -1,9 +1,9 @@
 package com.doerapispring.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
-class CompletedListResponse extends ResourceSupport {
+class CompletedListResponse extends RepresentationModel<CompletedListResponse> {
     @JsonProperty("list")
     private CompletedListDTO completedListDTO;
 

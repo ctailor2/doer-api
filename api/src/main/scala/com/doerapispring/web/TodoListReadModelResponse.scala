@@ -1,5 +1,5 @@
 package com.doerapispring.web
 
-import org.springframework.hateoas.ResourceSupport
+import org.springframework.hateoas.RepresentationModel
 
-case class TodoListReadModelResponse(list: TodoListReadModelDTO) extends ResourceSupport
+case class TodoListReadModelResponse(list: TodoListReadModelDTO) extends RepresentationModel[TodoListReadModelResponse]

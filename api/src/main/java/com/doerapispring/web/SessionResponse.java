@@ -1,9 +1,9 @@
 package com.doerapispring.web;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.RepresentationModel;
 
-public class SessionResponse extends ResourceSupport {
+public class SessionResponse extends RepresentationModel<SessionResponse> {
     @JsonProperty("session")
     private final SessionTokenDTO sessionTokenDTO;
 
