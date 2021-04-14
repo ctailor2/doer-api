@@ -8,7 +8,7 @@ platform:
 
 steps:
   - name: test
-    image: arm64v8/gradle:5.4-jre8-alpine
+    image: arm64v8/gradle:6.6-jre8
     commands:
       - gradle test integrationTest
     environment:
