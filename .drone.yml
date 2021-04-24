@@ -16,6 +16,7 @@ steps:
   - name: "build release candidate"
     image: drone/git
     commands:
+      - git fetch --tags
       - git describe --tags --abbrev=0 --match *-rc > last-version.txt
       - major=$(cut -d . -f 1 last-version.txt)
       - minor=$(cut -d . -f 2 last-version.txt)
