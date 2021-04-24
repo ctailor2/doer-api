@@ -6,7 +6,18 @@ platform:
   os: linux
   arch: arm64
 
+clone:
+  disable: true
+
 steps:
+  - name: clone
+    image: alpine/git
+    commands:
+      - git clone https://$${ACCESS_TOKEN}@github.com/ctailor2/doer-api.git .
+      - git checkout $DRONE_COMMIT
+    environment:
+      ACCESS_TOKEN:
+        from_secret: access_token
   - name: test
     image: arm64v8/gradle:6.6-jdk8
     commands:
