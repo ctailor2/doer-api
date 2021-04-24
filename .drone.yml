@@ -15,6 +15,7 @@ steps:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
   - name: "build release candidate"
     image: drone/git
+    user: 0
     commands:
       - ./build-release-candidate.sh
   - name: "deploy staging"
