@@ -13,6 +13,27 @@ steps:
       - gradle test integrationTest
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
+  - name: "build release candidate"
+    image: drone/git
+    commands:
+      - ./build-release-candidate.sh
+  - name: "deploy staging"
+    image: pelotech/drone-helm3
+    settings:
+      add_repos:
+        - "chartmuseum=http://chartmuseum-chartmuseum"
+        - "bitnami=https://charts.bitnami.com/bitnami"
+      mode: upgrade
+      chart: doer
+      release: doer
+      namespace: doer-staging
+      values_files:
+        - doer-values.yaml
+      wait_for_upgrade: true
+    environment:
+      KUBE_API_SERVER: http://kubernetes.default.svc
+      KUBE_TOKEN:
+        from_secret: drone-runner-drone-runner-kube-token-zjhnd
 
 services:
   - name: test-db
