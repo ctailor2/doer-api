@@ -18,12 +18,12 @@ steps:
     environment:
       ACCESS_TOKEN:
         from_secret: access_token
-  - name: test
-    image: arm64v8/gradle:6.6-jdk8
-    commands:
-      - gradle test integrationTest
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
+#  - name: test
+#    image: arm64v8/gradle:6.6-jdk8
+#    commands:
+#      - gradle test integrationTest
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
   - name: "build release candidate"
     image: drone/git
     commands:
