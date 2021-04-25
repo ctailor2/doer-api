@@ -38,7 +38,7 @@ steps:
       - git push --tags
       - 'printf "api:\n\timage:\n\t\ttag: %s\n\n" "$next_version" > doer-values.yaml'
   - name: "deploy staging"
-    image: pelotech/drone-helm3
+    image: ctailor2/drone-helm3
     settings:
       add_repos:
         - "chartmuseum=http://chartmuseum-chartmuseum"
@@ -58,15 +58,7 @@ steps:
 services:
   - name: test-db
     image: postgres:9.6
-#    volumes:
-#      - name: temp-data
-#        path: /var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: supersecret
       POSTGRES_DB: test
-#      PG_DATA: /var/lib/postgresql/data/test-db
-
-#volumes:
-#  - name: temp-data
-#    temp: {}
