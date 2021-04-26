@@ -44,7 +44,8 @@ steps:
       - git push --tags
       - 'printf "api:\n\timage:\n\t\ttag: %s\n\n" "$next_version" > doer-values.yaml'
   - name: "deploy staging"
-    image: ctailor2/drone-helm3:latest
+    image: ctailor2/drone-helm3
+    pull: always
     settings:
       add_repos:
         - "chartmuseum=http://chartmuseum-chartmuseum"
