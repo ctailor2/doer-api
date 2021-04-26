@@ -57,9 +57,11 @@ steps:
       values_files:
         - doer-values.yaml
       wait_for_upgrade: true
-      kube_api_server: http://kubernetes.default.svc.local
+      kube_api_server: http://kubernetes.default
       kube_token:
         from_secret: kubernetes_token
+      kube_certificate:
+        from_secret: kubernetes_certificate
 
 services:
   - name: test-db
