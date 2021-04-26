@@ -52,7 +52,7 @@ steps:
         - "bitnami=https://charts.bitnami.com/bitnami"
       update_dependencies: true
       mode: upgrade
-      chart: doer
+      chart: chartmuseum/doer
       release: doer
       namespace: doer-staging
       values_files:
