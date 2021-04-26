@@ -57,9 +57,8 @@ steps:
       values_files:
         - doer-values.yaml
       wait_for_upgrade: true
-      kube_api_server: http://kubernetes.default
-      kube_token:
-        from_secret: drone-runner-drone-runner-kube-token-zjhnd
+      skip_kubeconfig: true
+      kube_service_account: doer-api
 
 services:
   - name: test-db
