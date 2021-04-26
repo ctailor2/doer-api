@@ -48,7 +48,7 @@ steps:
     pull: always
     settings:
       add_repos:
-        - "chartmuseum=http://chartmuseum-chartmuseum"
+        - "chartmuseum=http://chartmuseum-chartmuseum.drone"
         - "bitnami=https://charts.bitnami.com/bitnami"
       mode: upgrade
       chart: doer
