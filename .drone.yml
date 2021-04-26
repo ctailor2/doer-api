@@ -50,6 +50,7 @@ steps:
       add_repos:
         - "chartmuseum=http://chartmuseum-chartmuseum.drone"
         - "bitnami=https://charts.bitnami.com/bitnami"
+      update_dependencies: true
       mode: upgrade
       chart: doer
       release: doer
