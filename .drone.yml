@@ -57,9 +57,8 @@ steps:
       values_files:
         - doer-values.yaml
       wait_for_upgrade: true
-    environment:
-      KUBE_API_SERVER: http://kubernetes.default.svc
-      KUBE_TOKEN:
+      kube_api_server: http://kubernetes.default.svc
+      kube_token:
         from_secret: drone-runner-drone-runner-kube-token-zjhnd
 
 services:
