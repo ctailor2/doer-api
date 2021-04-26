@@ -47,6 +47,7 @@ steps:
     image: ctailor2/drone-helm3
     pull: always
     settings:
+      debug: true
       add_repos:
         - "chartmuseum=http://chartmuseum-chartmuseum.drone"
         - "bitnami=https://charts.bitnami.com/bitnami"
