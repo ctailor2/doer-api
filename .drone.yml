@@ -9,6 +9,12 @@ platform:
 clone:
   disable: true
 
+trigger:
+  branch:
+    - master
+  event:
+    - push
+
 steps:
   - name: clone
     image: alpine/git
