@@ -58,6 +58,7 @@ steps:
         - doer-values.yaml
       wait_for_upgrade: true
       kube_api_server: https://kubernetes.default
+      kube_service_account: drone-runner-drone-runner-kube
       kube_token:
         from_secret: kubernetes_token
       skip_tls_verify: true
