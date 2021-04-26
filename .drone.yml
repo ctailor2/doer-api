@@ -60,8 +60,7 @@ steps:
       kube_api_server: http://kubernetes.default
       kube_token:
         from_secret: kubernetes_token
-      kube_certificate:
-        from_secret: kubernetes_certificate
+      skip_tls_verify: true
 
 services:
   - name: test-db
