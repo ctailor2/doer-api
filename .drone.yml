@@ -46,6 +46,9 @@ steps:
   - name: "deploy staging"
     image: ctailor2/drone-helm3
     pull: always
+    environment:
+      POSTGRESQL_PASSWORD:
+        from_secret: postgresql_password
     settings:
       debug: true
       add_repos:
@@ -55,6 +58,8 @@ steps:
       chart: "chartmuseum/doer"
       release: doer
       namespace: doer-staging
+      values:
+        - "postgresqlPassword=$${POSTGRESQL_PASSWORD}"
       values_files:
         - doer-values.yaml
       wait_for_upgrade: true
