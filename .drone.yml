@@ -30,7 +30,7 @@ steps:
 #      - gradle test integrationTest
 #    environment:
 #      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
-  - name: "build release candidate"
+  - name: "bump version for build and deploy"
     image: drone/git
     commands:
       - git fetch --tags
@@ -40,9 +40,18 @@ steps:
       - patch=$(cut -d . -f 3 last-version.txt | cut -d - -f 1)
       - next_patch=$((patch + 1))
       - next_version="$major.$minor.$next_patch-rc"
+      - echo "$next_version" > .tags
+      - 'printf "api:\n  image:\n    tag: %s\n\n" "$next_version" > doer-values.yaml'
       - echo "$next_version" | xargs git tag
       - git push --tags
-      - 'printf "api:\n  image:\n    tag: %s\n\n" "$next_version" > doer-values.yaml'
+  - name: "build and publish image"
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: ctailor2/doer-api
   - name: "deploy staging"
     image: ctailor2/drone-helm3
     pull: always
