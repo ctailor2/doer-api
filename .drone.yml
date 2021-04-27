@@ -59,7 +59,7 @@ steps:
       release: doer
       namespace: doer-staging
       values:
-        - "postgresqlPassword=$${POSTGRESQL_PASSWORD}"
+        - "postgresqlPassword=$POSTGRESQL_PASSWORD"
       values_files:
         - doer-values.yaml
       wait_for_upgrade: true
