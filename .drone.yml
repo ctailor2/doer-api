@@ -42,7 +42,7 @@ steps:
       - next_version="$major.$minor.$next_patch-rc"
       - echo "$next_version" | xargs git tag
       - git push --tags
-      - 'printf "api:\n\timage:\n\t\ttag: %s\n\n" "$next_version" > doer-values.yaml'
+      - 'printf "api:\n  image:\n    tag: %s\n\n" "$next_version" > doer-values.yaml'
   - name: "deploy staging"
     image: ctailor2/drone-helm3
     pull: always
