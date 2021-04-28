@@ -71,6 +71,7 @@ steps:
         - "db.postgresqlPassword=$POSTGRESQL_PASSWORD"
       values_files:
         - doer-values.yaml
+        - helm-staging-values.yaml
       wait_for_upgrade: true
       kube_api_server: https://kubernetes.default
       kube_service_account: drone-helm
