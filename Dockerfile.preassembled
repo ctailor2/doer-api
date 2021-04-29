@@ -1,4 +1,0 @@
-FROM arm64v8/openjdk:8-jdk
-RUN cp api/build/libs/*boot.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar","/app.jar"]
