@@ -32,7 +32,7 @@ steps:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
   - name: "bump version for build and deploy"
-    image: drone/git
+    image: alpine/git
     commands:
       - git fetch --tags
       - git describe --tags --abbrev=0 --match *-rc > last-version.txt
@@ -79,7 +79,16 @@ steps:
       kube_token:
         from_secret: kubernetes_token
       skip_tls_verify: true
-
+  - name: "clone e2e tests"
+    image: alpine/git
+    commands:
+      - git clone https://github.com/ctailor2/doer-e2e-tests.git
+  - name: "e2e test"
+    image: cypress/browsers:node10.16.0-chrome77
+    commands:
+      - cd doer-e2e-tests
+      - npm ci
+      - $(npm bin)/cypress run -b chrome -c baseUrl=http://doer-web.doer-staging
 services:
   - name: test-db
     image: postgres:9.6
