@@ -86,6 +86,7 @@ steps:
   - name: "e2e test"
     image: node:10.0
     commands:
+      - apt-get update
       - apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - wget -O google-chrome-stable_current_arm64.deb "http://dl.google.com/linux/direct/google-chrome-stable_current_arm64.deb"
       - dpkg -i google-chrome-stable_current_arm64.deb
