@@ -1,6 +1,7 @@
+---
 kind: pipeline
 type: kubernetes
-name: doer-api
+name: "build and deploy staging"
 
 platform:
   os: linux
@@ -42,7 +43,7 @@ steps:
       - next_patch=$((patch + 1))
       - next_version="$major.$minor.$next_patch-rc"
       - echo "$next_version" > .tags
-      - 'printf "api:\n  image:\n    tag: %s\n\n" "$next_version" > doer-values.yaml'
+      - 'printf "api:\n  image:\n    tag: %s\n\n" "$next_version" > doer-staging-values.yaml'
       - echo "$next_version" | xargs git tag
       - git push --tags
   - name: "build and publish image"
@@ -58,7 +59,7 @@ steps:
     pull: always
     environment:
       POSTGRESQL_PASSWORD:
-        from_secret: postgresql_password
+        from_secret: staging_postgresql_password
     settings:
       debug: true
       add_repos:
@@ -71,7 +72,7 @@ steps:
       values:
         - "db.postgresqlPassword=$POSTGRESQL_PASSWORD"
       values_files:
-        - doer-values.yaml
+        - doer-staging-values.yaml
         - helm-staging-values.yaml
       wait_for_upgrade: true
       kube_api_server: https://kubernetes.default
@@ -79,21 +80,6 @@ steps:
       kube_token:
         from_secret: kubernetes_token
       skip_tls_verify: true
-  - name: "clone e2e tests"
-    image: alpine/git
-    commands:
-      - git clone https://github.com/ctailor2/doer-e2e-tests.git
-  - name: "e2e test"
-    image: node:10.0
-    commands:
-      - apt update
-      - apt install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-      - wget -O google-chrome-stable_current_arm64.deb "http://dl.google.com/linux/direct/google-chrome-stable_current_arm64.deb"
-      - dpkg -i google-chrome-stable_current_arm64.deb
-      - apt install -f -y
-      - cd doer-e2e-tests
-      - npm ci
-      - $(npm bin)/cypress run -b chrome -c baseUrl=http://doer-web.doer-staging
 services:
   - name: test-db
     image: postgres:9.6
@@ -101,3 +87,65 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: supersecret
       POSTGRES_DB: test
+
+---
+kind: pipeline
+type: kubernetes
+name: "promote to production"
+service_account_name: drone-helm
+
+platform:
+  os: linux
+  arch: arm64
+
+clone:
+  disable: true
+
+trigger:
+  event:
+    - promote
+  target:
+    - production
+
+steps:
+  - name: "retrieve staging version"
+    image: ctailor2/alpine-helm:3.2.4
+    commands:
+      - apt install jq
+      - helm get values doer -n doer-staging -o json | jq .image.api.tag -r > staging-version.txt
+  - name: "retag release candidate as release"
+    image: curlimages/curl
+    commands:
+      - apt install jq
+      - token=`curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,pull" | jq .token`
+      - rc_version=`cat staging-version.txt`
+      - "curl -H \"Authorization: Bearer $token\" -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$rc_version\" > manifest.json"
+      - version=`cut -d -f 1 staging-version.txt`
+      - "curl -H \"Authorization: Bearer $token\" -H 'Content-Type: application/vnd.docker.distribution.manifest.v2+json' -XPUT \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$version\" -d '@manifest.json'"
+      - 'printf "api:\n  image:\n    tag: %s\n\n" "$version" > doer-prod-values.yaml'
+  - name: "deploy prod"
+    image: ctailor2/drone-helm3
+    pull: always
+    environment:
+      POSTGRESQL_PASSWORD:
+        from_secret: prod_postgresql_password
+    settings:
+      debug: true
+      add_repos:
+        - "chartmuseum=http://chartmuseum-chartmuseum.drone"
+        - "bitnami=https://charts.bitnami.com/bitnami"
+      mode: upgrade
+      chart: "chartmuseum/doer"
+      release: doer
+      namespace: doer-prod
+      values:
+        - "db.postgresqlPassword=$POSTGRESQL_PASSWORD"
+      values_files:
+        - doer-prod-values.yaml
+        - helm-prod-values.yaml
+      wait_for_upgrade: true
+      kube_api_server: https://kubernetes.default
+      kube_service_account: drone-helm
+      kube_token:
+        from_secret: kubernetes_token
+      skip_tls_verify: true
