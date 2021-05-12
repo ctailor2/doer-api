@@ -116,7 +116,7 @@ steps:
   - name: "retag release candidate as release"
     image: curlimages/curl
     commands:
-      - apt install jq
+      - apk add jq
       - token=`curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,pull" | jq .token`
       - rc_version=`cat staging-version.txt`
       - "curl -H \"Authorization: Bearer $token\" -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$rc_version\" > manifest.json"
