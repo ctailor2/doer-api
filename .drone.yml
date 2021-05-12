@@ -111,7 +111,7 @@ steps:
   - name: "retrieve staging version"
     image: ctailor2/alpine-helm:3.2.4
     commands:
-      - apt install jq
+      - apk install jq
       - helm get values doer -n doer-staging -o json | jq .image.api.tag -r > staging-version.txt
   - name: "retag release candidate as release"
     image: curlimages/curl
