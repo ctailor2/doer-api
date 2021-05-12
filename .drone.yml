@@ -114,8 +114,9 @@ steps:
       - apk add jq
       - helm get values doer -n doer-staging -o json | jq .image.api.tag -r > staging-version.txt
   - name: "retag release candidate as release"
-    image: curlimages/curl
+    image: alpine
     commands:
+      - apk add curl
       - apk add jq
       - token=`curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,pull" | jq .token`
       - rc_version=`cat staging-version.txt`
