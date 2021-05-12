@@ -113,15 +113,16 @@ steps:
     commands:
       - apk add jq
       - helm get values doer -n doer-staging -o json | jq .image.api.tag -r > staging-version.txt
+      - cat staging-version.txt
   - name: "retag release candidate as release"
     image: alpine
     commands:
       - apk add curl
       - apk add jq
-      - token=`curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,pull" | jq .token`
-      - rc_version=`cat staging-version.txt`
+      - token=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,push" | jq .token)
+      - rc_version=$(cat staging-version.txt)
       - "curl -H \"Authorization: Bearer $token\" -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$rc_version\" > manifest.json"
-      - version=`cut -d -f 1 staging-version.txt`
+      - version=$(cut -d -f 1 staging-version.txt)
       - "curl -H \"Authorization: Bearer $token\" -H 'Content-Type: application/vnd.docker.distribution.manifest.v2+json' -XPUT \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$version\" -d '@manifest.json'"
       - 'printf "api:\n  image:\n    tag: %s\n\n" "$version" > doer-prod-values.yaml'
   - name: "deploy prod"
