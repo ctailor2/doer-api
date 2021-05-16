@@ -108,6 +108,14 @@ trigger:
     - production
 
 steps:
+  - name: clone
+    image: alpine/git
+    commands:
+      - git clone https://$${ACCESS_TOKEN}@github.com/ctailor2/doer-api.git .
+      - git checkout $DRONE_COMMIT
+    environment:
+      ACCESS_TOKEN:
+        from_secret: access_token
   - name: "retrieve staging version"
     image: ctailor2/alpine-helm:3.2.4
     commands:
