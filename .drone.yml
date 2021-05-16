@@ -127,12 +127,18 @@ steps:
     commands:
       - apk add curl
       - apk add jq
-      - token=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,push" | jq .token)
+      - encoded_credentials=$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" | base64)
+      - "token=$(curl -H \"Authorization: Basic $encoded_credentials\" \"https://auth.docker.io/token?service=registry.docker.io&scope=repository:ctailor2/doer-api:pull,push\" | jq -r .token)"
       - rc_version=$(cat staging-version.txt)
       - "curl -H \"Authorization: Bearer $token\" -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$rc_version\" > manifest.json"
       - version=$(cut -d - -f 1 staging-version.txt)
-      - "curl -H \"Authorization: Bearer $token\" -H 'Content-Type: application/vnd.docker.distribution.manifest.v2+json' -XPUT \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$version\" -d '@manifest.json'"
+      - "curl -H \"Authorization: Bearer $token\" -H 'Content-Type: application/vnd.docker.distribution.manifest.v2+json' -X PUT \"https://index.docker.io/v2/ctailor2/doer-api/manifests/$version\" -d '@manifest.json'"
       - 'printf "api:\n  image:\n    tag: %s\n\n" "$version" > doer-prod-values.yaml'
+    environment:
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      DOCKER_PASSWORD:
+        from_secret: docker_password
   - name: "deploy prod"
     image: ctailor2/drone-helm3
     pull: always
