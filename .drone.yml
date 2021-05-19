@@ -74,6 +74,7 @@ steps:
       values_files:
         - doer-staging-values.yaml
         - helm-staging-values.yaml
+      reuse_values: true
       wait_for_upgrade: true
       kube_api_server: https://kubernetes.default
       kube_service_account: drone-helm
@@ -159,6 +160,7 @@ steps:
       values_files:
         - doer-prod-values.yaml
         - helm-prod-values.yaml
+      reuse_values: true
       wait_for_upgrade: true
       kube_api_server: https://kubernetes.default
       kube_service_account: drone-helm
